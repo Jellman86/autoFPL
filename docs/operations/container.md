@@ -10,9 +10,9 @@ Routes:
 |---|---|---|
 | `GET` | `/healthz` | Liveness response: `{"status":"healthy"}` |
 | `GET` | `/readyz` | Readiness response: `{"status":"ready"}` |
-| `POST` | `/api/v1/decision-snapshot-metadata/validation` | Returns canonical metadata or a stable 422 problem response |
+| `POST` | `/api/v1/decision-snapshot-metadata/validation` | Returns canonical metadata or a stable 400/422 problem response |
 
-JSON request fields are exact and case-sensitive. Each canonical field may appear at most once. Missing or unsupported values fail with the domain error code. Duplicate or undeclared fields, non-string field values and malformed payloads fail with 400. The request body is bounded to 16 KiB by Kestrel.
+JSON request fields are exact and case-sensitive. Missing or `null` required fields, duplicate or undeclared fields, non-string field values and malformed payloads fail with 400. Present string values that are unsupported fail with the stable domain error code and 422. The request body is bounded to 16 KiB by Kestrel.
 
 ## Image construction
 
