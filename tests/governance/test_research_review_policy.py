@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from tools.governance.check_research_review import validate_research_gate
+from tools.governance.check_research_review import Acceptance, validate_research_gate
 
 
 class ResearchReviewPolicyTests(unittest.TestCase):
@@ -24,11 +24,7 @@ class ResearchReviewPolicyTests(unittest.TestCase):
             self._write_experiment(root)
             self._write_review(root, status="accepted")
 
-            violations = validate_research_gate(
-                root,
-                ["src/analytics/forecast.py"],
-                "- **Research record:** `docs/research/reviews/minutes.md`",
-            )
+            violations = self._validate(root)
 
         self.assertEqual([], violations)
 
@@ -38,11 +34,7 @@ class ResearchReviewPolicyTests(unittest.TestCase):
             self._write_experiment(root)
             self._write_review(root, status="accepted", accepted_by="Alice")
 
-            violations = validate_research_gate(
-                root,
-                ["src/analytics/forecast.py"],
-                "- **Research record:** docs/research/reviews/minutes.md",
-            )
+            violations = self._validate(root)
 
         self.assertTrue(any("distinct from the owner" in item for item in violations), violations)
 
@@ -52,11 +44,7 @@ class ResearchReviewPolicyTests(unittest.TestCase):
             self._write_experiment(root)
             self._write_review(root, status="accepted", immutable_source="none recorded")
 
-            violations = validate_research_gate(
-                root,
-                ["src/analytics/forecast.py"],
-                "- **Research record:** docs/research/reviews/minutes.md",
-            )
+            violations = self._validate(root)
 
         self.assertTrue(any("immutable DOI or versioned arXiv" in item for item in violations), violations)
 
@@ -65,11 +53,7 @@ class ResearchReviewPolicyTests(unittest.TestCase):
             root = Path(temporary_directory)
             self._write_review(root, status="accepted")
 
-            violations = validate_research_gate(
-                root,
-                ["src/analytics/forecast.py"],
-                "- **Research record:** docs/research/reviews/minutes.md",
-            )
+            violations = self._validate(root)
 
         self.assertTrue(any("registered experiment" in item for item in violations), violations)
 
@@ -85,11 +69,7 @@ class ResearchReviewPolicyTests(unittest.TestCase):
                 exemption_rationale="Implements an exact rules constraint without changing forecasts, uncertain inputs or empirical claims.",
             )
 
-            violations = validate_research_gate(
-                root,
-                ["src/analytics/optimisation/rules.py"],
-                "- **Research record:** docs/research/reviews/minutes.md",
-            )
+            violations = self._validate(root)
 
         self.assertEqual([], violations)
 
@@ -116,6 +96,132 @@ class ResearchReviewPolicyTests(unittest.TestCase):
             )
 
         self.assertTrue(any("docs/research/reviews" in item for item in violations), violations)
+
+    def test_rejects_nonexistent_github_acceptance_record(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            self._write_experiment(root)
+            self._write_review(root, status="accepted")
+
+            violations = self._validate(root, acceptance=None)
+
+        self.assertTrue(any("could not be verified on GitHub" in item for item in violations), violations)
+
+    def test_rejects_acceptance_actor_mismatch(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            self._write_experiment(root)
+            self._write_review(root, status="accepted")
+
+            violations = self._validate(
+                root,
+                acceptance=Acceptance(
+                    actor="Mallory",
+                    created_at="2026-07-24T19:00:00Z",
+                    body="ACCEPT-RESEARCH-REVIEW minutes-v1",
+                ),
+            )
+
+        self.assertTrue(any("actor does not match Accepted by" in item for item in violations), violations)
+
+    def test_rejects_owner_that_does_not_match_pr_author(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            self._write_experiment(root)
+            self._write_review(root, status="accepted")
+
+            violations = self._validate(root, expected_owner="Mallory")
+
+        self.assertTrue(any("owner does not match the pull request author" in item for item in violations), violations)
+
+    def test_rejects_acceptance_timestamp_mismatch(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            self._write_experiment(root)
+            self._write_review(root, status="accepted")
+
+            violations = self._validate(
+                root,
+                acceptance=Acceptance(
+                    actor="Bob",
+                    created_at="2026-07-24T20:00:00Z",
+                    body="ACCEPT-RESEARCH-REVIEW minutes-v1",
+                ),
+            )
+
+        self.assertTrue(any("timestamp does not match" in item for item in violations), violations)
+
+    def test_rejects_acceptance_without_explicit_token(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            self._write_experiment(root)
+            self._write_review(root, status="accepted")
+
+            violations = self._validate(
+                root,
+                acceptance=Acceptance(
+                    actor="Bob",
+                    created_at="2026-07-24T19:00:00Z",
+                    body="Looks fine to me",
+                ),
+            )
+
+        self.assertTrue(any("explicit acceptance token" in item for item in violations), violations)
+
+    def test_rejects_unresolved_immutable_source(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            self._write_experiment(root)
+            self._write_review(root, status="accepted")
+
+            violations = self._validate(root, source_resolves=False)
+
+        self.assertTrue(any("could not be resolved" in item for item in violations), violations)
+
+    def test_rejects_record_added_with_implementation(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            self._write_experiment(root)
+            self._write_review(root, status="accepted")
+
+            violations = self._validate(root, record_existed_on_base=False)
+
+        self.assertTrue(any("must predate implementation" in item for item in violations), violations)
+
+    def _validate(
+        self,
+        root: Path,
+        *,
+        acceptance: Acceptance | None | object = ...,
+        source_resolves: bool = True,
+        record_existed_on_base: bool = True,
+        expected_owner: str = "Alice",
+    ) -> list[str]:
+        accepted = (
+            Acceptance(
+                actor="Bob",
+                created_at="2026-07-24T19:00:00Z",
+                body="ACCEPT-RESEARCH-REVIEW minutes-v1 ACCEPT-RESEARCH-EXEMPTION minutes-v1",
+            )
+            if acceptance is ...
+            else acceptance
+        )
+
+        def base_loader(relative_path: str) -> str | None:
+            if not record_existed_on_base:
+                return None
+            path = root / relative_path
+            return path.read_text(encoding="utf-8") if path.is_file() else None
+
+        return validate_research_gate(
+            root,
+            ["src/analytics/forecast.py"],
+            "- **Research record:** docs/research/reviews/minutes.md",
+            base_text_loader=base_loader,
+            acceptance_resolver=lambda _url: accepted,
+            source_resolver=lambda _url: source_resolves,
+            expected_owner=expected_owner,
+        )
 
     @staticmethod
     def _write_experiment(root: Path) -> None:

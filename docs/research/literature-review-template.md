@@ -8,17 +8,17 @@ Copy this file to `docs/research/reviews/<topic>.md` before implementing a featu
 - **Feature/decision:**
 - **Issue:**
 - **Experiment:** `docs/research/experiments/<topic>.yaml` | not required for exemption
-- **Owner:**
+- **Owner:** GitHub login
 - **Status:** draft | accepted | exempt | superseded
 - **Classification:** research-required | deterministic-non-inferential
 - **Search completed at (UTC):**
 - **Last refreshed at (UTC):**
-- **Accepted by:**
+- **Accepted by:** independent reviewer's GitHub login
 - **Accepted at (UTC):**
-- **Acceptance record:** GitHub PR review/comment or issue comment URL
+- **Acceptance record:** direct GitHub PR review or issue-comment URL
 - **Exemption rationale:** required only for `exempt`; explain why no inferred input, predictive claim or empirical-performance claim changes
 
-The accepter must be distinct from the owner and have relevant research/domain competence. `accepted` records require a registered experiment and immutable sources. `exempt` is only for deterministic/non-inferential work and requires a substantive rationale; it is not a convenience bypass.
+The accepter must be distinct from the owner and have relevant research/domain competence. They must post exactly `ACCEPT-RESEARCH-REVIEW <Review ID>` for an accepted substantive review or `ACCEPT-RESEARCH-EXEMPTION <Review ID>` for an exemption, then copy that record's exact timestamp and direct URL above. The accepted record and experiment must merge before implementation begins. CI verifies the GitHub actor/timestamp/token and resolves DOI/versioned arXiv identifiers for later executable analytics changes. `exempt` is only for deterministic/non-inferential work and requires a substantive rationale; it is not a convenience bypass.
 
 ## Decision question and scope
 

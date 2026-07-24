@@ -557,6 +557,8 @@ jobs:
                 """name: CI
 permissions:
   contents: read
+  issues: read
+  pull-requests: read
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -570,6 +572,8 @@ jobs:
       - run: python3 tools/governance/check_documentation.py
       - env:
           BASE_SHA: base-placeholder
+          GITHUB_TOKEN: token-placeholder
+          PR_AUTHOR: author-placeholder
           PR_BODY: body-placeholder
         run: python3 tools/governance/check_research_review.py
 """,

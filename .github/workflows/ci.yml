@@ -9,6 +9,8 @@ on:
 
 permissions:
   contents: read
+  issues: read
+  pull-requests: read
 
 concurrency:
   group: governance-${{ github.workflow }}-${{ github.ref }}
@@ -59,6 +61,8 @@ jobs:
       - name: Enforce research review gate
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          GITHUB_TOKEN: ${{ github.token }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
           PR_BODY: ${{ github.event.pull_request.body }}
         run: python3 tools/governance/check_research_review.py
       - name: Enforce repository policy
