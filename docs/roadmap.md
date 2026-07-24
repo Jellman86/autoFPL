@@ -15,7 +15,7 @@ Deliver the smallest deployable API boundary without implying that forecasting o
 
 **Exit evidence:** contract and integration tests pass; malformed and oversized requests fail closed; the image has no HIGH/CRITICAL vulnerability finding; the running digest, health checks and rollback path are verified. Tracked by [issue #9](https://github.com/Jellman86/autoFPL/issues/9).
 
-The API, image and protected publication pipeline are implemented by issue #9. Digest-pinned private deployment and runtime/rollback verification remain outstanding.
+The API, image and protected publication pipeline were implemented by issue #9. The exact verified digest is deployed through the Git-backed Dockhand stack with no host port or public proxy. Runtime health, hardening and representative 200/400/422 behavior were verified on 24 July 2026. The stateless rollback path is documented; an exercised release rollback remains part of phase 8 hardening once a prior releasable digest exists.
 
 ## Up next
 

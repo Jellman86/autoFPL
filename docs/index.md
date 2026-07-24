@@ -43,7 +43,7 @@ Use this index to find the maintained source for each topic. The repository is i
 
 ## Operations
 
-- [Development container](operations/container.md) — build, scan, smoke-test, publish and future private-deployment constraints for the bounded validation API.
+- [Development container](operations/container.md) — build, scan, smoke-test, publish and private deployment of the bounded validation API.
 
 Additional runbooks must be added with the runnable services they support and include verification and recovery rather than documenting an unmerged deployment.
 
