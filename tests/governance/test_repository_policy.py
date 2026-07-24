@@ -66,6 +66,27 @@ class RepositoryPolicyTests(unittest.TestCase):
             violations,
         )
 
+    def test_agpl_license_is_mandatory(self) -> None:
+        from tools.governance.check_repository import REQUIRED_PATHS
+
+        self.assertIn("LICENSE", REQUIRED_PATHS)
+
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            self._write_required_files(root)
+            (root / "LICENSE").unlink()
+
+            violations = check_repository(root)
+
+        self.assertTrue(
+            any(
+                "LICENSE" in violation
+                and "missing required governance file" in violation
+                for violation in violations
+            ),
+            violations,
+        )
+
     def test_research_and_security_records_are_mandatory(self) -> None:
         from tools.governance.check_repository import REQUIRED_PATHS
 

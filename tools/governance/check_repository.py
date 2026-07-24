@@ -12,6 +12,7 @@ except ModuleNotFoundError:  # Fail closed in _workflow_permission_violations.
     yaml = None
 
 REQUIRED_PATHS = (
+    "LICENSE",
     "README.md",
     "AGENTS.md",
     "CONTRIBUTING.md",
@@ -41,6 +42,15 @@ REQUIRED_PATHS = (
 )
 
 REQUIRED_CONTENT_MARKERS = {
+    "LICENSE": (
+        "GNU AFFERO GENERAL PUBLIC LICENSE",
+        "Version 3, 19 November 2007",
+        "remotely through a computer network",
+    ),
+    "README.md": (
+        "AGPL-3.0-only",
+        "Runtime and user data are not licensed",
+    ),
     "AGENTS.md": (
         "human-in-the-loop",
         "written Premier League permission",

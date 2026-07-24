@@ -74,4 +74,6 @@ As application projects are added, the canonical commands will be exposed throug
 
 ## Licensing and data rights
 
-This private repository does not currently grant an open-source licence. All third-party code, datasets, papers, model artefacts and derived fields require documented provenance and compatible rights before inclusion or distribution. No absence of a technical access control implies permission to collect or reuse data.
+autoFPL source code is licensed under **GNU AGPL-3.0-only**. See [LICENSE](LICENSE). If a modified version is offered for users to interact with over a network, the licence requires an opportunity for those users to receive the corresponding source code.
+
+Runtime and user data are not licensed by the source-code licence. Third-party datasets, papers, model artefacts, source snapshots and derived fields require documented provenance and compatible collection, use and redistribution rights before inclusion. Personal squad history, private research snapshots, credentials and deployment configuration belong in ignored local/runtime storage—not this public repository. No absence of a technical access control implies permission to collect or reuse data.
