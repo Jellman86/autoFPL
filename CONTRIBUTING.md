@@ -34,7 +34,9 @@ Use strict test-driven development:
 
 ### Research changes
 
-Before predictive/statistical/simulation/optimisation implementation, copy `docs/research/literature-review-template.md` into `docs/research/reviews/`, complete its structured search and evidence matrix, and link the accepted review from the issue. Include strong baselines, established methods, credible frontier challengers, contradictory evidence and FPL applicability limits. A recent paper informs what to test; it does not authorize production use.
+Before implementing a new or materially changed inferred probability, forecast, uncertainty-driven simulation or empirical claim used in recommendations, copy `docs/research/literature-review-template.md` into `docs/research/reviews/`, complete its structured search and evidence matrix, and link the accepted review from the issue. Include strong baselines, established methods, credible frontier challengers, contradictory evidence and FPL applicability limits. A recent paper informs what to test; it does not authorize production use.
+
+Executable `src/analytics/` changes are checked automatically. Deterministic rule/solver mechanics that change no inferred input, predictive claim or empirical-performance claim may use an `exempt` record, but it must contain a substantive rationale and be accepted by a research/domain reviewer distinct from the owner. Record the accepter, UTC time and GitHub acceptance link. Unchecked “not applicable” self-attestation is not an exception.
 
 Every experiment then starts with a copied `docs/research/experiment-template.yaml` linked to that review. Register the hypothesis, candidate set, decision rule, data cutoff, split, baselines, metrics and promotion threshold before examining final test results. Complete a dataset card and model card for any artefact used in a recommendation.
 

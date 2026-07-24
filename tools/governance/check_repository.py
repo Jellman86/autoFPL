@@ -47,6 +47,7 @@ REQUIRED_PATHS = (
     "docs/adr/0006-optional-model-provider-adapters.md",
     "docs/adr/0007-evidence-grounded-ai-decision-orchestrator.md",
     "tools/governance/check_pr_title.py",
+    "tools/governance/check_research_review.py",
     "tools/governance/check_documentation.py",
 )
 
@@ -135,9 +136,13 @@ REQUIRED_CONTENT_MARKERS = {
         "persist-credentials: false",
     ),
     ".github/workflows/ci.yml": (
+        "fetch-depth: 0",
         "actions/setup-dotnet@",
         "dotnet restore src/backend/AutoFpl.slnx --locked-mode",
         "dotnet test src/backend/AutoFpl.slnx --no-restore",
+        "BASE_SHA:",
+        "PR_BODY:",
+        "python3 tools/governance/check_research_review.py",
     ),
     ".github/workflows/codeql.yml": (
         "actions: read",

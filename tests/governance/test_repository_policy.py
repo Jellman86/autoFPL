@@ -299,6 +299,7 @@ jobs:
             "docs/research/model-card-template.md",
             "docs/research/dataset-card-template.md",
             "docs/security/threat-model.md",
+            "tools/governance/check_research_review.py",
         }
 
         self.assertTrue(expected.issubset(REQUIRED_PATHS), expected - set(REQUIRED_PATHS))
@@ -561,10 +562,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       - run: dotnet restore src/backend/AutoFpl.slnx --locked-mode
       - run: dotnet test src/backend/AutoFpl.slnx --no-restore
       - run: python3 tools/governance/check_documentation.py
+      - env:
+          BASE_SHA: base-placeholder
+          PR_BODY: body-placeholder
+        run: python3 tools/governance/check_research_review.py
 """,
             )
 

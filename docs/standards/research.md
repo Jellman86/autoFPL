@@ -6,7 +6,11 @@ A model is useful only if it improves an explicitly defined decision using infor
 
 ## Evidence review before implementation
 
-A versioned evidence review before implementation is required for every feature that makes a predictive, statistical, simulation, optimisation or data-derived performance claim. Ordinary UI, CRUD and infrastructure work is exempt unless it changes one of those claims. Copy [`literature-review-template.md`](../research/literature-review-template.md) to `docs/research/reviews/<topic>.md` and link it from the issue and registered experiment before production implementation begins.
+A versioned evidence review before implementation is required when a feature introduces or materially changes an inferred probability, forecast target/feature/model, uncertainty-driven simulation, or empirical performance claim used to rank or recommend FPL actions. Executable changes under the designated `src/analytics/` boundary trigger the automated gate. Copy [`literature-review-template.md`](../research/literature-review-template.md) to `docs/research/reviews/<topic>.md` and link it from the issue and registered experiment before production implementation begins.
+
+Exact season rules, contract validation, deterministic solver mechanics, descriptive reporting, UI, CRUD and infrastructure do not require a literature review when they introduce no inferred input, predictive claim or empirical-performance claim. An executable `src/analytics/` change claiming this exemption must still link a short `exempt` record from the same template: classification `deterministic-non-inferential`, a substantive rationale, and independent acceptance. This is the reviewable exception path; a PR checkbox or unexplained “not applicable” is not sufficient.
+
+The feature owner writes the review. A person or delegated reviewer distinct from the owner, with relevant research/domain competence, accepts it only after checking scope, search reproducibility, source quality, contradictory evidence, temporal validity, baselines and the preregistered promotion rule. The record stores `Accepted by`, a UTC acceptance timestamp and a GitHub issue/PR acceptance link. Accepted substantive reviews must link an existing experiment whose status is `registered`; CI validates these fields and at least one immutable DOI or versioned arXiv source.
 
 The review must:
 

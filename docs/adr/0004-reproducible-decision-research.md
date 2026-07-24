@@ -11,7 +11,7 @@ Sports forecasting is vulnerable to temporal leakage, repeated model selection, 
 
 ## Decision
 
-Before implementing a predictive, statistical, simulation or optimisation feature, complete a versioned evidence review that records a reproducible search, immutable citations, strong baselines, established methods, credible frontier challengers, contradictory results and FPL applicability limits. Frontier methods are candidates rather than defaults.
+Before implementing a new or materially changed inferred probability, forecast, uncertainty-driven simulation or empirical performance claim used in recommendations, complete a versioned evidence review that records a reproducible search, immutable citations, strong baselines, established methods, credible frontier challengers, contradictory results and FPL applicability limits. Frontier methods are candidates rather than defaults. Exact deterministic mechanics may use an independently accepted, reasoned exemption record when they change no inferred input or empirical claim.
 
 Every candidate model then uses registered walk-forward evaluation, immutable point-in-time snapshots, proper probabilistic scoring, calibration, decision utility, declared baselines and full run provenance. Final test periods are used once per registered claim. Optimisers are verified independently from forecasts.
 

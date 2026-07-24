@@ -1,17 +1,24 @@
 # Predictive Feature Evidence Review
 
-Copy this file to `docs/research/reviews/<topic>.md` before implementing a feature that makes a predictive, statistical, simulation, optimisation or data-derived performance claim. Ordinary UI, CRUD and infrastructure changes do not require a literature review unless they change one of those claims.
+Copy this file to `docs/research/reviews/<topic>.md` before implementing a feature that introduces or materially changes an inferred probability, forecast, uncertainty-driven simulation or empirical performance claim used in an FPL recommendation. Executable `src/analytics/` changes must reference either an accepted substantive review or an independently accepted deterministic/non-inferential exemption record.
 
 ## Metadata
 
 - **Review ID:**
 - **Feature/decision:**
 - **Issue:**
+- **Experiment:** `docs/research/experiments/<topic>.yaml` | not required for exemption
 - **Owner:**
-- **Status:** draft | accepted | superseded
+- **Status:** draft | accepted | exempt | superseded
+- **Classification:** research-required | deterministic-non-inferential
 - **Search completed at (UTC):**
 - **Last refreshed at (UTC):**
-- **Reviewer:**
+- **Accepted by:**
+- **Accepted at (UTC):**
+- **Acceptance record:** GitHub PR review/comment or issue comment URL
+- **Exemption rationale:** required only for `exempt`; explain why no inferred input, predictive claim or empirical-performance claim changes
+
+The accepter must be distinct from the owner and have relevant research/domain competence. `accepted` records require a registered experiment and immutable sources. `exempt` is only for deterministic/non-inferential work and requires a substantive rationale; it is not a convenience bypass.
 
 ## Decision question and scope
 
