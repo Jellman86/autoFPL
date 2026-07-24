@@ -88,6 +88,11 @@ REQUIRED_CONTENT_MARKERS = {
         "checked against brute force",
         "human-approval invariant",
     ),
+    ".github/workflows/security.yml": (
+        "contents: read",
+        "pull-requests: read",
+        "persist-credentials: false",
+    ),
     "docs/adr/0005-chatgpt-mcp-interface.md": (
         "ChatGPT Apps SDK / MCP",
         "does not receive or store OpenAI/ChatGPT OAuth tokens",

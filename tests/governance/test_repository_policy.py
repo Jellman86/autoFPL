@@ -293,10 +293,23 @@ jobs:
             path = root / relative_path
             path.parent.mkdir(parents=True, exist_ok=True)
             content = "placeholder\n"
-            if relative_path in REQUIRED_CONTENT_MARKERS:
-                content = "\n".join(REQUIRED_CONTENT_MARKERS[relative_path]) + "\n"
-            if path.parent.name == "workflows":
+            if relative_path == ".github/workflows/security.yml":
+                content = """name: Secret scan
+permissions:
+  contents: read
+  pull-requests: read
+jobs:
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+"""
+            elif path.parent.name == "workflows":
                 content = "name: Required\npermissions: {}\njobs: {}\n"
+            elif relative_path in REQUIRED_CONTENT_MARKERS:
+                content = "\n".join(REQUIRED_CONTENT_MARKERS[relative_path]) + "\n"
             path.write_text(content, encoding="utf-8")
 
     @staticmethod
