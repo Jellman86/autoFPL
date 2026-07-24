@@ -23,6 +23,8 @@ REQUIRED_PATHS = (
     ".github/PULL_REQUEST_TEMPLATE.md",
     ".github/workflows/ci.yml",
     ".github/workflows/security.yml",
+    ".github/workflows/codeql.yml",
+    ".github/workflows/dependency-review.yml",
     "docs/standards/definition-of-done.md",
     "docs/standards/engineering.md",
     "docs/standards/research.md",
@@ -105,6 +107,21 @@ REQUIRED_CONTENT_MARKERS = {
         "contents: read",
         "pull-requests: read",
         "persist-credentials: false",
+    ),
+    ".github/workflows/codeql.yml": (
+        "actions: read",
+        "contents: read",
+        "security-events: write",
+        "persist-credentials: false",
+        "queries: security-extended",
+    ),
+    ".github/workflows/dependency-review.yml": (
+        "contents: read",
+        "fail-on-severity: moderate",
+        "vulnerability-check: true",
+        "license-check: true",
+        "allow-licenses:",
+        "AGPL-3.0-only",
     ),
     "docs/adr/0005-chatgpt-mcp-interface.md": (
         "ChatGPT Apps SDK / MCP",
@@ -190,15 +207,32 @@ def _permission_value_violations(
     violations: list[str] = []
     for scope, access in value.items():
         if access == "write":
-            violations.append(
-                f"{relative}: {location} {scope} write permission requires "
-                "a reviewed policy exception"
+            is_codeql_upload = (
+                relative == Path(".github/workflows/codeql.yml")
+                and location == "workflow"
+                and scope == "security-events"
             )
+            if not is_codeql_upload:
+                violations.append(
+                    f"{relative}: {location} {scope} write permission requires "
+                    "a reviewed policy exception"
+                )
         elif access not in {"read", "none"}:
             violations.append(
                 f"{relative}: {location} {scope} has invalid permission: {access}"
             )
     return violations
+
+
+def _dependency_review_trigger_violations(content: str, relative: Path) -> list[str]:
+    if relative != Path(".github/workflows/dependency-review.yml"):
+        return []
+    if re.search(r"(?m)^[ \t]*workflow_dispatch[ \t]*:", content):
+        return [
+            f"{relative}: workflow_dispatch is forbidden because dependency review "
+            "requires an explicit base-ref and head-ref outside pull_request events"
+        ]
+    return []
 
 
 def _workflow_permission_violations(content: str, relative: Path) -> list[str]:
@@ -259,6 +293,7 @@ def check_repository(root: Path) -> list[str]:
         relative = workflow.relative_to(root)
 
         violations.extend(_workflow_permission_violations(content, relative))
+        violations.extend(_dependency_review_trigger_violations(content, relative))
 
         if "pull_request_target:" in content:
             violations.append(

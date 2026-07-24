@@ -87,6 +87,93 @@ class RepositoryPolicyTests(unittest.TestCase):
             violations,
         )
 
+    def test_public_security_workflows_are_mandatory(self) -> None:
+        from tools.governance.check_repository import REQUIRED_PATHS
+
+        expected = {
+            ".github/workflows/codeql.yml",
+            ".github/workflows/dependency-review.yml",
+        }
+        self.assertTrue(expected.issubset(REQUIRED_PATHS), expected - set(REQUIRED_PATHS))
+
+    def test_codeql_security_events_write_is_the_only_scoped_exception(self) -> None:
+        from tools.governance.check_repository import _workflow_permission_violations
+
+        codeql = """name: CodeQL
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+jobs: {}
+"""
+        self.assertEqual(
+            [],
+            _workflow_permission_violations(
+                codeql,
+                Path(".github/workflows/codeql.yml"),
+            ),
+        )
+
+        wrong_workflow = _workflow_permission_violations(
+            codeql,
+            Path(".github/workflows/ci.yml"),
+        )
+        self.assertTrue(
+            any("security-events write permission" in violation for violation in wrong_workflow),
+            wrong_workflow,
+        )
+
+        excessive_codeql = codeql.replace("contents: read", "contents: write")
+        violations = _workflow_permission_violations(
+            excessive_codeql,
+            Path(".github/workflows/codeql.yml"),
+        )
+        self.assertTrue(
+            any("contents write permission" in violation for violation in violations),
+            violations,
+        )
+
+        job_scoped = """name: CodeQL
+permissions:
+  contents: read
+jobs:
+  analyze:
+    permissions:
+      security-events: write
+    runs-on: ubuntu-latest
+    steps: []
+"""
+        violations = _workflow_permission_violations(
+            job_scoped,
+            Path(".github/workflows/codeql.yml"),
+        )
+        self.assertTrue(
+            any("security-events write permission" in violation for violation in violations),
+            violations,
+        )
+
+    def test_dependency_review_forbids_unbounded_manual_dispatch(self) -> None:
+        from tools.governance.check_repository import (
+            _dependency_review_trigger_violations,
+        )
+
+        relative = Path(".github/workflows/dependency-review.yml")
+        violations = _dependency_review_trigger_violations(
+            "on:\n  pull_request:\n  workflow_dispatch:\n",
+            relative,
+        )
+        self.assertTrue(
+            any("workflow_dispatch is forbidden" in violation for violation in violations),
+            violations,
+        )
+        self.assertEqual(
+            [],
+            _dependency_review_trigger_violations(
+                "on:\n  pull_request:\n",
+                relative,
+            ),
+        )
+
     def test_research_and_security_records_are_mandatory(self) -> None:
         from tools.governance.check_repository import REQUIRED_PATHS
 
@@ -345,6 +432,38 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+"""
+            elif relative_path == ".github/workflows/codeql.yml":
+                content = """name: CodeQL
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: github/codeql-action/init@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
+        with:
+          queries: security-extended
+"""
+            elif relative_path == ".github/workflows/dependency-review.yml":
+                content = """name: Dependency review
+permissions:
+  contents: read
+jobs:
+  dependency-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          vulnerability-check: true
+          license-check: true
+          fail-on-severity: moderate
+          allow-licenses: AGPL-3.0-only
 """
             elif path.parent.name == "workflows":
                 content = "name: Required\npermissions: {}\njobs: {}\n"
