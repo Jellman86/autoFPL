@@ -24,6 +24,7 @@ builder.Services.Configure<RouteHandlerOptions>(options =>
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.PropertyNameCaseInsensitive = false;
+    options.SerializerOptions.AllowDuplicateProperties = false;
     options.SerializerOptions.UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow;
     options.SerializerOptions.Converters.Add(
         new DecisionSnapshotMetadataRequestJsonConverter());
@@ -54,7 +55,12 @@ app.MapPost(
     "/api/v1/squads/validation",
     (SquadValidationRequest request) =>
     {
-        IReadOnlyList<SquadPlayerRequest?> playerRequests = request.Players ?? [];
+        if (request.BudgetTenths is null || request.Players is null)
+        {
+            return Results.BadRequest();
+        }
+
+        IReadOnlyList<SquadPlayerRequest?> playerRequests = request.Players;
         var players = new SquadPlayer[playerRequests.Count];
         for (int index = 0; index < playerRequests.Count; index++)
         {
@@ -69,7 +75,7 @@ app.MapPost(
                 playerRequest.PriceTenths);
         }
 
-        Squad squad = Squad.Create(request.BudgetTenths, players);
+        Squad squad = Squad.Create(request.BudgetTenths.Value, players);
         return Results.Ok(SquadValidationDocument.FromDomain(squad));
     });
 

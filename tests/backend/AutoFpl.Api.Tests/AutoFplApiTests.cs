@@ -166,9 +166,32 @@ public sealed class AutoFplApiTests : IClassFixture<WebApplicationFactory<Progra
     [Theory]
     [InlineData("{\"budgetTenths\":1000,\"players\":[],\"unexpected\":true}")]
     [InlineData("{\"budgetTenths\":1000,\"players\":\"not-an-array\"}")]
+    [InlineData("{\"budgetTenths\":1000}")]
+    [InlineData("{\"budgetTenths\":1000,\"players\":null}")]
+    [InlineData("{\"players\":[]}")]
     [InlineData("[]")]
     public async Task Squad_validation_rejects_unknown_or_malformed_json(string body)
     {
+        using var content = new StringContent(body, Encoding.UTF8, "application/json");
+
+        using HttpResponseMessage response = await _client.PostAsync(
+            "/api/v1/squads/validation",
+            content,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Squad_validation_rejects_duplicate_json_properties()
+    {
+        string body = JsonSerializer.Serialize(
+            new { budgetTenths = 1_000, players = ValidPlayers() },
+            JsonOptions);
+        body = body.Replace(
+            "\"budgetTenths\":1000",
+            "\"budgetTenths\":1000,\"budgetTenths\":1000",
+            StringComparison.Ordinal);
         using var content = new StringContent(body, Encoding.UTF8, "application/json");
 
         using HttpResponseMessage response = await _client.PostAsync(

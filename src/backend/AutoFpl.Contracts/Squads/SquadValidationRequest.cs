@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 namespace AutoFpl.Contracts.Squads;
 
 public sealed record SquadValidationRequest(
-    [property: JsonPropertyName("budgetTenths")] int BudgetTenths,
+    [property: JsonPropertyName("budgetTenths")] int? BudgetTenths,
     [property: JsonPropertyName("players")] IReadOnlyList<SquadPlayerRequest?>? Players);
 
 public sealed record SquadPlayerRequest(
