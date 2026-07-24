@@ -39,7 +39,7 @@ This model must be updated whenever a PR introduces a new data source, identity 
 7. Ingestion to quarantine/curated data.
 8. LLM/OpenViking research context to deterministic application logic.
 9. GitHub pull request to CI runner and release artefact.
-10. Optional outbound explanation-provider port to OpenRouter or an authenticated private Hermes proxy.
+10. Optional outbound AI-assistance port to OpenRouter or an authenticated private Hermes proxy for bounded extraction/classification and explanation.
 11. Deployment control plane to runtime secrets and production services.
 
 ## Principal threats and controls
@@ -50,7 +50,7 @@ This model must be updated whenever a PR introduces a new data source, identity 
 | Credential confusion | ChatGPT/Codex or Hermes model-provider token is accepted as an autoFPL token or copied into the service | Separate issuers and audiences, OAuth resource binding, exact token validation, no model-provider token ingestion or storage |
 | MCP confused deputy | Prompt requests excessive private data or invokes an undeclared capability | Read-only tool allowlist, least-privilege scopes, per-tool server checks, bounded responses, user-visible purpose and audit |
 | Provider data exposure | OpenRouter route or private proxy receives unnecessary personal/source data | Disabled-by-default adapters, data minimisation, explicit model/routing allowlist, retention review, private authenticated proxy, no credentials in prompts |
-| Provider output substitution | Generated prose changes a forecast or hides uncertainty | Structured artefact remains authoritative and visible, immutable values, output schema separation, response provenance and failure isolation |
+| Provider output substitution | Generated prose changes a forecast, or an extracted claim bypasses quarantine/validation | Structured artefact remains authoritative and visible, source-linked candidate state, immutable values, output schema separation, response provenance and failure isolation |
 | Unauthorised action | Prompt induces a transfer or chip action | No FPL write client; separate capability scopes; deterministic policy; exact human approval if future permission exists |
 | Prompt/tool injection | Article tells agent to disclose data or call a tool | Treat content as data, source labels, strict MCP schemas, tool allowlists, no model-authoritative mutation |
 | SSRF/data exfiltration | User URL reaches internal service | Destination allowlists, DNS/IP validation, bounded fetcher, network egress policy, no ambient secrets |

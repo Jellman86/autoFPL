@@ -23,11 +23,11 @@ permissioned feeds / user input / research sources
        auth -> workflow -> audit -> notifications
              /              |               \
             /               |                \
- dashboard / API     read-only MCP adapter   optional explanation port
+ dashboard / API     read-only MCP adapter   optional AI-assistance port
             |               |                |
             |        ChatGPT / Hermes     OpenRouter API or
             |           MCP clients       private Hermes proxy
-            |               |                |
+            |               |          extraction / explanation
             +---------------+----------------+
                             |
                        human decision
@@ -48,7 +48,7 @@ The primary conversational integration is the [read-only MCP interface](../adr/0
 
 Hermes is not classified as inherently unsafe. Its preferred role is an MCP client, allowing a request such as “give me the predictions” to retrieve the deterministic prediction artefact and preserve its run, version, deadline and uncertainty fields.
 
-When generated text is required inside the standalone product, [ADR-0006](../adr/0006-optional-model-provider-adapters.md) permits an explicitly configured OpenRouter API adapter or private Hermes proxy behind a provider-neutral port. That optional path adds cost, privacy and availability boundaries but cannot affect analytical truth or core availability. Reimplementing Codex OAuth inside autoFPL is a separate, higher-risk option and remains prohibited without documented upstream support and review.
+When AI-assisted extraction, classification or generated text is required inside the standalone product, [ADR-0006](../adr/0006-optional-model-provider-adapters.md) permits an explicitly configured OpenRouter API adapter or private Hermes proxy behind a provider-neutral port. Collection still occurs through admitted, permissioned connectors before model processing; the provider never decides what may be accessed. Candidate extracted facts remain quarantined until validated and promoted. This optional path adds cost, privacy and availability boundaries but cannot directly affect analytical truth or core availability. Reimplementing Codex OAuth inside autoFPL is a separate, higher-risk option and remains prohibited without documented upstream support and review.
 
 ## Initial module boundaries
 

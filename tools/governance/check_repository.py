@@ -64,6 +64,7 @@ REQUIRED_CONTENT_MARKERS = {
         "proper scoring rules",
         "calibration",
         "tiny brute-force instances",
+        "predictive machine learning",
     ),
     "docs/standards/engineering.md": (
         "locked restore",
@@ -81,6 +82,7 @@ REQUIRED_CONTENT_MARKERS = {
         "explicit authorisation",
         "Technical accessibility is not permission",
         "content hash",
+        "AI-assisted extraction",
     ),
     "docs/standards/definition-of-done.md": (
         "failing test first",
@@ -108,6 +110,7 @@ REQUIRED_CONTENT_MARKERS = {
         "secret store",
         "private Hermes proxy",
         "deterministic services continue",
+        "candidate structured extraction",
     ),
 }
 

@@ -12,13 +12,13 @@ A rigorous, evidence-driven research platform for **human-approved Fantasy Premi
 ## Intended architecture
 
 - **.NET 10 / C#** — product API, workflow control, authentication, audit and MCP tools.
-- **Python 3.14 (3.13 fallback when package compatibility requires it)** — forecasting, simulation, backtesting and mathematical optimisation.
+- **Python 3.14 (3.13 fallback when package compatibility requires it)** — predictive machine learning, probabilistic forecasting, simulation, backtesting and mathematical optimisation.
 - **TypeScript / Next.js** — evidence-rich dashboard.
 - **PostgreSQL** — authoritative transactional and analytical metadata.
 - **OpenViking** — versioned research and unstructured context, never authoritative squad state.
 - **ChatGPT Apps SDK / MCP** — subscription-backed conversational client using read-only autoFPL tools; autoFPL does not hold ChatGPT credentials.
 - **Hermes MCP client** — private conversational access to the same versioned prediction tools, using Hermes' independently configured model provider.
-- **Optional model-provider adapters** — OpenRouter API or a private Hermes proxy may generate explanations behind a provider-neutral boundary; neither is authoritative or required for core operation.
+- **Optional model-provider adapters** — OpenRouter API or a private Hermes proxy may perform bounded extraction/classification and generate explanations behind a provider-neutral boundary; outputs are quarantined or non-authoritative and neither provider is required for core operation.
 
 The approved boundaries are recorded in [ADR-0001](docs/adr/0001-hybrid-modular-architecture.md), [ADR-0005](docs/adr/0005-chatgpt-mcp-interface.md), [ADR-0006](docs/adr/0006-optional-model-provider-adapters.md) and the [FPL terms boundary](docs/compliance/fpl-terms-boundary.md).
 

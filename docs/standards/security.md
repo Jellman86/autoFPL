@@ -36,11 +36,11 @@ This project follows least privilege, explicit trust boundaries and fail-closed 
 - No model output becomes an SQL statement, shell command, URL fetch or external mutation without a constrained non-LLM policy layer.
 - Human approval shows the exact proposed action and current data before any future execution.
 - OpenAI/Codex cached credentials are never copied into the application or container.
-- Optional outbound model calls use only the ADR-approved provider-neutral port; domain services never import provider SDKs or vendor response types.
+- Optional outbound AI assistance uses only the ADR-approved provider-neutral port; domain services never import provider SDKs or vendor response types.
 - OpenRouter and other API credentials are runtime-injected from the deployment secret store and are never persisted, logged or included in prompts.
 - Provider/model/routing policy is explicit and allowlisted; no adapter may switch provider, model or fallback silently.
 - A private Hermes proxy is supported only on an authenticated private network or loopback boundary and receives no database, FPL-account or approval capability.
-- Provider output remains untrusted presentation text; provider failure returns the deterministic artefact without generated explanation.
+- Provider output remains untrusted: extracted claims stay quarantined until source-linked validation/promotion, while provider failure returns the deterministic artefact or leaves a source explicitly unprocessed rather than fabricating a result.
 
 ## CI/CD and supply chain
 
