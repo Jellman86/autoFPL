@@ -28,11 +28,19 @@ This project follows least privilege, explicit trust boundaries and fail-closed 
 
 ## LLM/MCP controls
 
+- ChatGPT-hosted conversation reaches autoFPL only through the documented read-only MCP adapter; no model is embedded in deterministic domain services.
+- ChatGPT/Codex OAuth credentials are not autoFPL identity tokens and must never be accepted, copied, logged or stored by the MCP resource server.
+- Private MCP data requires autoFPL-issued or approved tokens with exact issuer, audience/resource, expiry and scope validation on every request.
 - The LLM may request read-only analysis tools; deterministic services enforce tool arguments and authorisation.
-- Tool outputs are bounded, schema validated and provenance labelled.
+- Tool outputs are bounded, schema validated, provenance labelled and limited to the data required by the selected tool.
 - No model output becomes an SQL statement, shell command, URL fetch or external mutation without a constrained non-LLM policy layer.
 - Human approval shows the exact proposed action and current data before any future execution.
 - OpenAI/Codex cached credentials are never copied into the application or container.
+- Optional outbound model calls use only the ADR-approved provider-neutral port; domain services never import provider SDKs or vendor response types.
+- OpenRouter and other API credentials are runtime-injected from the deployment secret store and are never persisted, logged or included in prompts.
+- Provider/model/routing policy is explicit and allowlisted; no adapter may switch provider, model or fallback silently.
+- A private Hermes proxy is supported only on an authenticated private network or loopback boundary and receives no database, FPL-account or approval capability.
+- Provider output remains untrusted presentation text; provider failure returns the deterministic artefact without generated explanation.
 
 ## CI/CD and supply chain
 

@@ -34,6 +34,8 @@ REQUIRED_PATHS = (
     "docs/research/model-card-template.md",
     "docs/research/dataset-card-template.md",
     "docs/security/threat-model.md",
+    "docs/adr/0005-chatgpt-mcp-interface.md",
+    "docs/adr/0006-optional-model-provider-adapters.md",
     "tools/governance/check_pr_title.py",
 )
 
@@ -85,6 +87,22 @@ REQUIRED_CONTENT_MARKERS = {
         "point-in-time correct",
         "checked against brute force",
         "human-approval invariant",
+    ),
+    "docs/adr/0005-chatgpt-mcp-interface.md": (
+        "ChatGPT Apps SDK / MCP",
+        "does not receive or store OpenAI/ChatGPT OAuth tokens",
+        "Hermes proxy is not a baseline runtime dependency",
+        "Direct Codex OAuth",
+        "read-only advisory tools",
+        "Hermes MCP client",
+    ),
+    "docs/adr/0006-optional-model-provider-adapters.md": (
+        "OpenRouter",
+        "provider-neutral port",
+        "never authoritative",
+        "secret store",
+        "private Hermes proxy",
+        "deterministic services continue",
     ),
 }
 

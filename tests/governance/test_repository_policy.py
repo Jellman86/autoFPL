@@ -9,6 +9,44 @@ from tools.governance.check_repository import check_repository
 
 
 class RepositoryPolicyTests(unittest.TestCase):
+    def test_chatgpt_mcp_architecture_boundary_is_mandatory(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            self._write_required_files(root)
+            decision = root / "docs/adr/0005-chatgpt-mcp-interface.md"
+            decision.parent.mkdir(parents=True, exist_ok=True)
+            decision.write_text("# Chat interface\n", encoding="utf-8")
+
+            violations = check_repository(root)
+
+        self.assertTrue(
+            any(
+                "0005-chatgpt-mcp-interface.md" in violation
+                and "missing mandatory policy marker" in violation
+                for violation in violations
+            ),
+            violations,
+        )
+
+    def test_model_provider_adapter_boundary_is_mandatory(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            self._write_required_files(root)
+            decision = root / "docs/adr/0006-optional-model-provider-adapters.md"
+            decision.parent.mkdir(parents=True, exist_ok=True)
+            decision.write_text("# Model provider\n", encoding="utf-8")
+
+            violations = check_repository(root)
+
+        self.assertTrue(
+            any(
+                "0006-optional-model-provider-adapters.md" in violation
+                and "missing mandatory policy marker" in violation
+                for violation in violations
+            ),
+            violations,
+        )
+
     def test_research_and_security_records_are_mandatory(self) -> None:
         from tools.governance.check_repository import REQUIRED_PATHS
 
