@@ -4,6 +4,27 @@
 
 A model is useful only if it improves an explicitly defined decision using information genuinely available at that decision time. Leaderboard fit or one successful historical season is insufficient.
 
+## Evidence review before implementation
+
+A versioned evidence review before implementation is required when a feature introduces or materially changes an inferred probability, forecast target/feature/model, uncertainty-driven simulation, or empirical performance claim used to rank or recommend FPL actions. Executable changes under the designated `src/analytics/` boundary trigger the automated gate. Copy [`literature-review-template.md`](../research/literature-review-template.md) to `docs/research/reviews/<topic>.md` and link it from the issue and registered experiment before production implementation begins.
+
+Exact season rules, contract validation, deterministic solver mechanics, descriptive reporting, UI, CRUD and infrastructure do not require a literature review when they introduce no inferred input, predictive claim or empirical-performance claim. An executable `src/analytics/` change claiming this exemption must still link a short `exempt` record from the same template: classification `deterministic-non-inferential`, a substantive rationale, and independent acceptance. This is the reviewable exception path; a PR checkbox or unexplained “not applicable” is not sufficient.
+
+The feature owner writes the review in a separate change before implementation. A person or delegated reviewer distinct from the owner, with relevant research/domain competence, accepts it only after checking scope, search reproducibility, source quality, contradictory evidence, temporal validity, baselines and the preregistered promotion rule. The reviewer posts `ACCEPT-RESEARCH-REVIEW <Review ID>` or `ACCEPT-RESEARCH-EXEMPTION <Review ID>` in a GitHub issue comment or PR review. The record stores both GitHub logins, the exact UTC timestamp and the direct comment/review URL. For executable analytics changes, CI confirms that `Owner` is the PR author, reads the record and registered experiment from the base commit, resolves every DOI/versioned arXiv citation, and verifies the acceptance actor, timestamp and token through GitHub's read-only API. Push and manual runs must resolve the checked revision to an associated merged PR and reuse its base/body/author context; direct revisions fail even when they do not touch analytics. The exact protected `dev` to `main` release promotion within `Jellman86/autoFPL` does not repeat analytics review because each change was gated when it entered `dev`; fork branches named `dev` and every other source/base pair receive no exception. A fabricated, self-accepted, same-PR or direct-push record therefore fails closed.
+
+The review must:
+
+- define the decision, target, population, horizon, information boundary and intended claim;
+- record search date, databases, exact queries, inclusion/exclusion criteria and backward/forward citation search so discovery is repeatable;
+- prefer primary peer-reviewed papers and strong reviews, while clearly labelling preprints, vendor claims and non-replicated results;
+- cite the DOI or immutable paper version actually read, including an arXiv version suffix where applicable;
+- compare naive/domain baselines, the incumbent, strong established methods and credible recent frontier candidates;
+- extract each source's data, temporal split, baselines, metrics, calibration, uncertainty, assumptions, limitations, compute, code/data availability and licence;
+- include contradictory, negative and failed-replication evidence and explain transfer limits to FPL;
+- preregister the candidate set, implementation budget, temporal evaluation and promotion rule before final testing.
+
+Use current methods where they are credible and feasible, but frontier methods are challengers, not defaults. Novelty, citation count or a paper's “state of the art” label does not establish suitability. Every candidate—including a paper-backed one—must earn promotion through reproducible local out-of-time evidence against strong baselines under autoFPL's point-in-time data, compute budget and decision objective. Refresh the search before implementation when material evidence may have changed and again before promotion.
+
 ## AI roles and authority
 
 - **Predictive machine learning is expected:** statistical, Bayesian, tree-based, neural or ensemble models may generate player-minutes, event and points probability distributions when they pass this standard's temporal, calibration and promotion gates.
@@ -14,15 +35,16 @@ A model is useful only if it improves an explicitly defined decision using infor
 
 ## Research lifecycle
 
-1. **Question:** state the decision, population, horizon and utility.
-2. **Registration:** record hypothesis, baselines, metrics, split and promotion rule before final evaluation.
-3. **Snapshot:** freeze immutable, source-attributed point-in-time data.
-4. **Develop:** use training and validation periods only.
-5. **Evaluate:** unlock the final test period once; retain all results.
-6. **Review:** independent leakage, statistical and domain review.
-7. **Promote:** create model/dataset cards and an operational shadow evaluation.
-8. **Monitor:** calibration, drift, missingness, latency and realised decision impact.
-9. **Retire:** preserve reproducibility and route consumers to the successor.
+1. **Evidence:** complete and accept the feature evidence review; define baselines, established candidates and frontier challengers.
+2. **Question:** state the decision, population, horizon and utility.
+3. **Registration:** record hypothesis, candidates, baselines, metrics, split and promotion rule before final evaluation.
+4. **Snapshot:** freeze immutable, source-attributed point-in-time data.
+5. **Develop:** reproduce baselines first, then use training and validation periods only.
+6. **Evaluate:** unlock the final test period once; retain all results.
+7. **Review:** independent evidence, leakage, statistical and domain review.
+8. **Promote:** create model/dataset cards and an operational shadow evaluation.
+9. **Monitor:** calibration, drift, missingness, latency and realised decision impact.
+10. **Retire:** preserve reproducibility and route consumers to the successor.
 
 ## Temporal validity and leakage
 

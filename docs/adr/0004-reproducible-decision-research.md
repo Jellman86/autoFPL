@@ -7,14 +7,16 @@
 
 ## Context
 
-Sports forecasting is vulnerable to temporal leakage, repeated model selection, unstable rules, correlated outcomes and retrospective storytelling. A high backtest score is not sufficient evidence.
+Sports forecasting is vulnerable to temporal leakage, repeated model selection, unstable rules, correlated outcomes, retrospective storytelling and implementation choices made before relevant evidence is understood. A high backtest score or a paper's state-of-the-art claim is not sufficient evidence.
 
 ## Decision
 
-Every candidate model uses registered walk-forward evaluation, immutable point-in-time snapshots, proper probabilistic scoring, calibration, decision utility, declared baselines and full run provenance. Final test periods are used once per registered claim. Optimisers are verified independently from forecasts.
+Before implementing a new or materially changed inferred probability, forecast, uncertainty-driven simulation or empirical performance claim used in recommendations, complete a versioned evidence review that records a reproducible search, immutable citations, strong baselines, established methods, credible frontier challengers, contradictory results and FPL applicability limits. Frontier methods are candidates rather than defaults. Exact deterministic mechanics may use an independently accepted, reasoned exemption record when they change no inferred input or empirical claim.
+
+Every candidate model then uses registered walk-forward evaluation, immutable point-in-time snapshots, proper probabilistic scoring, calibration, decision utility, declared baselines and full run provenance. Final test periods are used once per registered claim. Optimisers are verified independently from forecasts.
 
 Promotion requires model/dataset cards, sensitivity and failure analysis, shadow evaluation and rollback evidence.
 
 ## Consequences
 
-Research is slower but auditable and resistant to false discoveries. Some attractive historical data cannot support claims when its publication time or correction history is unknown.
+Predictive implementation begins later, but wasted implementation and fashion-driven model selection are reduced. Research remains auditable and resistant to false discoveries. Some attractive papers, methods and historical data will not support local claims when assumptions, publication time, correction history, compute or transferability are inadequate.

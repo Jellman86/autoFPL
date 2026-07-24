@@ -37,6 +37,7 @@ REQUIRED_PATHS = (
     "docs/compliance/fpl-terms-boundary.md",
     "docs/architecture/README.md",
     "docs/research/evidence-base.md",
+    "docs/research/literature-review-template.md",
     "docs/research/experiment-template.yaml",
     "docs/research/model-card-template.md",
     "docs/research/dataset-card-template.md",
@@ -47,6 +48,7 @@ REQUIRED_PATHS = (
     "docs/adr/0006-optional-model-provider-adapters.md",
     "docs/adr/0007-evidence-grounded-ai-decision-orchestrator.md",
     "tools/governance/check_pr_title.py",
+    "tools/governance/check_research_review.py",
     "tools/governance/check_documentation.py",
 )
 
@@ -87,6 +89,10 @@ REQUIRED_CONTENT_MARKERS = {
         "No “experimental”, “personal use” or feature flag bypass",
     ),
     "docs/standards/research.md": (
+        "evidence review before implementation",
+        "frontier methods are challengers, not defaults",
+        "immutable paper version",
+        "local out-of-time evidence",
         "rolling-origin walk-forward validation",
         "`available_at <= decision_deadline`",
         "final test period once",
@@ -131,9 +137,21 @@ REQUIRED_CONTENT_MARKERS = {
         "persist-credentials: false",
     ),
     ".github/workflows/ci.yml": (
+        "fetch-depth: 0",
+        "issues: read",
+        "pull-requests: read",
         "actions/setup-dotnet@",
         "dotnet restore src/backend/AutoFpl.slnx --locked-mode",
         "dotnet test src/backend/AutoFpl.slnx --no-restore",
+        "BASE_SHA:",
+        "GITHUB_TOKEN:",
+        "PR_AUTHOR:",
+        "PR_BASE_REF:",
+        "PR_BASE_REPOSITORY:",
+        "PR_BODY:",
+        "PR_HEAD_REF:",
+        "PR_HEAD_REPOSITORY:",
+        "python3 tools/governance/check_research_review.py",
     ),
     ".github/workflows/codeql.yml": (
         "actions: read",

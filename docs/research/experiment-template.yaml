@@ -4,6 +4,16 @@ status: proposed # proposed | registered | running | complete | invalidated
 owners: []
 registered_at_utc: null
 
+evidence_review:
+  path: null
+  searched_at_utc: null
+  databases: []
+  immutable_sources: []
+  baseline_rationale: ""
+  established_candidates: []
+  frontier_challengers: []
+  applicability_limits: []
+
 question:
   decision: ""
   hypothesis: ""
