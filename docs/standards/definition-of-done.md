@@ -20,6 +20,8 @@ A change is complete only when every applicable gate below is evidenced. “Not 
 
 ## Research validity
 
+- A linked, accepted evidence review predates predictive/statistical/simulation/optimisation implementation and records repeatable search terms, immutable citations, strong baselines, established methods, frontier challengers, contradictory evidence and FPL applicability limits.
+- Paper-backed and frontier methods are promoted only by preregistered local point-in-time, out-of-time evidence; novelty alone is not a completion criterion.
 - The hypothesis, decision rule, baselines, metrics and evaluation window were registered before final evaluation.
 - Data is point-in-time correct and leakage checks pass.
 - Walk-forward results cover multiple seasons/regimes where the data permits.

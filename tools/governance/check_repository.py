@@ -36,6 +36,7 @@ REQUIRED_PATHS = (
     "docs/compliance/fpl-terms-boundary.md",
     "docs/architecture/README.md",
     "docs/research/evidence-base.md",
+    "docs/research/literature-review-template.md",
     "docs/research/experiment-template.yaml",
     "docs/research/model-card-template.md",
     "docs/research/dataset-card-template.md",
@@ -86,6 +87,10 @@ REQUIRED_CONTENT_MARKERS = {
         "No “experimental”, “personal use” or feature flag bypass",
     ),
     "docs/standards/research.md": (
+        "evidence review before implementation",
+        "frontier methods are challengers, not defaults",
+        "immutable paper version",
+        "local out-of-time evidence",
         "rolling-origin walk-forward validation",
         "`available_at <= decision_deadline`",
         "final test period once",

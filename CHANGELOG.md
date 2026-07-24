@@ -6,6 +6,7 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Changed
 
+- **Predictive features now require evidence review before implementation.** Prediction, simulation and optimisation work begins with a structured, reproducible literature review covering strong baselines, established methods, credible frontier challengers, contradictory evidence and FPL applicability; paper-backed methods still require preregistered local out-of-time validation before promotion.
 - **Development quality gates now prioritise correctness and research validity over ceremony.** `dev` requires comprehensive tests, governance and secret scanning while signatures, stale-base reruns and universal blocking on slower analyses are reserved or relaxed as appropriate; `main` remains the strict signed release boundary, and independent review is risk-based.
 
 ### Added

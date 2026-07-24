@@ -4,6 +4,23 @@
 
 A model is useful only if it improves an explicitly defined decision using information genuinely available at that decision time. Leaderboard fit or one successful historical season is insufficient.
 
+## Evidence review before implementation
+
+A versioned evidence review before implementation is required for every feature that makes a predictive, statistical, simulation, optimisation or data-derived performance claim. Ordinary UI, CRUD and infrastructure work is exempt unless it changes one of those claims. Copy [`literature-review-template.md`](../research/literature-review-template.md) to `docs/research/reviews/<topic>.md` and link it from the issue and registered experiment before production implementation begins.
+
+The review must:
+
+- define the decision, target, population, horizon, information boundary and intended claim;
+- record search date, databases, exact queries, inclusion/exclusion criteria and backward/forward citation search so discovery is repeatable;
+- prefer primary peer-reviewed papers and strong reviews, while clearly labelling preprints, vendor claims and non-replicated results;
+- cite the DOI or immutable paper version actually read, including an arXiv version suffix where applicable;
+- compare naive/domain baselines, the incumbent, strong established methods and credible recent frontier candidates;
+- extract each source's data, temporal split, baselines, metrics, calibration, uncertainty, assumptions, limitations, compute, code/data availability and licence;
+- include contradictory, negative and failed-replication evidence and explain transfer limits to FPL;
+- preregister the candidate set, implementation budget, temporal evaluation and promotion rule before final testing.
+
+Use current methods where they are credible and feasible, but frontier methods are challengers, not defaults. Novelty, citation count or a paper's “state of the art” label does not establish suitability. Every candidate—including a paper-backed one—must earn promotion through reproducible local out-of-time evidence against strong baselines under autoFPL's point-in-time data, compute budget and decision objective. Refresh the search before implementation when material evidence may have changed and again before promotion.
+
 ## AI roles and authority
 
 - **Predictive machine learning is expected:** statistical, Bayesian, tree-based, neural or ensemble models may generate player-minutes, event and points probability distributions when they pass this standard's temporal, calibration and promotion gates.
@@ -14,15 +31,16 @@ A model is useful only if it improves an explicitly defined decision using infor
 
 ## Research lifecycle
 
-1. **Question:** state the decision, population, horizon and utility.
-2. **Registration:** record hypothesis, baselines, metrics, split and promotion rule before final evaluation.
-3. **Snapshot:** freeze immutable, source-attributed point-in-time data.
-4. **Develop:** use training and validation periods only.
-5. **Evaluate:** unlock the final test period once; retain all results.
-6. **Review:** independent leakage, statistical and domain review.
-7. **Promote:** create model/dataset cards and an operational shadow evaluation.
-8. **Monitor:** calibration, drift, missingness, latency and realised decision impact.
-9. **Retire:** preserve reproducibility and route consumers to the successor.
+1. **Evidence:** complete and accept the feature evidence review; define baselines, established candidates and frontier challengers.
+2. **Question:** state the decision, population, horizon and utility.
+3. **Registration:** record hypothesis, candidates, baselines, metrics, split and promotion rule before final evaluation.
+4. **Snapshot:** freeze immutable, source-attributed point-in-time data.
+5. **Develop:** reproduce baselines first, then use training and validation periods only.
+6. **Evaluate:** unlock the final test period once; retain all results.
+7. **Review:** independent evidence, leakage, statistical and domain review.
+8. **Promote:** create model/dataset cards and an operational shadow evaluation.
+9. **Monitor:** calibration, drift, missingness, latency and realised decision impact.
+10. **Retire:** preserve reproducibility and route consumers to the successor.
 
 ## Temporal validity and leakage
 

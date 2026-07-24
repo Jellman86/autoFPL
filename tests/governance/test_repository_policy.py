@@ -285,12 +285,16 @@ jobs:
         )
 
     def test_research_and_security_records_are_mandatory(self) -> None:
-        from tools.governance.check_repository import REQUIRED_PATHS
+        from tools.governance.check_repository import (
+            REQUIRED_CONTENT_MARKERS,
+            REQUIRED_PATHS,
+        )
 
         expected = {
             ".github/workflows/ci.yml",
             ".github/workflows/security.yml",
             "docs/research/evidence-base.md",
+            "docs/research/literature-review-template.md",
             "docs/research/experiment-template.yaml",
             "docs/research/model-card-template.md",
             "docs/research/dataset-card-template.md",
@@ -298,6 +302,20 @@ jobs:
         }
 
         self.assertTrue(expected.issubset(REQUIRED_PATHS), expected - set(REQUIRED_PATHS))
+
+        required_research_markers = {
+            "evidence review before implementation",
+            "frontier methods are challengers, not defaults",
+            "immutable paper version",
+            "local out-of-time evidence",
+        }
+        configured = set(
+            REQUIRED_CONTENT_MARKERS.get("docs/standards/research.md", ())
+        )
+        self.assertTrue(
+            required_research_markers.issubset(configured),
+            required_research_markers - configured,
+        )
 
     def test_documentation_controls_are_mandatory(self) -> None:
         from tools.governance.check_repository import (

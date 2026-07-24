@@ -34,7 +34,9 @@ Use strict test-driven development:
 
 ### Research changes
 
-Every experiment starts with a copied `docs/research/experiment-template.yaml`. Register the hypothesis, decision rule, data cutoff, split, baselines and metrics before examining final test results. Complete a dataset card and model card for any artefact used in a recommendation.
+Before predictive/statistical/simulation/optimisation implementation, copy `docs/research/literature-review-template.md` into `docs/research/reviews/`, complete its structured search and evidence matrix, and link the accepted review from the issue. Include strong baselines, established methods, credible frontier challengers, contradictory evidence and FPL applicability limits. A recent paper informs what to test; it does not authorize production use.
+
+Every experiment then starts with a copied `docs/research/experiment-template.yaml` linked to that review. Register the hypothesis, candidate set, decision rule, data cutoff, split, baselines, metrics and promotion threshold before examining final test results. Complete a dataset card and model card for any artefact used in a recommendation.
 
 ### Generated work
 

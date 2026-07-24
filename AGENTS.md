@@ -23,6 +23,8 @@ autoFPL is a human-in-the-loop FPL decision-support research project. Do not imp
 - Fit every transform, imputer, encoder, calibrator and selector using training data only.
 - Preserve immutable pre-deadline snapshots and an `available_at` timestamp for every feature.
 - Never select a model, feature, horizon or seed using final test results.
+- Before implementing a predictive, statistical, simulation, optimisation or data-derived performance feature, complete and link a versioned evidence review using `docs/research/literature-review-template.md`.
+- Reproduce strong baselines before frontier candidates; current papers inform the candidate set but never bypass local point-in-time validation.
 - Compare against declared naive and incumbent baselines.
 - Report uncertainty, calibration and failure slices, not a single headline score.
 - Label exploratory results; do not promote them as confirmatory evidence.
