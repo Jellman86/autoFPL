@@ -14,6 +14,7 @@ except ModuleNotFoundError:  # Fail closed in _workflow_permission_violations.
 REQUIRED_PATHS = (
     "LICENSE",
     "README.md",
+    "CHANGELOG.md",
     "AGENTS.md",
     "CONTRIBUTING.md",
     "GOVERNANCE.md",
@@ -27,6 +28,7 @@ REQUIRED_PATHS = (
     ".github/workflows/codeql.yml",
     ".github/workflows/dependency-review.yml",
     "docs/standards/definition-of-done.md",
+    "docs/standards/documentation.md",
     "docs/standards/engineering.md",
     "docs/standards/research.md",
     "docs/standards/security.md",
@@ -38,10 +40,13 @@ REQUIRED_PATHS = (
     "docs/research/model-card-template.md",
     "docs/research/dataset-card-template.md",
     "docs/security/threat-model.md",
+    "docs/index.md",
+    "docs/roadmap.md",
     "docs/adr/0005-chatgpt-mcp-interface.md",
     "docs/adr/0006-optional-model-provider-adapters.md",
     "docs/adr/0007-evidence-grounded-ai-decision-orchestrator.md",
     "tools/governance/check_pr_title.py",
+    "tools/governance/check_documentation.py",
 )
 
 REQUIRED_CONTENT_MARKERS = {
@@ -53,6 +58,15 @@ REQUIRED_CONTENT_MARKERS = {
     "README.md": (
         "AGPL-3.0-only",
         "Runtime and user data are not licensed",
+    ),
+    "requirements-governance.txt": (
+        "PyYAML==6.0.3",
+        "markdown-it-py==4.2.0",
+        "mdurl==0.1.2",
+    ),
+    "CHANGELOG.md": (
+        "## Unreleased",
+        "Keep a Changelog",
     ),
     "AGENTS.md": (
         "human-in-the-loop",
@@ -103,6 +117,12 @@ REQUIRED_CONTENT_MARKERS = {
         "point-in-time correct",
         "checked against brute force",
         "human-approval invariant",
+    ),
+    "docs/standards/documentation.md": (
+        "## Source of truth",
+        "## Information architecture",
+        "## Safety and evidence requirements",
+        "## Validation checklist",
     ),
     ".github/workflows/security.yml": (
         "contents: read",
@@ -282,6 +302,64 @@ def _workflow_permission_violations(content: str, relative: Path) -> list[str]:
     return violations
 
 
+def _required_ci_step_violations(content: str, relative: Path) -> list[str]:
+    if relative != Path(".github/workflows/ci.yml"):
+        return []
+    if yaml is None:
+        return [f"{relative}: PyYAML is required for fail-closed CI step checks"]
+    try:
+        document = yaml.safe_load(content)
+    except yaml.YAMLError as error:
+        return [f"{relative}: invalid workflow YAML: {error}"]
+
+    expected = "python3 tools/governance/check_documentation.py"
+    invalid_candidates: list[str] = []
+    if isinstance(document, dict):
+        jobs = document.get("jobs", {})
+        if isinstance(jobs, dict):
+            for job_name, job in jobs.items():
+                if not isinstance(job, dict):
+                    continue
+                steps = job.get("steps", [])
+                if not isinstance(steps, list):
+                    continue
+                for step_index, step in enumerate(steps):
+                    if not isinstance(step, dict) or not isinstance(step.get("run"), str):
+                        continue
+                    if not any(
+                        line.strip() == expected for line in step["run"].splitlines()
+                    ):
+                        continue
+
+                    reasons: list[str] = []
+                    if "if" in job:
+                        reasons.append("job is conditional")
+                    if (
+                        "continue-on-error" in job
+                        and job["continue-on-error"] is not False
+                    ):
+                        reasons.append("job may continue on error")
+                    if "if" in step:
+                        reasons.append("step is conditional")
+                    if (
+                        "continue-on-error" in step
+                        and step["continue-on-error"] is not False
+                    ):
+                        reasons.append("step may continue on error")
+                    if not reasons:
+                        return []
+                    invalid_candidates.append(
+                        f"job {job_name} step {step_index + 1}: {', '.join(reasons)}"
+                    )
+
+    if invalid_candidates:
+        return [
+            f"{relative}: documentation validation run step must be unconditional "
+            f"and failure-enforcing ({'; '.join(invalid_candidates)})"
+        ]
+    return [f"{relative}: missing executable documentation validation run step"]
+
+
 def check_repository(root: Path) -> list[str]:
     """Return deterministic repository-policy violations for ``root``."""
     violations: list[str] = []
@@ -308,6 +386,7 @@ def check_repository(root: Path) -> list[str]:
 
         violations.extend(_workflow_permission_violations(content, relative))
         violations.extend(_dependency_review_trigger_violations(content, relative))
+        violations.extend(_required_ci_step_violations(content, relative))
 
         if "pull_request_target:" in content:
             violations.append(

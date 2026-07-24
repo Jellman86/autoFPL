@@ -9,6 +9,8 @@ A rigorous, evidence-driven research platform for **human-approved Fantasy Premi
 
 **Foundation phase.** This repository currently establishes the research, engineering, security, data-governance and release standards that every later feature must satisfy.
 
+See the [documentation index](docs/index.md), [roadmap](docs/roadmap.md) and [changelog](CHANGELOG.md) for maintained guidance, planned outcomes and implemented changes.
+
 ## Intended architecture
 
 - **.NET 10 / C#** — product API, workflow control, authentication, audit and MCP tools.
@@ -56,11 +58,10 @@ Install the hash-locked governance dependency, then run the same checks as CI:
 
 ```bash
 python3 -m pip install --require-hashes --requirement requirements-governance.txt
-python3 -m unittest discover -s tests -p 'test_*.py' -v
-python3 tools/governance/check_repository.py
+make verify
 ```
 
-As application projects are added, the canonical commands will be exposed through `make verify` and run identically in CI.
+`make verify` runs the Python governance tests, locked .NET tests, repository policy and documentation-link validation used by CI.
 
 ## Repository map
 
@@ -68,10 +69,13 @@ As application projects are added, the canonical commands will be exposed throug
 - `docs/standards/` — enforceable engineering and scientific standards.
 - `docs/compliance/` — legal and product-operation boundaries.
 - `docs/research/` — evidence base and reproducibility templates.
+- `docs/index.md` — maintained routing index for repository documentation.
+- `docs/roadmap.md` — prioritised future outcomes and evidence gates.
 - `contracts/` — immutable, versioned machine-readable service and data boundaries.
 - `src/` — product and analytics implementation boundaries.
 - `tools/governance/` — executable repository policy.
 - `tests/` — governance, domain and contract tests.
+- `CHANGELOG.md` — implemented notable changes, with current work under **Unreleased**.
 
 ## Licensing and data rights
 

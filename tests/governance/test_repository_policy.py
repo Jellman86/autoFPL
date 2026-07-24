@@ -204,6 +204,86 @@ jobs:
             ),
         )
 
+    def test_ci_comment_cannot_satisfy_documentation_validation_step(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            self._write_required_files(root)
+            self._write_workflow(
+                root,
+                """name: CI
+permissions:
+  contents: read
+# python3 tools/governance/check_documentation.py
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      - run: dotnet restore src/backend/AutoFpl.slnx --locked-mode
+      - run: dotnet test src/backend/AutoFpl.slnx --no-restore
+""",
+            )
+
+            violations = check_repository(root)
+
+        self.assertTrue(
+            any("documentation validation run step" in violation for violation in violations),
+            violations,
+        )
+
+    def test_documentation_validation_step_must_be_failure_enforcing(self) -> None:
+        from tools.governance.check_repository import _required_ci_step_violations
+
+        relative = Path(".github/workflows/ci.yml")
+        workflows = {
+            "conditional step": """jobs:
+  test:
+    steps:
+      - if: ${{ false }}
+        run: python3 tools/governance/check_documentation.py
+""",
+            "continue-on-error step": """jobs:
+  test:
+    steps:
+      - continue-on-error: true
+        run: python3 tools/governance/check_documentation.py
+""",
+            "conditional job": """jobs:
+  test:
+    if: ${{ false }}
+    steps:
+      - run: python3 tools/governance/check_documentation.py
+""",
+            "continue-on-error job": """jobs:
+  test:
+    continue-on-error: true
+    steps:
+      - run: python3 tools/governance/check_documentation.py
+""",
+        }
+
+        for name, workflow in workflows.items():
+            with self.subTest(name=name):
+                violations = _required_ci_step_violations(workflow, relative)
+                self.assertTrue(
+                    any("unconditional and failure-enforcing" in item for item in violations),
+                    violations,
+                )
+
+        self.assertEqual(
+            [],
+            _required_ci_step_violations(
+                """jobs:
+  test:
+    steps:
+      - continue-on-error: false
+        run: python3 tools/governance/check_documentation.py
+""",
+                relative,
+            ),
+        )
+
     def test_research_and_security_records_are_mandatory(self) -> None:
         from tools.governance.check_repository import REQUIRED_PATHS
 
@@ -218,6 +298,37 @@ jobs:
         }
 
         self.assertTrue(expected.issubset(REQUIRED_PATHS), expected - set(REQUIRED_PATHS))
+
+    def test_documentation_controls_are_mandatory(self) -> None:
+        from tools.governance.check_repository import (
+            REQUIRED_CONTENT_MARKERS,
+            REQUIRED_PATHS,
+        )
+
+        expected_paths = {
+            "CHANGELOG.md",
+            "docs/index.md",
+            "docs/roadmap.md",
+            "docs/standards/documentation.md",
+            "tools/governance/check_documentation.py",
+        }
+        self.assertTrue(
+            expected_paths.issubset(REQUIRED_PATHS),
+            expected_paths - set(REQUIRED_PATHS),
+        )
+
+        expected_markers = {
+            "CHANGELOG.md": {"## Unreleased", "Keep a Changelog"},
+            "docs/standards/documentation.md": {
+                "## Source of truth",
+                "## Information architecture",
+                "## Safety and evidence requirements",
+                "## Validation checklist",
+            },
+        }
+        for relative_path, markers in expected_markers.items():
+            configured = set(REQUIRED_CONTENT_MARKERS.get(relative_path, ()))
+            self.assertTrue(markers.issubset(configured), markers - configured)
 
     def test_reports_missing_required_governance_files(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -435,6 +546,7 @@ jobs:
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       - run: dotnet restore src/backend/AutoFpl.slnx --locked-mode
       - run: dotnet test src/backend/AutoFpl.slnx --no-restore
+      - run: python3 tools/governance/check_documentation.py
 """,
             )
 
