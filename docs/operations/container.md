@@ -58,20 +58,22 @@ The smoke test launches the image with a read-only filesystem, all Linux capabil
 
 Pull requests never receive registry write permission and never publish images.
 
-## Compose integration boundary
+## Private Dockhand deployment
 
-The future Git-backed Dockhand definition belongs in a dedicated `autofpl_stack/` on Quark/Fedora.
+The Git-backed Dockhand definition lives in `autofpl/` in the separate `docker-configs` repository and deploys to Quark/Fedora.
 
-- Pin `ghcr.io/jellman86/autofpl@sha256:<published-manifest-digest>`; do not deploy `:dev` directly.
-- Join the external `npm_proxy_backends` network so Nginx Proxy Manager can reach `autofpl-api:8080` privately.
+- It pins `ghcr.io/jellman86/autofpl@sha256:<published-manifest-digest>`; `:dev` is never deployed directly.
+- It joins only the external trusted `general_brg` network, where internal consumers can use `http://autofpl-api:8080`.
 - Do not publish a host port in the steady-state stack.
 - Use `read_only: true`, `cap_drop: [ALL]`, `security_opt: [no-new-privileges:true]`, and a bounded `/tmp` tmpfs.
-- Do not expose the development validation route publicly. Any public/user-authenticated API is a later threat-model and authentication decision.
+- No Nginx Proxy Manager host or public DNS route is configured. Any public/user-authenticated API is a later threat-model and authentication decision.
 - Store future secrets only in Dockhand; this first image requires none.
 
 All stack lifecycle changes must follow the `docker-configs` repository's Git-backed Dockhand procedure. Do not run direct `docker compose pull` or `up` commands on the host.
 
 ## Rollback
+
+No prior releasable digest exists yet, so an image rollback has not been exercised. When a prior verified digest exists:
 
 1. Select the previously verified image digest from Git/GHCR history.
 2. Revert the `docker-configs` digest change and push it through review.
