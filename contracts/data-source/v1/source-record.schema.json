@@ -1,0 +1,169 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:autofpl:schema:data-source-record:1.0",
+  "title": "autoFPL data source record v1",
+  "description": "Provenance envelope for a snapshot from one of autoFPL's two admitted initial sources.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "recordId",
+    "sourceId",
+    "sourceType",
+    "admissionRecord",
+    "purpose",
+    "collectionMethod",
+    "sourceRevision",
+    "transformationCodeSha",
+    "rights",
+    "observedAt",
+    "publishedAt",
+    "retrievedAt",
+    "availableAt",
+    "contentSha256",
+    "supersedesRecordId"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "enum": ["1.0"]
+    },
+    "recordId": {
+      "description": "Immutable identifier for this source-record revision.",
+      "type": "string",
+      "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "sourceId": {
+      "type": "string",
+      "enum": [
+        "manual-user-input/v1",
+        "repository-synthetic-fixtures/v1"
+      ]
+    },
+    "sourceType": {
+      "type": "string",
+      "enum": ["manual", "synthetic"]
+    },
+    "admissionRecord": {
+      "description": "Immutable URL for the reviewed source-admission record.",
+      "type": "string",
+      "format": "uri"
+    },
+    "purpose": {
+      "type": "string",
+      "enum": ["decision-metadata-validation", "contract-testing"]
+    },
+    "collectionMethod": {
+      "type": "string",
+      "enum": ["direct-user-entry", "repository-file"]
+    },
+    "sourceRevision": {
+      "description": "Immutable provider/source revision: a receipt UUID for manual submission or full Git SHA for a repository fixture.",
+      "type": "string",
+      "oneOf": [
+        {"pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"},
+        {"pattern": "^[0-9a-f]{40}$"}
+      ]
+    },
+    "transformationCodeSha": {
+      "description": "Full Git SHA of deterministic code that canonicalised or validated the source content.",
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "rights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["collection", "use", "retention", "redistribution"],
+      "properties": {
+        "collection": {
+          "type": "string",
+          "enum": ["direct-user-submission", "repository-authored-synthetic"]
+        },
+        "use": {
+          "type": "string",
+          "enum": ["private-user-decision-support", "repository-testing"]
+        },
+        "retention": {
+          "type": "string",
+          "enum": ["request-lifetime", "git-history"]
+        },
+        "redistribution": {
+          "type": "string",
+          "enum": ["none", "agpl-3.0-only"]
+        }
+      }
+    },
+    "observedAt": {
+      "description": "UTC time the described event/state occurred, or null when unknown or not applicable.",
+      "type": ["string", "null"],
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "publishedAt": {
+      "description": "UTC provider publication time, or null when no separately admitted publication evidence exists.",
+      "type": ["string", "null"],
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "retrievedAt": {
+      "description": "UTC time autoFPL received the content.",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "availableAt": {
+      "description": "Earliest UTC time the content may be used for a decision. The policy checker requires it not to precede receipt or modelled publication.",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "contentSha256": {
+      "description": "SHA-256 of the source content represented by this record.",
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "supersedesRecordId": {
+      "description": "Prior source-record revision corrected by this record, or null.",
+      "type": ["string", "null"],
+      "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "sourceId": {"enum": ["manual-user-input/v1"]},
+        "sourceType": {"enum": ["manual"]},
+        "admissionRecord": {"enum": ["https://github.com/Jellman86/autoFPL/blob/8d91954626b8e6a0bcf237887adb66009a3ce6bb/docs/data/sources/manual-user-input-v1.md"]},
+        "purpose": {"enum": ["decision-metadata-validation"]},
+        "collectionMethod": {"enum": ["direct-user-entry"]},
+        "sourceRevision": {"pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"},
+        "rights": {
+          "properties": {
+            "collection": {"enum": ["direct-user-submission"]},
+            "use": {"enum": ["private-user-decision-support"]},
+            "retention": {"enum": ["request-lifetime"]},
+            "redistribution": {"enum": ["none"]}
+          }
+        }
+      }
+    },
+    {
+      "properties": {
+        "sourceId": {"enum": ["repository-synthetic-fixtures/v1"]},
+        "sourceType": {"enum": ["synthetic"]},
+        "admissionRecord": {"enum": ["https://github.com/Jellman86/autoFPL/blob/8d91954626b8e6a0bcf237887adb66009a3ce6bb/docs/data/sources/repository-synthetic-fixtures-v1.md"]},
+        "purpose": {"enum": ["contract-testing"]},
+        "collectionMethod": {"enum": ["repository-file"]},
+        "sourceRevision": {"pattern": "^[0-9a-f]{40}$"},
+        "rights": {
+          "properties": {
+            "collection": {"enum": ["repository-authored-synthetic"]},
+            "use": {"enum": ["repository-testing"]},
+            "retention": {"enum": ["git-history"]},
+            "redistribution": {"enum": ["agpl-3.0-only"]}
+          }
+        }
+      }
+    }
+  ]
+}

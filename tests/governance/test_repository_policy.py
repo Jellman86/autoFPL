@@ -127,6 +127,25 @@ class RepositoryPolicyTests(unittest.TestCase):
             configured = set(REQUIRED_CONTENT_MARKERS.get(relative_path, ()))
             self.assertTrue(markers.issubset(configured), markers - configured)
 
+    def test_data_source_contract_and_policy_gate_are_mandatory(self) -> None:
+        from tools.governance.check_repository import (
+            REQUIRED_CONTENT_MARKERS,
+            REQUIRED_PATHS,
+        )
+
+        expected_paths = {
+            "contracts/data-source/v1/source-record.schema.json",
+            "contracts/data-source/v1/examples/manual.json",
+            "contracts/data-source/v1/examples/synthetic.json",
+            "tools/governance/check_data_source_policy.py",
+        }
+        self.assertTrue(expected_paths.issubset(REQUIRED_PATHS), expected_paths - set(REQUIRED_PATHS))
+
+        command = "python3 tools/governance/check_data_source_policy.py"
+        for relative_path in ("Makefile", ".github/workflows/ci.yml"):
+            configured = set(REQUIRED_CONTENT_MARKERS.get(relative_path, ()))
+            self.assertIn(command, configured)
+
     def test_container_pipeline_and_scoped_package_write_are_mandatory(self) -> None:
         from tools.governance.check_repository import (
             REQUIRED_CONTENT_MARKERS,
@@ -632,6 +651,7 @@ jobs:
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       - run: dotnet restore src/backend/AutoFpl.slnx --locked-mode
       - run: dotnet test src/backend/AutoFpl.slnx --no-restore
+      - run: python3 tools/governance/check_data_source_policy.py
       - run: python3 tools/governance/check_documentation.py
       - env:
           BASE_SHA: base-placeholder

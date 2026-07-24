@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0",
+  "recordId": "urn:uuid:11111111-1111-4111-8111-111111111111",
+  "sourceId": "manual-user-input/v1",
+  "sourceType": "manual",
+  "admissionRecord": "https://github.com/Jellman86/autoFPL/blob/8d91954626b8e6a0bcf237887adb66009a3ce6bb/docs/data/sources/manual-user-input-v1.md",
+  "purpose": "decision-metadata-validation",
+  "collectionMethod": "direct-user-entry",
+  "sourceRevision": "urn:uuid:33333333-3333-4333-8333-333333333333",
+  "transformationCodeSha": "8d91954626b8e6a0bcf237887adb66009a3ce6bb",
+  "rights": {
+    "collection": "direct-user-submission",
+    "use": "private-user-decision-support",
+    "retention": "request-lifetime",
+    "redistribution": "none"
+  },
+  "observedAt": null,
+  "publishedAt": null,
+  "retrievedAt": "2026-07-24T20:00:00Z",
+  "availableAt": "2026-07-24T20:00:00Z",
+  "contentSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "supersedesRecordId": null
+}

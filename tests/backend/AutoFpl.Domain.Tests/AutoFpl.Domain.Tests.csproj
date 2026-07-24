@@ -28,5 +28,9 @@
       Include="../../../contracts/decision-snapshot/v1/**/*"
       Link="contracts/decision-snapshot/v1/%(RecursiveDir)%(Filename)%(Extension)"
       CopyToOutputDirectory="PreserveNewest" />
+    <None
+      Include="../../../contracts/data-source/v1/**/*"
+      Link="contracts/data-source/v1/%(RecursiveDir)%(Filename)%(Extension)"
+      CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

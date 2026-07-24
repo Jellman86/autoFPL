@@ -37,7 +37,7 @@ Promotion between zones is explicit and audited. Raw corrections create a new ve
 
 ## Provenance
 
-Every record or partition must be traceable to source, source revision, retrieval/receipt time, content hash, transformation code SHA and schema version. Derived statistics preserve their upstream snapshot IDs.
+Every record or partition must be traceable to source, source revision, retrieval/receipt time, content hash, transformation code SHA and schema version. Derived statistics preserve their upstream snapshot IDs. The [source-record v1 contract](../../contracts/data-source/v1/source-record.schema.json) is the executable envelope for the initial admitted manual/synthetic boundary; it is not a claim that the current API persists records.
 
 ## Quality controls
 

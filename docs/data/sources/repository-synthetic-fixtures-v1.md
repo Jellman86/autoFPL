@@ -1,7 +1,7 @@
 # Source record: repository synthetic fixtures v1
 
 - **Source ID:** `repository-synthetic-fixtures/v1`
-- **Status:** Admitted; effective on merge of PR #18 to protected `dev`
+- **Status:** Admitted on protected `dev` by PR #18 (`8d91954626b8e6a0bcf237887adb66009a3ce6bb`)
 - **Decision owner:** `Jellman86`
 - **Review date:** 24 July 2026
 - **Review evidence:** [issue #16](https://github.com/Jellman86/autoFPL/issues/16) and the exact reviewed commit/blockers/corrections/PASS results in the [PR #18 review record](https://github.com/Jellman86/autoFPL/pull/18#issuecomment-5074192727)

@@ -51,6 +51,8 @@ jobs:
           --configuration Release --nologo
       - name: Run governance tests
         run: python3 -m unittest discover -s tests -p 'test_*.py' -v
+      - name: Enforce admitted data-source policy
+        run: python3 tools/governance/check_data_source_policy.py
       - name: Validate documentation
         run: python3 tools/governance/check_documentation.py
       - name: Validate pull request title
