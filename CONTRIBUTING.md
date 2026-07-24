@@ -56,7 +56,7 @@ fix(analytics): prevent post-deadline feature leakage
 research(minutes): register walk-forward baseline
 ```
 
-PRs must be small enough to review, link the issue/ADR/experiment, include the test evidence and complete the repository PR template. Do not self-certify a required independent review.
+PRs must be small enough to review, link the issue/ADR/experiment, include the test evidence and complete the repository PR template. Independent review is required for security/trust boundaries, deployment or supply-chain changes, authoritative domain logic, data/research promotion, credentials and external actions. Ordinary low-risk changes require focused author review and passing CI, not ceremonial multi-review.
 
 ## Required local verification
 

@@ -24,15 +24,18 @@ The repository owner is the final steward of product scope, compliance and relea
 
 - Always releasable.
 - Changes only by release or emergency hotfix PR.
-- Required CI must pass on the exact head SHA.
+- Required release CI must pass on an up-to-date head SHA.
+- Commits require a verified signature; releases use signed SemVer tags once product releases begin.
 - History is immutable; force pushes and deletions are forbidden.
-- Releases are tagged from `main` using SemVer once product releases begin.
 
 ### `dev`
 
 - Integration branch for completed vertical slices.
 - Changes only by PR from short-lived branches.
-- Required CI must pass and review conversations must be resolved.
+- The fast comprehensive `repository-policy` job and Gitleaks are required; this includes locked restore, application tests, governance tests, documentation checks and repository policy.
+- CodeQL and dependency review continue to run. Their findings must be resolved when relevant, but those slower jobs are not universal merge blockers for every development PR.
+- Commits do not require signatures and the branch need not be rebased solely to repeat already-passing checks after an unrelated `dev` update.
+- Review conversations must be resolved before merge.
 - Force pushes and deletions are forbidden.
 
 ### Emergency changes
@@ -43,10 +46,11 @@ A hotfix PR may target `main` only for an active security, data-integrity or ava
 
 - Squash merge feature PRs with a Conventional Commit title.
 - Do not merge red CI, unresolved blocking review or an expired exception.
+- Require independent review for changes to security/trust boundaries, deployment or supply chain, authoritative domain logic, data/research promotion, credentials, or external actions. Ordinary low-risk changes use focused author review plus CI.
 - Release PRs promote a known `dev` commit to `main`; they do not introduce unrelated code.
 - Versioning, changelog and database compatibility are verified before a tag.
 - Deployment is a separate permission from merge and must be reversible.
 
 ## Policy changes
 
-Changes that weaken a non-negotiable standard require an ADR, explicit risk analysis and owner approval. The executable governance test must change in the same PR as the policy it enforces.
+Changes to a non-negotiable scientific, security, compliance or human-approval boundary require an ADR, explicit risk analysis and owner approval. Machine-enforced repository policy changes with the executable governance test; GitHub-hosted settings are verified by API read-back and recorded in the policy PR.
