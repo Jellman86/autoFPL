@@ -4,6 +4,10 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ## Unreleased
 
+### Changed
+
+- **Development quality gates now prioritise correctness and research validity over ceremony.** `dev` requires comprehensive tests, governance and secret scanning while signatures, stale-base reruns and universal blocking on slower analyses are reserved or relaxed as appropriate; `main` remains the strict signed release boundary, and independent review is risk-based.
+
 ### Added
 
 - **Documentation now has a maintained standard and index.** Repository claims must be grounded in code, contracts, deployment definitions or versioned evidence; planned work is separated from implemented behaviour; safety, research and human-approval boundaries are required where applicable; and CI checks local documentation links.

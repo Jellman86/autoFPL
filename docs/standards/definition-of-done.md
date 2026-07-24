@@ -57,5 +57,5 @@ A change is complete only when every applicable gate below is evidenced. “Not 
 - User, API, architecture, ADR, model/dataset card and runbook changes are included where applicable.
 - User- or operator-relevant implemented behaviour is recorded under **Unreleased** in `CHANGELOG.md`; future work remains in the roadmap or GitHub issues.
 - PR contains commands and real outputs used for verification.
-- Independent review found no unresolved blocking security, logic or research-validity issue.
-- Required GitHub checks pass on the exact commit to be merged.
+- For changes to security/trust boundaries, deployment or supply chain, authoritative domain logic, data/research promotion, credentials or external actions, independent review found no unresolved blocking issue. Ordinary low-risk changes receive focused author review.
+- Required GitHub checks pass on the PR head being merged.
