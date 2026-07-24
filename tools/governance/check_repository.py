@@ -21,6 +21,7 @@ REQUIRED_PATHS = (
     "requirements-governance.txt",
     ".github/CODEOWNERS",
     ".github/PULL_REQUEST_TEMPLATE.md",
+    ".github/dependabot.yml",
     ".github/workflows/ci.yml",
     ".github/workflows/security.yml",
     ".github/workflows/codeql.yml",
@@ -108,12 +109,25 @@ REQUIRED_CONTENT_MARKERS = {
         "pull-requests: read",
         "persist-credentials: false",
     ),
+    ".github/workflows/ci.yml": (
+        "actions/setup-dotnet@",
+        "dotnet restore src/backend/AutoFpl.slnx --locked-mode",
+        "dotnet test src/backend/AutoFpl.slnx --no-restore",
+    ),
     ".github/workflows/codeql.yml": (
         "actions: read",
         "contents: read",
         "security-events: write",
         "persist-credentials: false",
         "queries: security-extended",
+        "actions/setup-dotnet@",
+        "language: [python, csharp]",
+        "github/codeql-action/autobuild@",
+    ),
+    ".github/dependabot.yml": (
+        "package-ecosystem: nuget",
+        '"/src/backend"',
+        '"/tests/backend"',
     ),
     ".github/workflows/dependency-review.yml": (
         "contents: read",
