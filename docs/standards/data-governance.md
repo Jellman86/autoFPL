@@ -16,6 +16,15 @@ No data source enters the platform until a source record identifies:
 
 Technical accessibility is not permission. Undocumented FPL endpoints and robots allowance do not establish contractual authorisation.
 
+## Automated collection and AI extraction
+
+- Automated collection uses only admitted, permissioned connectors such as licensed APIs/feeds, approved exports, RSS or web pages whose terms and access policy permit retrieval. Rate limits, robots controls, authentication boundaries and redistribution rights remain enforceable regardless of the technology used.
+- “Scraping” is not a blanket product capability. In particular, the current compliance boundary forbids automated extraction from the FPL game and any login/session automation without written permission.
+- Collection is a deterministic transport step: preserve the immutable source object, canonical URL/source ID, publication time, retrieval time, headers/metadata allowed by the source and content hash before any AI processing.
+- AI-assisted extraction may convert permitted unstructured news or reports into candidate structured claims such as injury status, expected absence, role or probable minutes. Each claim records source snapshot/span, `published_at`, `retrieved_at`, `available_at`, model and prompt/schema versions, confidence, expiry and validation state.
+- Candidate AI claims remain in quarantine until schema checks pass. Material claims require rule-based consistency checks and corroboration or human review according to a versioned risk policy before feature promotion.
+- A model cannot override source rights, invent missing provenance or turn a blocked/failed retrieval into evidence. Collection failures remain explicit and no anti-bot, paywall, authentication or session control may be bypassed.
+
 ## Data zones
 
 - **Quarantine:** untrusted arrivals; no model or product use.

@@ -4,6 +4,14 @@
 
 A model is useful only if it improves an explicitly defined decision using information genuinely available at that decision time. Leaderboard fit or one successful historical season is insufficient.
 
+## AI roles and authority
+
+- **Predictive machine learning is expected:** statistical, Bayesian, tree-based, neural or ensemble models may generate player-minutes, event and points probability distributions when they pass this standard's temporal, calibration and promotion gates.
+- Reproducible/deterministic authority does not require rules-only models. It requires versioned code, training snapshot, features, hyperparameters, environment and random seeds, plus declared numerical tolerances where exact hardware determinism is impractical.
+- Generative models may perform bounded extraction, classification, entity resolution, research assistance and explanation. Their output is untrusted candidate data until source-linked validation succeeds.
+- No chat response, generated narrative or unsupported extracted claim directly becomes a forecast target, serving feature, solver input or approval.
+- Model complexity, including deep learning or LLM use, earns promotion only through repeated point-in-time improvement over declared baselines.
+
 ## Research lifecycle
 
 1. **Question:** state the decision, population, horizon and utility.

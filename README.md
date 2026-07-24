@@ -12,13 +12,16 @@ A rigorous, evidence-driven research platform for **human-approved Fantasy Premi
 ## Intended architecture
 
 - **.NET 10 / C#** — product API, workflow control, authentication, audit and MCP tools.
-- **Python 3.14 (3.13 fallback when package compatibility requires it)** — forecasting, simulation, backtesting and mathematical optimisation.
+- **Python 3.14 (3.13 fallback when package compatibility requires it)** — predictive machine learning, probabilistic forecasting, simulation, backtesting and mathematical optimisation.
 - **TypeScript / Next.js** — evidence-rich dashboard.
 - **PostgreSQL** — authoritative transactional and analytical metadata.
 - **OpenViking** — versioned research and unstructured context, never authoritative squad state.
-- **ChatGPT Apps SDK / MCP** — optional conversational interface; a ChatGPT subscription is not treated as a general application API entitlement.
+- **ChatGPT Apps SDK / MCP** — subscription-backed conversational client using read-only autoFPL tools; autoFPL does not hold ChatGPT credentials.
+- **Hermes MCP client** — private conversational access to the same versioned prediction tools, using Hermes' independently configured model provider.
+- **Optional model-provider adapters** — OpenRouter API or a private Hermes proxy may perform bounded extraction/classification and generate explanations behind a provider-neutral boundary; outputs are quarantined or non-authoritative and neither provider is required for core operation.
+- **Evidence-grounded AI decision orchestrator** — the strategic “mind” retrieves relevant data and memory, asks forecasting/simulation/optimisation tools for evidence and compares feasible plans. Application-managed mode persists a structured unapproved proposal; client-hosted ChatGPT/Hermes returns an evidence-grounded advisory synthesis without proposal persistence.
 
-The approved boundaries are recorded in [ADR-0001](docs/adr/0001-hybrid-modular-architecture.md) and the [FPL terms boundary](docs/compliance/fpl-terms-boundary.md).
+The approved boundaries are recorded in [ADR-0001](docs/adr/0001-hybrid-modular-architecture.md), [ADR-0005](docs/adr/0005-chatgpt-mcp-interface.md), [ADR-0006](docs/adr/0006-optional-model-provider-adapters.md), [ADR-0007](docs/adr/0007-evidence-grounded-ai-decision-orchestrator.md) and the [FPL terms boundary](docs/compliance/fpl-terms-boundary.md).
 
 ## Non-negotiable quality principles
 
@@ -49,9 +52,10 @@ See [GOVERNANCE.md](GOVERNANCE.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Local governance checks
 
-The foundation uses only the Python standard library:
+Install the hash-locked governance dependency, then run the same checks as CI:
 
 ```bash
+python3 -m pip install --require-hashes --requirement requirements-governance.txt
 python3 -m unittest discover -s tests -p 'test_*.py' -v
 python3 tools/governance/check_repository.py
 ```
@@ -70,4 +74,6 @@ As application projects are added, the canonical commands will be exposed throug
 
 ## Licensing and data rights
 
-This private repository does not currently grant an open-source licence. All third-party code, datasets, papers, model artefacts and derived fields require documented provenance and compatible rights before inclusion or distribution. No absence of a technical access control implies permission to collect or reuse data.
+autoFPL source code is licensed under **GNU AGPL-3.0-only**. See [LICENSE](LICENSE). If a modified version is offered for users to interact with over a network, the licence requires an opportunity for those users to receive the corresponding source code.
+
+Runtime and user data are not licensed by the source-code licence. Third-party datasets, papers, model artefacts, source snapshots and derived fields require documented provenance and compatible collection, use and redistribution rights before inclusion. Personal squad history, private research snapshots, credentials and deployment configuration belong in ignored local/runtime storage—not this public repository. No absence of a technical access control implies permission to collect or reuse data.

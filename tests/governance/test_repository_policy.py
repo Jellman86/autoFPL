@@ -9,6 +9,84 @@ from tools.governance.check_repository import check_repository
 
 
 class RepositoryPolicyTests(unittest.TestCase):
+    def test_chatgpt_mcp_architecture_boundary_is_mandatory(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            self._write_required_files(root)
+            decision = root / "docs/adr/0005-chatgpt-mcp-interface.md"
+            decision.parent.mkdir(parents=True, exist_ok=True)
+            decision.write_text("# Chat interface\n", encoding="utf-8")
+
+            violations = check_repository(root)
+
+        self.assertTrue(
+            any(
+                "0005-chatgpt-mcp-interface.md" in violation
+                and "missing mandatory policy marker" in violation
+                for violation in violations
+            ),
+            violations,
+        )
+
+    def test_model_provider_adapter_boundary_is_mandatory(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            self._write_required_files(root)
+            decision = root / "docs/adr/0006-optional-model-provider-adapters.md"
+            decision.parent.mkdir(parents=True, exist_ok=True)
+            decision.write_text("# Model provider\n", encoding="utf-8")
+
+            violations = check_repository(root)
+
+        self.assertTrue(
+            any(
+                "0006-optional-model-provider-adapters.md" in violation
+                and "missing mandatory policy marker" in violation
+                for violation in violations
+            ),
+            violations,
+        )
+
+    def test_ai_decision_orchestrator_boundary_is_mandatory(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            self._write_required_files(root)
+            decision = root / "docs/adr/0007-evidence-grounded-ai-decision-orchestrator.md"
+            decision.parent.mkdir(parents=True, exist_ok=True)
+            decision.write_text("# AI mind\n", encoding="utf-8")
+
+            violations = check_repository(root)
+
+        self.assertTrue(
+            any(
+                "0007-evidence-grounded-ai-decision-orchestrator.md" in violation
+                and "missing mandatory policy marker" in violation
+                for violation in violations
+            ),
+            violations,
+        )
+
+    def test_agpl_license_is_mandatory(self) -> None:
+        from tools.governance.check_repository import REQUIRED_PATHS
+
+        self.assertIn("LICENSE", REQUIRED_PATHS)
+
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            self._write_required_files(root)
+            (root / "LICENSE").unlink()
+
+            violations = check_repository(root)
+
+        self.assertTrue(
+            any(
+                "LICENSE" in violation
+                and "missing required governance file" in violation
+                for violation in violations
+            ),
+            violations,
+        )
+
     def test_research_and_security_records_are_mandatory(self) -> None:
         from tools.governance.check_repository import REQUIRED_PATHS
 
@@ -255,10 +333,23 @@ jobs:
             path = root / relative_path
             path.parent.mkdir(parents=True, exist_ok=True)
             content = "placeholder\n"
-            if relative_path in REQUIRED_CONTENT_MARKERS:
-                content = "\n".join(REQUIRED_CONTENT_MARKERS[relative_path]) + "\n"
-            if path.parent.name == "workflows":
+            if relative_path == ".github/workflows/security.yml":
+                content = """name: Secret scan
+permissions:
+  contents: read
+  pull-requests: read
+jobs:
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+"""
+            elif path.parent.name == "workflows":
                 content = "name: Required\npermissions: {}\njobs: {}\n"
+            elif relative_path in REQUIRED_CONTENT_MARKERS:
+                content = "\n".join(REQUIRED_CONTENT_MARKERS[relative_path]) + "\n"
             path.write_text(content, encoding="utf-8")
 
     @staticmethod
