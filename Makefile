@@ -11,5 +11,6 @@ test-dotnet:
 
 governance:
 	python3 tools/governance/check_repository.py
+	python3 tools/governance/check_documentation.py
 
 verify: test governance

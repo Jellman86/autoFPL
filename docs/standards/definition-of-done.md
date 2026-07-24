@@ -53,7 +53,9 @@ A change is complete only when every applicable gate below is evidenced. “Not 
 
 ## Documentation and review
 
+- Documentation follows the [documentation standard](documentation.md), is linked from the index where reader-facing, and passes the documentation checker.
 - User, API, architecture, ADR, model/dataset card and runbook changes are included where applicable.
+- User- or operator-relevant implemented behaviour is recorded under **Unreleased** in `CHANGELOG.md`; future work remains in the roadmap or GitHub issues.
 - PR contains commands and real outputs used for verification.
 - Independent review found no unresolved blocking security, logic or research-validity issue.
 - Required GitHub checks pass on the exact commit to be merged.

@@ -40,6 +40,12 @@ Every experiment starts with a copied `docs/research/experiment-template.yaml`. 
 
 AI-generated code, prose and extraction are proposals, not evidence. The author is accountable for understanding, testing and citing every retained change. Generated dependencies or licences must be reviewed independently.
 
+### Documentation
+
+Follow the [documentation standard](docs/standards/documentation.md). Ground claims in current code, tests, contracts, deployment definitions or versioned evidence; distinguish planned work from implemented behaviour; and state applicable safety, compliance, uncertainty and human-approval boundaries.
+
+Link every new maintained reader-facing page from the [documentation index](docs/index.md). Add user- or operator-relevant implemented behaviour to the **Unreleased** section of [the changelog](CHANGELOG.md); keep future outcomes in [the roadmap](docs/roadmap.md).
+
 ## Commits and pull requests
 
 Use Conventional Commit titles such as:
@@ -56,11 +62,10 @@ PRs must be small enough to review, link the issue/ADR/experiment, include the t
 
 ```bash
 python3 -m pip install --require-hashes --requirement requirements-governance.txt
-python3 -m unittest discover -s tests -p 'test_*.py' -v
-python3 tools/governance/check_repository.py
+make verify
 ```
 
-Application-specific build, formatting, type, test, migration and security commands will become mandatory as each project is introduced.
+Run any additional formatting, container, migration, security and application-specific gates required by the changed boundary.
 
 ## Exceptions
 
