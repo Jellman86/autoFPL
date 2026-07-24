@@ -126,4 +126,81 @@ public sealed class AutoFplApiTests : IClassFixture<WebApplicationFactory<Progra
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
+
+    [Fact]
+    public async Task Squad_validation_returns_exact_budget_summary()
+    {
+        using HttpResponseMessage response = await _client.PostAsJsonAsync(
+            "/api/v1/squads/validation",
+            new { budgetTenths = 1_000, players = ValidPlayers() },
+            JsonOptions,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using JsonDocument body = await JsonDocument.ParseAsync(
+            await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken),
+            cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Equal(15, body.RootElement.GetProperty("playerCount").GetInt32());
+        Assert.Equal(745, body.RootElement.GetProperty("totalCostTenths").GetInt32());
+        Assert.Equal(1_000, body.RootElement.GetProperty("budgetTenths").GetInt32());
+        Assert.Equal(255, body.RootElement.GetProperty("remainingBudgetTenths").GetInt32());
+    }
+
+    [Fact]
+    public async Task Squad_validation_returns_stable_problem_for_infeasible_squad()
+    {
+        using HttpResponseMessage response = await _client.PostAsJsonAsync(
+            "/api/v1/squads/validation",
+            new { budgetTenths = 700, players = ValidPlayers() },
+            JsonOptions,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        using JsonDocument body = await JsonDocument.ParseAsync(
+            await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken),
+            cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Equal("squad.budget.exceeded", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("budgetTenths", body.RootElement.GetProperty("field").GetString());
+    }
+
+    [Theory]
+    [InlineData("{\"budgetTenths\":1000,\"players\":[],\"unexpected\":true}")]
+    [InlineData("{\"budgetTenths\":1000,\"players\":\"not-an-array\"}")]
+    [InlineData("[]")]
+    public async Task Squad_validation_rejects_unknown_or_malformed_json(string body)
+    {
+        using var content = new StringContent(body, Encoding.UTF8, "application/json");
+
+        using HttpResponseMessage response = await _client.PostAsync(
+            "/api/v1/squads/validation",
+            content,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    private static PlayerRequest[] ValidPlayers() =>
+    [
+        new(1, 1, "goalkeeper", 45),
+        new(2, 2, "goalkeeper", 45),
+        new(3, 1, "defender", 45),
+        new(4, 2, "defender", 45),
+        new(5, 3, "defender", 45),
+        new(6, 4, "defender", 45),
+        new(7, 5, "defender", 45),
+        new(8, 1, "midfielder", 50),
+        new(9, 2, "midfielder", 50),
+        new(10, 3, "midfielder", 50),
+        new(11, 4, "midfielder", 50),
+        new(12, 5, "midfielder", 50),
+        new(13, 3, "forward", 60),
+        new(14, 4, "forward", 60),
+        new(15, 5, "forward", 60),
+    ];
+
+    private sealed record PlayerRequest(
+        int PlayerId,
+        int ClubId,
+        string Position,
+        int PriceTenths);
 }

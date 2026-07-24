@@ -3,7 +3,9 @@ using System.Text.Json.Serialization;
 using AutoFpl.Api.Errors;
 using AutoFpl.Api.Health;
 using AutoFpl.Contracts.Snapshots;
+using AutoFpl.Contracts.Squads;
 using AutoFpl.Domain.Snapshots;
+using AutoFpl.Domain.Squads;
 
 if (args.Length == 1 && StringComparer.Ordinal.Equals(args[0], "--health-check"))
 {
@@ -14,6 +16,7 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<DecisionSnapshotValidationExceptionHandler>();
+builder.Services.AddExceptionHandler<SquadValidationExceptionHandler>();
 builder.Services.Configure<RouteHandlerOptions>(options =>
 {
     options.ThrowOnBadRequest = false;
@@ -46,6 +49,28 @@ app.MapPost(
             request.SourceType ?? string.Empty);
 
         return Results.Ok(DecisionSnapshotMetadataDocument.FromDomain(metadata));
+    });
+app.MapPost(
+    "/api/v1/squads/validation",
+    (SquadValidationRequest request) =>
+    {
+        IReadOnlyList<SquadPlayerRequest?> playerRequests = request.Players ?? [];
+        var players = new SquadPlayer[playerRequests.Count];
+        for (int index = 0; index < playerRequests.Count; index++)
+        {
+            SquadPlayerRequest playerRequest = playerRequests[index]
+                ?? throw new SquadValidationException(
+                    "squad.player.required",
+                    $"players[{index}]");
+            players[index] = SquadPlayer.Create(
+                playerRequest.PlayerId,
+                playerRequest.ClubId,
+                playerRequest.Position ?? string.Empty,
+                playerRequest.PriceTenths);
+        }
+
+        Squad squad = Squad.Create(request.BudgetTenths, players);
+        return Results.Ok(SquadValidationDocument.FromDomain(squad));
     });
 
 app.Run();
