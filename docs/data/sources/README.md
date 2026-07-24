@@ -30,8 +30,8 @@ No admitted source record may be used to introduce:
 - third-party data whose collection, purpose, retention or redistribution rights are not recorded;
 - a claim that user entry, community use or robots policy cures an otherwise prohibited collection method.
 
-Source arrivals start in quarantine. Promotion, persistence, derivation and serving require separate versioned contracts and tests. Corrections create a new immutable snapshot; history is not overwritten.
+Source arrivals start in quarantine. Promotion, persistence, derivation and serving require separate contracts and tests. The [source-record v1 contract](../../../contracts/data-source/v1/source-record.schema.json) defines the future provenance envelope and fictional examples; the current API does not emit, persist or ingest it.
 
 ## Review record
 
-These admissions are tracked by [issue #16](https://github.com/Jellman86/autoFPL/issues/16). The exact reviewed commit, initial blockers, corrections and independent PASS results are recorded in the [PR #18 review evidence](https://github.com/Jellman86/autoFPL/pull/18#issuecomment-5074192727). They become effective only when PR #18 merges into protected `dev`.
+These admissions are tracked by [issue #16](https://github.com/Jellman86/autoFPL/issues/16). The exact reviewed commit, initial blockers, corrections and independent PASS results are recorded in the [PR #18 review evidence](https://github.com/Jellman86/autoFPL/pull/18#issuecomment-5074192727). They became effective on protected `dev` in merge commit [`8d91954626b8e6a0bcf237887adb66009a3ce6bb`](https://github.com/Jellman86/autoFPL/commit/8d91954626b8e6a0bcf237887adb66009a3ce6bb).

@@ -10,6 +10,7 @@ test-dotnet:
 	dotnet test src/backend/AutoFpl.slnx --no-restore --configuration Release --nologo
 
 governance:
+	python3 tools/governance/check_data_source_policy.py
 	python3 tools/governance/check_repository.py
 	python3 tools/governance/check_research_review.py
 	python3 tools/governance/check_documentation.py

@@ -36,6 +36,7 @@ Use this index to find the maintained source for each topic. The repository is i
 ## Data-source admission
 
 - [Admission register](data/sources/README.md) — source statuses, universal prohibitions and review requirements.
+- [Source-record v1 contract](../contracts/data-source/v1/source-record.schema.json) — machine-readable admitted-source, rights, timing, hash and correction envelope; not yet a runtime API.
 - [Manual user input v1](data/sources/manual-user-input-v1.md) — admitted direct-entry scope, privacy and point-in-time constraints.
 - [Repository synthetic fixtures v1](data/sources/repository-synthetic-fixtures-v1.md) — admitted fictional test/evidence boundary.
 

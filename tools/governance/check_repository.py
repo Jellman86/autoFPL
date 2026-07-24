@@ -47,12 +47,19 @@ REQUIRED_PATHS = (
     "docs/adr/0005-chatgpt-mcp-interface.md",
     "docs/adr/0006-optional-model-provider-adapters.md",
     "docs/adr/0007-evidence-grounded-ai-decision-orchestrator.md",
+    "contracts/data-source/v1/source-record.schema.json",
+    "contracts/data-source/v1/examples/manual.json",
+    "contracts/data-source/v1/examples/synthetic.json",
+    "tools/governance/check_data_source_policy.py",
     "tools/governance/check_pr_title.py",
     "tools/governance/check_research_review.py",
     "tools/governance/check_documentation.py",
 )
 
 REQUIRED_CONTENT_MARKERS = {
+    "Makefile": (
+        "python3 tools/governance/check_data_source_policy.py",
+    ),
     "LICENSE": (
         "GNU AFFERO GENERAL PUBLIC LICENSE",
         "Version 3, 19 November 2007",
@@ -151,6 +158,7 @@ REQUIRED_CONTENT_MARKERS = {
         "PR_BODY:",
         "PR_HEAD_REF:",
         "PR_HEAD_REPOSITORY:",
+        "python3 tools/governance/check_data_source_policy.py",
         "python3 tools/governance/check_research_review.py",
     ),
     ".github/workflows/codeql.yml": (

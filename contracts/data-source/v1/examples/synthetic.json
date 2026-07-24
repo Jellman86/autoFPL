@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0",
+  "recordId": "urn:uuid:22222222-2222-4222-8222-222222222222",
+  "sourceId": "repository-synthetic-fixtures/v1",
+  "sourceType": "synthetic",
+  "admissionRecord": "https://github.com/Jellman86/autoFPL/blob/8d91954626b8e6a0bcf237887adb66009a3ce6bb/docs/data/sources/repository-synthetic-fixtures-v1.md",
+  "purpose": "contract-testing",
+  "collectionMethod": "repository-file",
+  "sourceRevision": "8d91954626b8e6a0bcf237887adb66009a3ce6bb",
+  "transformationCodeSha": "8d91954626b8e6a0bcf237887adb66009a3ce6bb",
+  "rights": {
+    "collection": "repository-authored-synthetic",
+    "use": "repository-testing",
+    "retention": "git-history",
+    "redistribution": "agpl-3.0-only"
+  },
+  "observedAt": "2026-07-24T19:00:00Z",
+  "publishedAt": "2026-07-24T19:30:00Z",
+  "retrievedAt": "2026-07-24T20:00:00Z",
+  "availableAt": "2026-07-24T20:00:00Z",
+  "contentSha256": "e6328473e716a59c5f8764969e8538d3a74b6fe23b053e5246a939d83e38484f",
+  "supersedesRecordId": null
+}
