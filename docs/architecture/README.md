@@ -50,6 +50,15 @@ Hermes is not classified as inherently unsafe. Its preferred role is an MCP clie
 
 When AI-assisted extraction, classification or generated text is required inside the standalone product, [ADR-0006](../adr/0006-optional-model-provider-adapters.md) permits an explicitly configured OpenRouter API adapter or private Hermes proxy behind a provider-neutral port. Collection still occurs through admitted, permissioned connectors before model processing; the provider never decides what may be accessed. Candidate extracted facts remain quarantined until validated and promoted. This optional path adds cost, privacy and availability boundaries but cannot directly affect analytical truth or core availability. Reimplementing Codex OAuth inside autoFPL is a separate, higher-risk option and remains prohibited without documented upstream support and review.
 
+## AI decision orchestration
+
+[ADR-0007](../adr/0007-evidence-grounded-ai-decision-orchestrator.md) defines the AI as the evidence-grounded strategic “mind” rather than only an explanation formatter. Two modes share the same analytical/evidence contracts but have different enforcement:
+
+- In **client-hosted MCP mode**, ChatGPT or Hermes owns the model loop. autoFPL serves scoped evidence and analytical tools and audits only the calls it receives; it cannot control the client's model turns, token/provider spend, hidden retries or full transcript, and it does not persist the client's generated synthesis.
+- In **application-managed mode**, autoFPL builds the minimal point-in-time working context, calls OpenRouter or a private Hermes proxy, authorizes every tool step, enforces complete loop/cost budgets and persists a structured `unapproved` proposal with the observable transcript and provenance.
+
+In both modes the AI may retrieve approved data and memory, request forecasts or new scenarios, compare feasible optimiser candidates and expose conflicts. The model does not receive an unrestricted database/document dump and cannot directly collect arbitrary URLs, edit analytical values, change rules, mutate authoritative memory, approve a proposal or act on an FPL account. PostgreSQL and immutable artefacts remain authoritative; OpenViking is unstructured context; predictive models, simulations and the optimiser remain specialist analytical services. AI judgement is labelled separately from their outputs, and the user remains the final decision-maker.
+
 ## Initial module boundaries
 
 - `src/backend/` — .NET product/control plane.

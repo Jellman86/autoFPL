@@ -32,6 +32,9 @@ This project follows least privilege, explicit trust boundaries and fail-closed 
 - ChatGPT/Codex OAuth credentials are not autoFPL identity tokens and must never be accepted, copied, logged or stored by the MCP resource server.
 - Private MCP data requires autoFPL-issued or approved tokens with exact issuer, audience/resource, expiry and scope validation on every request.
 - The LLM may request read-only analysis tools; deterministic services enforce tool arguments and authorisation.
+- Application-managed orchestration is bounded by explicit model-turn, time, token, simulation, tool and provider-spend budgets; recursive agents and silent provider switching are prohibited.
+- Client-hosted ChatGPT/Hermes MCP sessions are bounded only where autoFPL has control: per-tool scope, argument validation, request/rate/response limits, analytical compute quotas and cancellation. Do not claim visibility into client tokens, spend, retries or complete transcripts.
+- Application-managed AI recommendations use a structured proposal schema with evidence/run references, alternatives, assumptions, uncertainty, separately labelled judgement and an enforced initial `unapproved` state. The baseline MCP path returns evidence bundles and persists no client-generated synthesis.
 - Tool outputs are bounded, schema validated, provenance labelled and limited to the data required by the selected tool.
 - No model output becomes an SQL statement, shell command, URL fetch or external mutation without a constrained non-LLM policy layer.
 - Human approval shows the exact proposed action and current data before any future execution.

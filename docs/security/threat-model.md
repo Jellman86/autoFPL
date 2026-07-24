@@ -13,7 +13,7 @@ This model must be updated whenever a PR introduces a new data source, identity 
 - Any future autoFPL identity-provider credentials, access tokens, signing keys and optional model-provider API keys; the baseline MCP path holds no OpenAI/ChatGPT OAuth token.
 - Licensed football data, source contracts and private research artefacts.
 - Immutable historical snapshots and experiment lineage.
-- Forecast/model artefacts, optimiser constraints and recommendation audit.
+- Forecast/model artefacts, optimiser constraints, application-managed AI recommendation proposals and recommendation audit.
 - Repository, CI credentials, release provenance and deployment configuration.
 
 ## Actors
@@ -49,6 +49,8 @@ This model must be updated whenever a PR introduces a new data source, identity 
 | Identity spoofing | Stolen session accesses private squad | OIDC, secure session cookies/tokens, MFA-capable provider, server-side authorisation, revocation |
 | Credential confusion | ChatGPT/Codex or Hermes model-provider token is accepted as an autoFPL token or copied into the service | Separate issuers and audiences, OAuth resource binding, exact token validation, no model-provider token ingestion or storage |
 | MCP confused deputy | Prompt requests excessive private data or invokes an undeclared capability | Read-only tool allowlist, least-privilege scopes, per-tool server checks, bounded responses, user-visible purpose and audit |
+| Orchestration manipulation | Prompt or memory causes an application-managed unbounded loop, or a client-hosted response hides alternatives/labels judgement as model output | Mode-labelled audit; complete loop/token/spend budgets only in application-managed mode; per-tool authorization/compute limits in MCP mode; structured application proposal; separate judgement and enforced unapproved state |
+| Memory poisoning | Generated summaries or stale context become authoritative facts | Authoritative-store separation, source/version/time labels, explicit memory writes, correction/expiry policy and point-in-time retrieval |
 | Provider data exposure | OpenRouter route or private proxy receives unnecessary personal/source data | Disabled-by-default adapters, data minimisation, explicit model/routing allowlist, retention review, private authenticated proxy, no credentials in prompts |
 | Provider output substitution | Generated prose changes a forecast, or an extracted claim bypasses quarantine/validation | Structured artefact remains authoritative and visible, source-linked candidate state, immutable values, output schema separation, response provenance and failure isolation |
 | Unauthorised action | Prompt induces a transfer or chip action | No FPL write client; separate capability scopes; deterministic policy; exact human approval if future permission exists |
@@ -72,6 +74,9 @@ This model must be updated whenever a PR introduces a new data source, identity 
 - A ChatGPT or private Hermes MCP client presents a token for the wrong issuer, resource, audience or scope.
 - A private Hermes MCP client attempts direct database/provider access or sends Hermes model credentials instead of using the scoped read-only MCP boundary.
 - Model output in ChatGPT or Hermes attempts to discover a write capability or retrieve more private data than the selected tool requires.
+- Retrieved memory or a generated summary claims to be authoritative, current or permission to change policy without a source/versioned record.
+- An application-managed orchestrator exceeds its model-turn, time, token, simulation, tool or provider-spend budget; recursively starts agents; or omits alternatives and uncertainty from its proposal.
+- A client-hosted MCP session exceeds per-tool analytical quotas or is reported as fully replayable/fully budget-controlled despite autoFPL not owning its model loop.
 - OpenRouter or a private Hermes proxy is unavailable, over quota or returns malformed/generated values that conflict with the structured prediction artefact.
 - Provider routing would select a model or upstream provider outside the configured allowlist.
 - The analytics service returns malformed, infeasible or unversioned output.

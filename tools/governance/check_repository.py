@@ -36,6 +36,7 @@ REQUIRED_PATHS = (
     "docs/security/threat-model.md",
     "docs/adr/0005-chatgpt-mcp-interface.md",
     "docs/adr/0006-optional-model-provider-adapters.md",
+    "docs/adr/0007-evidence-grounded-ai-decision-orchestrator.md",
     "tools/governance/check_pr_title.py",
 )
 
@@ -111,6 +112,14 @@ REQUIRED_CONTENT_MARKERS = {
         "private Hermes proxy",
         "deterministic services continue",
         "candidate structured extraction",
+    ),
+    "docs/adr/0007-evidence-grounded-ai-decision-orchestrator.md": (
+        "decision orchestrator",
+        "working context",
+        "tool-generated evidence",
+        "authoritative memory",
+        "bounded orchestration",
+        "human approval",
     ),
 }
 

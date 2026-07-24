@@ -7,9 +7,9 @@
 
 ## Context
 
-autoFPL may need bounded AI assistance outside ChatGPT for structured extraction/classification from permitted unstructured sources, research support and generated explanations. The personal deployment should support an explicitly supplied API key, initially OpenRouter, and may use a private Hermes proxy. These integrations must not bypass data admission or change the deterministic authority established for forecasts, simulations, optimisation and approval.
+autoFPL may need bounded AI assistance outside ChatGPT for structured extraction/classification from permitted unstructured sources, evidence-grounded decision orchestration and generated explanations. The personal deployment should support an explicitly supplied API key, initially OpenRouter, and may use a private Hermes proxy. These integrations must not bypass data admission or change the deterministic authority established for forecasts, simulations, optimisation and approval.
 
-Inbound conversational clients and outbound model providers are different boundaries. ChatGPT or Hermes can call autoFPL through MCP under [ADR-0005](0005-chatgpt-mcp-interface.md) without autoFPL calling a model. This ADR governs the separate case where autoFPL requests candidate structured extraction or generated text from a configured provider after an authorised source has been collected and snapshotted.
+Inbound conversational clients and outbound model providers are different boundaries. ChatGPT or Hermes can call autoFPL through MCP under [ADR-0005](0005-chatgpt-mcp-interface.md) without autoFPL calling a model. This ADR governs the separate case where autoFPL requests candidate structured extraction, a bounded decision-orchestration turn or generated text from a configured provider. Source extraction occurs only after an authorised source has been collected and snapshotted; decision orchestration follows [ADR-0007](0007-evidence-grounded-ai-decision-orchestrator.md).
 
 ## Decision drivers
 
@@ -28,7 +28,7 @@ Each feature could call a vendor SDK directly. This is rejected because it sprea
 
 ### B. One provider-neutral port with isolated adapters
 
-Application code submits one of a small set of schema-defined requests: extract claims from a retained source snapshot, classify a bounded item or explain a completed validated prediction artefact. An adapter maps that request to an enabled provider and returns untrusted candidate data/text plus non-secret provenance.
+Application code submits one of a small set of schema-defined requests: extract claims from a retained source snapshot, classify a bounded item, run one decision-orchestration turn over an approved working context/tool transcript or explain a completed validated prediction artefact. An adapter maps that request to an enabled provider and returns untrusted candidate data/text plus non-secret provenance. The application—not the provider adapter—authorises and executes each tool call and enforces ADR-0007's orchestration budget.
 
 This preserves domain isolation, keeps collection separate from interpretation and allows deterministic fake adapters in tests.
 
@@ -38,7 +38,7 @@ This is the safest and remains the default runtime mode. It is insufficient if a
 
 ## Decision
 
-1. Outbound AI assistance is accessed only through a provider-neutral port owned by the application boundary. Typed operations are limited to bounded extraction/classification and explanation of validated artefacts. Analytics, optimiser, approval and persistence domains do not import provider SDKs or vendor response types.
+1. Outbound AI assistance is accessed only through a provider-neutral port owned by the application boundary. Typed operations are limited to bounded extraction/classification, one application-controlled decision-orchestration turn and explanation of validated artefacts. Analytics, optimiser, approval and persistence domains do not import provider SDKs or vendor response types.
 2. The first supported API adapter is OpenRouter through its documented HTTPS API. Its API key represents separate provider billing and authorization; it is not a ChatGPT-subscription credential.
 3. A private Hermes proxy is a supported optional adapter for a personal deployment. Hermes retains ownership of its model-provider credentials; autoFPL receives no underlying OAuth refresh token or provider API key.
 4. Every adapter is disabled by default. Enabling one requires an explicit provider, model, allowed operation set, endpoint policy, timeout, request-size limit, rate limit and cost/usage ceiling where the provider supports one.
@@ -56,7 +56,7 @@ This is the safest and remains the default runtime mode. It is insufficient if a
 
 ### Positive
 
-- The standalone application can use OpenRouter with a user-controlled API key for bounded extraction, classification and explanation.
+- The standalone application can use OpenRouter with a user-controlled API key for bounded extraction, decision orchestration and explanation.
 - A personal deployment can reuse Hermes as an optional inference boundary without copying its OAuth credentials.
 - Hermes can also remain purely an MCP client, which is the simpler path for “give me the predictions”.
 - Model failures and vendor changes cannot break or silently change the analytical core.
@@ -95,5 +95,6 @@ Before enabling an adapter:
 - [OpenRouter privacy policy](https://openrouter.ai/privacy)
 - [Hermes Agent provider documentation](https://hermes-agent.nousresearch.com/docs/integrations/providers)
 - [ADR-0005: ChatGPT MCP conversational interface](0005-chatgpt-mcp-interface.md)
+- [ADR-0007: Evidence-grounded AI decision orchestrator](0007-evidence-grounded-ai-decision-orchestrator.md)
 - [Security standard](../standards/security.md)
 - [Threat model](../security/threat-model.md)

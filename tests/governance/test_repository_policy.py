@@ -47,6 +47,25 @@ class RepositoryPolicyTests(unittest.TestCase):
             violations,
         )
 
+    def test_ai_decision_orchestrator_boundary_is_mandatory(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            self._write_required_files(root)
+            decision = root / "docs/adr/0007-evidence-grounded-ai-decision-orchestrator.md"
+            decision.parent.mkdir(parents=True, exist_ok=True)
+            decision.write_text("# AI mind\n", encoding="utf-8")
+
+            violations = check_repository(root)
+
+        self.assertTrue(
+            any(
+                "0007-evidence-grounded-ai-decision-orchestrator.md" in violation
+                and "missing mandatory policy marker" in violation
+                for violation in violations
+            ),
+            violations,
+        )
+
     def test_research_and_security_records_are_mandatory(self) -> None:
         from tools.governance.check_repository import REQUIRED_PATHS
 
