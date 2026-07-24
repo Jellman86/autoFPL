@@ -21,7 +21,7 @@ A rigorous, evidence-driven research platform for **human-approved Fantasy Premi
 - **Optional model-provider adapters** — OpenRouter API or a private Hermes proxy may perform bounded extraction/classification and generate explanations behind a provider-neutral boundary; outputs are quarantined or non-authoritative and neither provider is required for core operation.
 - **Evidence-grounded AI decision orchestrator** — the strategic “mind” retrieves relevant data and memory, asks forecasting/simulation/optimisation tools for evidence and compares feasible plans. Application-managed mode persists a structured unapproved proposal; client-hosted ChatGPT/Hermes returns an evidence-grounded advisory synthesis without proposal persistence.
 
-The approved boundaries are recorded in [ADR-0001](docs/adr/0001-hybrid-modular-architecture.md), [ADR-0005](docs/adr/0005-chatgpt-mcp-interface.md), [ADR-0006](docs/adr/0006-optional-model-provider-adapters.md), [ADR-0007](docs/adr/0007-evidence-grounded-ai-decision-orchestrator.md) and the [FPL terms boundary](docs/compliance/fpl-terms-boundary.md).
+The approved boundaries are recorded in [ADR-0001](docs/adr/0001-hybrid-modular-architecture.md), [ADR-0005](docs/adr/0005-chatgpt-mcp-interface.md), [ADR-0006](docs/adr/0006-optional-model-provider-adapters.md), [ADR-0007](docs/adr/0007-evidence-grounded-ai-decision-orchestrator.md), [ADR-0008](docs/adr/0008-versioned-json-contracts.md) and the [FPL terms boundary](docs/compliance/fpl-terms-boundary.md).
 
 ## Non-negotiable quality principles
 
@@ -68,9 +68,10 @@ As application projects are added, the canonical commands will be exposed throug
 - `docs/standards/` — enforceable engineering and scientific standards.
 - `docs/compliance/` — legal and product-operation boundaries.
 - `docs/research/` — evidence base and reproducibility templates.
-- `src/` — future product and analytics implementation boundaries.
+- `contracts/` — immutable, versioned machine-readable service and data boundaries.
+- `src/` — product and analytics implementation boundaries.
 - `tools/governance/` — executable repository policy.
-- `tests/` — policy tests now; product tests later.
+- `tests/` — governance, domain and contract tests.
 
 ## Licensing and data rights
 
