@@ -69,6 +69,7 @@ make verify
 - `docs/standards/` — enforceable engineering and scientific standards.
 - `docs/compliance/` — legal and product-operation boundaries.
 - `docs/research/` — evidence base and reproducibility templates.
+- `docs/operations/` — build, deployment, verification and rollback runbooks.
 - `docs/index.md` — maintained routing index for repository documentation.
 - `docs/roadmap.md` — prioritised future outcomes and evidence gates.
 - `contracts/` — immutable, versioned machine-readable service and data boundaries.

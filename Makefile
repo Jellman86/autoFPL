@@ -1,4 +1,4 @@
-.PHONY: test test-python test-dotnet governance verify
+.PHONY: test test-python test-dotnet governance verify container-build container-smoke container-verify
 
 test: test-python test-dotnet
 
@@ -14,3 +14,11 @@ governance:
 	python3 tools/governance/check_documentation.py
 
 verify: test governance
+
+container-build:
+	docker build --build-arg "SOURCE_REVISION=$$(git rev-parse HEAD)" --tag autofpl:local .
+
+container-smoke:
+	bash scripts/ci_container_smoke.sh autofpl:local "$$(git rev-parse HEAD)"
+
+container-verify: container-build container-smoke

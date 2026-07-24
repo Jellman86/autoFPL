@@ -2,7 +2,7 @@
 
 This roadmap describes intended outcomes and the evidence required to advance. It is not a release promise. Priorities can change when compliance, data rights, research results, operational evidence or user needs change.
 
-## Up next
+## In progress
 
 ### 1. Runnable private development service
 
@@ -14,6 +14,10 @@ Deliver the smallest deployable API boundary without implying that forecasting o
 - Deploy a digest-pinned private development instance with no public route.
 
 **Exit evidence:** contract and integration tests pass; malformed and oversized requests fail closed; the image has no HIGH/CRITICAL vulnerability finding; the running digest, health checks and rollback path are verified. Tracked by [issue #9](https://github.com/Jellman86/autoFPL/issues/9).
+
+The API, image and protected publication pipeline are implemented by issue #9. Digest-pinned private deployment and runtime/rollback verification remain outstanding.
+
+## Up next
 
 ### 2. Lawful data-source and ingestion foundation
 

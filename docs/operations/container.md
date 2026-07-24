@@ -1,0 +1,81 @@
+# autoFPL API container
+
+## Purpose and current boundary
+
+The first container is a development API for exercising the validated decision-snapshot metadata boundary. It has no database, FPL data collection, credentials, autonomous actions or user-facing write operations.
+
+Routes:
+
+| Method | Path | Behavior |
+|---|---|---|
+| `GET` | `/healthz` | Liveness response: `{"status":"healthy"}` |
+| `GET` | `/readyz` | Readiness response: `{"status":"ready"}` |
+| `POST` | `/api/v1/decision-snapshot-metadata/validation` | Returns canonical metadata or a stable 400/422 problem response |
+
+JSON request fields are exact and case-sensitive. Missing or `null` required fields, duplicate or undeclared fields, non-string field values and malformed payloads fail with 400. Present string values that are unsupported fail with the stable domain error code and 422. The request body is bounded to 16 KiB by Kestrel.
+
+## Image construction
+
+`Dockerfile` uses digest-pinned Microsoft .NET images:
+
+- SDK: `10.0.302-noble`
+- runtime: `10.0.10-noble-chiseled-extra`
+
+The final image:
+
+- runs as the base image's non-root UID `1654`;
+- contains no shell or package manager;
+- has an application-native Docker health check;
+- carries OCI source, revision and AGPL licence labels;
+- contains no test packages or JSON Schema validator;
+- supports a read-only root filesystem with a small `/tmp` tmpfs;
+- is scanned for HIGH and CRITICAL OS and .NET vulnerabilities before publication.
+
+Build and smoke-test locally from the repository root:
+
+```bash
+docker build \
+  --build-arg "SOURCE_REVISION=$(git rev-parse HEAD)" \
+  --tag autofpl:local .
+
+bash scripts/ci_container_smoke.sh autofpl:local "$(git rev-parse HEAD)"
+```
+
+The smoke test launches the image with a read-only filesystem, all Linux capabilities dropped, `no-new-privileges`, and no fixed host port.
+
+## CI and publication
+
+`.github/workflows/container.yml` runs on pull requests to `dev`/`main` and pushes to `dev`.
+
+1. Build a local candidate from locked dependencies and digest-pinned bases.
+2. Save the image to an archive.
+3. Scan the archive with digest-pinned Trivy without exposing the Docker socket to the scanner.
+4. Run the hardened container smoke test.
+5. On a protected `dev` push only, grant `packages: write`, repeat the gates, authenticate to GHCR, and publish:
+   - `ghcr.io/jellman86/autofpl:dev`
+   - `ghcr.io/jellman86/autofpl:sha-<full-commit-sha>`
+6. Tag and push the exact scanned candidate, immutable SHA tag first and mutable `dev` tag second, then verify the SHA tag is readable.
+
+Pull requests never receive registry write permission and never publish images.
+
+## Compose integration boundary
+
+The future Git-backed Dockhand definition belongs in a dedicated `autofpl_stack/` on Quark/Fedora.
+
+- Pin `ghcr.io/jellman86/autofpl@sha256:<published-manifest-digest>`; do not deploy `:dev` directly.
+- Join the external `npm_proxy_backends` network so Nginx Proxy Manager can reach `autofpl-api:8080` privately.
+- Do not publish a host port in the steady-state stack.
+- Use `read_only: true`, `cap_drop: [ALL]`, `security_opt: [no-new-privileges:true]`, and a bounded `/tmp` tmpfs.
+- Do not expose the development validation route publicly. Any public/user-authenticated API is a later threat-model and authentication decision.
+- Store future secrets only in Dockhand; this first image requires none.
+
+All stack lifecycle changes must follow the `docker-configs` repository's Git-backed Dockhand procedure. Do not run direct `docker compose pull` or `up` commands on the host.
+
+## Rollback
+
+1. Select the previously verified image digest from Git/GHCR history.
+2. Revert the `docker-configs` digest change and push it through review.
+3. Redeploy the Git-backed stack through Dockhand.
+4. Verify container health and representative 200/400/422 behavior.
+
+This image has no persistent state, so rollback requires no data migration or volume restoration.
