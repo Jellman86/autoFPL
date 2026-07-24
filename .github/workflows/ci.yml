@@ -32,10 +32,20 @@ jobs:
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.14"
+      - name: Set up .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
       - name: Install locked governance dependencies
         run: >-
           python3 -m pip install --disable-pip-version-check --require-hashes
           --requirement requirements-governance.txt
+      - name: Restore locked .NET dependencies
+        run: dotnet restore src/backend/AutoFpl.slnx --locked-mode --nologo
+      - name: Run .NET tests
+        run: >-
+          dotnet test src/backend/AutoFpl.slnx --no-restore
+          --configuration Release --nologo
       - name: Run governance tests
         run: python3 -m unittest discover -s tests -p 'test_*.py' -v
       - name: Validate pull request title

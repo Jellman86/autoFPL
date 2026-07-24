@@ -96,6 +96,36 @@ class RepositoryPolicyTests(unittest.TestCase):
         }
         self.assertTrue(expected.issubset(REQUIRED_PATHS), expected - set(REQUIRED_PATHS))
 
+    def test_dotnet_ci_and_dependency_controls_are_mandatory(self) -> None:
+        from tools.governance.check_repository import (
+            REQUIRED_CONTENT_MARKERS,
+            REQUIRED_PATHS,
+        )
+
+        self.assertIn(".github/dependabot.yml", REQUIRED_PATHS)
+
+        expected_markers = {
+            ".github/workflows/ci.yml": {
+                "actions/setup-dotnet@",
+                "dotnet restore src/backend/AutoFpl.slnx --locked-mode",
+                "dotnet test src/backend/AutoFpl.slnx --no-restore",
+            },
+            ".github/workflows/codeql.yml": {
+                "actions/setup-dotnet@",
+                "language: [python, csharp]",
+                "github/codeql-action/autobuild@",
+            },
+            ".github/dependabot.yml": {
+                "package-ecosystem: nuget",
+                '"/src/backend"',
+                '"/tests/backend"',
+            },
+        }
+
+        for relative_path, markers in expected_markers.items():
+            configured = set(REQUIRED_CONTENT_MARKERS.get(relative_path, ()))
+            self.assertTrue(markers.issubset(configured), markers - configured)
+
     def test_codeql_security_events_write_is_the_only_scoped_exception(self) -> None:
         from tools.governance.check_repository import _workflow_permission_violations
 
@@ -402,6 +432,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      - run: dotnet restore src/backend/AutoFpl.slnx --locked-mode
+      - run: dotnet test src/backend/AutoFpl.slnx --no-restore
 """,
             )
 
@@ -442,13 +475,18 @@ permissions:
 jobs:
   analyze:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        language: [python, csharp]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       - uses: github/codeql-action/init@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
         with:
           queries: security-extended
+      - uses: github/codeql-action/autobuild@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
 """
             elif relative_path == ".github/workflows/dependency-review.yml":
                 content = """name: Dependency review
