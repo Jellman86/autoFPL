@@ -11,12 +11,12 @@ No source may enter autoFPL merely because it is technically accessible. Admissi
 
 Admission is not connector approval. A live connector requires its own issue, threat/privacy review, tests and an already admitted source. A new field, purpose, collection method, retention rule or redistribution mode requires a new source-record version and review.
 
-## Initial proposals
+## Initial admissions
 
 | Source ID | Status | Scope |
 |---|---|---|
-| [`manual-user-input/v1`](manual-user-input-v1.md) | Proposed | Direct, deliberate entry by the user into their own decision-support workflow |
-| [`repository-synthetic-fixtures/v1`](repository-synthetic-fixtures-v1.md) | Proposed | Fictional deterministic fixtures authored in this repository for tests and examples |
+| [`manual-user-input/v1`](manual-user-input-v1.md) | Admitted | Direct, deliberate entry by the user into their own decision-support workflow |
+| [`repository-synthetic-fixtures/v1`](repository-synthetic-fixtures-v1.md) | Admitted | Fictional deterministic fixtures authored in this repository for tests and examples |
 
 ## Universal prohibitions
 
@@ -34,4 +34,4 @@ Source arrivals start in quarantine. Promotion, persistence, derivation and serv
 
 ## Review record
 
-These proposals are tracked by [issue #16](https://github.com/Jellman86/autoFPL/issues/16). Admission requires focused independent review for compliance, privacy, provenance and point-in-time correctness before merge.
+These admissions are tracked by [issue #16](https://github.com/Jellman86/autoFPL/issues/16). The exact reviewed commit, initial blockers, corrections and independent PASS results are recorded in the [PR #18 review evidence](https://github.com/Jellman86/autoFPL/pull/18#issuecomment-5074192727). They become effective only when PR #18 merges into protected `dev`.

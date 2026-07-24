@@ -36,8 +36,8 @@ Use this index to find the maintained source for each topic. The repository is i
 ## Data-source admission
 
 - [Admission register](data/sources/README.md) — source statuses, universal prohibitions and review requirements.
-- [Manual user input v1](data/sources/manual-user-input-v1.md) — proposed direct-entry scope, privacy and point-in-time constraints.
-- [Repository synthetic fixtures v1](data/sources/repository-synthetic-fixtures-v1.md) — proposed fictional test/evidence boundary.
+- [Manual user input v1](data/sources/manual-user-input-v1.md) — admitted direct-entry scope, privacy and point-in-time constraints.
+- [Repository synthetic fixtures v1](data/sources/repository-synthetic-fixtures-v1.md) — admitted fictional test/evidence boundary.
 
 ## Research and evidence
 

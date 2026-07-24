@@ -1,10 +1,10 @@
 # Source record: manual user input v1
 
 - **Source ID:** `manual-user-input/v1`
-- **Status:** Proposed
+- **Status:** Admitted; effective on merge of PR #18 to protected `dev`
 - **Decision owner:** `Jellman86`
 - **Review date:** 24 July 2026
-- **Review evidence:** [issue #16](https://github.com/Jellman86/autoFPL/issues/16); independent PR review required before admission
+- **Review evidence:** [issue #16](https://github.com/Jellman86/autoFPL/issues/16) and the exact reviewed commit/blockers/corrections/PASS results in the [PR #18 review record](https://github.com/Jellman86/autoFPL/pull/18#issuecomment-5074192727)
 - **Provider/subject:** the individual user operating their own autoFPL decision-support workflow
 - **Authoritative URL:** not applicable; no remote collection occurs
 
