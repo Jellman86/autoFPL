@@ -1,13 +1,112 @@
 from __future__ import annotations
 
+import io
+import os
 import tempfile
 import unittest
+from contextlib import redirect_stderr
 from pathlib import Path
+from unittest import mock
 
-from tools.governance.check_research_review import Acceptance, validate_research_gate
+from tools.governance import check_research_review as policy
+from tools.governance.check_research_review import (
+    Acceptance,
+    _event_requires_merged_pr_context,
+    _is_dev_release_promotion,
+    _select_associated_pull_request,
+    validate_research_gate,
+)
 
 
 class ResearchReviewPolicyTests(unittest.TestCase):
+    def test_direct_push_and_manual_entrypoints_fail_closed(self) -> None:
+        for event_name in ("push", "workflow_dispatch"):
+            with self.subTest(event_name=event_name):
+                error_output = io.StringIO()
+                with (
+                    mock.patch.dict(
+                        os.environ,
+                        {"GITHUB_EVENT_NAME": event_name, "GITHUB_SHA": "direct-sha"},
+                        clear=True,
+                    ),
+                    mock.patch.object(
+                        policy, "_resolve_associated_pull_request", return_value=None
+                    ),
+                    mock.patch.object(
+                        policy, "validate_final_review_artifacts", return_value=[]
+                    ),
+                    redirect_stderr(error_output),
+                ):
+                    exit_code = policy.main()
+
+                self.assertEqual(1, exit_code)
+                self.assertIn(
+                    "no verifiable associated merged pull request",
+                    error_output.getvalue(),
+                )
+
+    def test_push_and_manual_runs_require_merged_pr_context(self) -> None:
+        self.assertTrue(_event_requires_merged_pr_context("push"))
+        self.assertTrue(_event_requires_merged_pr_context("workflow_dispatch"))
+        self.assertFalse(_event_requires_merged_pr_context("pull_request"))
+
+    def test_only_same_repository_dev_to_main_is_a_release_promotion(self) -> None:
+        self.assertTrue(
+            _is_dev_release_promotion(
+                "main", "dev", "Jellman86/autoFPL", "Jellman86/autoFPL"
+            )
+        )
+        self.assertFalse(
+            _is_dev_release_promotion(
+                "main", "dev", "Jellman86/autoFPL", "attacker/autoFPL"
+            )
+        )
+        self.assertFalse(
+            _is_dev_release_promotion(
+                "dev", "feature/model", "Jellman86/autoFPL", "Jellman86/autoFPL"
+            )
+        )
+        self.assertFalse(
+            _is_dev_release_promotion(
+                "main", "feature/model", "Jellman86/autoFPL", "Jellman86/autoFPL"
+            )
+        )
+
+    def test_selects_matching_merged_pr_context_for_push(self) -> None:
+        context = _select_associated_pull_request(
+            [
+                {
+                    "body": "- **Research record:** docs/research/reviews/minutes.md",
+                    "base": {
+                        "sha": "base-sha",
+                        "ref": "dev",
+                        "repo": {"full_name": "Jellman86/autoFPL"},
+                    },
+                    "head": {
+                        "ref": "feature/model",
+                        "repo": {"full_name": "Jellman86/autoFPL"},
+                    },
+                    "user": {"login": "Alice"},
+                    "merge_commit_sha": "merge-sha",
+                    "merged_at": "2026-07-24T19:00:00Z",
+                }
+            ],
+            "merge-sha",
+        )
+
+        self.assertIsNotNone(context)
+        assert context is not None
+        self.assertEqual("base-sha", context.base_sha)
+        self.assertEqual("dev", context.base_ref)
+        self.assertEqual("Jellman86/autoFPL", context.base_repository)
+        self.assertEqual("feature/model", context.head_ref)
+        self.assertEqual("Jellman86/autoFPL", context.head_repository)
+        self.assertEqual("Alice", context.author)
+        self.assertIn("Research record", context.body)
+
+    def test_direct_push_has_no_associated_pr_context(self) -> None:
+        self.assertIsNone(_select_associated_pull_request([], "direct-sha"))
+
     def test_requires_record_for_executable_analytics_change(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             violations = validate_research_gate(

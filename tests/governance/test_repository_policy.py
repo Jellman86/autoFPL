@@ -574,7 +574,11 @@ jobs:
           BASE_SHA: base-placeholder
           GITHUB_TOKEN: token-placeholder
           PR_AUTHOR: author-placeholder
+          PR_BASE_REF: base-ref-placeholder
+          PR_BASE_REPOSITORY: base-repository-placeholder
           PR_BODY: body-placeholder
+          PR_HEAD_REF: head-ref-placeholder
+          PR_HEAD_REPOSITORY: head-repository-placeholder
         run: python3 tools/governance/check_research_review.py
 """,
             )

@@ -45,6 +45,17 @@ class Acceptance:
     body: str
 
 
+@dataclass(frozen=True)
+class PullRequestContext:
+    base_sha: str
+    base_ref: str
+    base_repository: str
+    head_ref: str
+    head_repository: str
+    author: str
+    body: str
+
+
 TextLoader = Callable[[str], str | None]
 AcceptanceResolver = Callable[[str], Acceptance | None]
 SourceResolver = Callable[[str], bool]
@@ -351,6 +362,101 @@ def _resolve_github_acceptance(url: str, token: str) -> Acceptance | None:
     return Acceptance(actor=actor, created_at=created_at, body=body)
 
 
+def _select_associated_pull_request(
+    payload: list[dict[str, object]],
+    merge_sha: str,
+) -> PullRequestContext | None:
+    for item in payload:
+        if item.get("merge_commit_sha") != merge_sha or not item.get("merged_at"):
+            continue
+        base = item.get("base")
+        user = item.get("user")
+        if not isinstance(base, dict) or not isinstance(user, dict):
+            continue
+        base_sha = base.get("sha")
+        base_ref = base.get("ref")
+        head = item.get("head")
+        base_repository_data = base.get("repo")
+        author = user.get("login")
+        body = item.get("body") or ""
+        head_ref = head.get("ref") if isinstance(head, dict) else None
+        head_repository_data = head.get("repo") if isinstance(head, dict) else None
+        base_repository = (
+            base_repository_data.get("full_name")
+            if isinstance(base_repository_data, dict)
+            else None
+        )
+        head_repository = (
+            head_repository_data.get("full_name")
+            if isinstance(head_repository_data, dict)
+            else None
+        )
+        if all(
+            isinstance(value, str)
+            for value in (
+                base_sha,
+                base_ref,
+                base_repository,
+                head_ref,
+                head_repository,
+                author,
+                body,
+            )
+        ):
+            return PullRequestContext(
+                base_sha=base_sha,
+                base_ref=base_ref,
+                base_repository=base_repository,
+                head_ref=head_ref,
+                head_repository=head_repository,
+                author=author,
+                body=body,
+            )
+    return None
+
+
+def _resolve_associated_pull_request(merge_sha: str, token: str) -> PullRequestContext | None:
+    if not merge_sha or not token:
+        return None
+    endpoint = f"https://api.github.com/repos/Jellman86/autoFPL/commits/{merge_sha}/pulls"
+    request = urllib.request.Request(
+        endpoint,
+        headers={
+            "Accept": "application/vnd.github+json",
+            "Authorization": f"Bearer {token}",
+            "User-Agent": "autoFPL-research-policy",
+            "X-GitHub-Api-Version": "2022-11-28",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=15) as response:
+            payload = json.load(response)
+    except (OSError, ValueError, urllib.error.HTTPError):
+        return None
+    if not isinstance(payload, list):
+        return None
+    return _select_associated_pull_request(payload, merge_sha)
+
+
+def _event_requires_merged_pr_context(event_name: str) -> bool:
+    return event_name in {"push", "workflow_dispatch"}
+
+
+def _is_dev_release_promotion(
+    base_ref: str,
+    head_ref: str,
+    base_repository: str,
+    head_repository: str,
+) -> bool:
+    upstream = "Jellman86/autoFPL"
+    return (
+        base_ref == "main"
+        and head_ref == "dev"
+        and base_repository == upstream
+        and head_repository == upstream
+    )
+
+
 def _source_exists(url: str) -> bool:
     if url.casefold().startswith("https://doi.org/"):
         doi = url[len("https://doi.org/") :]
@@ -381,27 +487,58 @@ def _source_exists(url: str) -> bool:
 def main() -> int:
     root = Path(__file__).resolve().parents[2]
     base_sha = os.environ.get("BASE_SHA", "")
-    changed_paths, violations = _changed_paths(root, base_sha)
+    token = os.environ.get("GITHUB_TOKEN", "")
+    pull_request_body = os.environ.get("PR_BODY", "")
+    pull_request_author = os.environ.get("PR_AUTHOR", "")
+    pull_request_base_ref = os.environ.get("PR_BASE_REF", "")
+    pull_request_base_repository = os.environ.get("PR_BASE_REPOSITORY", "")
+    pull_request_head_ref = os.environ.get("PR_HEAD_REF", "")
+    pull_request_head_repository = os.environ.get("PR_HEAD_REPOSITORY", "")
+    violations: list[str] = []
+
+    if _event_requires_merged_pr_context(os.environ.get("GITHUB_EVENT_NAME", "")):
+        context = _resolve_associated_pull_request(os.environ.get("GITHUB_SHA", ""), token)
+        if context is None:
+            violations.append("Checked revision has no verifiable associated merged pull request")
+            changed_paths: list[str] = []
+        else:
+            base_sha = context.base_sha
+            pull_request_base_ref = context.base_ref
+            pull_request_base_repository = context.base_repository
+            pull_request_head_ref = context.head_ref
+            pull_request_head_repository = context.head_repository
+            pull_request_body = context.body
+            pull_request_author = context.author
+            changed_paths, context_violations = _changed_paths(root, base_sha)
+            violations.extend(context_violations)
+    else:
+        changed_paths, context_violations = _changed_paths(root, base_sha)
+        violations.extend(context_violations)
+
     violations.extend(validate_final_review_artifacts(root))
 
+    if _is_dev_release_promotion(
+        pull_request_base_ref,
+        pull_request_head_ref,
+        pull_request_base_repository,
+        pull_request_head_repository,
+    ):
+        changed_paths = []
     sensitive = any(_is_research_sensitive(path) for path in changed_paths)
     loader = _git_text_loader(root, base_sha) if sensitive and base_sha else None
-    token = os.environ.get("GITHUB_TOKEN", "")
     acceptance_resolver = (
-        lambda url: _resolve_github_acceptance(url, token)
-        if sensitive
-        else None
+        (lambda url: _resolve_github_acceptance(url, token)) if sensitive else None
     )
     source_resolver = _source_exists if sensitive else None
     violations.extend(
         validate_research_gate(
             root,
             changed_paths,
-            os.environ.get("PR_BODY", ""),
+            pull_request_body,
             base_text_loader=loader,
             acceptance_resolver=acceptance_resolver,
             source_resolver=source_resolver,
-            expected_owner=os.environ.get("PR_AUTHOR", ""),
+            expected_owner=pull_request_author,
         )
     )
 

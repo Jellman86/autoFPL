@@ -145,7 +145,11 @@ REQUIRED_CONTENT_MARKERS = {
         "BASE_SHA:",
         "GITHUB_TOKEN:",
         "PR_AUTHOR:",
+        "PR_BASE_REF:",
+        "PR_BASE_REPOSITORY:",
         "PR_BODY:",
+        "PR_HEAD_REF:",
+        "PR_HEAD_REPOSITORY:",
         "python3 tools/governance/check_research_review.py",
     ),
     ".github/workflows/codeql.yml": (
