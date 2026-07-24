@@ -1,0 +1,49 @@
+name: Bug report
+description: Report a reproducible software, data, model or rules defect
+title: "fix: "
+labels: ["type: bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Do not include credentials, private user data or unauthorised FPL data.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [backend, analytics, optimiser, web, data, research, infrastructure, governance]
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed behaviour
+      description: Include timestamps, versions and synthetic/minimised evidence.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Minimal reproduction
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact and safety risk
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Safety checks
+      options:
+        - label: I removed secrets, credentials and personal data.
+          required: true
+        - label: I checked whether this may involve FPL automation or data-rights boundaries.
+          required: true

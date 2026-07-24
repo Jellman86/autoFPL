@@ -1,0 +1,68 @@
+schema_version: 1
+experiment_id: "YYYYMMDD-short-name"
+status: proposed # proposed | registered | running | complete | invalidated
+owners: []
+registered_at_utc: null
+
+question:
+  decision: ""
+  hypothesis: ""
+  population: ""
+  horizon_gameweeks: null
+  success_rule: ""
+  non_goals: []
+
+provenance:
+  code_commit: null
+  data_snapshot_ids: []
+  data_content_hashes: []
+  dependency_lock_hashes: []
+  execution_command: null
+  hardware_class: null
+  random_seeds: []
+
+information_boundary:
+  decision_deadline_utc: null
+  allowed_information_cutoff_utc: null
+  publication_latency_embargo: null
+  available_at_column: available_at
+  leakage_checks: []
+
+evaluation:
+  split_strategy: rolling_origin
+  train_windows: []
+  validation_windows: []
+  final_test_windows: []
+  final_test_locked: true
+  baselines: []
+  forecast_metrics: []
+  calibration_metrics: []
+  decision_metrics: []
+  slices: []
+  uncertainty_method: ""
+
+model:
+  family: ""
+  features: []
+  target: ""
+  hyperparameter_search_space: {}
+  selection_rule: ""
+
+optimizer:
+  formulation_version: null
+  objective: ""
+  risk_measure: ""
+  constraints_version: null
+  solver: ""
+  verification_cases: []
+
+results:
+  unlocked_at_utc: null
+  run_ids: []
+  baseline_results: {}
+  candidate_results: {}
+  sensitivity_results: {}
+  negative_results: []
+  limitations: []
+  decision: pending
+  reviewer: null

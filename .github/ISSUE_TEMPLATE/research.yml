@@ -1,0 +1,43 @@
+name: Research proposal
+description: Register an evidence-producing experiment before final evaluation
+title: "research: "
+labels: ["type: research", "needs evidence"]
+body:
+  - type: textarea
+    id: decision
+    attributes:
+      label: Decision and hypothesis
+    validations:
+      required: true
+  - type: textarea
+    id: information
+    attributes:
+      label: Information boundary
+      description: Decision deadline, publication-latency embargo and available_at rule.
+    validations:
+      required: true
+  - type: textarea
+    id: evaluation
+    attributes:
+      label: Walk-forward evaluation
+      description: Training/validation/final test windows; final test remains locked.
+    validations:
+      required: true
+  - type: textarea
+    id: baselines
+    attributes:
+      label: Baselines, metrics and promotion rule
+    validations:
+      required: true
+  - type: textarea
+    id: data
+    attributes:
+      label: Data provenance and permitted use
+    validations:
+      required: true
+  - type: textarea
+    id: risks
+    attributes:
+      label: Leakage, multiplicity, bias and failure risks
+    validations:
+      required: true
