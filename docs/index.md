@@ -1,6 +1,6 @@
 # autoFPL documentation
 
-Use this index to find the maintained source for each topic. The repository is in its foundation phase and currently includes a versioned decision-snapshot metadata contract; pages for runnable services and end-user workflows that do not yet exist are intentionally absent.
+Use this index to find the maintained source for each topic. The repository is in its foundation phase and currently includes a versioned decision-snapshot metadata contract plus a bounded private-development validation service. Pages for end-user workflows that do not yet exist are intentionally absent.
 
 ## Start here
 
@@ -42,7 +42,9 @@ Use this index to find the maintained source for each topic. The repository is i
 
 ## Operations
 
-Operational runbooks will be added with the runnable services they support. A runbook must include verification and recovery rather than documenting an unmerged deployment.
+- [Development container](operations/container.md) — build, scan, smoke-test, publish and future private-deployment constraints for the bounded validation API.
+
+Additional runbooks must be added with the runnable services they support and include verification and recovery rather than documenting an unmerged deployment.
 
 ## Project history
 

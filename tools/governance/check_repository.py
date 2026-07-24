@@ -27,6 +27,7 @@ REQUIRED_PATHS = (
     ".github/workflows/security.yml",
     ".github/workflows/codeql.yml",
     ".github/workflows/dependency-review.yml",
+    ".github/workflows/container.yml",
     "docs/standards/definition-of-done.md",
     "docs/standards/documentation.md",
     "docs/standards/engineering.md",
@@ -146,6 +147,7 @@ REQUIRED_CONTENT_MARKERS = {
     ),
     ".github/dependabot.yml": (
         "package-ecosystem: nuget",
+        "package-ecosystem: docker",
         '"/src/backend"',
         '"/tests/backend"',
     ),
@@ -156,6 +158,18 @@ REQUIRED_CONTENT_MARKERS = {
         "license-check: true",
         "allow-licenses:",
         "AGPL-3.0-only",
+    ),
+    ".github/workflows/container.yml": (
+        "persist-credentials: false",
+        "scripts/ci_container_smoke.sh",
+        "--input /scan/autofpl.tar",
+        "IMAGE_NAME: ghcr.io/jellman86/autofpl",
+        "docker tag \"${LOCAL_IMAGE}\" \"${IMAGE_NAME}:sha-${GITHUB_SHA}\"",
+        "docker push \"${IMAGE_NAME}:sha-${GITHUB_SHA}\"",
+        "docker push \"${IMAGE_NAME}:dev\"",
+        "packages: write",
+        "refs/heads/dev",
+        "sha-${GITHUB_SHA}",
     ),
     "docs/adr/0005-chatgpt-mcp-interface.md": (
         "ChatGPT Apps SDK / MCP",
@@ -246,7 +260,12 @@ def _permission_value_violations(
                 and location == "workflow"
                 and scope == "security-events"
             )
-            if not is_codeql_upload:
+            is_container_publish = (
+                relative == Path(".github/workflows/container.yml")
+                and location == "job container-publish"
+                and scope == "packages"
+            )
+            if not (is_codeql_upload or is_container_publish):
                 violations.append(
                     f"{relative}: {location} {scope} write permission requires "
                     "a reviewed policy exception"

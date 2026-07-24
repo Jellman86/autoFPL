@@ -6,6 +6,7 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **A bounded private-development API and hardened container artifact are available from `dev`.** The service exposes liveness, readiness and fail-closed decision-snapshot metadata validation only; rejects malformed, ambiguous and oversized requests; runs non-root in a digest-pinned chiseled image; and is built, scanned, smoke-tested and published by protected CI without adding FPL access, persistence, providers or account automation.
 - **Documentation now has a maintained standard and index.** Repository claims must be grounded in code, contracts, deployment definitions or versioned evidence; planned work is separated from implemented behaviour; safety, research and human-approval boundaries are required where applicable; and CI checks local documentation links.
 - **The project roadmap now states priority outcomes and evidence gates.** It covers the private development service, lawful data ingestion, authoritative rules, forecast research, simulation and optimisation, advisory interfaces, human approval, and release hardening without promising dates.
 - **Decision-snapshot metadata has a versioned JSON contract.** The `1.0` schema, examples and .NET contract model enforce canonical source types and reject schema drift before snapshot metadata can enter later decision workflows.

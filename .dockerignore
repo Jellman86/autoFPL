@@ -1,0 +1,14 @@
+**/.DS_Store
+**/bin
+**/obj
+.git
+.github
+.hermes
+contracts
+docs
+tests
+tools
+*.md
+LICENSE
+Makefile
+requirements-governance.txt

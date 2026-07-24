@@ -117,6 +117,7 @@ class RepositoryPolicyTests(unittest.TestCase):
             },
             ".github/dependabot.yml": {
                 "package-ecosystem: nuget",
+                "package-ecosystem: docker",
                 '"/src/backend"',
                 '"/tests/backend"',
             },
@@ -125,6 +126,68 @@ class RepositoryPolicyTests(unittest.TestCase):
         for relative_path, markers in expected_markers.items():
             configured = set(REQUIRED_CONTENT_MARKERS.get(relative_path, ()))
             self.assertTrue(markers.issubset(configured), markers - configured)
+
+    def test_container_pipeline_and_scoped_package_write_are_mandatory(self) -> None:
+        from tools.governance.check_repository import (
+            REQUIRED_CONTENT_MARKERS,
+            REQUIRED_PATHS,
+            _workflow_permission_violations,
+        )
+
+        workflow_path = ".github/workflows/container.yml"
+        self.assertIn(workflow_path, REQUIRED_PATHS)
+
+        expected_markers = {
+            "persist-credentials: false",
+            "scripts/ci_container_smoke.sh",
+            "--input /scan/autofpl.tar",
+            "IMAGE_NAME: ghcr.io/jellman86/autofpl",
+            "docker tag \"${LOCAL_IMAGE}\" \"${IMAGE_NAME}:sha-${GITHUB_SHA}\"",
+            "docker push \"${IMAGE_NAME}:sha-${GITHUB_SHA}\"",
+            "docker push \"${IMAGE_NAME}:dev\"",
+            "packages: write",
+            "refs/heads/dev",
+            "sha-${GITHUB_SHA}",
+        }
+        configured = set(REQUIRED_CONTENT_MARKERS.get(workflow_path, ()))
+        self.assertTrue(expected_markers.issubset(configured), expected_markers - configured)
+
+        container_workflow = """name: Container
+permissions:
+  contents: read
+jobs:
+  container-publish:
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-latest
+    steps: []
+"""
+        self.assertEqual(
+            [],
+            _workflow_permission_violations(
+                container_workflow,
+                Path(workflow_path),
+            ),
+        )
+
+        wrong_workflow = _workflow_permission_violations(
+            container_workflow,
+            Path(".github/workflows/ci.yml"),
+        )
+        self.assertTrue(
+            any("packages write permission" in violation for violation in wrong_workflow),
+            wrong_workflow,
+        )
+
+        wrong_job = _workflow_permission_violations(
+            container_workflow.replace("container-publish:", "container-build:"),
+            Path(workflow_path),
+        )
+        self.assertTrue(
+            any("packages write permission" in violation for violation in wrong_job),
+            wrong_job,
+        )
 
     def test_codeql_security_events_write_is_the_only_scoped_exception(self) -> None:
         from tools.governance.check_repository import _workflow_permission_violations
@@ -614,6 +677,31 @@ jobs:
           license-check: true
           fail-on-severity: moderate
           allow-licenses: AGPL-3.0-only
+"""
+            elif relative_path == ".github/workflows/container.yml":
+                content = """name: Container
+permissions:
+  contents: read
+env:
+  IMAGE_NAME: ghcr.io/jellman86/autofpl
+jobs:
+  container-publish:
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: |
+          scripts/ci_container_smoke.sh
+          --input /scan/autofpl.tar
+          docker tag "${LOCAL_IMAGE}" "${IMAGE_NAME}:sha-${GITHUB_SHA}"
+          docker push "${IMAGE_NAME}:sha-${GITHUB_SHA}"
+          docker push "${IMAGE_NAME}:dev"
+          refs/heads/dev
+          sha-${GITHUB_SHA}
 """
             elif path.parent.name == "workflows":
                 content = "name: Required\npermissions: {}\njobs: {}\n"
