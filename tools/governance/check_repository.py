@@ -34,6 +34,9 @@ REQUIRED_PATHS = (
     "docs/research/model-card-template.md",
     "docs/research/dataset-card-template.md",
     "docs/security/threat-model.md",
+    "docs/adr/0005-chatgpt-mcp-interface.md",
+    "docs/adr/0006-optional-model-provider-adapters.md",
+    "docs/adr/0007-evidence-grounded-ai-decision-orchestrator.md",
     "tools/governance/check_pr_title.py",
 )
 
@@ -62,6 +65,7 @@ REQUIRED_CONTENT_MARKERS = {
         "proper scoring rules",
         "calibration",
         "tiny brute-force instances",
+        "predictive machine learning",
     ),
     "docs/standards/engineering.md": (
         "locked restore",
@@ -79,12 +83,43 @@ REQUIRED_CONTENT_MARKERS = {
         "explicit authorisation",
         "Technical accessibility is not permission",
         "content hash",
+        "AI-assisted extraction",
     ),
     "docs/standards/definition-of-done.md": (
         "failing test first",
         "point-in-time correct",
         "checked against brute force",
         "human-approval invariant",
+    ),
+    ".github/workflows/security.yml": (
+        "contents: read",
+        "pull-requests: read",
+        "persist-credentials: false",
+    ),
+    "docs/adr/0005-chatgpt-mcp-interface.md": (
+        "ChatGPT Apps SDK / MCP",
+        "does not receive or store OpenAI/ChatGPT OAuth tokens",
+        "Hermes proxy is not a baseline runtime dependency",
+        "Direct Codex OAuth",
+        "read-only advisory tools",
+        "Hermes MCP client",
+    ),
+    "docs/adr/0006-optional-model-provider-adapters.md": (
+        "OpenRouter",
+        "provider-neutral port",
+        "never authoritative",
+        "secret store",
+        "private Hermes proxy",
+        "deterministic services continue",
+        "candidate structured extraction",
+    ),
+    "docs/adr/0007-evidence-grounded-ai-decision-orchestrator.md": (
+        "decision orchestrator",
+        "working context",
+        "tool-generated evidence",
+        "authoritative memory",
+        "bounded orchestration",
+        "human approval",
     ),
 }
 
