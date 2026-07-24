@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="../../tests/backend/AutoFpl.Domain.Tests/AutoFpl.Domain.Tests.csproj" />
+  <Project Path="AutoFpl.Contracts/AutoFpl.Contracts.csproj" />
   <Project Path="AutoFpl.Domain/AutoFpl.Domain.csproj" />
 </Solution>
