@@ -130,6 +130,106 @@ public sealed class OfficialFplImporterTests
     }
 
     [Fact]
+    public async Task Pre_deadline_replay_selects_the_latest_capture_that_was_available_in_time()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = CreateOptions(files.DatabasePath);
+        var migrationStore = new DecisionSnapshotStore(options);
+        await migrationStore.MigrateAsync(TestContext.Current.CancellationToken);
+        var captureStore = new OfficialFplCaptureStore(options);
+        using var httpClient = new HttpClient(new StaticOfficialFplHandler(
+            CreateBootstrap(60),
+            CreateFixtures()));
+        var importer = new OfficialFplImporter(
+            httpClient,
+            captureStore,
+            new FixedTimeProvider(RetrievedAtUtc));
+
+        OfficialFplCaptureDocument beforeDeadline =
+            await importer.ImportCapturedPayloadAsync(
+                CreateBootstrap(60),
+                CreateFixtures(),
+                RetrievedAtUtc,
+                TestContext.Current.CancellationToken);
+        OfficialFplCaptureDocument afterDeadline =
+            await importer.ImportCapturedPayloadAsync(
+                CreateBootstrap(61),
+                CreateFixtures(),
+                new DateTimeOffset(2026, 8, 21, 17, 31, 0, TimeSpan.Zero),
+                TestContext.Current.CancellationToken);
+
+        OfficialFplReplayDocument? replay =
+            await captureStore.GetLatestPreDeadlineReplayAsync(
+                "2026-27",
+                1,
+                TestContext.Current.CancellationToken);
+
+        Assert.NotNull(replay);
+        Assert.Equal("1.0", replay.SchemaVersion);
+        Assert.Equal("official-fpl-api/v1", replay.SourceKey);
+        Assert.Equal("2026-27", replay.SeasonCode);
+        Assert.Equal(1, replay.Gameweek);
+        Assert.Equal(
+            new DateTimeOffset(2026, 8, 21, 17, 30, 0, TimeSpan.Zero),
+            replay.DeadlineUtc);
+        Assert.Equal(beforeDeadline.CaptureId, replay.SelectedCaptureId);
+        Assert.NotEqual(afterDeadline.CaptureId, replay.SelectedCaptureId);
+        Assert.Equal(beforeDeadline.AvailableAtUtc, replay.CaptureAvailableAtUtc);
+        Assert.Equal(
+            checked((long)(replay.DeadlineUtc - replay.CaptureAvailableAtUtc).TotalSeconds),
+            replay.CaptureLeadTimeSeconds);
+        Assert.Equal(beforeDeadline.BootstrapSha256, replay.BootstrapSha256);
+        Assert.Equal(beforeDeadline.FixturesSha256, replay.FixturesSha256);
+        Assert.Equal(2, replay.TeamCount);
+        Assert.Equal(4, replay.PlayerCount);
+        Assert.Equal(0, replay.GameweekFixtureCount);
+
+        await using WebApplicationFactory<Program> factory =
+            new WebApplicationFactory<Program>()
+                .WithWebHostBuilder(
+                    builder =>
+                    {
+                        builder.UseSetting("AutoFpl:DatabasePath", files.DatabasePath);
+                        builder.UseSetting("AutoFpl:SeedDemoSnapshot", "false");
+                    });
+        using HttpClient client = factory.CreateClient();
+        OfficialFplReplayDocument? served =
+            await client.GetFromJsonAsync<OfficialFplReplayDocument>(
+                "/api/v1/data/official-fpl/replays/2026-27/1/pre-deadline",
+                TestContext.Current.CancellationToken);
+        Assert.Equal(replay, served);
+    }
+
+    [Fact]
+    public async Task Pre_deadline_replay_returns_no_result_when_only_late_captures_exist()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = CreateOptions(files.DatabasePath);
+        var migrationStore = new DecisionSnapshotStore(options);
+        await migrationStore.MigrateAsync(TestContext.Current.CancellationToken);
+        var captureStore = new OfficialFplCaptureStore(options);
+        using var httpClient = new HttpClient(new StaticOfficialFplHandler(
+            CreateBootstrap(60),
+            CreateFixtures()));
+        var importer = new OfficialFplImporter(
+            httpClient,
+            captureStore,
+            new FixedTimeProvider(RetrievedAtUtc));
+
+        await importer.ImportCapturedPayloadAsync(
+            CreateBootstrap(60),
+            CreateFixtures(),
+            new DateTimeOffset(2026, 8, 21, 17, 30, 1, TimeSpan.Zero),
+            TestContext.Current.CancellationToken);
+
+        Assert.Null(
+            await captureStore.GetLatestPreDeadlineReplayAsync(
+                "2026-27",
+                1,
+                TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
     public async Task Invalid_cross_reference_is_rejected_before_any_rows_are_written()
     {
         using var files = new TemporaryDatabaseFiles();
