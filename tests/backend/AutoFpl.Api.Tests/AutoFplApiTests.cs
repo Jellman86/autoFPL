@@ -202,6 +202,128 @@ public sealed class AutoFplApiTests : IClassFixture<WebApplicationFactory<Progra
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    [Fact]
+    public async Task Lineup_validation_returns_formation_and_captaincy_summary()
+    {
+        using HttpResponseMessage response = await _client.PostAsJsonAsync(
+            "/api/v1/lineups/validation",
+            new
+            {
+                budgetTenths = 1_000,
+                players = ValidPlayers(),
+                startingPlayerIds = new[] { 1, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14 },
+                captainPlayerId = 8,
+                viceCaptainPlayerId = 13,
+            },
+            JsonOptions,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using JsonDocument body = await JsonDocument.ParseAsync(
+            await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken),
+            cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Equal(11, body.RootElement.GetProperty("playerCount").GetInt32());
+        Assert.Equal(1, body.RootElement.GetProperty("goalkeeperCount").GetInt32());
+        Assert.Equal(3, body.RootElement.GetProperty("defenderCount").GetInt32());
+        Assert.Equal(5, body.RootElement.GetProperty("midfielderCount").GetInt32());
+        Assert.Equal(2, body.RootElement.GetProperty("forwardCount").GetInt32());
+        Assert.Equal("3-5-2", body.RootElement.GetProperty("formation").GetString());
+        Assert.Equal(8, body.RootElement.GetProperty("captainPlayerId").GetInt32());
+        Assert.Equal(13, body.RootElement.GetProperty("viceCaptainPlayerId").GetInt32());
+    }
+
+    [Fact]
+    public async Task Lineup_validation_returns_stable_problem_for_invalid_formation()
+    {
+        using HttpResponseMessage response = await _client.PostAsJsonAsync(
+            "/api/v1/lineups/validation",
+            new
+            {
+                budgetTenths = 1_000,
+                players = ValidPlayers(),
+                startingPlayerIds = new[] { 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 },
+                captainPlayerId = 8,
+                viceCaptainPlayerId = 9,
+            },
+            JsonOptions,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        Assert.Equal("application/problem+json", response.Content.Headers.ContentType?.MediaType);
+        using JsonDocument body = await JsonDocument.ParseAsync(
+            await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken),
+            cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Equal(422, body.RootElement.GetProperty("status").GetInt32());
+        Assert.Equal("Lineup is infeasible.", body.RootElement.GetProperty("title").GetString());
+        Assert.Equal(
+            "urn:autofpl:error:lineup.formation.invalid",
+            body.RootElement.GetProperty("type").GetString());
+        Assert.Equal("lineup.formation.invalid", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("startingPlayerIds", body.RootElement.GetProperty("field").GetString());
+    }
+
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("{\"budgetTenths\":1000,\"players\":[],\"startingPlayerIds\":[],\"captainPlayerId\":1}")]
+    [InlineData("{\"budgetTenths\":null,\"players\":[],\"startingPlayerIds\":[],\"captainPlayerId\":1,\"viceCaptainPlayerId\":2}")]
+    [InlineData("{\"budgetTenths\":1000,\"players\":null,\"startingPlayerIds\":[],\"captainPlayerId\":1,\"viceCaptainPlayerId\":2}")]
+    [InlineData("{\"budgetTenths\":1000,\"players\":[],\"startingPlayerIds\":[null],\"captainPlayerId\":1,\"viceCaptainPlayerId\":2}")]
+    [InlineData("{\"budgetTenths\":1000,\"players\":[null],\"startingPlayerIds\":[],\"captainPlayerId\":1,\"viceCaptainPlayerId\":2}")]
+    [InlineData("{\"budgetTenths\":1000,\"players\":[{\"clubId\":1,\"position\":\"goalkeeper\",\"priceTenths\":45}],\"startingPlayerIds\":[],\"captainPlayerId\":1,\"viceCaptainPlayerId\":2}")]
+    [InlineData("{\"budgetTenths\":1000,\"players\":[{\"playerId\":1,\"clubId\":1,\"position\":null,\"priceTenths\":45}],\"startingPlayerIds\":[],\"captainPlayerId\":1,\"viceCaptainPlayerId\":2}")]
+    [InlineData("{\"budgetTenths\":1000,\"players\":[],\"startingPlayerIds\":\"bad\",\"captainPlayerId\":1,\"viceCaptainPlayerId\":2}")]
+    [InlineData("{\"budgetTenths\":1000,\"budgetTenths\":1000,\"players\":[],\"startingPlayerIds\":[],\"captainPlayerId\":1,\"viceCaptainPlayerId\":2}")]
+    [InlineData("{\"budgetTenths\":1000,\"players\":[],\"startingPlayerIds\":[],\"captainPlayerId\":1,\"viceCaptainPlayerId\":2,\"unexpected\":true}")]
+    [InlineData("[]")]
+    public async Task Lineup_validation_rejects_malformed_or_ambiguous_json(string body)
+    {
+        using var content = new StringContent(body, Encoding.UTF8, "application/json");
+
+        using HttpResponseMessage response = await _client.PostAsync(
+            "/api/v1/lineups/validation",
+            content,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("\"budgetTenths\":1000", "\"budgetTenths\":\"1000\"")]
+    [InlineData("\"playerId\":1,", "\"playerId\":\"1\",")]
+    [InlineData("\"clubId\":1,\"position\"", "\"clubId\":\"1\",\"position\"")]
+    [InlineData("\"priceTenths\":45", "\"priceTenths\":\"45\"")]
+    [InlineData("\"startingPlayerIds\":[1,3", "\"startingPlayerIds\":[\"1\",3")]
+    [InlineData("\"captainPlayerId\":8", "\"captainPlayerId\":\"8\"")]
+    [InlineData("\"viceCaptainPlayerId\":13", "\"viceCaptainPlayerId\":\"13\"")]
+    public async Task Lineup_validation_rejects_quoted_numeric_fields(
+        string unquotedFragment,
+        string quotedFragment)
+    {
+        string body = JsonSerializer.Serialize(
+            new
+            {
+                budgetTenths = 1_000,
+                players = ValidPlayers(),
+                startingPlayerIds = new[] { 1, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14 },
+                captainPlayerId = 8,
+                viceCaptainPlayerId = 13,
+            },
+            JsonOptions);
+        string quotedBody = body.Replace(
+            unquotedFragment,
+            quotedFragment,
+            StringComparison.Ordinal);
+        Assert.NotEqual(body, quotedBody);
+        using var content = new StringContent(quotedBody, Encoding.UTF8, "application/json");
+
+        using HttpResponseMessage response = await _client.PostAsync(
+            "/api/v1/lineups/validation",
+            content,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
     private static PlayerRequest[] ValidPlayers() =>
     [
         new(1, 1, "goalkeeper", 45),

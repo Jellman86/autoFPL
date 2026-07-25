@@ -11,6 +11,7 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **Starting-XI feasibility is now executable product behavior.** A manual-input API endpoint validates that 11 unique starters belong to a valid squad, satisfy current 2026/27 goalkeeper/defender/forward formation rules, and have distinct captain and vice-captain selections from the XI.
 - **Manual squad feasibility is now executable product behavior.** A new API endpoint applies deterministic 15-player composition, unique-player, club-limit and exact integer-tenths budget rules without external FPL access or account automation.
 - **Initial lawful source admissions now have an executable provenance contract.** A Draft-07 schema binds manual input and repository-authored synthetic fixtures to their admission evidence, purpose, rights and point-in-time metadata; checked-in examples are enforced without adding runtime ingestion or persistence.
 - **The verified development API is privately deployed through Dockhand.** The Git-backed Compose stack pins the published GHCR manifest digest, runs with a read-only root filesystem and bounded resources, and exposes the service only on the trusted internal Docker network with no host port, proxy host or public DNS route.
