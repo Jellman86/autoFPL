@@ -1,0 +1,81 @@
+using System.Net;
+using System.Text.Json;
+
+using Microsoft.AspNetCore.Mvc.Testing;
+
+using Xunit;
+
+namespace AutoFpl.Api.Tests;
+
+public sealed class OpenApiContractTests : IClassFixture<WebApplicationFactory<Program>>
+{
+    private readonly HttpClient _client;
+
+    public OpenApiContractTests(WebApplicationFactory<Program> factory)
+    {
+        _client = factory.CreateClient();
+    }
+
+    [Fact]
+    public async Task V1_document_exposes_the_supported_http_contract()
+    {
+        using HttpResponseMessage response = await _client.GetAsync(
+            "/openapi/v1.json",
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
+
+        await using Stream content = await response.Content.ReadAsStreamAsync(
+            TestContext.Current.CancellationToken);
+        using JsonDocument document = await JsonDocument.ParseAsync(
+            content,
+            cancellationToken: TestContext.Current.CancellationToken);
+
+        JsonElement root = document.RootElement;
+        Assert.StartsWith("3.1.", root.GetProperty("openapi").GetString(), StringComparison.Ordinal);
+        Assert.Equal("1.0.0", root.GetProperty("info").GetProperty("version").GetString());
+
+        JsonElement paths = root.GetProperty("paths");
+        Assert.True(paths.TryGetProperty("/api/v1/advice/demo", out JsonElement advicePath));
+        Assert.Equal(
+            "GetDemoGameweekAdvice",
+            advicePath.GetProperty("get").GetProperty("operationId").GetString());
+        Assert.True(paths.TryGetProperty("/api/v1/squads/validation", out _));
+        Assert.True(paths.TryGetProperty("/api/v1/gameweek-outcomes/effective-score", out _));
+    }
+
+    [Fact]
+    public async Task Advice_operation_describes_success_schema_and_has_no_security_secrets()
+    {
+        using JsonDocument document = await GetDocumentAsync();
+        JsonElement root = document.RootElement;
+        JsonElement operation = root
+            .GetProperty("paths")
+            .GetProperty("/api/v1/advice/demo")
+            .GetProperty("get");
+        JsonElement response = operation
+            .GetProperty("responses")
+            .GetProperty("200")
+            .GetProperty("content")
+            .GetProperty("application/json")
+            .GetProperty("schema");
+
+        Assert.True(response.TryGetProperty("$ref", out _));
+
+        string rawDocument = root.GetRawText();
+        Assert.DoesNotContain("apiKey", rawDocument, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("authorization", rawDocument, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("password", rawDocument, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private async Task<JsonDocument> GetDocumentAsync()
+    {
+        Stream content = await _client.GetStreamAsync(
+            "/openapi/v1.json",
+            TestContext.Current.CancellationToken);
+        return await JsonDocument.ParseAsync(
+            content,
+            cancellationToken: TestContext.Current.CancellationToken);
+    }
+}

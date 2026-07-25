@@ -7,18 +7,19 @@ A rigorous private home-research platform for **high-quality, human-approved Fan
 
 ## Status
 
-**Deterministic foundation deployed; v0.1 evidence loop next.** The private development API now validates manual squad/selection state, resolves substitutions and captaincy, and scores an effective Gameweek outcome. It does not yet ingest a production dataset, forecast, simulate, optimise or provide the planned advisory product.
+**Deterministic foundation deployed; first decision-room slice in development.** The private development API validates manual squad/selection state, resolves substitutions and captaincy, and scores an effective Gameweek outcome. The first web slice renders a responsive formation, bench, interactive player evidence, alternatives and an honest synthetic/AI-unavailable state from a typed demo endpoint. It does not yet ingest a production dataset, persist state, forecast, simulate, optimise or provide real advice.
 
 The [delivery roadmap](docs/roadmap.md) defines the dependency-ordered route from the current foundation through v0.1 single-Gameweek advice, transfer and chip planning, and the v1.0 human-approved advisor. See the [documentation index](docs/index.md) and [changelog](CHANGELOG.md) for maintained guidance and implemented changes.
 
 ## Intended home-lab architecture
 
-- **One .NET 10 application** — product API, workflow, authoritative state and MCP tools.
+- **One .NET 10 application** — product API, workflow, authoritative state, static decision-room UI and MCP tools.
+- **OpenAPI 3.1 contract** — the supported HTTP surface is generated from runtime metadata at `/openapi/v1.json`.
 - **SQLite** — authoritative local storage on a persistent home-lab volume.
-- **Python when needed** — research, forecasting, simulation and optimisation as a module/process or bounded worker.
-- **Web UI when useful** — presentation is added for a concrete user journey, not pre-built as infrastructure.
+- **Python when needed** — research, forecasting, reproducible CPU/GPU Monte Carlo simulation and optimisation as a module/process or bounded worker.
+- **Gameweek decision room** — an evidence-rich formation, player-card, explanation, comparison and grounded-conversation experience served by the application.
 - **OpenViking** — versioned research and unstructured context, never authoritative squad state.
-- **ChatGPT Apps SDK / MCP** — subscription-backed conversational client using read-only autoFPL tools; autoFPL does not hold ChatGPT credentials.
+- **ChatGPT/Codex plugin and MCP** — subscription-backed use inside the OpenAI host through read-only autoFPL tools and an optional MCP Apps UI; autoFPL does not hold ChatGPT credentials.
 - **Hermes MCP client** — private conversational access to the same versioned prediction tools, using Hermes' independently configured model provider.
 - **Optional model-provider adapters** — OpenRouter API or a private Hermes proxy may perform bounded extraction/classification and generate explanations behind a provider-neutral boundary; outputs are quarantined or non-authoritative and neither provider is required for core operation.
 - **Evidence-grounded AI decision orchestrator** — the strategic “mind” retrieves relevant data and memory, asks forecasting/simulation/optimisation tools for evidence and compares feasible plans. Application-managed mode persists a structured unapproved proposal; client-hosted ChatGPT/Hermes returns an evidence-grounded advisory synthesis without proposal persistence.
@@ -74,6 +75,7 @@ make verify
 - `docs/roadmap.md` — prioritised future outcomes and evidence gates.
 - `contracts/` — versioned stable external and persisted-data boundaries where useful.
 - `src/` — product and analytics implementation boundaries.
+- `src/backend/AutoFpl.Api/wwwroot/` — the current single-application Gameweek decision room.
 - `tools/governance/` — executable repository policy.
 - `tests/` — governance, domain and contract tests.
 - `CHANGELOG.md` — implemented notable changes, with current work under **Unreleased**.

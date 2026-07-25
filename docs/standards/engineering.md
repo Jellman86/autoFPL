@@ -16,6 +16,10 @@ Add a service, broker, object store or different database only after a measured 
 
 Stable external, MCP and persisted-data formats are versioned and tested. Private internal v0.x APIs and module boundaries may evolve with their consumers; they do not require a new schema or ADR for every change.
 
+Supported HTTP integration boundaries follow the
+[OpenAPI standard](openapi.md). The deployed document is generated from runtime
+endpoint metadata so it cannot quietly diverge from the application.
+
 Domain rules cannot depend directly on wall clocks, global random state or network clients. Store money as integer tenths of a million, timestamps as UTC instants and predictive inputs with source/revision/`available_at` metadata.
 
 ## Language quality

@@ -1,0 +1,80 @@
+using System.Net;
+using System.Net.Http.Json;
+
+using AutoFpl.Contracts.Advice;
+
+using Microsoft.AspNetCore.Mvc.Testing;
+
+using Xunit;
+
+namespace AutoFpl.Api.Tests;
+
+public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Program>>
+{
+    private readonly HttpClient _client;
+
+    public AdvicePreviewTests(WebApplicationFactory<Program> factory)
+    {
+        _client = factory.CreateClient();
+    }
+
+    [Fact]
+    public async Task Decision_room_is_served_from_the_application_root()
+    {
+        using HttpResponseMessage response = await _client.GetAsync(
+            "/",
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("text/html", response.Content.Headers.ContentType?.MediaType);
+        string body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        Assert.Contains("Gameweek decision room", body, StringComparison.Ordinal);
+        Assert.Contains("Ask about this exact selection", body, StringComparison.Ordinal);
+        Assert.Contains("Preview data", body, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Demo_advice_exposes_a_complete_feasible_selection_contract()
+    {
+        GameweekAdviceDocument? advice = await _client.GetFromJsonAsync<GameweekAdviceDocument>(
+            "/api/v1/advice/demo",
+            TestContext.Current.CancellationToken);
+
+        Assert.NotNull(advice);
+        Assert.True(advice.IsSynthetic);
+        Assert.Equal("synthetic-preview", advice.EvidenceStatus);
+        Assert.Equal(15, advice.Selection.Players.Count);
+        Assert.Equal(11, advice.Selection.Players.Count(player => player.LineupPlace == "starting"));
+        Assert.Equal(4, advice.Selection.Players.Count(player => player.LineupPlace == "bench"));
+        Assert.Single(advice.Selection.Players, player => player.Captaincy == "captain");
+        Assert.Single(advice.Selection.Players, player => player.Captaincy == "vice-captain");
+        Assert.Equal(
+            [1, 2, 3, 4],
+            advice.Selection.Players
+                .Where(player => player.LineupPlace == "bench")
+                .Select(player => player.BenchOrder)
+                .Order()
+                .ToArray());
+        Assert.All(advice.Selection.Players, player =>
+        {
+            Assert.NotEmpty(player.Reasons);
+            Assert.NotEmpty(player.Risks);
+            Assert.True(player.Lower80 <= player.ExpectedPoints);
+            Assert.True(player.ExpectedPoints <= player.Upper80);
+        });
+    }
+
+    [Fact]
+    public async Task Demo_advice_is_explicit_about_unavailable_ai_access()
+    {
+        GameweekAdviceDocument? advice = await _client.GetFromJsonAsync<GameweekAdviceDocument>(
+            "/api/v1/advice/demo",
+            TestContext.Current.CancellationToken);
+
+        Assert.NotNull(advice);
+        Assert.False(advice.AiAccess.Available);
+        Assert.Contains("chatgpt-plugin", advice.AiAccess.PlannedModes);
+        Assert.Contains("mcp", advice.AiAccess.PlannedModes);
+        Assert.Contains("server-api-key", advice.AiAccess.PlannedModes);
+    }
+}

@@ -13,15 +13,17 @@ public data / user input / research
      authoritative local state
                  |
          .NET application
-      API / workflow / MCP
+      API / workflow / MCP / web
                  |
      Python analytics when needed
  forecast / simulate / optimise
                  |
+   Gameweek decision room + clients
+                 |
         human-reviewed advice
 ```
 
-OpenViking may supply unstructured research and personal context, but it is never authoritative squad, snapshot or forecast state. A small web interface may be added for a concrete journey; it is not a prerequisite for useful API/MCP advice.
+OpenViking may supply unstructured research and personal context, but it is never authoritative squad, snapshot or forecast state. The Gameweek decision room is now part of the v0.1 journey and is served by the same deployable application.
 
 SQLite runs on a persistent local volume with foreign keys, WAL mode, migrations and consistent backups. Another database, object store, broker or separate service requires measured evidence that the current design is insufficient.
 
@@ -35,11 +37,32 @@ SQLite runs on a persistent local volume with foreign keys, WAL mode, migrations
 
 ## Interfaces
 
-The .NET application exposes the product API and later read-only MCP tools. Stable external, MCP and persisted-data formats are versioned. Private v0.x module and API boundaries may evolve with tests and migrations.
+The .NET application exposes the product API and later read-only MCP tools.
+Stable external, MCP and persisted-data formats are versioned. Private v0.x
+module and API boundaries may evolve with tests and migrations.
+
+The supported HTTP integration surface is generated as OpenAPI 3.1 at
+`/openapi/v1.json`. OpenAPI describes HTTP consumers and generated clients; it
+does not replace the separate MCP tool contract or expose internal research
+formats by default.
 
 Python is used where its scientific ecosystem improves forecasting, simulation or optimisation. Start with the least operationally expensive integration that works: an invoked module/process or bounded worker. Introduce a long-running independent analytics service only for a measured isolation or performance need.
 
-ChatGPT and Hermes may call the same read-only MCP tools and explain evidence. Optional application-managed model providers remain behind a bounded adapter. AI output cannot alter authoritative facts, approve a proposal or act on an FPL account.
+Monte Carlo simulation starts with a vectorised, seeded CPU reference. A bounded
+analytics process may use a GPU backend after parity tests and a representative
+benchmark prove a material benefit on deployed hardware. The web/API process
+does not receive accelerator access by default.
+
+ChatGPT and Codex use the user's OpenAI-hosted experience through an autoFPL
+plugin backed by read-only MCP tools. Hermes and other MCP clients call the same
+tools. The standalone web application works without AI and may optionally use a
+server-side OpenAI API key, compatible provider or private Hermes proxy behind a
+bounded adapter. A ChatGPT subscription is not treated as a transferable API
+credential for the standalone site.
+
+AI output cannot alter authoritative facts, approve a proposal or act on an FPL
+account. An AI-suggested lineup becomes a visible draft, receives deterministic
+validation and is compared through the same forecast/scenario path.
 
 ## Repository boundaries
 
