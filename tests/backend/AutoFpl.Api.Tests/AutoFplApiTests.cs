@@ -535,6 +535,104 @@ public sealed class AutoFplApiTests : IClassFixture<WebApplicationFactory<Progra
     }
 
     [Fact]
+    public async Task Effective_outcome_returns_consistent_substitutions_and_captaincy()
+    {
+        using HttpResponseMessage response = await _client.PostAsJsonAsync(
+            "/api/v1/gameweek-outcomes/effective-resolution",
+            new
+            {
+                budgetTenths = 1_000,
+                players = ValidPlayers(),
+                startingPlayerIds = new[] { 1, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14 },
+                captainPlayerId = 8,
+                viceCaptainPlayerId = 13,
+                replacementGoalkeeperPlayerId = 2,
+                outfieldSubstitutePlayerIds = new[] { 15, 6, 7 },
+                playerIdsWhoPlayed = new[] { 1, 4, 5, 6, 9, 10, 11, 12, 13, 14, 15 },
+            },
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using JsonDocument body = JsonDocument.Parse(
+            await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
+        Assert.Equal(
+            [1, 6, 4, 5, 15, 9, 10, 11, 12, 13, 14],
+            body.RootElement.GetProperty("effectivePlayerIds").EnumerateArray()
+                .Select(element => element.GetInt32()).ToArray());
+        Assert.Equal(
+            [15, 6],
+            body.RootElement.GetProperty("activatedSubstitutePlayerIds").EnumerateArray()
+                .Select(element => element.GetInt32()).ToArray());
+        Assert.Empty(body.RootElement.GetProperty("unreplacedStartingPlayerIds").EnumerateArray());
+        Assert.Equal(8, body.RootElement.GetProperty("originalCaptainPlayerId").GetInt32());
+        Assert.Equal(13, body.RootElement.GetProperty("viceCaptainPlayerId").GetInt32());
+        Assert.Equal(13, body.RootElement.GetProperty("effectiveCaptainPlayerId").GetInt32());
+        Assert.True(body.RootElement.GetProperty("captaincyTransferred").GetBoolean());
+    }
+
+    [Theory]
+    [InlineData("[\"1\"]")]
+    [InlineData("null")]
+    public async Task Effective_outcome_rejects_malformed_play_evidence(string evidenceJson)
+    {
+        string body = ValidSubstitutionResolutionJson();
+        string malformedBody = body.Replace(
+            "\"playerIdsWhoPlayed\":[1]",
+            $"\"playerIdsWhoPlayed\":{evidenceJson}",
+            StringComparison.Ordinal);
+        Assert.NotEqual(body, malformedBody);
+        using var content = new StringContent(malformedBody, Encoding.UTF8, "application/json");
+
+        using HttpResponseMessage response = await _client.PostAsync(
+            "/api/v1/gameweek-outcomes/effective-resolution",
+            content,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("[1,1]", "outcome.played_player.duplicate")]
+    [InlineData("[1,99]", "outcome.played_player.not_in_squad")]
+    public async Task Effective_outcome_returns_stable_problem_for_infeasible_evidence(
+        string evidenceJson,
+        string expectedCode)
+    {
+        string body = ValidSubstitutionResolutionJson();
+        string invalidBody = body.Replace(
+            "\"playerIdsWhoPlayed\":[1]",
+            $"\"playerIdsWhoPlayed\":{evidenceJson}",
+            StringComparison.Ordinal);
+        using var content = new StringContent(invalidBody, Encoding.UTF8, "application/json");
+
+        using HttpResponseMessage response = await _client.PostAsync(
+            "/api/v1/gameweek-outcomes/effective-resolution",
+            content,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        using JsonDocument problem = JsonDocument.Parse(
+            await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
+        Assert.Equal(expectedCode, problem.RootElement.GetProperty("code").GetString());
+        Assert.Equal("playerIdsWhoPlayed", problem.RootElement.GetProperty("field").GetString());
+    }
+
+    [Fact]
+    public async Task Effective_outcome_rejects_unknown_json_properties()
+    {
+        string body = ValidSubstitutionResolutionJson();
+        string unknownBody = $"{body[..^1]},\"unexpected\":true}}";
+        using var content = new StringContent(unknownBody, Encoding.UTF8, "application/json");
+
+        using HttpResponseMessage response = await _client.PostAsync(
+            "/api/v1/gameweek-outcomes/effective-resolution",
+            content,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Substitution_resolution_returns_effective_lineup_and_activated_bench()
     {
         using HttpResponseMessage response = await _client.PostAsJsonAsync(
