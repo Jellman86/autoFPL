@@ -1,6 +1,6 @@
 # autoFPL documentation
 
-Use this index to find the maintained source for each topic. The deterministic private-development foundation is deployed and the next milestone is the v0.1 evidence-grounded single-Gameweek advice loop. Forecasting, simulation, optimisation, advisory MCP tools, proposal workflow and end-user dashboard do not yet exist.
+Use this index to find the maintained source for each topic. The deterministic private-development foundation is deployed and the first synthetic decision-room slice now establishes the v0.1 product contract. Real forecasting, simulation, optimisation, advisory MCP tools and proposal persistence do not yet exist.
 
 ## Start here
 
@@ -14,6 +14,7 @@ Use this index to find the maintained source for each topic. The deterministic p
 - [Documentation standard](standards/documentation.md) — how documentation is structured, grounded and validated.
 - [Definition of Done](standards/definition-of-done.md) — evidence required before a change is complete.
 - [Engineering standard](standards/engineering.md) — architecture, language, testing and dependency gates.
+- [OpenAPI standard](standards/openapi.md) — HTTP contract generation, metadata, compatibility, errors and security.
 - [Research standard](standards/research.md) — point-in-time evaluation, baselines, calibration and reproducibility.
 - [Data-quality and provenance standard](standards/data-governance.md) — point-in-time collection, source quality, reproducibility and derived-feature controls.
 - [Security standard](standards/security.md) — trust boundaries, secret handling and CI controls.

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="autoFPL evidence-grounded Fantasy Premier League decision room">
+  <title>autoFPL · Gameweek decision room</title>
+  <link rel="stylesheet" href="/app.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#decision-room">Skip to the decision room</a>
+  <header class="masthead">
+    <a class="wordmark" href="/" aria-label="autoFPL home">
+      <span class="wordmark-mark">aF</span>
+      <span>autoFPL</span>
+    </a>
+    <div class="run-state">
+      <span class="status-dot" aria-hidden="true"></span>
+      <span id="evidence-status">Loading evidence</span>
+    </div>
+  </header>
+
+  <main id="decision-room">
+    <section class="decision-header" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow" id="gameweek-label">Gameweek decision room</p>
+        <h1 id="page-title">Choose with the evidence visible.</h1>
+        <p class="lede" id="recommendation-summary">
+          Loading the first autoFPL recommendation preview.
+        </p>
+      </div>
+      <dl class="run-meta">
+        <div>
+          <dt>Deadline</dt>
+          <dd id="deadline">—</dd>
+        </div>
+        <div>
+          <dt>Evidence</dt>
+          <dd id="model-label">—</dd>
+        </div>
+        <div>
+          <dt>Projected</dt>
+          <dd><strong id="team-points">—</strong> pts</dd>
+        </div>
+      </dl>
+    </section>
+
+    <div class="workspace">
+      <section class="formation-shell" aria-labelledby="formation-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Recommended selection</p>
+            <h2 id="formation-title">Starting XI</h2>
+          </div>
+          <p class="formation-note" id="selection-objective"></p>
+        </div>
+
+        <div class="pitch" aria-label="Recommended formation">
+          <div class="halfway-line" aria-hidden="true"></div>
+          <div class="centre-circle" aria-hidden="true"></div>
+          <div class="penalty-box top" aria-hidden="true"></div>
+          <div class="penalty-box bottom" aria-hidden="true"></div>
+          <div id="formation" class="formation" aria-live="polite"></div>
+        </div>
+
+        <div class="bench-shell">
+          <div class="bench-heading">
+            <h3>Bench</h3>
+            <span>Automatic substitution order</span>
+          </div>
+          <div id="bench" class="bench"></div>
+        </div>
+      </section>
+
+      <aside class="evidence-panel" aria-labelledby="player-name">
+        <p class="eyebrow">Decision evidence</p>
+        <div class="player-heading">
+          <div>
+            <h2 id="player-name">Select a player</h2>
+            <p id="player-context">Choose any card to inspect its recommendation.</p>
+          </div>
+          <span id="player-badge" class="player-badge" hidden></span>
+        </div>
+
+        <div class="forecast-strip">
+          <div>
+            <span>Expected points</span>
+            <strong id="player-points">—</strong>
+          </div>
+          <div>
+            <span>Expected minutes</span>
+            <strong id="player-minutes">—</strong>
+          </div>
+          <div>
+            <span>80% range</span>
+            <strong id="player-range">—</strong>
+          </div>
+        </div>
+
+        <section class="evidence-list" aria-labelledby="why-title">
+          <h3 id="why-title">Why this choice</h3>
+          <ul id="player-reasons"></ul>
+        </section>
+        <section class="evidence-list risks" aria-labelledby="risk-title">
+          <h3 id="risk-title">What could change it</h3>
+          <ul id="player-risks"></ul>
+        </section>
+
+        <div class="synthetic-callout">
+          <strong>Preview data</strong>
+          <span>This screen proves the product contract. It is not real FPL advice or a fitted forecast.</span>
+        </div>
+      </aside>
+    </div>
+
+    <section class="alternatives" aria-labelledby="alternatives-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Decision sensitivity</p>
+          <h2 id="alternatives-title">Compare another approach</h2>
+        </div>
+      </div>
+      <div id="alternative-list" class="alternative-list"></div>
+    </section>
+
+    <section class="ai-desk" aria-labelledby="ai-title">
+      <div class="ai-intro">
+        <p class="eyebrow">Grounded conversation</p>
+        <h2 id="ai-title">Ask about this exact selection.</h2>
+        <p id="ai-status">
+          AI access will use the same snapshot and evidence through MCP or a configured server-side provider.
+        </p>
+      </div>
+      <form class="ai-composer" id="ai-form">
+        <label for="ai-question">Question for autoFPL</label>
+        <div>
+          <input id="ai-question" type="text" placeholder="Why is the captain worth the uncertainty?" disabled>
+          <button type="submit" disabled>Ask autoFPL</button>
+        </div>
+        <small>Conversation is deliberately unavailable until it can cite real forecast evidence.</small>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    <span>Human-approved decisions only.</span>
+    <span>Facts, forecasts and AI judgement stay separate.</span>
+  </footer>
+</body>
+</html>

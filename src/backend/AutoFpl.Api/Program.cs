@@ -1,7 +1,9 @@
 using System.Text.Json.Serialization;
 
+using AutoFpl.Api.Advice;
 using AutoFpl.Api.Errors;
 using AutoFpl.Api.Health;
+using AutoFpl.Contracts.Advice;
 using AutoFpl.Contracts.Lineups;
 using AutoFpl.Contracts.Outcomes;
 using AutoFpl.Contracts.Selections;
@@ -21,6 +23,7 @@ if (args.Length == 1 && StringComparer.Ordinal.Equals(args[0], "--health-check")
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddProblemDetails();
+builder.Services.AddOpenApi("v1");
 builder.Services.AddExceptionHandler<DecisionSnapshotValidationExceptionHandler>();
 builder.Services.AddExceptionHandler<SquadValidationExceptionHandler>();
 builder.Services.AddExceptionHandler<LineupValidationExceptionHandler>();
@@ -50,9 +53,31 @@ builder.WebHost.ConfigureKestrel(options =>
 WebApplication app = builder.Build();
 
 app.UseExceptionHandler();
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
-app.MapGet("/healthz", () => Results.Ok(new ProbeResponse("healthy")));
-app.MapGet("/readyz", () => Results.Ok(new ProbeResponse("ready")));
+app.MapOpenApi("/openapi/{documentName}.json");
+app.MapGet("/healthz", () => Results.Ok(new ProbeResponse("healthy")))
+    .WithName("GetHealth")
+    .WithSummary("Report whether the application process is alive.")
+    .WithTags("Operations")
+    .Produces<ProbeResponse>();
+app.MapGet("/readyz", () => Results.Ok(new ProbeResponse("ready")))
+    .WithName("GetReadiness")
+    .WithSummary("Report whether the application is ready to serve requests.")
+    .WithTags("Operations")
+    .Produces<ProbeResponse>();
+app.MapGet(
+    "/api/v1/advice/demo",
+    () =>
+    {
+        GameweekAdviceDocument advice = DemoGameweekAdvice.Create();
+        return Results.Ok(advice);
+    })
+    .WithName("GetDemoGameweekAdvice")
+    .WithSummary("Return the synthetic Gameweek advice fixture used by the decision-room preview.")
+    .WithTags("Advice")
+    .Produces<GameweekAdviceDocument>();
 app.MapPost(
     "/api/v1/decision-snapshot-metadata/validation",
     (DecisionSnapshotMetadataRequest request) =>
@@ -62,7 +87,13 @@ app.MapPost(
             request.SourceType ?? string.Empty);
 
         return Results.Ok(DecisionSnapshotMetadataDocument.FromDomain(metadata));
-    });
+    })
+    .WithName("ValidateDecisionSnapshotMetadata")
+    .WithSummary("Validate and canonicalise decision-snapshot metadata.")
+    .WithTags("Validation")
+    .Produces<DecisionSnapshotMetadataDocument>()
+    .ProducesProblem(StatusCodes.Status400BadRequest)
+    .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 app.MapPost(
     "/api/v1/squads/validation",
     (SquadValidationRequest request) =>
@@ -77,7 +108,13 @@ app.MapPost(
         SquadPlayer[] players = CreateSquadPlayers(request.Players);
         Squad squad = Squad.Create(request.BudgetTenths.Value, players);
         return Results.Ok(SquadValidationDocument.FromDomain(squad));
-    });
+    })
+    .WithName("ValidateSquad")
+    .WithSummary("Validate a complete manually supplied FPL squad.")
+    .WithTags("Validation")
+    .Produces<SquadValidationDocument>()
+    .ProducesProblem(StatusCodes.Status400BadRequest)
+    .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 app.MapPost(
     "/api/v1/lineups/validation",
     (LineupValidationRequest request) =>
@@ -104,7 +141,13 @@ app.MapPost(
             request.CaptainPlayerId.Value,
             request.ViceCaptainPlayerId.Value);
         return Results.Ok(LineupValidationDocument.FromDomain(lineup));
-    });
+    })
+    .WithName("ValidateLineup")
+    .WithSummary("Validate a starting XI, formation, captain and vice-captain.")
+    .WithTags("Validation")
+    .Produces<LineupValidationDocument>()
+    .ProducesProblem(StatusCodes.Status400BadRequest)
+    .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 app.MapPost(
     "/api/v1/gameweek-selections/validation",
     (GameweekSelectionValidationRequest request) =>
@@ -139,7 +182,13 @@ app.MapPost(
             request.ReplacementGoalkeeperPlayerId.Value,
             outfieldSubstitutePlayerIds);
         return Results.Ok(GameweekSelectionValidationDocument.FromDomain(selection));
-    });
+    })
+    .WithName("ValidateGameweekSelection")
+    .WithSummary("Validate a complete Gameweek selection and ordered bench.")
+    .WithTags("Validation")
+    .Produces<GameweekSelectionValidationDocument>()
+    .ProducesProblem(StatusCodes.Status400BadRequest)
+    .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 app.MapPost(
     "/api/v1/gameweek-outcomes/captaincy-resolution",
     (GameweekCaptaincyResolutionRequest request) =>
@@ -183,7 +232,13 @@ app.MapPost(
             selection,
             playerIdsWithMinutes);
         return Results.Ok(GameweekCaptaincyResolutionDocument.FromDomain(resolution));
-    });
+    })
+    .WithName("ResolveGameweekCaptaincy")
+    .WithSummary("Resolve captaincy from a valid selection and supplied minutes evidence.")
+    .WithTags("Outcomes")
+    .Produces<GameweekCaptaincyResolutionDocument>()
+    .ProducesProblem(StatusCodes.Status400BadRequest)
+    .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 app.MapPost(
     "/api/v1/gameweek-outcomes/substitution-resolution",
     (GameweekSubstitutionResolutionRequest request) =>
@@ -227,7 +282,13 @@ app.MapPost(
             selection,
             playerIdsWhoPlayed);
         return Results.Ok(GameweekSubstitutionResolutionDocument.FromDomain(resolution));
-    });
+    })
+    .WithName("ResolveGameweekSubstitutions")
+    .WithSummary("Resolve automatic substitutions from a valid selection and supplied play evidence.")
+    .WithTags("Outcomes")
+    .Produces<GameweekSubstitutionResolutionDocument>()
+    .ProducesProblem(StatusCodes.Status400BadRequest)
+    .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 app.MapPost(
     "/api/v1/gameweek-outcomes/effective-resolution",
     (GameweekSubstitutionResolutionRequest request) =>
@@ -271,7 +332,13 @@ app.MapPost(
             selection,
             playerIdsWhoPlayed);
         return Results.Ok(GameweekOutcomeResolutionDocument.FromDomain(resolution));
-    });
+    })
+    .WithName("ResolveEffectiveGameweekOutcome")
+    .WithSummary("Resolve substitutions and captaincy from one supplied play-evidence snapshot.")
+    .WithTags("Outcomes")
+    .Produces<GameweekOutcomeResolutionDocument>()
+    .ProducesProblem(StatusCodes.Status400BadRequest)
+    .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 app.MapPost(
     "/api/v1/gameweek-outcomes/effective-score",
     (GameweekScoreResolutionRequest request) =>
@@ -322,7 +389,13 @@ app.MapPost(
             playerIdsWhoPlayed,
             playerPoints);
         return Results.Ok(GameweekScoreResolutionDocument.FromDomain(resolution));
-    });
+    })
+    .WithName("ResolveEffectiveGameweekScore")
+    .WithSummary("Score an effective Gameweek outcome from complete supplied points evidence.")
+    .WithTags("Outcomes")
+    .Produces<GameweekScoreResolutionDocument>()
+    .ProducesProblem(StatusCodes.Status400BadRequest)
+    .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 
 static bool PlayerRequestIsMalformed(SquadPlayerRequest? playerRequest) =>
     playerRequest is null

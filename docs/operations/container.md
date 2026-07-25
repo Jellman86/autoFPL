@@ -2,12 +2,15 @@
 
 ## Purpose and current boundary
 
-The container is a private development API for exercising deterministic metadata, squad, lineup, gameweek-selection, captaincy, automatic-substitution, composed effective-outcome and manual effective-score rules. It has no database, FPL data collection, credentials, autonomous actions or user-facing write operations.
+The container is a private development application for exercising deterministic metadata, squad, lineup, gameweek-selection, captaincy, automatic-substitution, composed effective-outcome and manual effective-score rules. It also serves the first read-only Gameweek decision-room UI against a clearly labelled synthetic fixture. It has no database, FPL data collection, credentials, autonomous actions or user-facing write operations.
 
 Routes:
 
 | Method | Path | Behavior |
 |---|---|---|
+| `GET` | `/` | Renders the responsive Gameweek decision room |
+| `GET` | `/api/v1/advice/demo` | Returns the typed, synthetic advice fixture used by the first UI slice |
+| `GET` | `/openapi/v1.json` | Returns the generated OpenAPI 3.1 HTTP contract |
 | `GET` | `/healthz` | Liveness response: `{"status":"healthy"}` |
 | `GET` | `/readyz` | Readiness response: `{"status":"ready"}` |
 | `POST` | `/api/v1/decision-snapshot-metadata/validation` | Returns canonical metadata or a stable 400/422 problem response |
