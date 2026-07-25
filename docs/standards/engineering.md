@@ -1,69 +1,50 @@
 # Engineering Standard
 
-## Architecture
+## Home-lab architecture
 
-Use a modular-monolith-first product boundary with one independently deployable analytics worker. Add services only when a measured scaling, isolation or ownership requirement justifies the operational cost.
+Prefer the simplest system that delivers a useful prediction:
 
-- C# owns product workflow, identity, authorisation, authoritative state and audit.
-- Python owns forecast training/inference, simulation and optimisation.
-- TypeScript owns presentation, never business authority.
-- Contracts are versioned OpenAPI/JSON Schema or Protobuf artefacts.
-- Postgres is authoritative; OpenViking and model artefacts are derived/context stores.
+- one deployable .NET application for API, workflow, authoritative state and MCP;
+- SQLite on a persistent local volume as the authoritative store;
+- Python modules or a bounded worker when forecasting, simulation or optimisation needs the scientific ecosystem;
+- a web frontend only when it delivers a useful user journey; and
+- OpenViking only for unstructured context, never authoritative squad or prediction state.
 
-Domain code cannot depend directly on wall clocks, global random state, network clients or mutable process environment. Inject these at boundaries.
+Add a service, broker, object store or different database only after a measured scaling, isolation or reliability need. Keep boundaries replaceable without pre-building infrastructure for hypothetical scale.
 
-## Language gates
+## Contracts and code
 
-### .NET/C#
+Stable external, MCP and persisted-data formats are versioned and tested. Private internal v0.x APIs and module boundaries may evolve with their consumers; they do not require a new schema or ADR for every change.
 
-When introduced, pin .NET 10 LTS and NuGet dependencies. Enable nullable references, implicit usings, deterministic builds, warnings-as-errors, built-in analyzers and locked restore. Required gates: `dotnet format --verify-no-changes`, `dotnet build --locked-mode`, `dotnet test`, coverage threshold, architecture tests and package-vulnerability audit.
+Domain rules cannot depend directly on wall clocks, global random state or network clients. Store money as integer tenths of a million, timestamps as UTC instants and predictive inputs with source/revision/`available_at` metadata.
 
-### Python
+## Language quality
 
-Use Python 3.14 when the full scientific stack supports it; otherwise record a temporary Python 3.13 constraint. Manage environments with `uv`, commit `uv.lock`, require `ruff format --check`, `ruff check`, strict `mypy`, `pytest`, coverage, import-boundary tests and dependency audit. Notebooks are exploratory only; promoted logic moves into tested modules.
+Use the compiler, formatter, type checker and focused tests appropriate to code that exists. Keep dependencies locked for CI and deployment. Exploratory notebooks/scripts are allowed; logic used by the application moves into tested modules.
 
-### TypeScript
+## Testing
 
-Use current Active/Maintenance LTS Node as pinned by `.tool-versions` or equivalent and commit the package-manager lockfile. Enable TypeScript strict mode, ESLint, formatting, unit/component tests, accessibility checks and Playwright smoke tests. Browser code never receives server secrets.
+- Unit/property tests cover domain calculations and important invariants.
+- Integration tests use real SQLite files and real module boundaries where practical.
+- Contract tests cover stable external or cross-process formats.
+- End-to-end tests cover a few valuable user journeys.
+- Backtests establish scientific evidence and do not replace software tests.
 
-## Testing pyramid
+Do not create test categories merely to satisfy a pyramid. Add the smallest test that catches a realistic failure.
 
-- **Unit/property tests:** domain calculations, constraints and transformations.
-- **Contract tests:** C#↔Python and API schemas.
-- **Integration tests:** real Postgres and service boundaries using disposable containers.
-- **End-to-end tests:** a few critical human approval journeys.
-- **Backtests:** separate scientific evaluation; never substitute for software tests.
+## SQLite
 
-No snapshot-only test may approve financial, rule, scoring or recommendation behaviour. Critical calculations require explicit expected values and invariants.
+- Enable foreign keys, WAL mode and a bounded busy timeout.
+- Apply reviewed migrations explicitly during deployment/startup control, not ad hoc from request handling.
+- Test migrations from the latest schema.
+- Use the SQLite online-backup API or `VACUUM INTO` for consistent backups.
+- Destructive changes require a verified backup/recovery path.
+- Keep historical snapshots, forecasts and experiments append-only; corrections create revisions.
 
-## Data and time types
+Move away from SQLite only after measurements show that concurrent writers, availability requirements or data volume make it insufficient.
 
-- Use IDs with documented source namespace and season validity.
-- Represent FPL money as integer tenths of a million, not binary floating point.
-- Store timestamps as UTC instants and preserve the source timezone/offset when material.
-- Store `observed_at`, `available_at`, source and revision for every decision feature.
-- Randomness uses recorded seeds and isolated generators.
+## Operations and dependencies
 
-## Database changes
+Add structured logs and health checks for behaviour that actually runs. Add metrics, tracing, alerts and runbooks when operational experience shows they are useful, not as prerequisites for unwritten features.
 
-- Migrations are reviewed source artefacts, never generated at application startup in production.
-- Prefer expand/migrate/contract for breaking schema changes.
-- Test migration from the latest released schema using realistic volumes.
-- Destructive changes require backup verification and a separate approval.
-- Historical forecasts, recommendations and experiments are append-only; corrections create revisions.
-
-## Observability
-
-Instrument every scheduled job and recommendation with correlation ID, code version, data snapshot, model version and outcome. Use OpenTelemetry-compatible structured logs, metrics and traces. Never log credentials, raw tokens, user-uploaded source files or unnecessary personal data.
-
-## Dependency policy
-
-- Direct dependencies need a documented purpose, maintained status, compatible licence and vulnerability review.
-- Commit lockfiles and use frozen/locked restore in CI.
-- Pin GitHub Actions to full SHAs and container images to digests before deployment.
-- Dependabot proposes updates; CI and human review decide whether to merge.
-- Remove unused dependencies promptly.
-
-## Performance
-
-Set budgets only after measuring representative workloads. Correctness, calibration and reproducibility precede micro-optimisation. Any performance claim records dataset size, hardware class, warm-up, repetitions and variance.
+Dependencies need a purpose, compatible licence and vulnerability review. Pin GitHub Actions to full SHAs and deployed images to digests. Measure before optimising performance.

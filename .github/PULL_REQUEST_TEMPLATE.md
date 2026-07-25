@@ -1,56 +1,39 @@
-## Purpose
+## Outcome
 
-Describe the user/research outcome and link the issue, ADR and registered experiment where applicable.
+What useful application behaviour or measurable research result now works?
 
 ## Scope
 
 - **Included:**
 - **Explicitly excluded:**
-- **Compliance boundary checked:** yes/no, with explanation
-- **Research record (required for executable `src/analytics/` changes):** `docs/research/reviews/<topic>.md`
+- **Issue:**
 
-## Evidence and implementation
+## Verification
 
-- [ ] Acceptance criteria are explicit and satisfied.
-- [ ] Behaviour changes followed RED-GREEN-REFACTOR; the initial expected failure is described below.
-- [ ] Any executable `src/analytics/` change links an independently accepted substantive review or deterministic/non-inferential exemption record.
-- [ ] Research claims use point-in-time data and a registered walk-forward evaluation.
-- [ ] Data/model/architecture/security records were updated where applicable.
-- [ ] No FPL scraping, credential/session access or automatic account action was introduced.
-
-### RED evidence
-
-Command and expected failure:
+Focused and full commands with real results:
 
 ```text
 
 ```
 
-### GREEN/full verification evidence
+## Research evidence, when promoting a predictive result
 
-Commands and real results:
+- Point-in-time cutoff and temporal split:
+- Baselines and promotion rule:
+- Calibration/decision evidence:
+- Reproducibility record:
 
-```text
+## Risk
 
-```
+- Important failure or security risk:
+- Migration/recovery path, if data changes:
+- Deployment verification, if deployed:
 
-## Risk and operations
+## Checklist
 
-- Security/privacy/data-rights risks:
-- Failure and rollback/roll-forward path:
-- Observability added or changed:
-- Dependencies/licences introduced:
-
-## Definition of Done
-
-- [ ] Focused and full tests pass without new warnings or flakes.
-- [ ] Format, lint, type, governance and security checks pass.
-- [ ] Migration/contract compatibility is tested where applicable.
-- [ ] Calibration, baselines, uncertainty and sensitivity are reported where applicable.
-- [ ] Documentation and runbooks match behaviour.
-- [ ] No secret, private data or generated artefact is committed.
-- [ ] All required checks pass on this exact commit.
-
-## Reviewer focus
-
-Call out the hardest assumption or highest-risk part of the change.
+- [ ] The smallest useful vertical slice works.
+- [ ] Focused tests and `make verify` pass.
+- [ ] Formatting/linting for changed code passes.
+- [ ] Current behaviour is documented where needed.
+- [ ] No secret, private runtime data or unrelated work is included.
+- [ ] Promotion, migration, security or deployment gates were applied only where relevant.

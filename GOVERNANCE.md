@@ -1,56 +1,36 @@
 # Governance
 
-## Roles
+## Purpose
 
-The repository owner is the final steward of product scope, compliance and releases. Contributors and agents may propose changes but cannot override protected-branch, security, research-integrity or human-approval boundaries.
+autoFPL is a private, non-commercial, self-hosted home-lab project. Governance exists to produce reliable code and honest prediction evidence, protect credentials/account boundaries and keep the system maintainable. It is not an enterprise approval structure.
 
-`CODEOWNERS` records accountable review ownership. A code-owner review requirement should be enabled once a second eligible human reviewer exists; a single maintainer must not create a control that can only be bypassed administratively.
+## Responsibility
 
-## Decision classes
+The maintainer prioritises work, implements/reviews ordinary changes and controls releases. An independent reviewer is used when a change materially affects security/trust boundaries, credentials, deployment/supply chain, authoritative FPL rules, promoted data/models or external actions. One person does not need to impersonate separate project, research, security and release roles for routine work.
 
-| Decision | Required record |
-|---|---|
-| Product behaviour | Issue and acceptance tests |
-| Architecture or external integration | ADR |
-| Data source or derived dataset | Data-source review and dataset card |
-| Model/forecast promoted to decision use | Registered experiment and model card |
-| Security/privacy boundary | Threat-model update and security review |
-| FPL automation or commercial data use | Written permission plus compliance ADR |
-| Release | Release PR, changelog and rollback evidence |
+## Decision model
 
-## Branch policy
+- Ordinary product and research decisions live in code, tests, issues and concise PR rationale.
+- Write an ADR only for a consequential, hard-to-reverse architecture, security or data decision.
+- Exploratory analytics may begin immediately. Literature guides candidate selection; registration and independent review apply before a final holdout is opened or a result is promoted into recommendations.
+- Sources and features are judged by point-in-time correctness, reliability and out-of-time predictive value. Private research does not require enterprise vendor admission or written-permission paperwork, but must not bypass login/paid access, collect private session material, create abusive load or republish copyrighted corpora.
+- Plans, contracts and documentation must support a working slice rather than become standalone milestones.
 
-### `main`
+## Branches and pull requests
 
-- Always releasable.
-- Changes only by release or emergency hotfix PR.
-- Required release CI must pass on an up-to-date head SHA.
-- Commits require a verified signature; releases use signed SemVer tags once product releases begin.
-- History is immutable; force pushes and deletions are forbidden.
+- `dev` is the integration branch and `main` is the supported release branch.
+- Work uses short-lived branches and focused PRs.
+- Required CI must pass before merge.
+- Ordinary low-risk work may merge after author review and green CI.
+- Higher-risk work receives the relevant independent review before merge.
+- Deployment permission is separate from merge permission; docs/governance-only changes are not deployed.
 
-### `dev`
+## Releases
 
-- Integration branch for completed vertical slices.
-- Changes only by PR from short-lived branches.
-- The fast comprehensive `repository-policy` job and Gitleaks are required; this includes locked restore, application tests, governance tests, documentation checks and repository policy.
-- CodeQL and dependency review continue to run. Their findings must be resolved when relevant, but those slower jobs are not universal merge blockers for every development PR.
-- Commits do not require signatures and the branch need not be rebased solely to repeat already-passing checks after an unrelated `dev` update.
-- Review conversations must be resolved before merge.
-- Force pushes and deletions are forbidden.
+A release promotes a known `dev` revision to `main`, uses a signed SemVer tag and pins deployed images by digest. Release notes, migration/recovery evidence and deployment verification cover the behaviour that actually changed. Do not impose release operations on ordinary development commits.
 
-### Emergency changes
+## Non-overridable boundaries
 
-A hotfix PR may target `main` only for an active security, data-integrity or availability incident. It still requires a reproducing test, focused review, rollback steps and immediate reconciliation into `dev`.
+No exception may permit committed secrets, automatic FPL account actions, temporal leakage in a promoted result, fabricated research evidence, unsafe untrusted-input handling or broader runtime privileges without explicit approval.
 
-## Merge and release policy
-
-- Squash merge feature PRs with a Conventional Commit title.
-- Do not merge red CI, unresolved blocking review or an expired exception.
-- Require independent review for changes to security/trust boundaries, deployment or supply chain, authoritative domain logic, data/research promotion, credentials, or external actions. Ordinary low-risk changes use focused author review plus CI.
-- Release PRs promote a known `dev` commit to `main`; they do not introduce unrelated code.
-- Versioning, changelog and database compatibility are verified before a tag.
-- Deployment is a separate permission from merge and must be reversible.
-
-## Policy changes
-
-Changes to a non-negotiable scientific, security, compliance or human-approval boundary require an ADR, explicit risk analysis and owner approval. Machine-enforced repository policy changes with the executable governance test; GitHub-hosted settings are verified by API read-back and recorded in the policy PR.
+Other temporary exceptions are recorded concisely in the issue or PR with scope, reason, owner and removal condition. If an exception becomes permanent or changes a hard-to-reverse decision, update the relevant standard or ADR instead of accumulating waiver paperwork.

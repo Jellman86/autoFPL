@@ -11,32 +11,32 @@ A rigorous private home-research platform for **high-quality, human-approved Fan
 
 The [delivery roadmap](docs/roadmap.md) defines the dependency-ordered route from the current foundation through v0.1 single-Gameweek advice, transfer and chip planning, and the v1.0 human-approved advisor. See the [documentation index](docs/index.md) and [changelog](CHANGELOG.md) for maintained guidance and implemented changes.
 
-## Intended architecture
+## Intended home-lab architecture
 
-- **.NET 10 / C#** — product API, workflow control, authentication, audit and MCP tools.
-- **Python 3.14 (3.13 fallback when package compatibility requires it)** — predictive machine learning, probabilistic forecasting, simulation, backtesting and mathematical optimisation.
-- **TypeScript / Next.js** — evidence-rich dashboard.
-- **PostgreSQL** — authoritative transactional and analytical metadata.
+- **One .NET 10 application** — product API, workflow, authoritative state and MCP tools.
+- **SQLite** — authoritative local storage on a persistent home-lab volume.
+- **Python when needed** — research, forecasting, simulation and optimisation as a module/process or bounded worker.
+- **Web UI when useful** — presentation is added for a concrete user journey, not pre-built as infrastructure.
 - **OpenViking** — versioned research and unstructured context, never authoritative squad state.
 - **ChatGPT Apps SDK / MCP** — subscription-backed conversational client using read-only autoFPL tools; autoFPL does not hold ChatGPT credentials.
 - **Hermes MCP client** — private conversational access to the same versioned prediction tools, using Hermes' independently configured model provider.
 - **Optional model-provider adapters** — OpenRouter API or a private Hermes proxy may perform bounded extraction/classification and generate explanations behind a provider-neutral boundary; outputs are quarantined or non-authoritative and neither provider is required for core operation.
 - **Evidence-grounded AI decision orchestrator** — the strategic “mind” retrieves relevant data and memory, asks forecasting/simulation/optimisation tools for evidence and compares feasible plans. Application-managed mode persists a structured unapproved proposal; client-hosted ChatGPT/Hermes returns an evidence-grounded advisory synthesis without proposal persistence.
 
-The approved boundaries are recorded in [ADR-0001](docs/adr/0001-hybrid-modular-architecture.md), [ADR-0005](docs/adr/0005-chatgpt-mcp-interface.md), [ADR-0006](docs/adr/0006-optional-model-provider-adapters.md), [ADR-0007](docs/adr/0007-evidence-grounded-ai-decision-orchestrator.md), [ADR-0008](docs/adr/0008-versioned-json-contracts.md), [ADR-0009](docs/adr/0009-prediction-quality-first-private-research.md) and the [FPL access boundary](docs/compliance/fpl-terms-boundary.md).
+The current code-first boundary is recorded in [ADR-0010](docs/adr/0010-code-first-home-lab-architecture.md), together with the [prediction-quality decision](docs/adr/0009-prediction-quality-first-private-research.md), [read-only MCP boundary](docs/adr/0005-chatgpt-mcp-interface.md) and [FPL access boundary](docs/compliance/fpl-terms-boundary.md).
 
 ## Non-negotiable quality principles
 
 1. Maximise leakage-free out-of-time prediction quality and decision utility.
-2. Tests first for every behaviour change.
+2. Build working vertical slices with focused tests; do not substitute governance for implementation.
 3. Point-in-time-correct data and rolling/walk-forward evaluation only.
 4. Calibrate probabilistic forecasts and compare them with simple and incumbent baselines.
-5. Require every new source, feature or model to justify itself through ablation and failure-slice evidence.
+5. Require every source, feature or model promoted into advice to justify itself through ablation and failure-slice evidence.
 6. Keep optimiser outputs feasible, reproducible and independently checked.
 7. Link every material result to code, data snapshot, environment, seed and evidence.
 8. Keep credentials, private data and account actions outside the analytical pipeline.
 9. Label claims as observed fact, sourced evidence, assumption or judgement.
-10. A feature is not complete until the repository's [Definition of Done](docs/standards/definition-of-done.md) is satisfied.
+10. Apply research-promotion, migration and release gates only when work reaches those stages.
 
 ## Branch and release flow
 
@@ -65,14 +65,14 @@ make verify
 
 ## Repository map
 
-- `docs/adr/` — immutable architecture decision records.
+- `docs/adr/` — durable architecture decisions, including explicit supersession.
 - `docs/standards/` — enforceable engineering and scientific standards.
 - `docs/compliance/` — legal and product-operation boundaries.
 - `docs/research/` — evidence base and reproducibility templates.
 - `docs/operations/` — build, deployment, verification and rollback runbooks.
 - `docs/index.md` — maintained routing index for repository documentation.
 - `docs/roadmap.md` — prioritised future outcomes and evidence gates.
-- `contracts/` — immutable, versioned machine-readable service and data boundaries.
+- `contracts/` — versioned stable external and persisted-data boundaries where useful.
 - `src/` — product and analytics implementation boundaries.
 - `tools/governance/` — executable repository policy.
 - `tests/` — governance, domain and contract tests.

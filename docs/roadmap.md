@@ -22,7 +22,7 @@ The end state is not an autonomous FPL bot. Public-source scraping, search, brow
 The deterministic foundation is implemented on `dev` and privately deployed as a hardened, digest-pinned development service. It currently supports:
 
 - versioned decision-snapshot metadata validation;
-- initial manual-metadata and repository-synthetic provenance records; [#54](https://github.com/Jellman86/autoFPL/issues/54) aligns their timing semantics with later deterministic evidence endpoints;
+- versioned manual and synthetic source records plus manual-evidence timing rules;
 - manual squad, starting-XI and complete bench-order feasibility;
 - effective captaincy and automatic substitutions from manual play evidence;
 - one composed effective outcome and deterministic effective-XI scoring from complete manual points;
@@ -42,45 +42,42 @@ This is not yet a forecasting product. There is no production ingestion pipeline
 **Required input classes:**
 
 - versioned season/Gameweek/deadline metadata and the deterministic rules required for lineup and captain feasibility;
-- the user's 15-player squad, starting selection, bench order, captain/vice-captain and private risk/preferences, submitted under a versioned manual-input contract;
+- the user's 15-player squad, starting selection, bench order, captain/vice-captain and private risk/preferences;
 - free point-in-time player observations and historical outcome targets selected for coverage, reliability, temporal correctness and measured predictive value;
-- public official football news, specialist scout and pundit evidence needed for injury/availability, probable-minutes and role claims, preserving whether each item is a direct quote, report or opinion plus its publication/receipt time, source span, conflicts and expiry;
 - source, revision, timing and content-identity metadata sufficient to prove that every input was available before the decision deadline.
+
+Public news, scout and pundit features are valuable enhancement candidates, not blockers to the first forecast. Add them when they can be reconstructed point in time and their out-of-time ablation improves the baseline.
 
 **Required output artefacts:**
 
 - one immutable decision-snapshot identifier;
-- one versioned news-claim/feature artefact preserving source reliability, extraction confidence, freshness, corroboration, conflicts, expiry and abstention;
 - one versioned predictive distribution for each eligible squad player;
 - one reproducible bounded scenario artefact;
-- multiple independently verified feasible lineup/captain candidates with objective and sensitivity evidence;
+- multiple rules-feasible lineup/captain candidates with objective and sensitivity evidence;
 - one versioned read-only evidence bundle containing assumptions, alternatives, uncertainty, limitations and all upstream identifiers.
 
 **Required journey:**
 
-1. Select and validate a minimum free point-in-time input package, including named news/scout/pundit sources where useful.
-2. Collect public source content through the most reliable bounded transport, extract closed-schema candidate claims, preserve point-in-time provenance and quarantine unresolved identity, chronology or conflict failures.
-3. Pre-register and calibrate source/claim scoring out of time, including expiry, sparse-source shrinkage, abstention and a no-news baseline.
-4. Reconstruct an immutable decision snapshot using only pre-deadline evidence.
-5. Produce versioned probabilistic player forecast artefacts from an independently accepted baseline, with mandatory news-feature ablation.
-6. Produce bounded, reproducible single-Gameweek scenarios.
-7. Generate multiple rules-feasible starting-XI, bench and captain candidates.
-8. Expose facts, run identifiers, source claims/conflicts, alternatives, uncertainty and limitations through read-only API/MCP tools.
-9. Let ChatGPT and Hermes provide cited client-hosted advisory synthesis while preserving the manual-action boundary.
-10. Prove the full path with one immutable end-to-end fixture, then publish and privately deploy a signed v0.1 release.
+1. Persist the minimum free point-in-time data and user state in SQLite.
+2. Reconstruct a decision snapshot using only evidence available before its cutoff.
+3. Implement simple and research-backed forecast candidates, then register the final comparison before opening the holdout.
+4. Promote only a leakage-safe model that improves on declared baselines out of time.
+5. Produce bounded scenarios and rules-feasible lineup/captain candidates.
+6. Expose the evidence, alternatives and uncertainty through read-only API/MCP tools.
+7. Prove the journey end to end and privately deploy v0.1.
+8. Add news or other richer sources in parallel when measured ablations show value.
 
 **Acceptance scenario:**
 
-The repository fixture `v0.1-advisory-acceptance/v1` will describe a fictional 15-player squad, one decision deadline, fictional pre-deadline official/scout/pundit items containing corroborated, conflicting, stale and hostile-text examples, only pre-deadline observations, a known later outcome used solely for evaluation, and enough contrasting player uncertainty to make lineup and captain alternatives observable. Given that fixture, the exact release candidate must reproduce the same source/news-claim, snapshot and run identifiers, schema-valid forecast/scenario/candidate artefacts and bounded advisory evidence through both API and MCP. ChatGPT and Hermes may explain that evidence but must not follow embedded instructions, invent fields, change feasibility, persist approval or call an FPL account. Synthetic success proves the pipeline only; a real-world advice claim additionally requires the evaluated point-in-time source evidence from issues #40 and #55.
+The acceptance fixture describes a 15-player squad, one decision cutoff, pre-cutoff observations and a later outcome used only for evaluation. The application must recreate the same snapshot, forecast, scenario and feasible candidates through API/MCP. Real-world prediction claims require rolling point-in-time evaluation; synthetic success proves software behaviour only.
 
 **Completion evidence:**
 
 - the same immutable fixture can reconstruct the snapshot and reproduce the promoted forecast, scenario and feasible-candidate artefacts;
 - temporal leakage, calibration, proper-score, decision-utility and failure-slice gates pass according to a preregistered rule;
-- private news-corpus tests reproduce extraction, correction, conflict, expiry and abstention, and the promoted forecast reports preregistered no-news and source ablations plus out-of-time source/claim calibration;
 - tiny simulation and optimisation cases match exact, brute-force or trusted references;
-- ChatGPT and Hermes receive equivalent versioned evidence and cannot access proposal writes, approval, memory mutation or FPL actions;
-- the exact release tag passes required checks, deploys by immutable digest and survives exercised recovery and rollback;
+- ChatGPT and Hermes receive equivalent evidence and cannot access FPL actions;
+- the release passes required checks and deploys by immutable digest;
 - limitations and uncertainty remain visible, and the user enacts any decision manually.
 
 **Explicit non-goals:** transfers, chips, opponent modelling, public exposure, application-managed AI, paid-provider dependence and FPL account access.
@@ -91,16 +88,16 @@ The repository fixture `v0.1-advisory-acceptance/v1` will describe a fictional 1
 2. [#39 — v0.1 user journey and acceptance scenario](https://github.com/Jellman86/autoFPL/issues/39)
 3. [#54 — align deployed manual-evidence contracts with reproducible timing semantics](https://github.com/Jellman86/autoFPL/issues/54)
 4. [#40 — select and validate the minimum free v0.1 evidence package](https://github.com/Jellman86/autoFPL/issues/40)
-5. [#41 — authoritative season rules and decision-snapshot persistence](https://github.com/Jellman86/autoFPL/issues/41)
-6. [#55 — evaluate free football news, scout and pundit sources](https://github.com/Jellman86/autoFPL/issues/55)
-7. [#42 — accepted/preregistered baseline and news-feature forecast evidence](https://github.com/Jellman86/autoFPL/issues/42)
-8. [#56 — extract, corroborate and score football-news claims](https://github.com/Jellman86/autoFPL/issues/56)
-9. [#43 — calibrated baseline forecast artefacts with news-feature ablation](https://github.com/Jellman86/autoFPL/issues/43)
-10. [#44 — reproducible single-Gameweek scenarios](https://github.com/Jellman86/autoFPL/issues/44)
-11. [#45 — feasible lineup/captain candidates](https://github.com/Jellman86/autoFPL/issues/45)
-12. [#46 — versioned read-only API/MCP evidence](https://github.com/Jellman86/autoFPL/issues/46)
-13. [#47 — end-to-end human-controlled advisory proof](https://github.com/Jellman86/autoFPL/issues/47)
-14. [#48 — signed v0.1 release and private deployment](https://github.com/Jellman86/autoFPL/issues/48)
+5. [#41 — SQLite-backed season rules and decision-snapshot persistence](https://github.com/Jellman86/autoFPL/issues/41)
+6. [#42 — register the first baseline comparison](https://github.com/Jellman86/autoFPL/issues/42)
+7. [#43 — calibrated baseline forecast artefacts](https://github.com/Jellman86/autoFPL/issues/43)
+8. [#44 — reproducible single-Gameweek scenarios](https://github.com/Jellman86/autoFPL/issues/44)
+9. [#45 — feasible lineup/captain candidates](https://github.com/Jellman86/autoFPL/issues/45)
+10. [#46 — versioned read-only API/MCP evidence](https://github.com/Jellman86/autoFPL/issues/46)
+11. [#47 — end-to-end human-controlled advisory proof](https://github.com/Jellman86/autoFPL/issues/47)
+12. [#48 — v0.1 release and private deployment](https://github.com/Jellman86/autoFPL/issues/48)
+
+News-source research [#55](https://github.com/Jellman86/autoFPL/issues/55), claim extraction [#56](https://github.com/Jellman86/autoFPL/issues/56) and a hardened Byparr connector [#57](https://github.com/Jellman86/autoFPL/issues/57) run as optional enhancement work and do not block the first baseline forecast.
 
 ### v0.2 — Transfer planning
 
@@ -145,12 +142,9 @@ current deterministic contracts -> align evidence timing/provenance (#54) --+
                                                                      |
 v0.1 user journey ---------------------------------------------------+-> select/validate minimum data (#40)
 
-#40 -> authoritative snapshot (#41)
-#40 -> evaluate news/scout/pundit sources (#55)
-#55 -> hardened Byparr connector (#57, when it improves public-source coverage)
-#40 + #55 -> forecast/news-feature preregistration (#42)
-#41 + #42 + #55 + #57-if-applicable -> extract/corroborate/score news claims (#56)
-#41 + #42 + #56 -> calibrated forecast artefact with no-news ablation (#43)
+#40 -> SQLite authoritative snapshot (#41)
+#40 + #41 -> baseline comparison registration (#42)
+#41 + #42 -> calibrated forecast artefact (#43)
                      -> scenario artefact
                          -> feasible candidates
                              -> read-only API/MCP evidence
@@ -161,6 +155,9 @@ v0.1 user journey ---------------------------------------------------+-> select/
                                                  -> web proposal/approval
                                                      +-> v1.0 release
                                                      `-> optional managed AI --(if included)--> v1.0 release
+
+#55 -> optional news-source evidence -> #56 optional news features -> ablation against #43
+#57 only when it materially improves that optional source coverage
 ```
 
 A later stage must not bypass an unmet predecessor by replacing missing evidence with LLM output, future-known data, an undocumented feed or an unvalidated model.
@@ -187,22 +184,20 @@ The API, protected publication pipeline and digest-pinned private Dockhand deplo
 
 - Version season rules, deadlines, scoring, prices, positions, transfers and chips when their release requires them.
 - Keep money and time exact.
-- Persist authoritative workflow state in PostgreSQL; keep OpenViking non-authoritative.
+- Persist authoritative workflow state in SQLite; keep OpenViking non-authoritative.
 - Reconstruct snapshots using only evidence available at the relevant deadline.
 - Check every proposed action with deterministic invariants.
 
-**Exit evidence:** contract, property, migration and historical-fixture tests cover boundaries; tiny feasibility cases match brute force/trusted references; corrections create revisions; backup/restore works.
+**Exit evidence:** focused domain, migration and historical-fixture tests cover delivered behaviour; corrections create revisions; a consistent SQLite backup can be restored.
 
 ### 4. Forecasting and research
 
-- Complete and independently accept the structured evidence review before executable analytics.
-- Preregister target, horizon, baselines, metrics, slices and promotion threshold.
+- Use literature and strong existing implementations to select worthwhile methods; exploratory analytics may begin immediately.
+- Before the final holdout, register target, horizon, baselines, metrics, slices and promotion threshold.
 - Use rolling-origin evaluation, training-only transforms and leakage controls.
-- Extract news as closed-schema candidate claims in an isolated bounded worker; remote text is untrusted data, cannot authorize tools/actions and remains quarantined until identity, chronology, corroboration/conflict and expiry checks pass.
-- Calibrate source reliability and claim confidence only against later outcomes in rolling/walk-forward evaluation, with sparse-source shrinkage and abstention; keep these scores separate from extraction confidence and model uncertainty.
-- Require a no-news baseline and ablation so news features are promoted only when they add reproducible out-of-time value and missing news never breaks the forecast path.
+- Add news or other rich features only after the baseline works, and promote them only when point-in-time ablation shows repeatable value.
 - Measure calibration, proper scoring rules and decision utility.
-- Record immutable code/data/environment/seed provenance and retain negative results.
+- Record reproducibility details for promoted results and retain negative findings.
 
 **Exit evidence:** promoted forecasts beat the declared simple baselines under the preregistered rule and remain reproducible with documented limitations.
 

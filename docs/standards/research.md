@@ -1,119 +1,55 @@
 # Research and Model Validation Standard
 
-## Governing principle
+## North star
 
-A model is useful only if it improves an explicitly defined decision using information genuinely available at that decision time. Leaderboard fit or one successful historical season is insufficient.
+Use the strongest practical research-backed methods that improve FPL decisions on this private home-lab system. A method earns use through local point-in-time, out-of-time evidence—not paper reputation, novelty or one favourable season.
 
-## Evidence review before implementation
+## Evidence-led implementation
 
-A versioned evidence review before implementation is required when a feature introduces or materially changes an inferred probability, forecast target/feature/model, uncertainty-driven simulation, or empirical performance claim used to rank or recommend FPL actions. Executable changes under the designated `src/analytics/` boundary trigger the automated gate. Copy [`literature-review-template.md`](../research/literature-review-template.md) to `docs/research/reviews/<topic>.md` and link it from the issue and registered experiment before production implementation begins.
+Literature searches, strong open-source implementations and credible practitioner evidence should guide which methods are worth trying. They do not require a separately accepted document before code can be written. The repository review template is available as a working note for substantial investigations.
 
-Exact season rules, contract validation, deterministic solver mechanics, descriptive reporting, UI, CRUD and infrastructure do not require a literature review when they introduce no inferred input, predictive claim or empirical-performance claim. An executable `src/analytics/` change claiming this exemption must still link a short `exempt` record from the same template: classification `deterministic-non-inferential`, a substantive rationale, and independent acceptance. This is the reviewable exception path; a PR checkbox or unexplained “not applicable” is not sufficient.
+Implement simple baselines early, then established and frontier challengers where the expected value justifies the compute and complexity. Exploratory code and results must be labelled as such and cannot influence recommendations.
 
-The feature owner writes the review in a separate change before implementation. A person or delegated reviewer distinct from the owner, with relevant research/domain competence, accepts it only after checking scope, search reproducibility, source quality, contradictory evidence, temporal validity, baselines and the preregistered promotion rule. The reviewer posts `ACCEPT-RESEARCH-REVIEW <Review ID>` or `ACCEPT-RESEARCH-EXEMPTION <Review ID>` in a GitHub issue comment or PR review. The record stores both GitHub logins, the exact UTC timestamp and the direct comment/review URL. For executable analytics changes, CI confirms that `Owner` is the PR author, reads the record and registered experiment from the base commit, resolves every DOI/versioned arXiv citation, and verifies the acceptance actor, timestamp and token through GitHub's read-only API. Push and manual runs must resolve the checked revision to an associated merged PR and reuse its base/body/author context; direct revisions fail even when they do not touch analytics. The exact protected `dev` to `main` release promotion within `Jellman86/autoFPL` does not repeat analytics review because each change was gated when it entered `dev`; fork branches named `dev` and every other source/base pair receive no exception. A fabricated, self-accepted, same-PR or direct-push record therefore fails closed.
+## Registration and promotion
 
-The review must:
+Before opening a final holdout or making a confirmatory promotion claim, record:
 
-- define the decision, target, population, horizon, information boundary and intended claim;
-- record search date, databases, exact queries, inclusion/exclusion criteria and backward/forward citation search so discovery is repeatable;
-- prefer primary peer-reviewed papers and strong reviews, while clearly labelling preprints, vendor claims and non-replicated results;
-- cite the DOI or immutable paper version actually read, including an arXiv version suffix where applicable;
-- compare naive/domain baselines, the incumbent, strong established methods and credible recent frontier candidates;
-- extract each source's data, temporal split, baselines, metrics, calibration, uncertainty, assumptions, limitations, compute, code/data availability and licence;
-- include contradictory, negative and failed-replication evidence and explain transfer limits to FPL;
-- preregister the candidate set, implementation budget, temporal evaluation and promotion rule before final testing.
+- decision, population, target and horizon;
+- information cutoff and point-in-time dataset;
+- temporal training, validation and final-test windows;
+- naive, strong and incumbent baselines;
+- candidate set and tuning budget;
+- proper scoring, calibration and decision-utility metrics; and
+- the promotion threshold and failure conditions.
 
-Use current methods where they are credible and feasible, but frontier methods are challengers, not defaults. Novelty, citation count or a paper's “state of the art” label does not establish suitability. Every candidate—including a paper-backed one—must earn promotion through reproducible local out-of-time evidence against strong baselines under autoFPL's point-in-time data, compute budget and decision objective. Refresh the search before implementation when material evidence may have changed and again before promotion.
+Dataset and model cards are required only for artefacts promoted into recommendations. Independent review applies at promotion, not before exploratory implementation.
 
-## AI roles and authority
+## Temporal validity
 
-- **Predictive machine learning is expected:** statistical, Bayesian, tree-based, neural or ensemble models may generate player-minutes, event and points probability distributions when they pass this standard's temporal, calibration and promotion gates.
-- Reproducible/deterministic authority does not require rules-only models. It requires versioned code, training snapshot, features, hyperparameters, environment and random seeds, plus declared numerical tolerances where exact hardware determinism is impractical.
-- Generative models may perform bounded extraction, classification, entity resolution, research assistance and explanation. Their output is untrusted candidate data until source-linked validation succeeds.
-- No chat response, generated narrative or unsupported extracted claim directly becomes a forecast target, serving feature, solver input or approval.
-- Model complexity, including deep learning or LLM use, earns promotion only through repeated point-in-time improvement over declared baselines.
+- Use expanding-window or rolling-origin evaluation.
+- Require `available_at <= decision_cutoff` for every predictive input.
+- Fit preprocessing within each training fold.
+- Use the injury, line-up, price, ownership and statistic revision available at the decision time.
+- Do not use future entity mappings or corrected final values in historical features.
+- Random splits cannot support temporal performance claims.
+- Use the final holdout once for the registered claim; further tuning creates a new claim and holdout.
 
-## Research lifecycle
+## Baselines and metrics
 
-1. **Evidence:** complete and accept the feature evidence review; define baselines, established candidates and frontier challengers.
-2. **Question:** state the decision, population, horizon and utility.
-3. **Registration:** record hypothesis, candidates, baselines, metrics, split and promotion rule before final evaluation.
-4. **Snapshot:** freeze immutable, source-attributed point-in-time data.
-5. **Develop:** reproduce baselines first, then use training and validation periods only.
-6. **Evaluate:** unlock the final test period once; retain all results.
-7. **Review:** independent evidence, leakage, statistical and domain review.
-8. **Promote:** create model/dataset cards and an operational shadow evaluation.
-9. **Monitor:** calibration, drift, missingness, latency and realised decision impact.
-10. **Retire:** preserve reproducibility and route consumers to the successor.
+Start with methods such as rolling minutes/points rates, simple minutes × rate, no-change/current squad and any point-in-time market or incumbent baseline available. Compare more complex methods using proper scoring and calibration appropriate to the target, plus downstream decision utility.
 
-## Temporal validity and leakage
+Useful metrics may include log loss, Brier score, CRPS, calibration plots, interval coverage, realised points and regret against an information-matched oracle. Report meaningful slices such as position, club, price, injury state and fixture congestion where sample size permits.
 
-- Use expanding-window or rolling-origin walk-forward validation.
-- Embargo data whose publication latency may overlap the forecast deadline.
-- `available_at <= decision_deadline` is required for every feature row.
-- Fit preprocessing inside each training fold only.
-- Injuries, line-ups, prices, ownership and corrected match statistics use the revision available at the deadline, not the final database value.
-- Never use future-season entity mappings or post-match identifiers to simplify a historical backtest without documenting and neutralising the leak.
-- A random split cannot support a temporal performance claim.
+Prefer the simplest method whose validated result is not meaningfully worse than the best challenger. Retain failed and negative runs.
 
-## Baselines
+## Research-backed methods
 
-At minimum compare with:
+Statistical, Bayesian, tree-based, neural and ensemble methods are all valid candidates. Generative models may assist extraction, classification and explanation, but their output remains untrusted candidate data until source-linked validation succeeds. Complexity is welcome when it produces repeatable predictive or decision gain.
 
-- no-change/current squad;
-- simple minutes × rate or rolling average;
-- market/crowd baseline when point-in-time data is available;
-- incumbent production model;
-- deterministic expected-points optimiser without advanced uncertainty.
+## Simulation and optimisation
 
-Complexity is accepted only when it delivers a repeated, material and well-calibrated improvement over these baselines.
-
-## Metrics
-
-### Forecast quality
-
-Use proper scoring rules and calibration appropriate to the target:
-
-- log loss and Brier score for binary events;
-- log score/CRPS for distributions;
-- MAE/RMSE only as supporting point metrics;
-- calibration slope/intercept, reliability plots and interval coverage;
-- ranking metrics only when the downstream decision truly ranks alternatives.
-
-Report uncertainty intervals from resampling by time block/season where valid. Do not treat correlated player-game rows as independent observations.
-
-### Decision quality
-
-Evaluate realised points, regret against an information-matched oracle, transfer-hit utility, constraint violations, rank/mini-league objective where point-in-time data exists, and robustness across seasons, positions, clubs, price bands, injury states and fixture congestion.
-
-A decision-focused metric must not silently use future ownership, final line-ups or other unavailable information.
-
-## Model selection and multiplicity
-
-- Define the search space before final evaluation.
-- Track every run, including failed and negative runs.
-- Correct interpretation for repeated comparisons; do not present the best of many seeds as typical.
-- Use nested temporal validation when tuning materially affects claims.
-- Prefer the simplest model within uncertainty of the best validated result.
-
-## Probabilistic simulation
-
-Simulations preserve material dependencies: team scoring, shared clean sheets, mutually exclusive event attribution, minutes/appearance states and postponements. Record seed, simulation count and convergence evidence. Scenario assumptions must be inspectable and adjustable.
-
-## Optimisation
-
-Each recommendation records objective, risk measure, horizon, constraints, solver/version, termination status and optimality gap. Validate the formulation with tiny brute-force instances, hand-worked rule examples and a trusted independent implementation where possible.
-
-“Optimal” means optimal for the stated forecasts, objective and constraints—not clairvoyant or guaranteed to win.
+Simulations should preserve material dependencies and record seeds and assumptions. Optimisation records its objective and constraints; tiny cases are checked by hand, brute force or a trusted implementation. “Optimal” means optimal for the stated forecast, objective and constraints.
 
 ## Promotion gate
 
-A candidate cannot influence a recommendation until:
-
-- all leakage checks pass;
-- it beats declared baselines across more than one temporal regime or has a documented safety reason;
-- calibration and material slices are acceptable;
-- sensitivity and failure analysis are complete;
-- model and dataset cards are approved;
-- shadow-mode monitoring succeeds;
-- rollback to the incumbent is tested.
+A candidate may influence recommendations only when leakage checks pass, it beats or materially complements declared baselines across credible temporal windows, calibration and important failure slices are acceptable, and the run is reproducible. Roll back to the previous model if later evidence shows material degradation.
