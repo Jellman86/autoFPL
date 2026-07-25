@@ -6,6 +6,8 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Changed
 
+- **The roadmap now defines a dependency-ordered route to the human-approved advisor.** It identifies the current deployed deterministic checkpoint, the first usable v0.1 single-Gameweek advisory journey, transfer and chip planning horizons, the v1.0 product boundary, critical-path issues and evidence gates without implying that forecasting or advisory product behavior already exists.
+- **The v0.1 route now includes governed football-news intelligence.** Named official, news, scout and pundit sources require explicit rights/access admission; extracted claims remain provenance-linked untrusted evidence, receive out-of-time reliability/conflict/expiry scoring, and enter forecasts only through preregistered leakage-safe features with a mandatory no-news ablation.
 - **Predictive features now require evidence review before implementation.** Prediction, simulation and optimisation work begins with a structured, reproducible literature review covering strong baselines, established methods, credible frontier challengers, contradictory evidence and FPL applicability; paper-backed methods still require preregistered local out-of-time validation before promotion.
 - **Development quality gates now prioritise correctness and research validity over ceremony.** `dev` requires comprehensive tests, governance and secret scanning while signatures, stale-base reruns and universal blocking on slower analyses are reserved or relaxed as appropriate; `main` remains the strict signed release boundary, and independent review is risk-based.
 

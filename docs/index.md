@@ -1,6 +1,6 @@
 # autoFPL documentation
 
-Use this index to find the maintained source for each topic. The repository is in its foundation phase and currently includes a versioned decision-snapshot metadata contract plus a bounded private-development validation service. Pages for end-user workflows that do not yet exist are intentionally absent.
+Use this index to find the maintained source for each topic. The deterministic private-development foundation is deployed and the next milestone is the v0.1 evidence-grounded single-Gameweek advice loop. Forecasting, simulation, optimisation, advisory MCP tools, proposal workflow and end-user dashboard do not yet exist.
 
 ## Start here
 

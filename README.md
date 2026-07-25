@@ -7,9 +7,9 @@ A rigorous, evidence-driven research platform for **human-approved Fantasy Premi
 
 ## Status
 
-**Foundation phase.** This repository currently establishes the research, engineering, security, data-governance and release standards that every later feature must satisfy.
+**Deterministic foundation deployed; v0.1 evidence loop next.** The private development API now validates manual squad/selection state, resolves substitutions and captaincy, and scores an effective Gameweek outcome. It does not yet ingest a production dataset, forecast, simulate, optimise or provide the planned advisory product.
 
-See the [documentation index](docs/index.md), [roadmap](docs/roadmap.md) and [changelog](CHANGELOG.md) for maintained guidance, planned outcomes and implemented changes.
+The [delivery roadmap](docs/roadmap.md) defines the dependency-ordered route from the current foundation through v0.1 single-Gameweek advice, transfer and chip planning, and the v1.0 human-approved advisor. See the [documentation index](docs/index.md) and [changelog](CHANGELOG.md) for maintained guidance and implemented changes.
 
 ## Intended architecture
 
