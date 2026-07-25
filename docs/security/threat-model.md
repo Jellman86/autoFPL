@@ -5,7 +5,7 @@
 - **Owners:** Jellman86
 - **Method:** assets, trust boundaries, misuse cases and STRIDE-informed analysis
 
-This model must be updated whenever a PR introduces a new data source, identity flow, MCP tool, external network boundary, model provider, upload, database class or action capability.
+Update this model when a PR materially changes a trust boundary: identity, MCP/external action capability, secret exposure, public network access, untrusted upload, model provider or database class.
 
 ## Protected assets
 
@@ -34,8 +34,8 @@ This model must be updated whenever a PR introduces a new data source, identity 
 2. ChatGPT MCP client to the read-only MCP adapter using an autoFPL-issued/approved token and least-privilege scopes.
 3. Private Hermes MCP client to the same read-only adapter using its own autoFPL token and scopes, with no direct database access and no transfer of Hermes model-provider credentials.
 4. Untrusted ChatGPT- or Hermes-hosted model output to MCP tool selection and arguments; deterministic application services remain authoritative.
-5. Product API to Postgres and analytics service.
-6. Analytics service to object/model stores and permitted external data.
+5. Application to its local SQLite store and any bounded analytics process.
+6. Analytics code to permitted source data and model artefacts.
 7. Ingestion to quarantine/curated data.
 8. LLM/OpenViking research context to deterministic application logic.
 9. GitHub pull request to CI runner and release artefact.

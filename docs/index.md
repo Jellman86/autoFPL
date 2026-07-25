@@ -44,7 +44,7 @@ Use this index to find the maintained source for each topic. The deterministic p
 ## Research and evidence
 
 - [Evidence base](research/evidence-base.md) — durable sources supporting the research approach.
-- [Predictive feature evidence-review template](research/literature-review-template.md) — structured research required before predictive, statistical, simulation or optimisation implementation.
+- [Predictive research-review template](research/literature-review-template.md) — optional working note for method selection and promotion registration.
 - [Dataset-card template](research/dataset-card-template.md) — provenance, rights and quality record.
 - [Model-card template](research/model-card-template.md) — intended use, evaluation, limitations and monitoring.
 - `docs/research/experiment-template.yaml` — preregistered experiment metadata.

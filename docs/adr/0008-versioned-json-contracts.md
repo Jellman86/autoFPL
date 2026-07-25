@@ -1,6 +1,6 @@
 # ADR-0008: Versioned JSON contracts and test validator
 
-- **Status:** Accepted
+- **Status:** Superseded in part by ADR-0010 for private internal v0.x boundaries
 - **Date:** 2026-07-24
 - **Owners:** Jellman86
 - **Decision class:** architecture, security, dependency governance

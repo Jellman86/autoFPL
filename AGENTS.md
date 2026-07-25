@@ -1,69 +1,56 @@
 # AGENTS.md — mandatory working agreement
 
-These instructions apply to every human and automated contributor. More specific `AGENTS.md` files may add constraints but may not weaken this file.
+These instructions apply to every contributor.
 
-## Mission and product boundary
+## Mission
 
-autoFPL is a private, non-commercial home FPL research project. Its overriding north star is prediction quality: make predictions as close to reality as possible using useful free or self-hosted data, collection, modelling, simulation and AI methods. Judge additions by leakage-free out-of-time predictive gain, calibration, decision utility and reproducibility—not enterprise compliance ceremony.
+autoFPL is a private, non-commercial, self-hosted home-lab project. Its north star is the highest practical FPL prediction quality using useful free or self-hosted data and research-backed methods. Judge work by leakage-free out-of-time predictive gain, calibration, decision utility, reliability and operational simplicity—not enterprise ceremony.
 
-Public-web search, scraping, browser rendering, public read-only endpoints and bounded Byparr-assisted collection are in scope. Do not collect credentials/session material, bypass login or paid access, access private user data, create abusive traffic or automate FPL account actions. The user continues to enact recommendations manually.
+Public-web search, scraping, browser rendering, public read-only endpoints and bounded Byparr-assisted collection are in scope. Do not collect credentials or session material, bypass login or paid access, create abusive traffic, republish third-party corpora or automate FPL account actions. The user acts manually.
 
-## Required workflow
+## Delivery workflow
 
-1. Start from current `dev`; use a short-lived `feat/`, `fix/`, `docs/`, `research/`, `refactor/` or `chore/` branch.
-2. Define acceptance criteria and evidence before implementation.
-3. For behaviour changes, follow strict RED-GREEN-REFACTOR. Record the failing test before production code.
-4. Keep changes vertically sliced and within the approved issue/ADR scope.
-5. Run the narrow test, then the complete verification suite.
-6. Update documentation, ADRs, dataset/model cards and experiment manifests when behaviour or assumptions change.
-7. Open a PR to `dev`; release PRs alone target `main`.
-8. Do not merge with failing, skipped or unresolved required checks.
+1. Start from current `dev` on a short-lived branch.
+2. Build the smallest end-to-end slice that produces working application behaviour or a measurable research result.
+3. Write focused tests for production behaviour and bug fixes. Exploratory research code may iterate quickly but must be tested before it becomes a relied-on pipeline.
+4. Run focused checks while developing and `make verify` before push.
+5. Update only documentation or decisions that would otherwise become materially misleading.
+6. Open a PR to `dev`; release PRs alone target `main`.
+7. Do not merge failing required checks.
+
+Plans, contracts, reviews and documentation support implementation; they must not replace or indefinitely delay it.
 
 ## Scientific integrity
 
-- Split and evaluate by time; random train/test splits are forbidden for temporal FPL claims.
-- Fit every transform, imputer, encoder, calibrator and selector using training data only.
-- Preserve immutable pre-deadline snapshots and an `available_at` timestamp for every feature.
-- Never select a model, feature, horizon or seed using final test results.
-- Before implementing a new or materially changed inferred probability, forecast, uncertainty-driven simulation or empirical claim used in recommendations, complete and independently accept a versioned evidence review using `docs/research/literature-review-template.md`.
-- Executable `src/analytics/` changes must link that accepted review or an independently accepted deterministic/non-inferential exemption record; unchecked “not applicable” is forbidden.
-- Reproduce strong baselines before frontier candidates; current papers inform the candidate set but never bypass local point-in-time validation.
-- Compare against declared naive and incumbent baselines.
-- Report uncertainty, calibration and failure slices, not a single headline score.
-- Label exploratory results; do not promote them as confirmatory evidence.
-- Negative and inconclusive results are retained.
-- Every published result records code SHA, data snapshot/hash, dependency lock hash, seeds, configuration, hardware class and exact command.
-- Do not claim “optimal” without naming the objective, constraints, forecast distribution, horizon and uncertainty assumptions.
+- Research literature and strong existing methods guide the candidate set, but implementation may begin without a separately accepted review.
+- Reproduce simple and strong baselines before assuming a complex method is better.
+- Split and evaluate by time; random train/test splits cannot support temporal FPL claims.
+- Fit transforms, imputers, encoders, calibrators and selectors using training data only.
+- Preserve the decision-time cutoff and an `available_at` timestamp for every predictive input.
+- Before opening the final holdout or promoting a model, register the target, horizon, temporal split, baselines, metrics and promotion rule.
+- Never select a model, feature, horizon or seed using final holdout results.
+- Promotion requires local rolling/walk-forward evidence, calibration, useful failure slices and comparison with declared baselines.
+- Label exploratory results clearly and retain negative findings.
+- A promoted result records enough code, data, configuration and seed provenance to reproduce it.
 
 ## Engineering integrity
 
-- No production code before a failing automated test.
-- Domain logic is deterministic and isolated from network, clock and random-number sources.
-- Monetary values use integer tenths of a million; timestamps are timezone-aware UTC internally.
-- Migrations are forward-only, transactional where supported, backward-compatible during rollout and tested from a production-like prior schema.
-- APIs are contract-first and versioned; breaking changes require an ADR and migration path.
+- Prefer a single deployable application and SQLite. Add services or another database only after a measured need.
+- Keep domain rules deterministic and isolated from network, clock and random-number sources.
+- Store FPL money as integer tenths of a million and timestamps as timezone-aware UTC instants.
+- Version stable external, MCP and persisted-data boundaries. Private internal v0.x APIs may evolve with tests and migrations; they do not require an ADR for every change.
 - LLM output is untrusted data. It cannot directly mutate authoritative state or execute a recommendation.
-- Logs must be structured, correlation-aware and free of secrets or unnecessary personal data.
-- Warnings are errors in CI unless an explicit, expiring exception is documented.
+- Keep logs useful and free of secrets or unnecessary personal data.
 
 ## Security and supply chain
 
 - Never commit credentials, tokens, cookies, private keys, `.env` files or production data.
 - GitHub Actions use minimal permissions and third-party actions pinned to full 40-character SHAs.
-- Lock every dependency set; verify lockfiles in CI; pin container base images by digest before deployment.
-- No `curl | sh`, unreviewed generated code, privileged containers, Docker socket mounts or public ports by default.
-- Validate all untrusted inputs at the boundary and use parameterised database access.
-- Security-sensitive changes require threat-model and abuse-case updates.
-
-## Commands
-
-```bash
-python3 -m unittest discover -s tests -p 'test_*.py' -v
-python3 tools/governance/check_repository.py
-```
-
-Future language-specific commands must be added to `Makefile` and CI together.
+- Lock dependencies used in CI or deployment and pin deployed container images by digest.
+- No `curl | sh`, privileged containers, Docker socket mounts or public ports by default.
+- Validate untrusted inputs and use parameterised database access.
+- Update the threat model only when a trust boundary materially changes.
 
 ## Definition of done
 
-A task is not done when code exists. It is done only when the acceptance criteria, tests, research integrity, security review, documentation, observability, rollback plan and provenance requirements in `docs/standards/definition-of-done.md` are satisfied.
+A development slice is done when its acceptance behaviour works, focused and repository tests pass, and the changed user/operator behaviour is documented where needed. Research-promotion and release/deployment gates apply only when the change actually reaches those stages.

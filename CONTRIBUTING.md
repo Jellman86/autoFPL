@@ -1,85 +1,52 @@
 # Contributing
 
-## Before starting
+## Start with a working slice
 
-1. Read `AGENTS.md`, `GOVERNANCE.md` and the relevant standards under `docs/standards/`.
-2. Confirm the work is allowed by `docs/compliance/fpl-terms-boundary.md`.
-3. Open or reference an issue with acceptance criteria, non-goals, risks and evidence requirements.
-4. For a material architectural, data, model, security or compliance decision, write an ADR before implementation.
+1. Start from current `dev` on a short-lived `feat/`, `fix/`, `research/`, `docs/`, `refactor/` or `chore/` branch.
+2. State the user or research outcome and the smallest acceptance test that proves it.
+3. Implement a vertical slice; do not substitute plans, contracts or governance for working behaviour.
+4. Open a PR to `dev`. Only releases and emergency hotfixes target `main`.
 
-## Branches
+Write an ADR only for a consequential, hard-to-reverse architecture, security, compliance or data decision. Update documentation only when current behaviour, operation or an important assumption changes.
 
-Create a short-lived branch from `dev`:
+## Product development
 
-- `feat/<description>`
-- `fix/<description>`
-- `research/<description>`
-- `docs/<description>`
-- `refactor/<description>`
-- `chore/<description>`
+Use focused behavioural tests for production code:
 
-PRs normally target `dev`. Only reviewed release and emergency hotfix PRs target `main`.
+1. Express the behaviour or reproduce the bug in a test.
+2. Implement the smallest useful path.
+3. Run the focused tests while iterating.
+4. Run `make verify` and formatting before push.
 
-## Development discipline
+Exploratory analytics may iterate before its interface stabilises. Move any pipeline used by the application into tested modules before relying on it.
 
-### Behaviour changes
+## Predictive research
 
-Use strict test-driven development:
+Use papers, credible practitioner evidence and established methods to choose worthwhile baselines and challengers. The literature-review template is an optional working aid, not a pre-implementation approval gate.
 
-1. Write one failing behavioural test.
-2. Run it and confirm the expected failure.
-3. Add the smallest implementation that passes.
-4. Run the focused and full test suites.
-5. Refactor only while green.
+Before examining a final holdout or promoting a forecast into recommendations:
 
-### Research changes
+- register the target, horizon, cutoff, temporal split, baselines, metrics and promotion rule;
+- use point-in-time data and rolling/walk-forward evaluation;
+- compare with simple and strong baselines;
+- report calibration, decision utility, uncertainty and material failure slices;
+- retain negative results; and
+- record enough code/data/configuration/seed provenance to reproduce the result.
 
-Before implementing a new or materially changed inferred probability, forecast, uncertainty-driven simulation or empirical claim used in recommendations, copy `docs/research/literature-review-template.md` into `docs/research/reviews/`, complete its structured search and evidence matrix, and link the accepted review from the issue. Include strong baselines, established methods, credible frontier challengers, contradictory evidence and FPL applicability limits. A recent paper informs what to test; it does not authorize production use.
+Dataset and model cards are required for promoted recommendation artefacts, not every exploratory script.
 
-Executable `src/analytics/` changes are checked automatically. Deterministic rule/solver mechanics that change no inferred input, predictive claim or empirical-performance claim may use an `exempt` record, but it must contain a substantive rationale and be accepted by a research/domain reviewer distinct from the owner. Merge the record before implementation. The reviewer posts the template's exact acceptance token in a GitHub issue comment or PR review; CI verifies its actor, timestamp and direct URL with read-only access. Unchecked “not applicable” self-attestation is not an exception.
+## Pull requests
 
-Every experiment then starts with a copied `docs/research/experiment-template.yaml` linked to that review. Register the hypothesis, candidate set, decision rule, data cutoff, split, baselines, metrics and promotion threshold before examining final test results. Complete a dataset card and model card for any artefact used in a recommendation.
-
-### Generated work
-
-AI-generated code, prose and extraction are proposals, not evidence. The author is accountable for understanding, testing and citing every retained change. Generated dependencies or licences must be reviewed independently.
-
-### Documentation
-
-Follow the [documentation standard](docs/standards/documentation.md). Ground claims in current code, tests, contracts, deployment definitions or versioned evidence; distinguish planned work from implemented behaviour; and state applicable safety, compliance, uncertainty and human-approval boundaries.
-
-Link every new maintained reader-facing page from the [documentation index](docs/index.md). Add user- or operator-relevant implemented behaviour to the **Unreleased** section of [the changelog](CHANGELOG.md); keep future outcomes in [the roadmap](docs/roadmap.md).
-
-## Commits and pull requests
-
-Use Conventional Commit titles such as:
-
-```text
-feat(api): add recommendation snapshot endpoint
-fix(analytics): prevent post-deadline feature leakage
-research(minutes): register walk-forward baseline
-```
-
-PRs must be small enough to review, link the issue/ADR/experiment, include the test evidence and complete the repository PR template. Independent review is required for security/trust boundaries, deployment or supply-chain changes, authoritative domain logic, data/research promotion, credentials and external actions. Ordinary low-risk changes require focused author review and passing CI, not ceremonial multi-review.
+Use a Conventional Commit title. Keep the PR focused, explain what now works and include real verification output. Independent review is required for security/trust boundaries, deployment or supply-chain changes, authoritative FPL rules, promoted data/models, credentials and external actions. Ordinary low-risk changes use author review and passing CI.
 
 ## Required local verification
 
 ```bash
 python3 -m pip install --require-hashes --requirement requirements-governance.txt
 make verify
+dotnet format src/backend/AutoFpl.slnx --verify-no-changes --no-restore
 ```
 
-Run any additional formatting, container, migration, security and application-specific gates required by the changed boundary.
+Run migration, container, security or deployment checks only when that boundary changed.
 
-## Exceptions
-
-A standard may be temporarily waived only through a dated exception in the PR containing:
-
-- owner;
-- precise scope;
-- rationale and risk;
-- compensating control;
-- expiry date;
-- linked remediation issue.
-
-“Prototype”, “urgent” and “AI-generated” are not exemptions from security, compliance or data-leakage rules.
+No exception can permit secrets, temporal leakage, automatic FPL account action or unsafe handling of untrusted input.
