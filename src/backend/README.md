@@ -2,12 +2,12 @@
 
 .NET 10 code for identity, authorisation, authoritative workflow state, audit, API and MCP tools. It must not contain forecasting algorithms or an FPL account-write client under the current compliance ADR.
 
-The executable backend validates decision-snapshot metadata and deterministic manual squad, starting-XI and complete gameweek-selection feasibility. Metadata schema version `1.0` is supported, and source type is restricted to `manual` or `synthetic`; unsupported values fail with stable domain error codes. Squad, lineup and bench inputs remain user-supplied and do not call FPL or perform account actions.
+The executable backend validates decision-snapshot metadata, deterministic manual squad, starting-XI and complete gameweek-selection feasibility, and effective captaincy from manually supplied player-minute evidence. Metadata schema version `1.0` is supported, and source type is restricted to `manual` or `synthetic`; unsupported values fail with stable domain error codes. Squad, lineup, bench and minute inputs remain user-supplied and do not call FPL or perform account actions.
 
 The wire boundary is deliberately separate from the domain:
 
 - `AutoFpl.Contracts` maps validated domain values to transport documents;
-- `AutoFpl.Api` exposes liveness, readiness and fail-closed metadata, squad, lineup and complete gameweek-selection validation over HTTP;
+- `AutoFpl.Api` exposes liveness, readiness and fail-closed metadata, squad, lineup, complete gameweek-selection and effective-captain resolution over HTTP;
 - `contracts/decision-snapshot/v1/metadata.schema.json` is the versioned JSON Schema Draft 7 contract;
 - checked-in manual and synthetic examples are executable fixtures;
 - NJsonSchema is pinned in tests only and is not a production dependency.

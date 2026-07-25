@@ -80,7 +80,15 @@ selection_invalid_request="$(mktemp)"
 selection_valid_response="$(mktemp)"
 selection_malformed_response="$(mktemp)"
 selection_invalid_response="$(mktemp)"
-trap 'rm -f "$headers_file" "$invalid_file" "$unknown_file" "$duplicate_file" "$oversized_file" "$oversized_body" "$selection_valid_request" "$selection_malformed_request" "$selection_invalid_request" "$selection_valid_response" "$selection_malformed_response" "$selection_invalid_response"; cleanup' EXIT
+captaincy_valid_request="$(mktemp)"
+captaincy_malformed_request="$(mktemp)"
+captaincy_invalid_request="$(mktemp)"
+captaincy_duplicate_request="$(mktemp)"
+captaincy_valid_response="$(mktemp)"
+captaincy_malformed_response="$(mktemp)"
+captaincy_invalid_response="$(mktemp)"
+captaincy_duplicate_response="$(mktemp)"
+trap 'rm -f "$headers_file" "$invalid_file" "$unknown_file" "$duplicate_file" "$oversized_file" "$oversized_body" "$selection_valid_request" "$selection_malformed_request" "$selection_invalid_request" "$selection_valid_response" "$selection_malformed_response" "$selection_invalid_response" "$captaincy_valid_request" "$captaincy_malformed_request" "$captaincy_invalid_request" "$captaincy_duplicate_request" "$captaincy_valid_response" "$captaincy_malformed_response" "$captaincy_invalid_response" "$captaincy_duplicate_response"; cleanup' EXIT
 invalid_status="$(curl --silent --show-error --output "$invalid_file" --write-out '%{http_code}' \
   --header 'Content-Type: application/json' \
   --data '{"schemaVersion":"2.0","sourceType":"manual"}' \
@@ -102,7 +110,7 @@ oversized_status="$(curl --silent --show-error --output "$oversized_file" --writ
   --data-binary "@$oversized_body" \
   "$base_url/api/v1/decision-snapshot-metadata/validation")"
 
-python3 - "$selection_valid_request" "$selection_malformed_request" "$selection_invalid_request" <<'PY'
+python3 - "$selection_valid_request" "$selection_malformed_request" "$selection_invalid_request" "$captaincy_valid_request" "$captaincy_malformed_request" "$captaincy_invalid_request" "$captaincy_duplicate_request" <<'PY'
 import json, pathlib, sys
 
 players = [
@@ -131,9 +139,22 @@ valid = {
     "replacementGoalkeeperPlayerId": 2,
     "outfieldSubstitutePlayerIds": [6, 7, 15],
 }
-malformed = dict(valid, replacementGoalkeeperPlayerId="2")
-invalid = dict(valid, replacementGoalkeeperPlayerId=6, outfieldSubstitutePlayerIds=[2, 7, 15])
-for path, payload in zip(sys.argv[1:], [valid, malformed, invalid], strict=True):
+selection_malformed = dict(valid, replacementGoalkeeperPlayerId="2")
+selection_invalid = dict(valid, replacementGoalkeeperPlayerId=6, outfieldSubstitutePlayerIds=[2, 7, 15])
+captaincy_valid = dict(valid, playerIdsWithMinutes=[13])
+captaincy_malformed = dict(valid, playerIdsWithMinutes=["13"])
+captaincy_invalid = dict(valid, playerIdsWithMinutes=[13, 99])
+captaincy_duplicate = dict(valid, playerIdsWithMinutes=[8, 8])
+payloads = [
+    valid,
+    selection_malformed,
+    selection_invalid,
+    captaincy_valid,
+    captaincy_malformed,
+    captaincy_invalid,
+    captaincy_duplicate,
+]
+for path, payload in zip(sys.argv[1:], payloads, strict=True):
     pathlib.Path(path).write_text(json.dumps(payload))
 PY
 selection_valid_status="$(curl --silent --show-error --output "$selection_valid_response" --write-out '%{http_code}' \
@@ -148,6 +169,22 @@ selection_invalid_status="$(curl --silent --show-error --output "$selection_inva
   --header 'Content-Type: application/json' \
   --data-binary "@$selection_invalid_request" \
   "$base_url/api/v1/gameweek-selections/validation")"
+captaincy_valid_status="$(curl --silent --show-error --output "$captaincy_valid_response" --write-out '%{http_code}' \
+  --header 'Content-Type: application/json' \
+  --data-binary "@$captaincy_valid_request" \
+  "$base_url/api/v1/gameweek-outcomes/captaincy-resolution")"
+captaincy_malformed_status="$(curl --silent --show-error --output "$captaincy_malformed_response" --write-out '%{http_code}' \
+  --header 'Content-Type: application/json' \
+  --data-binary "@$captaincy_malformed_request" \
+  "$base_url/api/v1/gameweek-outcomes/captaincy-resolution")"
+captaincy_invalid_status="$(curl --silent --show-error --output "$captaincy_invalid_response" --write-out '%{http_code}' \
+  --header 'Content-Type: application/json' \
+  --data-binary "@$captaincy_invalid_request" \
+  "$base_url/api/v1/gameweek-outcomes/captaincy-resolution")"
+captaincy_duplicate_status="$(curl --silent --show-error --output "$captaincy_duplicate_response" --write-out '%{http_code}' \
+  --header 'Content-Type: application/json' \
+  --data-binary "@$captaincy_duplicate_request" \
+  "$base_url/api/v1/gameweek-outcomes/captaincy-resolution")"
 
 python3 - "$health_body" "$ready_body" "$valid_body" "$invalid_file" "$invalid_status" "$unknown_status" "$duplicate_status" "$oversized_status" "$headers_file" <<'PY'
 import json, pathlib, sys
@@ -184,6 +221,29 @@ assert malformed_status == "400", malformed_status
 assert invalid_status == "422", invalid_status
 assert invalid["code"] == "selection.replacement_goalkeeper.invalid_position", invalid
 assert invalid["field"] == "replacementGoalkeeperPlayerId", invalid
+PY
+
+python3 - "$captaincy_valid_response" "$captaincy_valid_status" "$captaincy_malformed_status" "$captaincy_invalid_response" "$captaincy_invalid_status" "$captaincy_duplicate_response" "$captaincy_duplicate_status" <<'PY'
+import json, pathlib, sys
+
+valid = json.loads(pathlib.Path(sys.argv[1]).read_text())
+valid_status, malformed_status = sys.argv[2:4]
+invalid = json.loads(pathlib.Path(sys.argv[4]).read_text())
+invalid_status = sys.argv[5]
+duplicate = json.loads(pathlib.Path(sys.argv[6]).read_text())
+duplicate_status = sys.argv[7]
+assert valid_status == "200", valid_status
+assert valid["originalCaptainPlayerId"] == 8, valid
+assert valid["viceCaptainPlayerId"] == 13, valid
+assert valid["effectiveCaptainPlayerId"] == 13, valid
+assert valid["captaincyTransferred"] is True, valid
+assert malformed_status == "400", malformed_status
+assert invalid_status == "422", invalid_status
+assert invalid["code"] == "outcome.minutes_player.not_in_squad", invalid
+assert invalid["field"] == "playerIdsWithMinutes", invalid
+assert duplicate_status == "422", duplicate_status
+assert duplicate["code"] == "outcome.minutes_player.duplicate", duplicate
+assert duplicate["field"] == "playerIdsWithMinutes", duplicate
 PY
 
 printf 'container smoke test passed for %s\n' "$image"

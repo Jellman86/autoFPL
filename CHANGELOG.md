@@ -11,6 +11,7 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **Effective captaincy is now deterministic executable product behavior.** A fail-closed endpoint composes a valid complete gameweek selection with manually supplied player-minute evidence, retaining the captain, promoting the vice-captain, or returning no effective captain according to the current official rule without status ingestion, substitution execution or scoring.
 - **Complete manual gameweek selections are now executable product behavior.** A fail-closed endpoint composes the existing squad and starting-XI rules with a replacement goalkeeper and three ordered outfield substitutes, preserving bench priority without FPL account access, appearance data, substitution execution or scoring.
 - **Starting-XI feasibility is now executable product behavior.** A manual-input API endpoint validates that 11 unique starters belong to a valid squad, satisfy current 2026/27 goalkeeper/defender/forward formation rules, and have distinct captain and vice-captain selections from the XI.
 - **Manual squad feasibility is now executable product behavior.** A new API endpoint applies deterministic 15-player composition, unique-player, club-limit and exact integer-tenths budget rules without external FPL access or account automation.
