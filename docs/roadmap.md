@@ -192,8 +192,9 @@ The first decision-room slice adds:
 Its data is deliberately synthetic. It establishes the product contract but
 does not constitute a forecast.
 
-There is still no production ingestion, SQLite state, promoted model, scenario
-engine, optimiser, MCP server, live AI provider or product release.
+The first SQLite persistence vertical slice is in development. There is still
+no production ingestion, promoted model, scenario engine, optimiser, MCP
+server, live AI provider or product release.
 
 ## v0.1 — Evidence-grounded single-Gameweek advisor
 
@@ -221,6 +222,11 @@ is tested.
 ### Milestone B — SQLite decision snapshots
 
 Tracked by [#41](https://github.com/Jellman86/autoFPL/issues/41).
+
+**Status:** active — the database, explicit migrations, cutoff-correct
+snapshot API, revision lineage, restart readback, integrity check, online
+backup and a visibly persisted synthetic UI fixture are implemented on the
+feature branch. Git/Dockhand persistent-volume promotion remains.
 
 - Persist season/Gameweek deadlines, player identity, position and price,
   current squad/selection, source observations and immutable snapshots.

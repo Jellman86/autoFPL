@@ -2,23 +2,24 @@
 
 ## Status and scope
 
-This document defines how the current private, stateless POST routes interpret manually submitted fields for reproducible research. It changes no request or response shape and adds no persistence, connector, external retrieval or account action.
+This document defines how the private POST routes interpret manually submitted fields for reproducible research. Validation and outcome routes remain stateless; `/api/v1/decision-snapshots` is the one explicit persistence boundary. No route adds a connector, external retrieval or account action.
 
 The exact machine-readable inventory is [`contracts/manual-evidence/v1/current-post-routes.json`](../../contracts/manual-evidence/v1/current-post-routes.json), validated by [`manual-evidence-catalog.schema.json`](../../contracts/manual-evidence/v1/manual-evidence-catalog.schema.json). Contract tests compare that inventory with the actual .NET request DTOs so a field cannot be added or reinterpreted silently.
 
 ## Current runtime boundary
 
-The API validates one request in memory, returns a deterministic response and discards the request. It does not accept or persist timestamps, credentials, cookies, sessions, opaque uploads or account-action instructions. Application logging APIs are prohibited throughout `src/backend`; the all-route integration test captures framework messages, structured state, exceptions and scopes and verifies that unique request values are absent. Unknown fields continue to return `400`; well-formed but domain-invalid evidence continues to return stable `422` responses.
+The validation and outcome routes validate one request in memory, return a deterministic response and discard it. The decision-snapshot route accepts explicit UTC timestamps and persists the validated squad, selection, observations, cutoff and immutable snapshot lineage in SQLite. No route accepts credentials, cookies, sessions, opaque uploads or account-action instructions. The all-route integration test captures framework messages, structured state, exceptions and scopes and verifies that unique request values are absent. Unknown fields return `400`; well-formed but invalid evidence returns stable `422` responses.
 
-Because the service stores no request record, a successful response proves only that the submitted values were valid under that contract at processing time. It does not prove where the user obtained a value, when an external event occurred, when a provider published it or that it was historically available.
+A persisted observation records what the caller asserted and when the caller says it was observed, retrieved and available. That does not prove provider origin or publication time. Until a real importer supplies stronger provenance, these records are acceptance/development evidence and must not be presented as independently verified historical facts.
 
 ## Field inventory and interpretation
 
-The catalog contains every top-level and nested field accepted by all eight current POST routes. The grouped inventory below is the reader-facing summary; the catalog is authoritative for exact paths.
+The catalog contains every top-level and nested field accepted by all nine current POST routes. The grouped inventory below is the reader-facing summary; the catalog is authoritative for exact paths.
 
 | Route | Accepted field groups | Interpretation |
 | --- | --- | --- |
 | `/api/v1/decision-snapshot-metadata/validation` | `schemaVersion`, `sourceType` | Decision-state contract metadata. `sourceType=manual` describes submission mode; it is not proof of origin or historical availability. |
+| `/api/v1/decision-snapshots` | season/Gameweek/deadline/cutoff; complete squad and selection; timestamped decimal observations; correction lineage | Persists authoritative local state and materialises only the latest eligible observation revision at the cutoff. |
 | `/api/v1/squads/validation` | budget; player IDs, clubs, positions and integer-tenths prices | Decision state submitted at receipt. |
 | `/api/v1/lineups/validation` | squad fields; starting XI; captain and vice-captain | Decision state submitted at receipt. |
 | `/api/v1/gameweek-selections/validation` | lineup fields; replacement goalkeeper; ordered outfield bench | Decision state submitted at receipt. |
@@ -27,35 +28,25 @@ The catalog contains every top-level and nested field accepted by all eight curr
 | `/api/v1/gameweek-outcomes/effective-resolution` | selection fields; `playerIdsWhoPlayed` | Same evidence classes as substitution resolution; the response composes deterministic derived values. |
 | `/api/v1/gameweek-outcomes/effective-score` | selection fields; `playerIdsWhoPlayed`; complete `playerPoints` entries | Play membership is observed-event evidence; points are outcome evidence known at receipt. |
 
-No current request accepts a derived value. Effective lineups, activated substitutes, captaincy resolution and point totals are deterministic response values calculated from accepted evidence.
+The snapshot route accepts numeric source observations; it does not derive or endorse them. Effective lineups, activated substitutes, captaincy resolution, point totals and snapshot membership are deterministic response values calculated from accepted evidence.
 
 ## Point-in-time semantics
 
 A replayable decision needs distinct clocks. They must not be inferred from one another:
 
-- **`decisionTime`** — the cutoff at which the advice or decision is evaluated. Current routes do not accept it.
-- **`observedAt`** — when an event or state occurred, if separately evidenced. It is unknown for current manual submissions.
+- **`decisionTime`** — the cutoff at which the advice or decision is evaluated. The persistence route calls it `decisionCutoffUtc`.
+- **`observedAt`** — when an event or state occurred, if separately evidenced.
 - **`publishedAt`** — when a provider made information public, if separately evidenced. It is unknown for current manual submissions.
-- **`retrievedAt`** — when autoFPL or its caller received the submission. Current routes do not retain it; a replay wrapper must record it externally.
-- **`availableAt`** — earliest time the evidence may enter a replay. For evidence first received through a current manual route, it must be no earlier than `retrievedAt`. A typed historical date cannot backdate availability.
+- **`retrievedAt`** — when autoFPL or its caller retrieved the source evidence.
+- **`availableAt`** — earliest time the evidence may enter a replay. The persistence route requires `observedAt <= retrievedAt <= availableAt`.
 
-For leakage-free replay, include a field only when `availableAt <= decisionTime`. If an external collector has stronger point-in-time evidence, it belongs to that collector's separately versioned source record rather than being inferred from a later manual request.
+For leakage-free replay, the database includes an observation only when `availableAt <= decisionCutoffUtc`. A later correction creates a new observation and snapshot revision linked to the records it supersedes. If an external collector has stronger point-in-time evidence, it belongs to that collector's separately versioned source record rather than being inferred from a later manual request.
 
 ## Migration and replay guidance
 
-Existing API callers make **no payload changes**. Adding timestamp or provenance properties to current requests would remain an undeclared-field `400`.
+Existing validation/outcome callers make **no payload changes**. Adding timestamp or provenance properties to those requests remains an undeclared-field `400`.
 
-A future ingestion or persistence layer that needs replay must wrap the canonical request outside these routes with:
-
-1. the route and contract version;
-2. an immutable record ID and canonical-content hash;
-3. `retrievedAt` recorded by the receiving boundary;
-4. `observedAt` and `publishedAt` only when separately evidenced, otherwise null;
-5. `availableAt` no earlier than receipt for manual submissions;
-6. the intended `decisionTime` or snapshot deadline;
-7. correction lineage that creates a new record rather than rewriting history.
-
-That future envelope requires its own reviewed implementation, retention/deletion design and deployment verification. The existing [`data-source/v1` source record](../../contracts/data-source/v1/source-record.schema.json) demonstrates the timestamp ordering and immutable-correction model but is not emitted by the current API.
+The snapshot route is the first replay envelope. It generates immutable IDs, a canonical content hash and application creation time; stores deadline/cutoff and the submitted observation clocks; and requires explicit correction lineage. Before real personal history is retained, deployment still needs a reviewed persistent volume, backup/restore evidence and retention/deletion design. The existing [`data-source/v1` source record](../../contracts/data-source/v1/source-record.schema.json) remains the richer provenance contract for future collectors.
 
 ## Change control
 

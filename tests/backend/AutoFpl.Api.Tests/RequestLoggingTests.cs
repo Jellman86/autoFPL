@@ -22,13 +22,19 @@ public sealed class RequestLoggingTests
     public async Task Manual_request_content_is_not_logged_by_any_post_route()
     {
         var entries = new ConcurrentQueue<string>();
+        using var database = new TemporaryDatabase();
         await using WebApplicationFactory<Program> factory = new WebApplicationFactory<Program>()
-            .WithWebHostBuilder(builder => builder.ConfigureLogging(logging =>
+            .WithWebHostBuilder(builder =>
             {
-                logging.ClearProviders();
-                logging.SetMinimumLevel(LogLevel.Trace);
-                logging.AddProvider(new CapturingLoggerProvider(entries));
-            }));
+                builder.UseSetting("AutoFpl:DatabasePath", database.Path);
+                builder.UseSetting("AutoFpl:SeedDemoSnapshot", "false");
+                builder.ConfigureLogging(logging =>
+                {
+                    logging.ClearProviders();
+                    logging.SetMinimumLevel(LogLevel.Trace);
+                    logging.AddProvider(new CapturingLoggerProvider(entries));
+                });
+            });
         using HttpClient client = factory.CreateClient();
         string[] actualPostRoutes = factory.Services
             .GetServices<EndpointDataSource>()
@@ -125,6 +131,20 @@ public sealed class RequestLoggingTests
             replacementGoalkeeperPlayerId = playerIds[1],
             outfieldSubstitutePlayerIds,
         };
+        object[] persistedPlayers = players
+            .Select((player, index) =>
+            {
+                JsonElement value = JsonSerializer.SerializeToElement(player, JsonOptions);
+                return new
+                {
+                    playerId = value.GetProperty("playerId").GetInt32(),
+                    displayName = $"Private player {index + 1}",
+                    clubId = value.GetProperty("clubId").GetInt32(),
+                    position = value.GetProperty("position").GetString(),
+                    priceTenths = value.GetProperty("priceTenths").GetInt32(),
+                };
+            })
+            .ToArray();
 
         return new Dictionary<
             string,
@@ -134,6 +154,39 @@ public sealed class RequestLoggingTests
                 """{"schemaVersion":"1.0","sourceType":"AUTOFPL_PRIVATE_SENTINEL_METADATA"}""",
                 "AUTOFPL_PRIVATE_SENTINEL_METADATA",
                 HttpStatusCode.UnprocessableEntity),
+            ["/api/v1/decision-snapshots"] = (
+                Serialize(new
+                {
+                    schemaVersion = "1.0",
+                    seasonCode = "2026-27",
+                    gameweek = 1,
+                    deadlineUtc = "2026-08-15T12:00:00Z",
+                    decisionCutoffUtc = "2026-08-15T11:00:00Z",
+                    budgetTenths = 1_000,
+                    players = persistedPlayers,
+                    startingPlayerIds,
+                    captainPlayerId = playerIds[7],
+                    viceCaptainPlayerId = playerIds[12],
+                    replacementGoalkeeperPlayerId = playerIds[1],
+                    outfieldSubstitutePlayerIds,
+                    observations = new[]
+                    {
+                        new
+                        {
+                            sourceKey = "AUTOFPL_PRIVATE_SENTINEL_SOURCE",
+                            playerId = playerIds[7],
+                            metric = "expected-points",
+                            value = 7.2m,
+                            observedAtUtc = "2026-08-15T10:30:00Z",
+                            retrievedAtUtc = "2026-08-15T10:35:00Z",
+                            availableAtUtc = "2026-08-15T10:40:00Z",
+                            supersedesObservationId = (long?)null,
+                        },
+                    },
+                    supersedesSnapshotId = (long?)null,
+                }),
+                sentinel,
+                HttpStatusCode.Created),
             ["/api/v1/squads/validation"] = (
                 Serialize(new { budgetTenths = 1_000, players }),
                 sentinel,
@@ -287,6 +340,29 @@ public sealed class RequestLoggingTests
 
         public void Dispose()
         {
+        }
+    }
+
+    private sealed class TemporaryDatabase : IDisposable
+    {
+        private readonly string _directory = System.IO.Path.Combine(
+            System.IO.Path.GetTempPath(),
+            $"autofpl-request-logging-{Guid.NewGuid():N}");
+
+        public TemporaryDatabase()
+        {
+            Directory.CreateDirectory(_directory);
+        }
+
+        public string Path => System.IO.Path.Combine(_directory, "autofpl.db");
+
+        public void Dispose()
+        {
+            Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+            if (Directory.Exists(_directory))
+            {
+                Directory.Delete(_directory, recursive: true);
+            }
         }
     }
 }

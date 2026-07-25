@@ -42,7 +42,47 @@ public sealed class OpenApiContractTests : IClassFixture<WebApplicationFactory<P
             "GetDemoGameweekAdvice",
             advicePath.GetProperty("get").GetProperty("operationId").GetString());
         Assert.True(paths.TryGetProperty("/api/v1/squads/validation", out _));
+        Assert.True(
+            paths.TryGetProperty(
+                "/api/v1/decision-snapshots",
+                out JsonElement decisionSnapshotsPath));
+        Assert.Equal(
+            "CreateDecisionSnapshot",
+            decisionSnapshotsPath.GetProperty("post").GetProperty("operationId").GetString());
+        Assert.True(
+            paths.TryGetProperty(
+                "/api/v1/decision-snapshots/{snapshotId}",
+                out JsonElement decisionSnapshotPath));
+        Assert.Equal(
+            "GetDecisionSnapshot",
+            decisionSnapshotPath.GetProperty("get").GetProperty("operationId").GetString());
         Assert.True(paths.TryGetProperty("/api/v1/gameweek-outcomes/effective-score", out _));
+    }
+
+    [Fact]
+    public async Task Decision_snapshot_write_operation_has_typed_request_and_created_response()
+    {
+        using JsonDocument document = await GetDocumentAsync();
+        JsonElement operation = document.RootElement
+            .GetProperty("paths")
+            .GetProperty("/api/v1/decision-snapshots")
+            .GetProperty("post");
+
+        Assert.True(
+            operation
+                .GetProperty("requestBody")
+                .GetProperty("content")
+                .GetProperty("application/json")
+                .GetProperty("schema")
+                .TryGetProperty("$ref", out _));
+        Assert.True(
+            operation
+                .GetProperty("responses")
+                .GetProperty("201")
+                .GetProperty("content")
+                .GetProperty("application/json")
+                .GetProperty("schema")
+                .TryGetProperty("$ref", out _));
     }
 
     [Fact]

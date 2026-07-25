@@ -1,14 +1,20 @@
 using AutoFpl.Contracts.Advice;
+using AutoFpl.Contracts.Snapshots;
 
 namespace AutoFpl.Api.Advice;
 
 public static class DemoGameweekAdvice
 {
-    public static GameweekAdviceDocument Create() =>
-        new(
+    public static GameweekAdviceDocument Create(DecisionSnapshotDocument? snapshot = null)
+    {
+        GameweekAdviceDocument fixture = new(
             SchemaVersion: "1.0",
-            EvidenceStatus: "synthetic-preview",
+            EvidenceStatus: snapshot is null ? "synthetic-preview" : "synthetic-persisted",
             IsSynthetic: true,
+            SnapshotId: snapshot?.SnapshotId,
+            SnapshotRevision: snapshot?.Revision,
+            DecisionCutoffUtc: snapshot?.DecisionCutoffUtc,
+            SnapshotContentHash: snapshot?.ContentHash,
             Gameweek: 1,
             DeadlineUtc: DateTimeOffset.Parse("2026-08-15T10:00:00Z"),
             GeneratedAtUtc: DateTimeOffset.Parse("2026-08-14T18:30:00Z"),
@@ -78,6 +84,57 @@ public static class DemoGameweekAdvice
                 Status:
                     "AI conversation is not connected in this preview. Planned access is through ChatGPT/Codex MCP or a server-side provider key.",
                 PlannedModes: ["chatgpt-plugin", "mcp", "server-api-key", "compatible-provider"]));
+
+        if (snapshot is null)
+        {
+            return fixture;
+        }
+
+        IReadOnlyDictionary<int, PersistedPlayerDocument> persistedPlayers =
+            snapshot.Squad.Players.ToDictionary(player => player.PlayerId);
+        var startingPlayerIds = snapshot.Selection.StartingPlayerIds.ToHashSet();
+        IReadOnlyDictionary<int, int> benchOrders = new Dictionary<int, int>
+        {
+            [snapshot.Selection.ReplacementGoalkeeperPlayerId] = 1,
+            [snapshot.Selection.OutfieldSubstitutePlayerIds[0]] = 2,
+            [snapshot.Selection.OutfieldSubstitutePlayerIds[1]] = 3,
+            [snapshot.Selection.OutfieldSubstitutePlayerIds[2]] = 4,
+        };
+        AdvicePlayerDocument[] players = fixture.Selection.Players
+            .Select(player =>
+            {
+                PersistedPlayerDocument persistedPlayer = persistedPlayers[player.PlayerId];
+                string? captaincy = player.PlayerId == snapshot.Selection.CaptainPlayerId
+                    ? "captain"
+                    : player.PlayerId == snapshot.Selection.ViceCaptainPlayerId
+                        ? "vice-captain"
+                        : null;
+                int? benchOrder = benchOrders.TryGetValue(
+                    player.PlayerId,
+                    out int persistedBenchOrder)
+                    ? persistedBenchOrder
+                    : null;
+                return player with
+                {
+                    Name = persistedPlayer.DisplayName,
+                    Position = persistedPlayer.Position,
+                    LineupPlace = startingPlayerIds.Contains(player.PlayerId)
+                        ? "starting"
+                        : "bench",
+                    BenchOrder = benchOrder,
+                    Captaincy = captaincy,
+                };
+            })
+            .ToArray();
+
+        return fixture with
+        {
+            Gameweek = snapshot.Gameweek,
+            DeadlineUtc = snapshot.DeadlineUtc,
+            GeneratedAtUtc = snapshot.DecisionCutoffUtc,
+            Selection = fixture.Selection with { Players = players },
+        };
+    }
 
     private static AdvicePlayerDocument Player(
         int playerId,

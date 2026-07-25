@@ -35,6 +35,7 @@ fi
 container="$(docker run --detach \
   --read-only \
   --tmpfs /tmp:rw,noexec,nosuid,nodev,size=16m \
+  --tmpfs /data:rw,noexec,nosuid,nodev,size=32m,uid=1654,gid=1654 \
   --cap-drop ALL \
   --security-opt no-new-privileges:true \
   --publish 127.0.0.1::8080 \

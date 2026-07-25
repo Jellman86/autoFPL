@@ -6,6 +6,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.10" />
+    <!-- Override the vulnerable bundled native library with patched 2.1.12. -->
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.12" />
     <!-- Keep ASP.NET Core's OpenAPI.NET dependency on the patched compatible 2.x line. -->
     <PackageReference Include="Microsoft.OpenApi" Version="2.11.0" />
     <ProjectReference Include="../AutoFpl.Contracts/AutoFpl.Contracts.csproj" />

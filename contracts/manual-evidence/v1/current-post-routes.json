@@ -1,18 +1,18 @@
 {
   "schemaVersion": "1.0",
   "sourceType": "manual",
-  "persistence": "stateless",
+  "persistence": "mixed",
   "requestBodyLogging": "disabled",
   "credentialsAccepted": false,
   "opaqueUploadsAccepted": false,
   "accountActionsAccepted": false,
   "derivedRequestValuesAccepted": false,
   "timingPolicy": {
-    "requestTimestampHandling": "not-accepted-or-persisted",
-    "receiptTimeOwner": "external-caller-or-future-ingestion-envelope",
+    "requestTimestampHandling": "explicit-on-decision-snapshot-route",
+    "receiptTimeOwner": "application-for-persisted-snapshots",
     "replayAvailabilityPolicy": "not-before-receipt",
     "observationTimePolicy": "unknown-unless-separately-recorded",
-    "statement": "Current POST routes validate ephemeral user-submitted values and accept no timestamps. A future replayable snapshot must record receipt outside these routes and must not claim any field was available before that receipt; observed or published event times remain unknown unless separate evidence records them."
+    "statement": "Validation and outcome routes remain ephemeral. The decision-snapshot route persists explicit UTC observation, retrieval and availability times, records application receipt, and materialises only evidence with availableAtUtc at or before the decision cutoff."
   },
   "routes": [
     {
@@ -34,6 +34,203 @@
           "temporalRole": "contract-metadata",
           "replayAvailabilityPolicy": "not-before-receipt",
           "notes": "Declared source category; it does not prove legal origin or historical availability."
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/decision-snapshots",
+      "requestType": "AutoFpl.Contracts.Snapshots.DecisionSnapshotPersistenceRequest",
+      "phase": "decision-snapshot",
+      "fields": [
+        {
+          "jsonPath": "schemaVersion",
+          "classification": "contract-metadata",
+          "temporalRole": "snapshot-schema",
+          "replayAvailabilityPolicy": "persisted",
+          "notes": "Version of the persisted decision snapshot contract."
+        },
+        {
+          "jsonPath": "seasonCode",
+          "classification": "decision-state",
+          "temporalRole": "season-identity",
+          "replayAvailabilityPolicy": "persisted",
+          "notes": "Season containing the decision."
+        },
+        {
+          "jsonPath": "gameweek",
+          "classification": "decision-state",
+          "temporalRole": "gameweek-identity",
+          "replayAvailabilityPolicy": "persisted",
+          "notes": "Gameweek containing the decision."
+        },
+        {
+          "jsonPath": "deadlineUtc",
+          "classification": "decision-state",
+          "temporalRole": "gameweek-deadline",
+          "replayAvailabilityPolicy": "persisted",
+          "notes": "UTC Gameweek deadline associated with this snapshot revision."
+        },
+        {
+          "jsonPath": "decisionCutoffUtc",
+          "classification": "decision-state",
+          "temporalRole": "decision-cutoff",
+          "replayAvailabilityPolicy": "persisted",
+          "notes": "Latest availability instant permitted in the materialised snapshot."
+        },
+        {
+          "jsonPath": "budgetTenths",
+          "classification": "decision-state",
+          "temporalRole": "squad-state",
+          "replayAvailabilityPolicy": "persisted",
+          "notes": "Squad budget stored as integer tenths of a million."
+        },
+        {
+          "jsonPath": "players",
+          "classification": "decision-state",
+          "temporalRole": "squad-state",
+          "replayAvailabilityPolicy": "persisted",
+          "notes": "Complete persisted squad."
+        },
+        {
+          "jsonPath": "players[].playerId",
+          "classification": "decision-state",
+          "temporalRole": "player-identity",
+          "replayAvailabilityPolicy": "persisted",
+          "notes": "Stable player identity."
+        },
+        {
+          "jsonPath": "players[].displayName",
+          "classification": "decision-state",
+          "temporalRole": "player-state",
+          "replayAvailabilityPolicy": "persisted",
+          "notes": "Display name at snapshot creation."
+        },
+        {
+          "jsonPath": "players[].clubId",
+          "classification": "decision-state",
+          "temporalRole": "player-state",
+          "replayAvailabilityPolicy": "persisted",
+          "notes": "Club identity at snapshot creation."
+        },
+        {
+          "jsonPath": "players[].position",
+          "classification": "decision-state",
+          "temporalRole": "player-state",
+          "replayAvailabilityPolicy": "persisted",
+          "notes": "FPL position at snapshot creation."
+        },
+        {
+          "jsonPath": "players[].priceTenths",
+          "classification": "decision-state",
+          "temporalRole": "player-state",
+          "replayAvailabilityPolicy": "persisted",
+          "notes": "FPL price in integer tenths at snapshot creation."
+        },
+        {
+          "jsonPath": "startingPlayerIds",
+          "classification": "decision-state",
+          "temporalRole": "selection-state",
+          "replayAvailabilityPolicy": "persisted",
+          "notes": "Starting XI."
+        },
+        {
+          "jsonPath": "captainPlayerId",
+          "classification": "decision-state",
+          "temporalRole": "selection-state",
+          "replayAvailabilityPolicy": "persisted",
+          "notes": "Captain selection."
+        },
+        {
+          "jsonPath": "viceCaptainPlayerId",
+          "classification": "decision-state",
+          "temporalRole": "selection-state",
+          "replayAvailabilityPolicy": "persisted",
+          "notes": "Vice-captain selection."
+        },
+        {
+          "jsonPath": "replacementGoalkeeperPlayerId",
+          "classification": "decision-state",
+          "temporalRole": "selection-state",
+          "replayAvailabilityPolicy": "persisted",
+          "notes": "Replacement goalkeeper."
+        },
+        {
+          "jsonPath": "outfieldSubstitutePlayerIds",
+          "classification": "decision-state",
+          "temporalRole": "selection-state",
+          "replayAvailabilityPolicy": "persisted",
+          "notes": "Ordered outfield substitutes."
+        },
+        {
+          "jsonPath": "observations",
+          "classification": "source-evidence",
+          "temporalRole": "observation-set",
+          "replayAvailabilityPolicy": "cutoff-filtered",
+          "notes": "Append-only observations considered when materialising the snapshot."
+        },
+        {
+          "jsonPath": "observations[].sourceKey",
+          "classification": "source-evidence",
+          "temporalRole": "source-identity",
+          "replayAvailabilityPolicy": "persisted",
+          "notes": "Stable source identity within the Gameweek."
+        },
+        {
+          "jsonPath": "observations[].playerId",
+          "classification": "source-evidence",
+          "temporalRole": "subject-identity",
+          "replayAvailabilityPolicy": "persisted",
+          "notes": "Squad player described by the observation."
+        },
+        {
+          "jsonPath": "observations[].metric",
+          "classification": "source-evidence",
+          "temporalRole": "metric-identity",
+          "replayAvailabilityPolicy": "persisted",
+          "notes": "Observed metric identity."
+        },
+        {
+          "jsonPath": "observations[].value",
+          "classification": "source-evidence",
+          "temporalRole": "observed-value",
+          "replayAvailabilityPolicy": "cutoff-filtered",
+          "notes": "Exact decimal observation value."
+        },
+        {
+          "jsonPath": "observations[].observedAtUtc",
+          "classification": "source-evidence",
+          "temporalRole": "event-time",
+          "replayAvailabilityPolicy": "persisted",
+          "notes": "UTC instant represented by the observation."
+        },
+        {
+          "jsonPath": "observations[].retrievedAtUtc",
+          "classification": "source-evidence",
+          "temporalRole": "retrieval-time",
+          "replayAvailabilityPolicy": "persisted",
+          "notes": "UTC instant autoFPL retrieved the evidence."
+        },
+        {
+          "jsonPath": "observations[].availableAtUtc",
+          "classification": "source-evidence",
+          "temporalRole": "availability-time",
+          "replayAvailabilityPolicy": "must-not-exceed-decision-cutoff",
+          "notes": "Earliest UTC instant this value may be used by a decision."
+        },
+        {
+          "jsonPath": "observations[].supersedesObservationId",
+          "classification": "source-evidence",
+          "temporalRole": "revision-lineage",
+          "replayAvailabilityPolicy": "persisted",
+          "notes": "Prior immutable observation corrected by this revision."
+        },
+        {
+          "jsonPath": "supersedesSnapshotId",
+          "classification": "decision-state",
+          "temporalRole": "revision-lineage",
+          "replayAvailabilityPolicy": "persisted",
+          "notes": "Prior immutable snapshot corrected by this revision."
         }
       ]
     },

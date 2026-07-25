@@ -114,6 +114,12 @@ function renderAdvice(adviceDocument) {
   document.querySelector("#gameweek-label").textContent = `Gameweek ${adviceDocument.gameweek} decision room`;
   document.querySelector("#recommendation-summary").textContent = adviceDocument.recommendationSummary;
   document.querySelector("#deadline").textContent = formatDeadline(adviceDocument.deadlineUtc);
+  document.querySelector("#decision-cutoff").textContent =
+    adviceDocument.decisionCutoffUtc ? formatDeadline(adviceDocument.decisionCutoffUtc) : "Not persisted";
+  document.querySelector("#snapshot-reference").textContent =
+    adviceDocument.snapshotId
+      ? `#${adviceDocument.snapshotId} · revision ${adviceDocument.snapshotRevision}`
+      : "Preview only";
   document.querySelector("#model-label").textContent = adviceDocument.modelLabel;
   document.querySelector("#team-points").textContent = adviceDocument.selection.expectedPoints.toFixed(1);
   document.querySelector("#selection-objective").textContent = adviceDocument.selection.objective;

@@ -31,6 +31,7 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
         Assert.Contains("Gameweek decision room", body, StringComparison.Ordinal);
         Assert.Contains("Ask about this exact selection", body, StringComparison.Ordinal);
         Assert.Contains("Preview data", body, StringComparison.Ordinal);
+        Assert.Contains("<dt>Snapshot</dt>", body, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -42,7 +43,11 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
 
         Assert.NotNull(advice);
         Assert.True(advice.IsSynthetic);
-        Assert.Equal("synthetic-preview", advice.EvidenceStatus);
+        Assert.Equal("synthetic-persisted", advice.EvidenceStatus);
+        Assert.NotNull(advice.SnapshotId);
+        Assert.Equal(1, advice.SnapshotRevision);
+        Assert.Equal(DateTimeOffset.Parse("2026-08-14T18:30:00Z"), advice.DecisionCutoffUtc);
+        Assert.Equal(64, advice.SnapshotContentHash!.Length);
         Assert.Equal(15, advice.Selection.Players.Count);
         Assert.Equal(11, advice.Selection.Players.Count(player => player.LineupPlace == "starting"));
         Assert.Equal(4, advice.Selection.Players.Count(player => player.LineupPlace == "bench"));

@@ -1,7 +1,7 @@
 # Threat Model
 
-- **Status:** foundation baseline
-- **Reviewed:** 2026-07-24
+- **Status:** SQLite persistence baseline
+- **Reviewed:** 2026-07-25
 - **Owners:** Jellman86
 - **Method:** assets, trust boundaries, misuse cases and STRIDE-informed analysis
 
@@ -61,7 +61,7 @@ Update this model when a PR materially changes a trust boundary: identity, MCP/e
 | Model/solver tampering | Artefact or constraint silently replaced | Content hashes, signed provenance, immutable IDs, feasibility checks and append-only audit |
 | Supply-chain compromise | Mutable Action/tag becomes malicious | Full-SHA Action pins, lockfiles, Dependabot review, SBOM/provenance, restricted workflow permissions |
 | Secret disclosure | Token committed or logged | Secret scanning, deployment secret store, redaction, no cached Codex credentials in runtime, no provider keys in persisted configuration, rotation runbook |
-| Injection | Malicious input reaches SQL/shell/template | Boundary schema/range checks, parameterised access, no shell construction, output encoding |
+| Injection | Malicious input reaches SQL/shell/template | Exact JSON binding, domain/range checks, parameterised SQLite commands, no shell construction, output encoding |
 | Denial of service | Deadline traffic or expensive simulation exhausts service | Quotas, bounded jobs, timeouts, cancellation, cached versioned results, resource limits, graceful degradation |
 | Repudiation | Recommendation changed without trace | Immutable audit with actor, time, code/data/model versions, objective and approval state |
 | Privacy overcollection | Research stores unnecessary user history | Data minimisation, separation, retention/deletion policy, access audit and consent boundaries |
@@ -87,7 +87,7 @@ Update this model when a PR materially changes a trust boundary: identity, MCP/e
 
 ## Residual foundation risks
 
-A private deterministic development API is deployed; no ingestion, forecasting, simulation, optimiser, advisory or account-action runtime exists yet. Later implementation PRs must convert the relevant controls into automated tests and operational evidence. Source behaviour, access conditions and data availability can change, so collectors need observable failure modes and a kill switch.
+The private application now has an unauthenticated decision-snapshot write route intended only for its trusted internal network. It must not receive a public route before identity and authorisation are implemented. SQLite state is authoritative and therefore requires a persistent volume, protected file access, consistent backups before destructive migration or rollback, and retention/deletion work before storing real personal history. There is still no ingestion, forecasting, simulation, optimiser or account-action runtime. Source behaviour, access conditions and data availability can change, so future collectors need observable failure modes and a kill switch.
 
 ## Review triggers
 

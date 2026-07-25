@@ -38,18 +38,18 @@ Schema, range, cross-field, deadline and deterministic-rule checks are required 
 
 ## Time and revisions
 
-The current service accepts no timestamp or snapshot-identity fields and creates no retained snapshot. A future separately reviewed contract must apply these semantics:
+Validation and outcome routes accept no timestamp or snapshot-identity fields. The private decision-snapshot route now accepts and retains:
 
 - `observed_at`: when the described event/state occurred, if known; otherwise absent.
 - `published_at`: source publication time when known; otherwise absent.
 - `retrieved_at`: when autoFPL receives the submission.
-- `available_at`: no earlier than `retrieved_at` for decision use; a user-supplied historical time cannot backdate availability.
+- `available_at`: no earlier than `retrieved_at` and no later than the decision cutoff when included in a materialised snapshot.
 
-A future persistence contract must generate an immutable snapshot ID, canonical-content hash, receipt timestamp and schema version. A correction creates a new snapshot with a `supersedes` link; it never rewrites prior evidence.
+The persistence contract generates an immutable snapshot ID, canonical-content hash, creation timestamp and schema version. A correction creates new observation and snapshot revisions with `supersedes` links; it never rewrites prior evidence. These manually asserted clocks are acceptance evidence, not proof of historical provider availability.
 
 ## Privacy, retention and redistribution
 
-The present service is stateless and discards the request after returning validation output. It has no request-body logging, user database or dataset redistribution. Future persistence requires a versioned schema, minimisation and deletion design, threat/privacy review, retention period and end-to-end deletion tests.
+Validation/outcome routes remain stateless and all request-body logging remains disabled. The snapshot route stores only its versioned structured fields in the local SQLite database and does not redistribute them. Real personal-history retention still requires a minimisation/deletion design, retention period and end-to-end deletion tests before public product use.
 
 Manual user content is private to that user's workflow by default. It must not be committed to the repository, included in shared test fixtures, used to train shared models or publicly redistributed.
 

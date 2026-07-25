@@ -112,7 +112,7 @@ footer {
 
 .decision-header {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(20rem, 0.75fr) minmax(0, 1.65fr);
   gap: 3rem;
   align-items: end;
   padding: 3.5rem 0 2.5rem;
@@ -166,7 +166,7 @@ h3 {
 
 .run-meta {
   display: grid;
-  grid-template-columns: repeat(3, minmax(7rem, 1fr));
+  grid-template-columns: repeat(5, minmax(6.5rem, 1fr));
   gap: 1px;
   overflow: hidden;
   margin: 0;
