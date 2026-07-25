@@ -87,6 +87,91 @@ class RepositoryPolicyTests(unittest.TestCase):
             violations,
         )
 
+    def test_repository_rejects_request_body_logging(self) -> None:
+        unsafe_sources = {
+            "http logging body field": (
+                "builder.Services.AddHttpLogging(options => "
+                "options.LoggingFields = HttpLoggingFields.RequestBody);"
+            ),
+            "request body in logger scope": (
+                "logger.BeginScope(new { Body = context.Request.Body });"
+            ),
+            "request dto in structured log": (
+                'logger.LogInformation("request={Request}", request);'
+            ),
+            "aliased dto in structured log": (
+                'logger.LogInformation("payload={Payload}", payload);'
+            ),
+            "aliased dto in logger scope": (
+                "logger.BeginScope(new { Payload = payload });"
+            ),
+            "aliased dto in generic log call": (
+                "logger.Log(LogLevel.Information, new EventId(), payload, null, "
+                "static (state, _) => state.ToString());"
+            ),
+            "aliased dto in console output": "Console.WriteLine(payload);",
+            "application logger dependency": "ILogger<Program> logger = app.Logger;",
+        }
+
+        for name, source in unsafe_sources.items():
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as temporary_directory:
+                root = Path(temporary_directory)
+                self._write_required_files(root)
+                program = root / "src/backend/AutoFpl.Api/Program.cs"
+                program.parent.mkdir(parents=True, exist_ok=True)
+                program.write_text(source, encoding="utf-8")
+
+                violations = check_repository(root)
+
+                self.assertTrue(
+                    any(
+                        "request-body logging" in violation
+                        for violation in violations
+                    ),
+                    violations,
+                )
+
+    def test_repository_rejects_backend_logging_helpers(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            self._write_required_files(root)
+            helper = root / "src/backend/AutoFpl.Domain/EvidenceLogger.cs"
+            helper.parent.mkdir(parents=True, exist_ok=True)
+            helper.write_text(
+                'logger.LogInformation("payload={Payload}", payload);',
+                encoding="utf-8",
+            )
+
+            violations = check_repository(root)
+
+        self.assertTrue(
+            any("request-body logging" in violation for violation in violations),
+            violations,
+        )
+
+    def test_repository_rejects_manual_route_catalog_drift(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            self._write_required_files(root)
+            program = root / "src/backend/AutoFpl.Api/Program.cs"
+            program.parent.mkdir(parents=True, exist_ok=True)
+            program.write_text(
+                'app.MapPost("/api/v1/current", () => Results.Ok());',
+                encoding="utf-8",
+            )
+            catalog = root / "contracts/manual-evidence/v1/current-post-routes.json"
+            catalog.write_text(
+                '{"routes":[{"method":"POST","path":"/api/v1/stale"}]}',
+                encoding="utf-8",
+            )
+
+            violations = check_repository(root)
+
+        self.assertTrue(
+            any("manual evidence route catalog" in violation for violation in violations),
+            violations,
+        )
+
     def test_public_security_workflows_are_mandatory(self) -> None:
         from tools.governance.check_repository import REQUIRED_PATHS
 
@@ -145,6 +230,29 @@ class RepositoryPolicyTests(unittest.TestCase):
         self.assertNotIn(
             "explicit authorisation",
             REQUIRED_CONTENT_MARKERS["docs/standards/data-governance.md"],
+        )
+
+    def test_manual_evidence_catalog_is_mandatory(self) -> None:
+        from tools.governance.check_repository import (
+            REQUIRED_CONTENT_MARKERS,
+            REQUIRED_PATHS,
+        )
+
+        schema = "contracts/manual-evidence/v1/manual-evidence-catalog.schema.json"
+        catalog = "contracts/manual-evidence/v1/current-post-routes.json"
+        self.assertIn(schema, REQUIRED_PATHS)
+        self.assertIn(catalog, REQUIRED_PATHS)
+        self.assertIn(
+            '"replayAvailabilityPolicy": "not-before-receipt"',
+            REQUIRED_CONTENT_MARKERS[catalog],
+        )
+        self.assertIn(
+            '"requestBodyLogging": "disabled"',
+            REQUIRED_CONTENT_MARKERS[catalog],
+        )
+        self.assertIn(
+            '"derivedRequestValuesAccepted": false',
+            REQUIRED_CONTENT_MARKERS[catalog],
         )
 
     def test_data_source_contract_and_policy_gate_are_mandatory(self) -> None:

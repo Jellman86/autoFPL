@@ -16,4 +16,10 @@
   <ItemGroup>
     <ProjectReference Include="../../../src/backend/AutoFpl.Api/AutoFpl.Api.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../../../contracts/manual-evidence/v1/**/*"
+          Link="contracts/manual-evidence/v1/%(RecursiveDir)%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

@@ -1,0 +1,255 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:autofpl:schema:manual-evidence-catalog:1.0",
+  "title": "autoFPL manual evidence catalog v1",
+  "description": "Technical and temporal interpretation of fields accepted by the current stateless manual-evidence POST routes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "sourceType",
+    "persistence",
+    "requestBodyLogging",
+    "credentialsAccepted",
+    "opaqueUploadsAccepted",
+    "accountActionsAccepted",
+    "derivedRequestValuesAccepted",
+    "timingPolicy",
+    "routes"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "enum": [
+        "1.0"
+      ]
+    },
+    "sourceType": {
+      "type": "string",
+      "enum": [
+        "manual"
+      ]
+    },
+    "persistence": {
+      "type": "string",
+      "enum": [
+        "stateless"
+      ]
+    },
+    "requestBodyLogging": {
+      "type": "string",
+      "enum": [
+        "disabled"
+      ]
+    },
+    "credentialsAccepted": {
+      "type": "boolean",
+      "enum": [
+        false
+      ]
+    },
+    "opaqueUploadsAccepted": {
+      "type": "boolean",
+      "enum": [
+        false
+      ]
+    },
+    "accountActionsAccepted": {
+      "type": "boolean",
+      "enum": [
+        false
+      ]
+    },
+    "derivedRequestValuesAccepted": {
+      "type": "boolean",
+      "enum": [
+        false
+      ]
+    },
+    "timingPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requestTimestampHandling",
+        "receiptTimeOwner",
+        "replayAvailabilityPolicy",
+        "observationTimePolicy",
+        "statement"
+      ],
+      "properties": {
+        "requestTimestampHandling": {
+          "type": "string",
+          "enum": [
+            "not-accepted-or-persisted"
+          ]
+        },
+        "receiptTimeOwner": {
+          "type": "string",
+          "enum": [
+            "external-caller-or-future-ingestion-envelope"
+          ]
+        },
+        "replayAvailabilityPolicy": {
+          "type": "string",
+          "enum": [
+            "not-before-receipt"
+          ]
+        },
+        "observationTimePolicy": {
+          "type": "string",
+          "enum": [
+            "unknown-unless-separately-recorded"
+          ]
+        },
+        "statement": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "routes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "method",
+          "path",
+          "requestType",
+          "phase",
+          "fields"
+        ],
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "POST"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "pattern": "^/api/v1/[a-z0-9/-]+$"
+          },
+          "requestType": {
+            "type": "string",
+            "minLength": 1
+          },
+          "phase": {
+            "type": "string",
+            "enum": [
+              "metadata",
+              "decision",
+              "outcome"
+            ]
+          },
+          "fields": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "jsonPath",
+                "classification",
+                "temporalRole",
+                "replayAvailabilityPolicy",
+                "notes"
+              ],
+              "properties": {
+                "jsonPath": {
+                  "type": "string",
+                  "pattern": "^[a-z][A-Za-z0-9]*(\\[\\])?(\\.[a-z][A-Za-z0-9]*)?$"
+                },
+                "classification": {
+                  "type": "string",
+                  "enum": [
+                    "decision-state",
+                    "observed-event-evidence",
+                    "outcome-evidence"
+                  ]
+                },
+                "temporalRole": {
+                  "type": "string",
+                  "enum": [
+                    "contract-metadata",
+                    "decision-state-at-receipt",
+                    "observation-known-at-receipt",
+                    "outcome-known-at-receipt"
+                  ]
+                },
+                "replayAvailabilityPolicy": {
+                  "type": "string",
+                  "enum": [
+                    "not-before-receipt"
+                  ]
+                },
+                "notes": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "oneOf": [
+                {
+                  "required": [
+                    "classification",
+                    "temporalRole"
+                  ],
+                  "properties": {
+                    "classification": {
+                      "enum": [
+                        "decision-state"
+                      ]
+                    },
+                    "temporalRole": {
+                      "enum": [
+                        "contract-metadata",
+                        "decision-state-at-receipt"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "classification",
+                    "temporalRole"
+                  ],
+                  "properties": {
+                    "classification": {
+                      "enum": [
+                        "observed-event-evidence"
+                      ]
+                    },
+                    "temporalRole": {
+                      "enum": [
+                        "observation-known-at-receipt"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "classification",
+                    "temporalRole"
+                  ],
+                  "properties": {
+                    "classification": {
+                      "enum": [
+                        "outcome-evidence"
+                      ]
+                    },
+                    "temporalRole": {
+                      "enum": [
+                        "outcome-known-at-receipt"
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 import subprocess
 import sys
@@ -51,6 +52,8 @@ REQUIRED_PATHS = (
     "contracts/data-source/v1/source-record.schema.json",
     "contracts/data-source/v1/examples/manual.json",
     "contracts/data-source/v1/examples/synthetic.json",
+    "contracts/manual-evidence/v1/manual-evidence-catalog.schema.json",
+    "contracts/manual-evidence/v1/current-post-routes.json",
     "tools/governance/check_data_source_policy.py",
     "tools/governance/check_pr_title.py",
     "tools/governance/check_research_review.py",
@@ -231,6 +234,13 @@ REQUIRED_CONTENT_MARKERS = {
         "rolling/walk-forward evaluation",
         "private, non-commercial home research project",
     ),
+    "contracts/manual-evidence/v1/current-post-routes.json": (
+        '"sourceType": "manual"',
+        '"persistence": "stateless"',
+        '"requestBodyLogging": "disabled"',
+        '"derivedRequestValuesAccepted": false',
+        '"replayAvailabilityPolicy": "not-before-receipt"',
+    ),
 }
 
 _FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
@@ -239,6 +249,14 @@ _DANGEROUS_PIPE = re.compile(
     r"(?:curl|wget)\b[^\n|]*\|\s*(?:ba)?sh\b",
     re.IGNORECASE,
 )
+_REQUEST_BODY_LOGGING = re.compile(
+    r"\b(?:AddHttpLogging|UseHttpLogging|HttpLoggingFields|ILogger|ILoggerFactory|"
+    r"Serilog|NLog)\b"
+    r"|\.\s*(?:Log(?:Trace|Debug|Information|Warning|Error|Critical)?|BeginScope)\s*\("
+    r"|\bConsole\s*\.\s*Write(?:Line)?\s*\(",
+    re.IGNORECASE,
+)
+_MAP_POST_ROUTE = re.compile(r'app\s*\.\s*MapPost\s*\(\s*"([^"]+)"')
 _FORBIDDEN_TRACKED_NAMES = {
     ".env",
     "auth.json",
@@ -319,6 +337,55 @@ def _dependency_review_trigger_violations(content: str, relative: Path) -> list[
         return [
             f"{relative}: workflow_dispatch is forbidden because dependency review "
             "requires an explicit base-ref and head-ref outside pull_request events"
+        ]
+    return []
+
+
+def _request_body_logging_violations(content: str, relative: Path) -> list[str]:
+    if _REQUEST_BODY_LOGGING.search(content):
+        return [
+            f"{relative}: request-body logging boundary forbids application logging APIs "
+            "in backend application sources; use framework metadata logs only"
+        ]
+    return []
+
+
+def _manual_evidence_route_catalog_violations(root: Path) -> list[str]:
+    program = root / "src/backend/AutoFpl.Api/Program.cs"
+    catalog_path = root / "contracts/manual-evidence/v1/current-post-routes.json"
+    if not program.is_file() or not catalog_path.is_file():
+        return []
+
+    actual_routes = _MAP_POST_ROUTE.findall(program.read_text(encoding="utf-8"))
+    try:
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as error:
+        return [f"manual evidence route catalog is unreadable: {error}"]
+
+    routes = catalog.get("routes") if isinstance(catalog, dict) else None
+    if not isinstance(routes, list):
+        return ["manual evidence route catalog must contain a routes array"]
+
+    catalog_routes = [
+        route.get("path")
+        for route in routes
+        if isinstance(route, dict) and route.get("method") == "POST"
+    ]
+    if len(catalog_routes) != len(routes) or not all(
+        isinstance(path, str) for path in catalog_routes
+    ):
+        return ["manual evidence route catalog contains an invalid POST route"]
+
+    actual_set = set(actual_routes)
+    catalog_set = set(catalog_routes)
+    if len(actual_set) != len(actual_routes) or len(catalog_set) != len(catalog_routes):
+        return ["manual evidence route catalog or API contains duplicate POST routes"]
+    if actual_set != catalog_set:
+        missing = sorted(actual_set - catalog_set)
+        stale = sorted(catalog_set - actual_set)
+        return [
+            "manual evidence route catalog differs from API POST routes "
+            f"(missing={missing}, stale={stale})"
         ]
     return []
 
@@ -462,6 +529,13 @@ def check_repository(root: Path) -> list[str]:
                 violations.append(
                     f"{relative}: {action} must be pinned to a full commit SHA"
                 )
+
+    backend_sources = sorted((root / "src/backend").rglob("*.cs"))
+    for source in backend_sources:
+        relative = source.relative_to(root)
+        content = source.read_text(encoding="utf-8")
+        violations.extend(_request_body_logging_violations(content, relative))
+    violations.extend(_manual_evidence_route_catalog_violations(root))
 
     for path in _tracked_files(root):
         if path.is_file() and path.name in _FORBIDDEN_TRACKED_NAMES:

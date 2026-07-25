@@ -1,7 +1,7 @@
 # Source record: manual user input v1
 
 - **Source ID:** `manual-user-input/v1`
-- **Status:** Admitted on protected `dev` by PR #18 (`8d91954626b8e6a0bcf237887adb66009a3ce6bb`)
+- **Status:** Versioned technical profile established on protected `dev` by PR #18 (`8d91954626b8e6a0bcf237887adb66009a3ce6bb`)
 - **Decision owner:** `Jellman86`
 - **Review date:** 24 July 2026
 - **Review evidence:** [issue #16](https://github.com/Jellman86/autoFPL/issues/16) and the exact reviewed commit/blockers/corrections/PASS results in the [PR #18 review record](https://github.com/Jellman86/autoFPL/pull/18#issuecomment-5074192727)
@@ -12,7 +12,7 @@
 
 This source represents deliberate values typed or submitted by the user for their own human-in-the-loop decision support. Values may originate from the user's knowledge or public research. The collection method is direct user submission through a versioned autoFPL contract; provenance and timing metadata describe the evidence rather than acting as a legal-origin gate.
 
-The original source-record example covers decision-snapshot metadata (`schemaVersion` and `sourceType`). Later stateless deterministic endpoints accept typed squad, selection, play and points evidence; issue #54 aligns their timing/provenance semantics without withdrawing useful routes merely because a value was manually sourced.
+The original source-record example covers decision-snapshot metadata (`schemaVersion` and `sourceType`). Later stateless deterministic endpoints accept typed squad, selection, play and points evidence. Their exact field classes and conservative replay semantics are maintained in the [manual evidence timing contract](../manual-evidence-timing-v1.md) without withdrawing useful routes merely because a value was manually sourced.
 
 ## Allowed content
 

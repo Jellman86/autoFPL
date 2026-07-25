@@ -32,5 +32,9 @@
       Include="../../../contracts/data-source/v1/**/*"
       Link="contracts/data-source/v1/%(RecursiveDir)%(Filename)%(Extension)"
       CopyToOutputDirectory="PreserveNewest" />
+    <None
+      Include="../../../contracts/manual-evidence/v1/**/*"
+      Link="contracts/manual-evidence/v1/%(RecursiveDir)%(Filename)%(Extension)"
+      CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

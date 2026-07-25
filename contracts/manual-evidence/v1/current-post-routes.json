@@ -1,0 +1,636 @@
+{
+  "schemaVersion": "1.0",
+  "sourceType": "manual",
+  "persistence": "stateless",
+  "requestBodyLogging": "disabled",
+  "credentialsAccepted": false,
+  "opaqueUploadsAccepted": false,
+  "accountActionsAccepted": false,
+  "derivedRequestValuesAccepted": false,
+  "timingPolicy": {
+    "requestTimestampHandling": "not-accepted-or-persisted",
+    "receiptTimeOwner": "external-caller-or-future-ingestion-envelope",
+    "replayAvailabilityPolicy": "not-before-receipt",
+    "observationTimePolicy": "unknown-unless-separately-recorded",
+    "statement": "Current POST routes validate ephemeral user-submitted values and accept no timestamps. A future replayable snapshot must record receipt outside these routes and must not claim any field was available before that receipt; observed or published event times remain unknown unless separate evidence records them."
+  },
+  "routes": [
+    {
+      "method": "POST",
+      "path": "/api/v1/decision-snapshot-metadata/validation",
+      "requestType": "DecisionSnapshotMetadataRequest",
+      "phase": "metadata",
+      "fields": [
+        {
+          "jsonPath": "schemaVersion",
+          "classification": "decision-state",
+          "temporalRole": "contract-metadata",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "Version of the submitted decision-snapshot metadata contract."
+        },
+        {
+          "jsonPath": "sourceType",
+          "classification": "decision-state",
+          "temporalRole": "contract-metadata",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "Declared source category; it does not prove legal origin or historical availability."
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/squads/validation",
+      "requestType": "AutoFpl.Contracts.Squads.SquadValidationRequest",
+      "phase": "decision",
+      "fields": [
+        {
+          "jsonPath": "budgetTenths",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted squad budget interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted squad-player collection interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players[].playerId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted local player identity interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players[].clubId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted club identity interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players[].position",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted position interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players[].priceTenths",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted integer-tenths price interpreted at request receipt."
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/lineups/validation",
+      "requestType": "AutoFpl.Contracts.Lineups.LineupValidationRequest",
+      "phase": "decision",
+      "fields": [
+        {
+          "jsonPath": "budgetTenths",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted squad budget interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted squad-player collection interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players[].playerId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted local player identity interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players[].clubId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted club identity interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players[].position",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted position interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players[].priceTenths",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted integer-tenths price interpreted at request receipt."
+        },
+        {
+          "jsonPath": "startingPlayerIds",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted starting XI interpreted at request receipt."
+        },
+        {
+          "jsonPath": "captainPlayerId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted captain choice interpreted at request receipt."
+        },
+        {
+          "jsonPath": "viceCaptainPlayerId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted vice-captain choice interpreted at request receipt."
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/gameweek-selections/validation",
+      "requestType": "AutoFpl.Contracts.Selections.GameweekSelectionValidationRequest",
+      "phase": "decision",
+      "fields": [
+        {
+          "jsonPath": "budgetTenths",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted squad budget interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted squad-player collection interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players[].playerId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted local player identity interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players[].clubId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted club identity interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players[].position",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted position interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players[].priceTenths",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted integer-tenths price interpreted at request receipt."
+        },
+        {
+          "jsonPath": "startingPlayerIds",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted starting XI interpreted at request receipt."
+        },
+        {
+          "jsonPath": "captainPlayerId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted captain choice interpreted at request receipt."
+        },
+        {
+          "jsonPath": "viceCaptainPlayerId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted vice-captain choice interpreted at request receipt."
+        },
+        {
+          "jsonPath": "replacementGoalkeeperPlayerId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted replacement-goalkeeper bench choice interpreted at request receipt."
+        },
+        {
+          "jsonPath": "outfieldSubstitutePlayerIds",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted ordered outfield bench interpreted at request receipt."
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/gameweek-outcomes/captaincy-resolution",
+      "requestType": "AutoFpl.Contracts.Outcomes.GameweekCaptaincyResolutionRequest",
+      "phase": "outcome",
+      "fields": [
+        {
+          "jsonPath": "budgetTenths",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted squad budget interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted squad-player collection interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players[].playerId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted local player identity interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players[].clubId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted club identity interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players[].position",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted position interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players[].priceTenths",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted integer-tenths price interpreted at request receipt."
+        },
+        {
+          "jsonPath": "startingPlayerIds",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted starting XI interpreted at request receipt."
+        },
+        {
+          "jsonPath": "captainPlayerId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted captain choice interpreted at request receipt."
+        },
+        {
+          "jsonPath": "viceCaptainPlayerId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted vice-captain choice interpreted at request receipt."
+        },
+        {
+          "jsonPath": "replacementGoalkeeperPlayerId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted replacement-goalkeeper bench choice interpreted at request receipt."
+        },
+        {
+          "jsonPath": "outfieldSubstitutePlayerIds",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted ordered outfield bench interpreted at request receipt."
+        },
+        {
+          "jsonPath": "playerIdsWithMinutes",
+          "classification": "observed-event-evidence",
+          "temporalRole": "observation-known-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted positive-minutes evidence; actual event time is unknown unless separately recorded."
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/gameweek-outcomes/substitution-resolution",
+      "requestType": "AutoFpl.Contracts.Outcomes.GameweekSubstitutionResolutionRequest",
+      "phase": "outcome",
+      "fields": [
+        {
+          "jsonPath": "budgetTenths",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted squad budget interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted squad-player collection interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players[].playerId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted local player identity interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players[].clubId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted club identity interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players[].position",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted position interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players[].priceTenths",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted integer-tenths price interpreted at request receipt."
+        },
+        {
+          "jsonPath": "startingPlayerIds",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted starting XI interpreted at request receipt."
+        },
+        {
+          "jsonPath": "captainPlayerId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted captain choice interpreted at request receipt."
+        },
+        {
+          "jsonPath": "viceCaptainPlayerId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted vice-captain choice interpreted at request receipt."
+        },
+        {
+          "jsonPath": "replacementGoalkeeperPlayerId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted replacement-goalkeeper bench choice interpreted at request receipt."
+        },
+        {
+          "jsonPath": "outfieldSubstitutePlayerIds",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted ordered outfield bench interpreted at request receipt."
+        },
+        {
+          "jsonPath": "playerIdsWhoPlayed",
+          "classification": "observed-event-evidence",
+          "temporalRole": "observation-known-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted play evidence; actual event time is unknown unless separately recorded."
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/gameweek-outcomes/effective-resolution",
+      "requestType": "AutoFpl.Contracts.Outcomes.GameweekSubstitutionResolutionRequest",
+      "phase": "outcome",
+      "fields": [
+        {
+          "jsonPath": "budgetTenths",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted squad budget interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted squad-player collection interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players[].playerId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted local player identity interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players[].clubId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted club identity interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players[].position",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted position interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players[].priceTenths",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted integer-tenths price interpreted at request receipt."
+        },
+        {
+          "jsonPath": "startingPlayerIds",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted starting XI interpreted at request receipt."
+        },
+        {
+          "jsonPath": "captainPlayerId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted captain choice interpreted at request receipt."
+        },
+        {
+          "jsonPath": "viceCaptainPlayerId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted vice-captain choice interpreted at request receipt."
+        },
+        {
+          "jsonPath": "replacementGoalkeeperPlayerId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted replacement-goalkeeper bench choice interpreted at request receipt."
+        },
+        {
+          "jsonPath": "outfieldSubstitutePlayerIds",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted ordered outfield bench interpreted at request receipt."
+        },
+        {
+          "jsonPath": "playerIdsWhoPlayed",
+          "classification": "observed-event-evidence",
+          "temporalRole": "observation-known-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted play evidence; actual event time is unknown unless separately recorded."
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/gameweek-outcomes/effective-score",
+      "requestType": "AutoFpl.Contracts.Outcomes.GameweekScoreResolutionRequest",
+      "phase": "outcome",
+      "fields": [
+        {
+          "jsonPath": "budgetTenths",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted squad budget interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted squad-player collection interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players[].playerId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted local player identity interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players[].clubId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted club identity interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players[].position",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted position interpreted at request receipt."
+        },
+        {
+          "jsonPath": "players[].priceTenths",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted integer-tenths price interpreted at request receipt."
+        },
+        {
+          "jsonPath": "startingPlayerIds",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted starting XI interpreted at request receipt."
+        },
+        {
+          "jsonPath": "captainPlayerId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted captain choice interpreted at request receipt."
+        },
+        {
+          "jsonPath": "viceCaptainPlayerId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted vice-captain choice interpreted at request receipt."
+        },
+        {
+          "jsonPath": "replacementGoalkeeperPlayerId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted replacement-goalkeeper bench choice interpreted at request receipt."
+        },
+        {
+          "jsonPath": "outfieldSubstitutePlayerIds",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted ordered outfield bench interpreted at request receipt."
+        },
+        {
+          "jsonPath": "playerIdsWhoPlayed",
+          "classification": "observed-event-evidence",
+          "temporalRole": "observation-known-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted play evidence; actual event time is unknown unless separately recorded."
+        },
+        {
+          "jsonPath": "playerPoints",
+          "classification": "outcome-evidence",
+          "temporalRole": "outcome-known-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted complete squad points collection; provider publication time is unknown unless separately recorded."
+        },
+        {
+          "jsonPath": "playerPoints[].playerId",
+          "classification": "outcome-evidence",
+          "temporalRole": "outcome-known-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "Player identity associated with submitted outcome points."
+        },
+        {
+          "jsonPath": "playerPoints[].points",
+          "classification": "outcome-evidence",
+          "temporalRole": "outcome-known-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-submitted integer Gameweek points known no earlier than request receipt for replay."
+        }
+      ]
+    }
+  ]
+}
