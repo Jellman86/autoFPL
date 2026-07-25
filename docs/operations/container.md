@@ -2,7 +2,7 @@
 
 ## Purpose and current boundary
 
-The container is a private development API for exercising deterministic metadata, squad, lineup, gameweek-selection and effective-captain rules. It has no database, FPL data collection, credentials, autonomous actions or user-facing write operations.
+The container is a private development API for exercising deterministic metadata, squad, lineup, gameweek-selection, effective-captain and automatic-substitution rules. It has no database, FPL data collection, credentials, autonomous actions or user-facing write operations.
 
 Routes:
 
@@ -15,6 +15,7 @@ Routes:
 | `POST` | `/api/v1/lineups/validation` | Validates a manually supplied starting XI, formation, captain and vice-captain against a valid squad |
 | `POST` | `/api/v1/gameweek-selections/validation` | Validates the starting XI plus replacement goalkeeper and three ordered outfield substitutes against a valid squad |
 | `POST` | `/api/v1/gameweek-outcomes/captaincy-resolution` | Resolves the effective captain from a valid complete selection and manually supplied player IDs with minutes |
+| `POST` | `/api/v1/gameweek-outcomes/substitution-resolution` | Resolves automatic substitutions from a valid complete selection and manually supplied player IDs that played |
 
 Decision-snapshot metadata request fields are exact and case-sensitive. Missing or `null` required fields, duplicate or undeclared fields, non-string field values and malformed payloads fail with 400. Present string values that are unsupported fail with the stable domain error code and 422. The request body is bounded to 16 KiB by Kestrel.
 
@@ -24,7 +25,9 @@ Lineup requests use the same manual squad boundary, require 11 unique squad memb
 
 Gameweek-selection requests preserve the starting-XI and captaincy rules, then require the non-starting squad goalkeeper as the replacement goalkeeper and exactly three distinct non-goalkeeper substitutes in priority order. The starting XI and bench must partition the 15-player squad exactly once. Structural failures return 400; rule-invalid selections return a stable 422 problem response. This endpoint validates the submitted bench order only; it does not ingest player appearances, execute automatic substitutions or calculate points.
 
-Captaincy-resolution requests compose the same valid squad and complete gameweek selection with a distinct list of squad-player IDs that played at least one minute. Captaincy remains with the selected captain when present, transfers to the vice-captain when only the vice-captain played minutes, and resolves to `null` when neither played. Structural failures return 400; duplicate or non-squad minute evidence returns a stable 422 problem response. Minute evidence is manually supplied: the endpoint does not ingest appearances, execute substitutions or calculate points.
+Captaincy-resolution requests compose the same valid squad and complete gameweek selection with a distinct list of squad-player IDs that played at least one minute. Captaincy remains with the selected captain when present, transfers to the vice-captain when only the vice-captain played minutes, and resolves to `null` when neither played. Structural failures return 400; duplicate or non-squad minute evidence returns a stable 422 problem response. Minute evidence is manually supplied: the endpoint does not retrieve appearances, points or account data.
+
+Substitution-resolution requests compose the same valid squad and complete selection with distinct, manually supplied squad-player IDs representing players who played in the Gameweek. A non-playing starting goalkeeper is replaced only by the replacement goalkeeper when that goalkeeper played. Played outfield substitutes are considered in bench-priority order and activated only when the existing formation rules remain valid; unresolved non-playing starters are reported explicitly. Structural failures return 400, and duplicate or non-squad play evidence returns a stable 422 problem response. The endpoint does not retrieve appearances or cards, calculate scores, persist outcomes or perform account actions.
 
 ## Image construction
 

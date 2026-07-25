@@ -17,6 +17,7 @@ public sealed class LineupTests
             viceCaptainPlayerId: 13);
 
         Assert.Equal(11, lineup.PlayerCount);
+        Assert.Equal([1, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14], lineup.StartingPlayerIds);
         Assert.Equal(1, lineup.GoalkeeperCount);
         Assert.Equal(3, lineup.DefenderCount);
         Assert.Equal(5, lineup.MidfielderCount);
@@ -24,6 +25,23 @@ public sealed class LineupTests
         Assert.Equal("3-5-2", lineup.Formation);
         Assert.Equal(8, lineup.CaptainPlayerId);
         Assert.Equal(13, lineup.ViceCaptainPlayerId);
+    }
+
+    [Fact]
+    public void CreateSnapshotsStartingPlayerIds()
+    {
+        Squad squad = Squad.Create(1_000, ValidPlayers());
+        List<int> startingPlayerIds = [1, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14];
+
+        Lineup lineup = Lineup.Create(
+            squad,
+            startingPlayerIds,
+            captainPlayerId: 8,
+            viceCaptainPlayerId: 13);
+        startingPlayerIds.Clear();
+
+        Assert.Equal([1, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14], lineup.StartingPlayerIds);
+        Assert.Throws<NotSupportedException>(() => ((IList<int>)lineup.StartingPlayerIds).Add(99));
     }
 
     [Fact]

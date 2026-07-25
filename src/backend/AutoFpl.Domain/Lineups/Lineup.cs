@@ -5,6 +5,7 @@ namespace AutoFpl.Domain.Lineups;
 public sealed record Lineup
 {
     private Lineup(
+        IReadOnlyList<int> startingPlayerIds,
         int goalkeeperCount,
         int defenderCount,
         int midfielderCount,
@@ -12,6 +13,7 @@ public sealed record Lineup
         int captainPlayerId,
         int viceCaptainPlayerId)
     {
+        StartingPlayerIds = startingPlayerIds;
         GoalkeeperCount = goalkeeperCount;
         DefenderCount = defenderCount;
         MidfielderCount = midfielderCount;
@@ -21,6 +23,8 @@ public sealed record Lineup
     }
 
     public int PlayerCount => 11;
+
+    public IReadOnlyList<int> StartingPlayerIds { get; }
 
     public int GoalkeeperCount { get; }
 
@@ -72,7 +76,7 @@ public sealed record Lineup
         int defenderCount = starters.Count(player => player.Position == SquadPosition.Defender);
         int midfielderCount = starters.Count(player => player.Position == SquadPosition.Midfielder);
         int forwardCount = starters.Count(player => player.Position == SquadPosition.Forward);
-        if (goalkeeperCount != 1 || defenderCount < 3 || forwardCount < 1)
+        if (!LineupFormation.IsValid(starters))
         {
             throw new LineupValidationException(
                 "lineup.formation.invalid",
@@ -98,6 +102,7 @@ public sealed record Lineup
         }
 
         return new(
+            Array.AsReadOnly([.. startingPlayerIds]),
             goalkeeperCount,
             defenderCount,
             midfielderCount,
