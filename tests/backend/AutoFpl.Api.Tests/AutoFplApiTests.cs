@@ -535,6 +535,175 @@ public sealed class AutoFplApiTests : IClassFixture<WebApplicationFactory<Progra
     }
 
     [Fact]
+    public async Task Effective_score_returns_manual_points_for_resolved_lineup_and_captain()
+    {
+        using HttpResponseMessage response = await _client.PostAsJsonAsync(
+            "/api/v1/gameweek-outcomes/effective-score",
+            new
+            {
+                budgetTenths = 1_000,
+                players = ValidPlayers(),
+                startingPlayerIds = new[] { 1, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14 },
+                captainPlayerId = 8,
+                viceCaptainPlayerId = 13,
+                replacementGoalkeeperPlayerId = 2,
+                outfieldSubstitutePlayerIds = new[] { 6, 7, 15 },
+                playerIdsWhoPlayed = new[] { 1, 2, 4, 5, 6, 9, 10, 11, 12, 13, 14 },
+                playerPoints = new[]
+                {
+                    new { playerId = 1, points = 2 }, new { playerId = 2, points = 10 },
+                    new { playerId = 3, points = 0 }, new { playerId = 4, points = 6 },
+                    new { playerId = 5, points = 1 }, new { playerId = 6, points = 8 },
+                    new { playerId = 7, points = 0 }, new { playerId = 8, points = 0 },
+                    new { playerId = 9, points = 3 }, new { playerId = 10, points = -1 },
+                    new { playerId = 11, points = 5 }, new { playerId = 12, points = 2 },
+                    new { playerId = 13, points = 7 }, new { playerId = 14, points = 4 },
+                    new { playerId = 15, points = 0 },
+                },
+            },
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using JsonDocument body = JsonDocument.Parse(
+            await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
+        JsonElement outcome = body.RootElement.GetProperty("outcome");
+        Assert.Equal(
+            [1, 6, 4, 5, 8, 9, 10, 11, 12, 13, 14],
+            outcome.GetProperty("effectivePlayerIds").EnumerateArray()
+                .Select(element => element.GetInt32()).ToArray());
+        Assert.Equal(13, outcome.GetProperty("effectiveCaptainPlayerId").GetInt32());
+        Assert.Equal(37, body.RootElement.GetProperty("basePoints").GetInt32());
+        Assert.Equal(7, body.RootElement.GetProperty("captainBonusPoints").GetInt32());
+        Assert.Equal(44, body.RootElement.GetProperty("totalPoints").GetInt32());
+        Assert.Equal(
+            [1, 6, 4, 5, 8, 9, 10, 11, 12, 13, 14],
+            body.RootElement.GetProperty("effectivePlayerScores").EnumerateArray()
+                .Select(element => element.GetProperty("playerId").GetInt32()).ToArray());
+        JsonElement captainScore = body.RootElement.GetProperty("effectivePlayerScores")
+            .EnumerateArray().Single(element => element.GetProperty("playerId").GetInt32() == 13);
+        Assert.Equal(7, captainScore.GetProperty("points").GetInt32());
+        Assert.Equal(2, captainScore.GetProperty("multiplier").GetInt32());
+        Assert.Equal(14, captainScore.GetProperty("countedPoints").GetInt32());
+    }
+
+    [Theory]
+    [InlineData("null")]
+    [InlineData("{\"playerId\":1}")]
+    [InlineData("{\"playerId\":null,\"points\":2}")]
+    [InlineData("{\"playerId\":\"1\",\"points\":2}")]
+    [InlineData("{\"playerId\":1,\"points\":\"2\"}")]
+    [InlineData("{\"playerId\":1,\"points\":2.5}")]
+    [InlineData("{\"playerId\":1,\"points\":2147483648}")]
+    public async Task Effective_score_rejects_malformed_point_entries(string malformedEntry)
+    {
+        string body = ValidScoreResolutionJson();
+        string malformedBody = body.Replace(
+            "{\"playerId\":1,\"points\":2}",
+            malformedEntry,
+            StringComparison.Ordinal);
+        Assert.NotEqual(body, malformedBody);
+        using var content = new StringContent(malformedBody, Encoding.UTF8, "application/json");
+
+        using HttpResponseMessage response = await _client.PostAsync(
+            "/api/v1/gameweek-outcomes/effective-score",
+            content,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("null")]
+    [InlineData("{}")]
+    public async Task Effective_score_rejects_null_or_wrong_shape_points_collection(string pointsJson)
+    {
+        string body = ValidScoreResolutionJson();
+        int propertyIndex = body.LastIndexOf(",\"playerPoints\":", StringComparison.Ordinal);
+        Assert.True(propertyIndex > 0);
+        string malformedBody = $"{body[..propertyIndex]},\"playerPoints\":{pointsJson}}}";
+        using var content = new StringContent(malformedBody, Encoding.UTF8, "application/json");
+
+        using HttpResponseMessage response = await _client.PostAsync(
+            "/api/v1/gameweek-outcomes/effective-score",
+            content,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData(",{\"playerId\":15,\"points\":0}", "", "outcome.player_points.missing")]
+    [InlineData("{\"playerId\":15,\"points\":0}", "{\"playerId\":1,\"points\":0}", "outcome.player_points.duplicate")]
+    [InlineData("{\"playerId\":15,\"points\":0}", "{\"playerId\":16,\"points\":0}", "outcome.player_points.not_in_squad")]
+    [InlineData("{\"playerId\":2,\"points\":0}", "{\"playerId\":2,\"points\":5}", "outcome.player_points.not_played")]
+    public async Task Effective_score_returns_stable_problem_for_invalid_point_evidence(
+        string originalFragment,
+        string replacementFragment,
+        string expectedCode)
+    {
+        string body = ValidScoreResolutionJson();
+        string invalidBody = body.Replace(
+            originalFragment,
+            replacementFragment,
+            StringComparison.Ordinal);
+        Assert.NotEqual(body, invalidBody);
+        using var content = new StringContent(invalidBody, Encoding.UTF8, "application/json");
+
+        using HttpResponseMessage response = await _client.PostAsync(
+            "/api/v1/gameweek-outcomes/effective-score",
+            content,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        using JsonDocument problem = JsonDocument.Parse(
+            await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
+        Assert.Equal(expectedCode, problem.RootElement.GetProperty("code").GetString());
+        Assert.Equal("playerPoints", problem.RootElement.GetProperty("field").GetString());
+    }
+
+    [Fact]
+    public async Task Effective_score_rejects_duplicate_json_properties()
+    {
+        string body = ValidScoreResolutionJson();
+        string duplicateBody = body.Replace(
+            "{\"playerId\":1,\"points\":2}",
+            "{\"playerId\":1,\"points\":2,\"points\":2}",
+            StringComparison.Ordinal);
+        Assert.NotEqual(body, duplicateBody);
+        using var content = new StringContent(duplicateBody, Encoding.UTF8, "application/json");
+
+        using HttpResponseMessage response = await _client.PostAsync(
+            "/api/v1/gameweek-outcomes/effective-score",
+            content,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Effective_score_rejects_unknown_json_properties(bool nested)
+    {
+        string body = ValidScoreResolutionJson();
+        string unknownBody = nested
+            ? body.Replace(
+                "{\"playerId\":1,\"points\":2}",
+                "{\"playerId\":1,\"points\":2,\"unexpected\":true}",
+                StringComparison.Ordinal)
+            : $"{body[..^1]},\"unexpected\":true}}";
+        Assert.NotEqual(body, unknownBody);
+        using var content = new StringContent(unknownBody, Encoding.UTF8, "application/json");
+
+        using HttpResponseMessage response = await _client.PostAsync(
+            "/api/v1/gameweek-outcomes/effective-score",
+            content,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Effective_outcome_returns_consistent_substitutions_and_captaincy()
     {
         using HttpResponseMessage response = await _client.PostAsJsonAsync(
@@ -945,6 +1114,24 @@ public sealed class AutoFplApiTests : IClassFixture<WebApplicationFactory<Progra
                 viceCaptainPlayerId = 13,
                 replacementGoalkeeperPlayerId = 2,
                 outfieldSubstitutePlayerIds = new[] { 6, 7, 15 },
+            },
+            JsonOptions);
+
+    private static string ValidScoreResolutionJson() =>
+        JsonSerializer.Serialize(
+            new
+            {
+                budgetTenths = 1_000,
+                players = ValidPlayers(),
+                startingPlayerIds = new[] { 1, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14 },
+                captainPlayerId = 8,
+                viceCaptainPlayerId = 13,
+                replacementGoalkeeperPlayerId = 2,
+                outfieldSubstitutePlayerIds = new[] { 6, 7, 15 },
+                playerIdsWhoPlayed = new[] { 1 },
+                playerPoints = Enumerable.Range(1, 15)
+                    .Select(playerId => new { playerId, points = playerId == 1 ? 2 : 0 })
+                    .ToArray(),
             },
             JsonOptions);
 
