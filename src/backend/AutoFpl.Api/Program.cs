@@ -29,6 +29,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.PropertyNameCaseInsensitive = false;
     options.SerializerOptions.AllowDuplicateProperties = false;
     options.SerializerOptions.UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow;
+    options.SerializerOptions.NumberHandling = JsonNumberHandling.Strict;
     options.SerializerOptions.Converters.Add(
         new DecisionSnapshotMetadataRequestJsonConverter());
 });

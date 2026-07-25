@@ -287,6 +287,43 @@ public sealed class AutoFplApiTests : IClassFixture<WebApplicationFactory<Progra
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    [Theory]
+    [InlineData("\"budgetTenths\":1000", "\"budgetTenths\":\"1000\"")]
+    [InlineData("\"playerId\":1,", "\"playerId\":\"1\",")]
+    [InlineData("\"clubId\":1,\"position\"", "\"clubId\":\"1\",\"position\"")]
+    [InlineData("\"priceTenths\":45", "\"priceTenths\":\"45\"")]
+    [InlineData("\"startingPlayerIds\":[1,3", "\"startingPlayerIds\":[\"1\",3")]
+    [InlineData("\"captainPlayerId\":8", "\"captainPlayerId\":\"8\"")]
+    [InlineData("\"viceCaptainPlayerId\":13", "\"viceCaptainPlayerId\":\"13\"")]
+    public async Task Lineup_validation_rejects_quoted_numeric_fields(
+        string unquotedFragment,
+        string quotedFragment)
+    {
+        string body = JsonSerializer.Serialize(
+            new
+            {
+                budgetTenths = 1_000,
+                players = ValidPlayers(),
+                startingPlayerIds = new[] { 1, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14 },
+                captainPlayerId = 8,
+                viceCaptainPlayerId = 13,
+            },
+            JsonOptions);
+        string quotedBody = body.Replace(
+            unquotedFragment,
+            quotedFragment,
+            StringComparison.Ordinal);
+        Assert.NotEqual(body, quotedBody);
+        using var content = new StringContent(quotedBody, Encoding.UTF8, "application/json");
+
+        using HttpResponseMessage response = await _client.PostAsync(
+            "/api/v1/lineups/validation",
+            content,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
     private static PlayerRequest[] ValidPlayers() =>
     [
         new(1, 1, "goalkeeper", 45),
