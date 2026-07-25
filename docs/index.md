@@ -37,6 +37,7 @@ Use this index to find the maintained source for each topic. The deterministic p
 
 - [Provenance register](data/sources/README.md) — source status, timing, quality and collection-method records.
 - [Source-record v1 contract](../contracts/data-source/v1/source-record.schema.json) — machine-readable source timing, identity, hash and correction envelope; not yet a runtime API.
+- [Manual evidence timing v1](data/manual-evidence-timing-v1.md) — exact current POST-field inventory, evidence classes and leakage-safe replay semantics.
 - [Manual user input v1](data/sources/manual-user-input-v1.md) — versioned direct-entry scope, privacy and point-in-time constraints.
 - [Repository synthetic fixtures v1](data/sources/repository-synthetic-fixtures-v1.md) — versioned fictional test/evidence boundary.
 
