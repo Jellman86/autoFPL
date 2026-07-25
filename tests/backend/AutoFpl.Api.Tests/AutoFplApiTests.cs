@@ -324,6 +324,163 @@ public sealed class AutoFplApiTests : IClassFixture<WebApplicationFactory<Progra
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    [Fact]
+    public async Task Gameweek_selection_returns_formation_captaincy_and_ordered_bench()
+    {
+        using HttpResponseMessage response = await _client.PostAsJsonAsync(
+            "/api/v1/gameweek-selections/validation",
+            new
+            {
+                budgetTenths = 1_000,
+                players = ValidPlayers(),
+                startingPlayerIds = new[] { 1, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14 },
+                captainPlayerId = 8,
+                viceCaptainPlayerId = 13,
+                replacementGoalkeeperPlayerId = 2,
+                outfieldSubstitutePlayerIds = new[] { 6, 7, 15 },
+            },
+            JsonOptions,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using JsonDocument body = await JsonDocument.ParseAsync(
+            await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken),
+            cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Equal("3-5-2", body.RootElement.GetProperty("formation").GetString());
+        Assert.Equal(8, body.RootElement.GetProperty("captainPlayerId").GetInt32());
+        Assert.Equal(13, body.RootElement.GetProperty("viceCaptainPlayerId").GetInt32());
+        Assert.Equal(2, body.RootElement.GetProperty("replacementGoalkeeperPlayerId").GetInt32());
+        Assert.Equal(
+            [6, 7, 15],
+            body.RootElement
+                .GetProperty("outfieldSubstitutePlayerIds")
+                .EnumerateArray()
+                .Select(element => element.GetInt32())
+                .ToArray());
+    }
+
+    [Fact]
+    public async Task Gameweek_selection_returns_stable_problem_for_invalid_replacement_goalkeeper()
+    {
+        using HttpResponseMessage response = await _client.PostAsJsonAsync(
+            "/api/v1/gameweek-selections/validation",
+            new
+            {
+                budgetTenths = 1_000,
+                players = ValidPlayers(),
+                startingPlayerIds = new[] { 1, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14 },
+                captainPlayerId = 8,
+                viceCaptainPlayerId = 13,
+                replacementGoalkeeperPlayerId = 6,
+                outfieldSubstitutePlayerIds = new[] { 2, 7, 15 },
+            },
+            JsonOptions,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        Assert.Equal("application/problem+json", response.Content.Headers.ContentType?.MediaType);
+        using JsonDocument body = await JsonDocument.ParseAsync(
+            await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken),
+            cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Equal(422, body.RootElement.GetProperty("status").GetInt32());
+        Assert.Equal("Gameweek selection is infeasible.", body.RootElement.GetProperty("title").GetString());
+        Assert.Equal(
+            "selection.replacement_goalkeeper.invalid_position",
+            body.RootElement.GetProperty("code").GetString());
+        Assert.Equal(
+            "replacementGoalkeeperPlayerId",
+            body.RootElement.GetProperty("field").GetString());
+    }
+
+    [Theory]
+    [InlineData("\"replacementGoalkeeperPlayerId\":2", "\"replacementGoalkeeperPlayerId\":null")]
+    [InlineData(",\"replacementGoalkeeperPlayerId\":2", "")]
+    [InlineData("\"replacementGoalkeeperPlayerId\":2", "\"replacementGoalkeeperPlayerId\":\"2\"")]
+    [InlineData("\"outfieldSubstitutePlayerIds\":[6,7,15]", "\"outfieldSubstitutePlayerIds\":null")]
+    [InlineData(",\"outfieldSubstitutePlayerIds\":[6,7,15]", "")]
+    [InlineData("\"outfieldSubstitutePlayerIds\":[6,7,15]", "\"outfieldSubstitutePlayerIds\":[6,null,15]")]
+    [InlineData("\"outfieldSubstitutePlayerIds\":[6,7,15]", "\"outfieldSubstitutePlayerIds\":[\"6\",7,15]")]
+    public async Task Gameweek_selection_rejects_malformed_bench_fields(
+        string validFragment,
+        string malformedFragment)
+    {
+        string body = JsonSerializer.Serialize(
+            new
+            {
+                budgetTenths = 1_000,
+                players = ValidPlayers(),
+                startingPlayerIds = new[] { 1, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14 },
+                captainPlayerId = 8,
+                viceCaptainPlayerId = 13,
+                replacementGoalkeeperPlayerId = 2,
+                outfieldSubstitutePlayerIds = new[] { 6, 7, 15 },
+            },
+            JsonOptions);
+        string malformedBody = body.Replace(
+            validFragment,
+            malformedFragment,
+            StringComparison.Ordinal);
+        Assert.NotEqual(body, malformedBody);
+        using var content = new StringContent(malformedBody, Encoding.UTF8, "application/json");
+
+        using HttpResponseMessage response = await _client.PostAsync(
+            "/api/v1/gameweek-selections/validation",
+            content,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("\"replacementGoalkeeperPlayerId\":2")]
+    [InlineData("\"outfieldSubstitutePlayerIds\":[6,7,15]")]
+    public async Task Gameweek_selection_rejects_duplicate_json_properties(string duplicatedFragment)
+    {
+        string body = ValidGameweekSelectionJson();
+        string duplicateBody = body.Replace(
+            duplicatedFragment,
+            $"{duplicatedFragment},{duplicatedFragment}",
+            StringComparison.Ordinal);
+        Assert.NotEqual(body, duplicateBody);
+        using var content = new StringContent(duplicateBody, Encoding.UTF8, "application/json");
+
+        using HttpResponseMessage response = await _client.PostAsync(
+            "/api/v1/gameweek-selections/validation",
+            content,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Gameweek_selection_rejects_unknown_json_properties()
+    {
+        string body = ValidGameweekSelectionJson();
+        string unknownBody = $"{body[..^1]},\"unexpected\":true}}";
+        using var content = new StringContent(unknownBody, Encoding.UTF8, "application/json");
+
+        using HttpResponseMessage response = await _client.PostAsync(
+            "/api/v1/gameweek-selections/validation",
+            content,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    private static string ValidGameweekSelectionJson() =>
+        JsonSerializer.Serialize(
+            new
+            {
+                budgetTenths = 1_000,
+                players = ValidPlayers(),
+                startingPlayerIds = new[] { 1, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14 },
+                captainPlayerId = 8,
+                viceCaptainPlayerId = 13,
+                replacementGoalkeeperPlayerId = 2,
+                outfieldSubstitutePlayerIds = new[] { 6, 7, 15 },
+            },
+            JsonOptions);
+
     private static PlayerRequest[] ValidPlayers() =>
     [
         new(1, 1, "goalkeeper", 45),
