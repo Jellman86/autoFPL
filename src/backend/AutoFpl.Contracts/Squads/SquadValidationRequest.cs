@@ -7,7 +7,7 @@ public sealed record SquadValidationRequest(
     [property: JsonPropertyName("players")] IReadOnlyList<SquadPlayerRequest?>? Players);
 
 public sealed record SquadPlayerRequest(
-    [property: JsonPropertyName("playerId")] int PlayerId,
-    [property: JsonPropertyName("clubId")] int ClubId,
+    [property: JsonPropertyName("playerId")] int? PlayerId,
+    [property: JsonPropertyName("clubId")] int? ClubId,
     [property: JsonPropertyName("position")] string? Position,
-    [property: JsonPropertyName("priceTenths")] int PriceTenths);
+    [property: JsonPropertyName("priceTenths")] int? PriceTenths);

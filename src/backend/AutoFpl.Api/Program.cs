@@ -2,8 +2,10 @@ using System.Text.Json.Serialization;
 
 using AutoFpl.Api.Errors;
 using AutoFpl.Api.Health;
+using AutoFpl.Contracts.Lineups;
 using AutoFpl.Contracts.Snapshots;
 using AutoFpl.Contracts.Squads;
+using AutoFpl.Domain.Lineups;
 using AutoFpl.Domain.Snapshots;
 using AutoFpl.Domain.Squads;
 
@@ -17,6 +19,7 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<DecisionSnapshotValidationExceptionHandler>();
 builder.Services.AddExceptionHandler<SquadValidationExceptionHandler>();
+builder.Services.AddExceptionHandler<LineupValidationExceptionHandler>();
 builder.Services.Configure<RouteHandlerOptions>(options =>
 {
     options.ThrowOnBadRequest = false;
@@ -55,29 +58,67 @@ app.MapPost(
     "/api/v1/squads/validation",
     (SquadValidationRequest request) =>
     {
-        if (request.BudgetTenths is null || request.Players is null)
+        if (request.BudgetTenths is null
+            || request.Players is null
+            || request.Players.Any(PlayerRequestIsMalformed))
         {
             return Results.BadRequest();
         }
 
-        IReadOnlyList<SquadPlayerRequest?> playerRequests = request.Players;
-        var players = new SquadPlayer[playerRequests.Count];
-        for (int index = 0; index < playerRequests.Count; index++)
-        {
-            SquadPlayerRequest playerRequest = playerRequests[index]
-                ?? throw new SquadValidationException(
-                    "squad.player.required",
-                    $"players[{index}]");
-            players[index] = SquadPlayer.Create(
-                playerRequest.PlayerId,
-                playerRequest.ClubId,
-                playerRequest.Position ?? string.Empty,
-                playerRequest.PriceTenths);
-        }
-
+        SquadPlayer[] players = CreateSquadPlayers(request.Players);
         Squad squad = Squad.Create(request.BudgetTenths.Value, players);
         return Results.Ok(SquadValidationDocument.FromDomain(squad));
     });
+app.MapPost(
+    "/api/v1/lineups/validation",
+    (LineupValidationRequest request) =>
+    {
+        if (request.BudgetTenths is null
+            || request.Players is null
+            || request.StartingPlayerIds is null
+            || request.CaptainPlayerId is null
+            || request.ViceCaptainPlayerId is null
+            || request.Players.Any(PlayerRequestIsMalformed)
+            || request.StartingPlayerIds.Any(playerId => playerId is null))
+        {
+            return Results.BadRequest();
+        }
+
+        SquadPlayer[] players = CreateSquadPlayers(request.Players);
+        Squad squad = Squad.Create(request.BudgetTenths.Value, players);
+        int[] startingPlayerIds = request.StartingPlayerIds
+            .Select(playerId => playerId!.Value)
+            .ToArray();
+        Lineup lineup = Lineup.Create(
+            squad,
+            startingPlayerIds,
+            request.CaptainPlayerId.Value,
+            request.ViceCaptainPlayerId.Value);
+        return Results.Ok(LineupValidationDocument.FromDomain(lineup));
+    });
+
+static bool PlayerRequestIsMalformed(SquadPlayerRequest? playerRequest) =>
+    playerRequest is null
+    || playerRequest.PlayerId is null
+    || playerRequest.ClubId is null
+    || playerRequest.Position is null
+    || playerRequest.PriceTenths is null;
+
+static SquadPlayer[] CreateSquadPlayers(IReadOnlyList<SquadPlayerRequest?> playerRequests)
+{
+    var players = new SquadPlayer[playerRequests.Count];
+    for (int index = 0; index < playerRequests.Count; index++)
+    {
+        SquadPlayerRequest playerRequest = playerRequests[index]!;
+        players[index] = SquadPlayer.Create(
+            playerRequest.PlayerId!.Value,
+            playerRequest.ClubId!.Value,
+            playerRequest.Position!,
+            playerRequest.PriceTenths!.Value);
+    }
+
+    return players;
+}
 
 app.Run();
 return 0;
