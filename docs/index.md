@@ -15,7 +15,7 @@ Use this index to find the maintained source for each topic. The deterministic p
 - [Definition of Done](standards/definition-of-done.md) — evidence required before a change is complete.
 - [Engineering standard](standards/engineering.md) — architecture, language, testing and dependency gates.
 - [Research standard](standards/research.md) — point-in-time evaluation, baselines, calibration and reproducibility.
-- [Data-governance standard](standards/data-governance.md) — rights, provenance, retention and derived-data controls.
+- [Data-quality and provenance standard](standards/data-governance.md) — point-in-time collection, source quality, reproducibility and derived-feature controls.
 - [Security standard](standards/security.md) — trust boundaries, secret handling and CI controls.
 
 ## Architecture and contracts
@@ -26,19 +26,19 @@ Use this index to find the maintained source for each topic. The deterministic p
 - [Analytics boundary](../src/analytics/README.md) — future Python forecasting, simulation and optimisation ownership.
 - [Web boundary](../src/web/README.md) — future presentation-layer ownership.
 
-## Compliance, security and governance
+## Product boundary, security and governance
 
-- [FPL terms boundary](compliance/fpl-terms-boundary.md) — prohibited and permission-gated FPL access.
+- [FPL access boundary](compliance/fpl-terms-boundary.md) — proportionate private-research and account-action boundaries.
 - [Threat model](security/threat-model.md) — assets, trust boundaries and mitigations.
 - [Security policy](../SECURITY.md) — reporting and supported security posture.
 - [Governance](../GOVERNANCE.md) — roles, branch policy, decisions and release control.
 
-## Data-source admission
+## Data-source provenance
 
-- [Admission register](data/sources/README.md) — source statuses, universal prohibitions and review requirements.
-- [Source-record v1 contract](../contracts/data-source/v1/source-record.schema.json) — machine-readable admitted-source, rights, timing, hash and correction envelope; not yet a runtime API.
-- [Manual user input v1](data/sources/manual-user-input-v1.md) — admitted direct-entry scope, privacy and point-in-time constraints.
-- [Repository synthetic fixtures v1](data/sources/repository-synthetic-fixtures-v1.md) — admitted fictional test/evidence boundary.
+- [Provenance register](data/sources/README.md) — source status, timing, quality and collection-method records.
+- [Source-record v1 contract](../contracts/data-source/v1/source-record.schema.json) — machine-readable source timing, identity, hash and correction envelope; not yet a runtime API.
+- [Manual user input v1](data/sources/manual-user-input-v1.md) — versioned direct-entry scope, privacy and point-in-time constraints.
+- [Repository synthetic fixtures v1](data/sources/repository-synthetic-fixtures-v1.md) — versioned fictional test/evidence boundary.
 
 ## Research and evidence
 

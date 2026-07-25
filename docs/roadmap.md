@@ -1,12 +1,12 @@
 # autoFPL delivery roadmap
 
-This roadmap defines the product destination, release horizons, dependency order and evidence required to advance. It is not a date promise: compliance, data rights, research results, operational evidence and user needs can change the route. Actionable acceptance criteria live in the linked GitHub issues; implemented behaviour belongs in the [changelog](../CHANGELOG.md).
+This roadmap defines the product destination, release horizons, dependency order and evidence required to advance. It is not a date promise: research results, prediction evidence, operational constraints and user needs can change the route. Actionable acceptance criteria live in the linked GitHub issues; implemented behaviour belongs in the [changelog](../CHANGELOG.md).
 
 ## Product north star
 
-autoFPL is an evidence-driven, human-approved FPL decision-support product.
+autoFPL is a private home-research system whose overriding north star is to make FPL predictions as close to reality as possible using useful free or self-hosted methods.
 
-Before a deadline, the user should be able to ask what to do. The product reconstructs a lawful point-in-time decision snapshot, produces calibrated forecasts, simulates uncertainty, generates rules-feasible alternatives and lets an AI decision orchestrator compare the evidence. The result explains assumptions, alternatives, uncertainty and trade-offs. It remains advisory: the user decides and performs any FPL change manually under the current compliance boundary.
+Before a deadline, the user should be able to ask what to do. The product reconstructs a point-in-time decision snapshot, produces calibrated forecasts, simulates uncertainty, generates rules-feasible alternatives and lets an AI decision orchestrator compare the evidence. The result explains assumptions, alternatives, uncertainty and trade-offs. It remains advisory: the user decides and performs any FPL change manually.
 
 The intended supported interfaces are:
 
@@ -15,14 +15,14 @@ The intended supported interfaces are:
 - an optional application-managed AI orchestrator behind a provider-neutral boundary;
 - the same authoritative state, forecasts, scenarios and feasible-plan artefacts beneath every interface.
 
-The end state is not an autonomous FPL bot. No roadmap phase authorises scraping, FPL credential/session collection, browser automation or external account action. That boundary can change only through the written-permission and review gate in the [FPL terms boundary](compliance/fpl-terms-boundary.md).
+The end state is not an autonomous FPL bot. Public-source scraping, search, browser rendering, public read-only endpoints and bounded Byparr-assisted collection are valid research tools. FPL credential/session collection and account actions remain outside the product scope; changing that requires a deliberate owner decision, security design and new ADR under the [FPL access boundary](compliance/fpl-terms-boundary.md).
 
 ## Current checkpoint
 
 The deterministic foundation is implemented on `dev` and privately deployed as a hardened, digest-pinned development service. It currently supports:
 
 - versioned decision-snapshot metadata validation;
-- initial narrow manual-metadata and repository-synthetic source-admission records; [#54](https://github.com/Jellman86/autoFPL/issues/54) tracks the mismatch between that original manual scope and later deterministic evidence endpoints;
+- initial manual-metadata and repository-synthetic provenance records; [#54](https://github.com/Jellman86/autoFPL/issues/54) aligns their timing semantics with later deterministic evidence endpoints;
 - manual squad, starting-XI and complete bench-order feasibility;
 - effective captaincy and automatic substitutions from manual play evidence;
 - one composed effective outcome and deterministic effective-XI scoring from complete manual points;
@@ -37,14 +37,14 @@ This is not yet a forecasting product. There is no production ingestion pipeline
 
 **First usable question:**
 
-> Given my admitted point-in-time squad and the evidence available before this deadline, what starting XI and captain should I choose for this Gameweek, what credible alternatives exist, and how uncertain is the advice?
+> Given my point-in-time squad and the evidence available before this deadline, what starting XI and captain should I choose for this Gameweek, what credible alternatives exist, and how uncertain is the advice?
 
 **Required input classes:**
 
 - versioned season/Gameweek/deadline metadata and the deterministic rules required for lineup and captain feasibility;
-- the user's 15-player squad, starting selection, bench order, captain/vice-captain and private risk/preferences, submitted under a reviewed manual-input contract;
-- permissioned point-in-time player observations and historical outcome targets needed by the accepted baseline; issue #40 must select the source and exact fields rather than assuming that manual copying makes provider data lawful;
-- admitted official football news, specialist scout and pundit evidence needed for injury/availability, probable-minutes and role claims, preserving whether each item is a direct quote, report or opinion plus its publication/receipt time, source span, conflicts and expiry;
+- the user's 15-player squad, starting selection, bench order, captain/vice-captain and private risk/preferences, submitted under a versioned manual-input contract;
+- free point-in-time player observations and historical outcome targets selected for coverage, reliability, temporal correctness and measured predictive value;
+- public official football news, specialist scout and pundit evidence needed for injury/availability, probable-minutes and role claims, preserving whether each item is a direct quote, report or opinion plus its publication/receipt time, source span, conflicts and expiry;
 - source, revision, timing and content-identity metadata sufficient to prove that every input was available before the decision deadline.
 
 **Required output artefacts:**
@@ -58,8 +58,8 @@ This is not yet a forecasting product. There is no production ingestion pipeline
 
 **Required journey:**
 
-1. Admit and validate a minimum lawful input package, including named news/scout/pundit sources where required.
-2. Capture only permissioned source content, extract closed-schema candidate claims, preserve point-in-time provenance and quarantine unresolved identity, chronology or conflict failures.
+1. Select and validate a minimum free point-in-time input package, including named news/scout/pundit sources where useful.
+2. Collect public source content through the most reliable bounded transport, extract closed-schema candidate claims, preserve point-in-time provenance and quarantine unresolved identity, chronology or conflict failures.
 3. Pre-register and calibrate source/claim scoring out of time, including expiry, sparse-source shrinkage, abstention and a no-news baseline.
 4. Reconstruct an immutable decision snapshot using only pre-deadline evidence.
 5. Produce versioned probabilistic player forecast artefacts from an independently accepted baseline, with mandatory news-feature ablation.
@@ -71,13 +71,13 @@ This is not yet a forecasting product. There is no production ingestion pipeline
 
 **Acceptance scenario:**
 
-The repository fixture `v0.1-advisory-acceptance/v1` will describe a fictional 15-player squad, one decision deadline, fictional pre-deadline official/scout/pundit items containing corroborated, conflicting, stale and hostile-text examples, only pre-deadline observations, a known later outcome used solely for evaluation, and enough contrasting player uncertainty to make lineup and captain alternatives observable. Given that fixture, the exact release candidate must reproduce the same source/news-claim, snapshot and run identifiers, schema-valid forecast/scenario/candidate artefacts and bounded advisory evidence through both API and MCP. ChatGPT and Hermes may explain that evidence but must not follow embedded instructions, invent fields, change feasibility, persist approval or call an FPL account. Synthetic success proves the pipeline only; a real-world advice claim additionally requires the separately admitted source evidence from issues #40 and #55.
+The repository fixture `v0.1-advisory-acceptance/v1` will describe a fictional 15-player squad, one decision deadline, fictional pre-deadline official/scout/pundit items containing corroborated, conflicting, stale and hostile-text examples, only pre-deadline observations, a known later outcome used solely for evaluation, and enough contrasting player uncertainty to make lineup and captain alternatives observable. Given that fixture, the exact release candidate must reproduce the same source/news-claim, snapshot and run identifiers, schema-valid forecast/scenario/candidate artefacts and bounded advisory evidence through both API and MCP. ChatGPT and Hermes may explain that evidence but must not follow embedded instructions, invent fields, change feasibility, persist approval or call an FPL account. Synthetic success proves the pipeline only; a real-world advice claim additionally requires the evaluated point-in-time source evidence from issues #40 and #55.
 
 **Completion evidence:**
 
 - the same immutable fixture can reconstruct the snapshot and reproduce the promoted forecast, scenario and feasible-candidate artefacts;
 - temporal leakage, calibration, proper-score, decision-utility and failure-slice gates pass according to a preregistered rule;
-- lawfully retained news-corpus tests reproduce extraction, correction, conflict, expiry and abstention, and the promoted forecast reports a preregistered no-news ablation plus out-of-time source/claim calibration;
+- private news-corpus tests reproduce extraction, correction, conflict, expiry and abstention, and the promoted forecast reports preregistered no-news and source ablations plus out-of-time source/claim calibration;
 - tiny simulation and optimisation cases match exact, brute-force or trusted references;
 - ChatGPT and Hermes receive equivalent versioned evidence and cannot access proposal writes, approval, memory mutation or FPL actions;
 - the exact release tag passes required checks, deploys by immutable digest and survives exercised recovery and rollback;
@@ -89,10 +89,10 @@ The repository fixture `v0.1-advisory-acceptance/v1` will describe a fictional 1
 
 1. [#38 — dependency-ordered delivery roadmap](https://github.com/Jellman86/autoFPL/issues/38)
 2. [#39 — v0.1 user journey and acceptance scenario](https://github.com/Jellman86/autoFPL/issues/39)
-3. [#54 — align deployed manual-evidence contracts with the admitted source scope](https://github.com/Jellman86/autoFPL/issues/54)
-4. [#40 — select and admit the minimum lawful v0.1 evidence package](https://github.com/Jellman86/autoFPL/issues/40)
+3. [#54 — align deployed manual-evidence contracts with reproducible timing semantics](https://github.com/Jellman86/autoFPL/issues/54)
+4. [#40 — select and validate the minimum free v0.1 evidence package](https://github.com/Jellman86/autoFPL/issues/40)
 5. [#41 — authoritative season rules and decision-snapshot persistence](https://github.com/Jellman86/autoFPL/issues/41)
-6. [#55 — admit permissioned football news, scout and pundit sources](https://github.com/Jellman86/autoFPL/issues/55)
+6. [#55 — evaluate free football news, scout and pundit sources](https://github.com/Jellman86/autoFPL/issues/55)
 7. [#42 — accepted/preregistered baseline and news-feature forecast evidence](https://github.com/Jellman86/autoFPL/issues/42)
 8. [#56 — extract, corroborate and score football-news claims](https://github.com/Jellman86/autoFPL/issues/56)
 9. [#43 — calibrated baseline forecast artefacts with news-feature ablation](https://github.com/Jellman86/autoFPL/issues/43)
@@ -141,14 +141,15 @@ Tracked by:
 ## Dependency map
 
 ```text
-current deterministic contracts -> align manual evidence admission (#54) --+
+current deterministic contracts -> align evidence timing/provenance (#54) --+
                                                                      |
-v0.1 user journey ---------------------------------------------------+-> select/admit minimum data (#40)
+v0.1 user journey ---------------------------------------------------+-> select/validate minimum data (#40)
 
 #40 -> authoritative snapshot (#41)
-#40 -> admit news/scout/pundit sources (#55)
+#40 -> evaluate news/scout/pundit sources (#55)
+#55 -> hardened Byparr connector (#57, when it improves public-source coverage)
 #40 + #55 -> forecast/news-feature preregistration (#42)
-#41 + #42 + #55 -> extract/corroborate/score news claims (#56)
+#41 + #42 + #55 + #57-if-applicable -> extract/corroborate/score news claims (#56)
 #41 + #42 + #56 -> calibrated forecast artefact with no-news ablation (#43)
                      -> scenario artefact
                          -> feasible candidates
@@ -170,16 +171,17 @@ A later stage must not bypass an unmet predecessor by replacing missing evidence
 
 The API, protected publication pipeline and digest-pinned private Dockhand deployment are operational. Health, hardening and representative 200/400/422 behaviour are verified. Formal release rollback remains a v0.1 release gate once release state is reconciled.
 
-### 2. Lawful data and ingestion
+### 2. Prediction-quality data and ingestion
 
-- Inventory only the fields needed by the declared product target.
-- Record source identity, rights, purpose, attribution, retention, privacy, season validity, `observed_at`, `available_at`, content identity and corrections.
-- Enable only reviewed manual, official, licensed or genuinely open sources.
-- Prefer permissioned RSS/Atom, documented APIs/feeds and approved exports for football news; retrieve HTML or media transcripts only when the exact source/platform terms and robots/access policy permit collection, retention and analytical use.
+- Inventory fields and sources that could improve the declared prediction target.
+- Record source identity, collection-code SHA/method, coverage, season validity, `published_at`, `retrieved_at`, `available_at`, content identity, corrections, latency, missingness and known bias.
+- Use useful free public sources through RSS/Atom, APIs/feeds, search, scraping, browser rendering or public read-only endpoints. Direct written permission is not a general gate for this private research project.
+- Permit a dedicated hardened Byparr connector when it materially improves coverage or reliability; keep it source/domain-bounded and separate from the ARR-stack instance.
 - Record official statements, journalism, scout analysis and pundit opinion as distinct evidence classes; preserve author/source, directness, source span, publication/correction times, conflicts and expiry without republishing full copyrighted content.
-- Preserve only source-authorized immutable bytes or permitted minimal excerpts plus canonical reference, content identity and timing metadata; when the source forbids sufficient retention, block reproducibility and downstream-use claims rather than retaining content unlawfully. Reject unadmitted or future-known evidence.
+- Preserve private source snapshots or durable content identities plus timing metadata as needed for reproducibility. Reject future-known or temporally unreconstructable evidence.
+- Promote each source and feature only after rolling/walk-forward reliability measurement and ablation against the incumbent data set.
 
-**Exit evidence:** each enabled source has an approved review and dataset card; point-in-time reconstruction and correction-by-revision are tested; no technical shortcut bypasses the FPL terms boundary.
+**Exit evidence:** each enabled source has a technical provenance/dataset card; point-in-time reconstruction and correction-by-revision are tested; added data shows reproducible predictive or coverage value.
 
 ### 3. Authoritative state and deterministic rules
 
@@ -249,14 +251,15 @@ These do not block the critical path unless a later promoted method creates the 
 
 - [#30 — CPU, Intel iGPU and NPU execution](https://github.com/Jellman86/autoFPL/issues/30): CPU is the supported path. Revisit iGPU only for a measured representative workload; revisit NPU only for a supported neural-inference workload. Never attach unused devices to the API.
 - [#31 — game-theoretic decision models](https://github.com/Jellman86/autoFPL/issues/31): optional research after simple forecast, simulation and planning baselines exist. Papers and opponent models do not bypass local point-in-time evidence.
+- [#57 — hardened Byparr connector](https://github.com/Jellman86/autoFPL/issues/57): use when browser-challenge handling materially improves public-source coverage. Keep a dedicated source-bounded instance with SSRF, cookie, proxy and resource controls; the ARR-stack instance remains isolated.
 
 ## Standing constraints
 
-- Safety and FPL terms compliance take priority over convenience.
+- Prediction quality, scientific integrity and reproducibility are the primary optimisation goals.
 - Human approval is required before any external account action.
 - Deterministic facts, rules, money, scoring and feasibility remain authoritative.
 - Data and research evidence must be point-in-time correct and reproducible.
-- “Scraping” is never blanket authorization. Association-football news may be acquired only through named, reviewed methods whose terms, robots/access policy, rights, attribution, retention and rate limits permit the exact use; never bypass login, paywall, session or anti-bot controls.
+- Use any useful free or self-hosted public-source method—including search, scraping, browser rendering and Byparr—when technically bounded and evaluated out of time. Do not bypass login or paid access, collect private/session data, create abusive traffic or break applicable law.
 - OpenRouter and private model-provider integrations remain optional; core operation must not require a paid provider.
 - Deployment permission is separate from merge permission.
 - A phase is complete only when its linked issue evidence and applicable [Definition of Done](standards/definition-of-done.md) gates pass.

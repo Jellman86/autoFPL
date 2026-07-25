@@ -6,7 +6,7 @@ Owner, immutable snapshot ID/content hash, schema version, creation time and ret
 
 ## Motivation and permitted use
 
-Purpose, lawful/licensed basis, allowed/prohibited uses and redistribution constraints.
+Prediction purpose, source and collection method, intended private-research use, known access/retention constraints and public-redistribution boundary.
 
 ## Composition and coverage
 
@@ -14,7 +14,7 @@ Entities, fields, units, seasons, geography, sampling, missingness and known exc
 
 ## Collection and revisions
 
-Provider/source, authorised collection method, cadence, `observed_at`, `available_at`, publication latency and correction/version policy.
+Provider/source, collection method, cadence, `observed_at`, `available_at`, publication latency and correction/version policy.
 
 ## Processing and lineage
 

@@ -2,10 +2,10 @@
 
 ## Context
 
-autoFPL converts permissioned football information, user-supplied state and versioned research into probabilistic forecasts and human-approved FPL recommendations.
+autoFPL converts public football information, user-supplied state and versioned research into probabilistic forecasts and human-approved FPL recommendations.
 
 ```text
-permissioned feeds / user input / research sources
+public feeds/web / user input / research sources
                          |
                 validation + provenance
                          |
@@ -40,7 +40,7 @@ permissioned feeds / user input / research sources
 - Python outputs are candidate analytical artefacts until schema and feasibility validation succeeds.
 - The .NET service owns user authorisation and authoritative workflow state.
 - PostgreSQL is authoritative; caches, OpenViking and object-store artefacts are reconstructable or version-addressed.
-- No FPL write boundary exists under the current compliance decision.
+- No FPL write boundary exists under the current product decision.
 
 ## Conversational boundary
 
@@ -48,7 +48,7 @@ The primary conversational integration is the [read-only MCP interface](../adr/0
 
 Hermes is not classified as inherently unsafe. Its preferred role is an MCP client, allowing a request such as “give me the predictions” to retrieve the deterministic prediction artefact and preserve its run, version, deadline and uncertainty fields.
 
-When AI-assisted extraction, classification or generated text is required inside the standalone product, [ADR-0006](../adr/0006-optional-model-provider-adapters.md) permits an explicitly configured OpenRouter API adapter or private Hermes proxy behind a provider-neutral port. Collection still occurs through admitted, permissioned connectors before model processing; the provider never decides what may be accessed. Candidate extracted facts remain quarantined until validated and promoted. This optional path adds cost, privacy and availability boundaries but cannot directly affect analytical truth or core availability. Reimplementing Codex OAuth inside autoFPL is a separate, higher-risk option and remains prohibited without documented upstream support and review.
+When AI-assisted extraction, classification or generated text is required inside the standalone product, [ADR-0006](../adr/0006-optional-model-provider-adapters.md) permits an explicitly configured OpenRouter API adapter or private Hermes proxy behind a provider-neutral port. Collection occurs through versioned, technically bounded connectors before model processing; the provider never decides what becomes trusted evidence. Candidate extracted facts remain quarantined until validated and promoted. This optional path adds cost, privacy and availability boundaries but cannot directly affect analytical truth or core availability. Reimplementing Codex OAuth inside autoFPL remains a separate, higher-risk option requiring documented upstream support and review.
 
 ## AI decision orchestration
 

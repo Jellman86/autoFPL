@@ -1,38 +1,33 @@
-# FPL Terms and Product Boundary
+# FPL Access and Product Boundary
 
-**Status:** mandatory safety boundary based on the live 2026/27 FPL terms reviewed on 24 July 2026. This is engineering guidance, not legal advice; terms must be re-reviewed before each season and material product change.
+**Status:** proportionate engineering boundary for a private, non-commercial home research project. This is not legal advice.
 
-## Current allowed product shape
+## Project shape
 
-The repository may implement a human-in-the-loop decision-support system using sources the project is authorised to use. It may accept manually entered or permissioned imported squad state, calculate forecasts/optimisation and display recommendations for the user to enact manually.
+autoFPL exists to make the best evidence-grounded FPL predictions possible. It may use publicly accessible football information, feeds, search, browser rendering, scraping, public read-only endpoints and free/self-hosted research tools. Direct written permission is not a general project requirement.
 
-## Prohibited without written Premier League permission
+The product remains human-in-the-loop: it produces advice and the user makes changes in the FPL interface. That is the chosen product and security boundary, not an enterprise licensing gate.
 
-- automated access to or extraction from the FPL game;
-- reliance on undocumented FPL JSON endpoints as a production data feed;
-- collection or storage of Premier League/FPL passwords, cookies or sessions;
-- browser automation or request replay against a user's FPL account;
-- automatic transfers, line-up/captain changes or chip activation;
-- commercial reproduction/distribution of FPL game information without rights;
-- implying that technical access, a community library or robots policy is official API permission.
+## Current boundaries
 
-## Required gate to change this boundary
+- Do not collect or store FPL passwords, authentication tokens, cookies or sessions.
+- Do not automate transfers, line-up/captain changes, chips or other account writes.
+- Do not bypass a login, paid subscription or paywall, access private user data, or impersonate another user.
+- Do not create harmful or abusive traffic; bound and cache automated retrieval.
+- Do not commercially redistribute or publicly mirror third-party datasets or article corpora from this private research system.
+- Stop or change method if a concrete legal prohibition applicable to the project is identified.
 
-All of the following are required:
+Publicly reachable read-only pages and endpoints may be researched and used without a special written-permission gate. Their evidence must still be point-in-time correct, reproducible and technically isolated.
 
-1. written permission or contract from the relevant rights holder;
-2. supported data and authentication/write interfaces;
-3. legal review of data, competition and commercial terms;
-4. threat model, privacy assessment and credential lifecycle design;
-5. exact-action human approval and auditable revocation unless the permission explicitly supports autonomous action;
-6. ADR approved by the repository owner;
-7. isolated integration and abuse tests.
+## Changing the account-action boundary
 
-## Enforcement
+A future issue may propose account integration only after the repository owner explicitly changes product scope. It would require a supported least-privilege authentication design, exact-action user approval, credential isolation, revocation, audit, abuse tests and a new ADR. It is not part of the current roadmap.
 
-Any issue or PR proposing a prohibited capability must be closed or kept research-only until the gate is met. No “experimental”, “personal use” or feature flag bypass is permitted in shared code.
+## Engineering enforcement
 
-Official references:
+Security controls protect the home network, credentials, availability and scientific evidence. They must not be used to turn ordinary public-source research into a bureaucratic approval process.
+
+Useful references:
 
 - https://fantasy.premierleague.com/en/help/terms
 - https://fantasy.premierleague.com/en/help/rules

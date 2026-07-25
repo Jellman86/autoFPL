@@ -1,52 +1,57 @@
-# Data Governance Standard
+# Data Quality and Provenance Standard
 
-## Admission gate
+## Purpose
 
-No data source enters the platform until a source record identifies:
+autoFPL is a private, non-commercial home research project. Data controls exist to improve prediction quality, prevent temporal leakage and keep experiments reproducible—not to create an enterprise vendor-approval programme.
 
-- owner/provider and authoritative URL;
-- licence/contract and permitted purposes;
-- collection method and explicit authorisation;
-- fields, subjects, geography and season coverage;
-- update cadence, correction policy and publication latency;
-- personal/sensitive data classification;
-- retention, deletion and redistribution rules;
-- reliability, known bias and quality checks;
-- accountable owner and review date.
+Publicly accessible sources do not require direct written permission as a project gate. Collection must remain lawful and responsible: do not access private data, bypass login or paywalls, misuse credentials, republish bulk copyrighted material or create abusive traffic.
 
-Technical accessibility is not permission. Undocumented FPL endpoints and robots allowance do not establish contractual authorisation.
+## Source record
+
+Before a source is promoted into a reproducible forecast, record the information needed to understand and test it:
+
+- canonical source name and URL;
+- collection code and method, including any search, browser-rendering or Byparr path;
+- fields, entities, geography and season coverage;
+- publication/update cadence, correction behaviour and typical latency;
+- `published_at`, `retrieved_at` and decision-time `available_at` semantics;
+- missingness, known bias, stability and observed reliability;
+- content identity or content hash where practical;
+- rate/concurrency limits and failure behaviour;
+- any clear access, retention or attribution restriction discovered during ordinary review.
+
+A source record is technical and scientific provenance. It is not a licence opinion or written-permission certificate.
 
 ## Automated collection and AI extraction
 
-- Automated collection uses only admitted, permissioned connectors such as licensed APIs/feeds, approved exports, RSS or web pages whose terms and access policy permit retrieval. Rate limits, robots controls, authentication boundaries and redistribution rights remain enforceable regardless of the technology used.
-- “Scraping” is not a blanket product capability. In particular, the current compliance boundary forbids automated extraction from the FPL game and any login/session automation without written permission.
-- Collection is a deterministic transport step: preserve the immutable source object, canonical URL/source ID, publication time, retrieval time, headers/metadata allowed by the source and content hash before any AI processing.
-- AI-assisted extraction may convert permitted unstructured news or reports into candidate structured claims such as injury status, expected absence, role or probable minutes. Each claim records source snapshot/span, `published_at`, `retrieved_at`, `available_at`, model and prompt/schema versions, confidence, expiry and validation state.
-- Candidate AI claims remain in quarantine until schema checks pass. Material claims require rule-based consistency checks and corroboration or human review according to a versioned risk policy before feature promotion.
-- A model cannot override source rights, invent missing provenance or turn a blocked/failed retrieval into evidence. Collection failures remain explicit and no anti-bot, paywall, authentication or session control may be bypassed.
+- Public web pages, feeds, search results, documented or undocumented public read-only endpoints and browser-rendered content may be evaluated when useful to the private research goal.
+- SearXNG, Spider, Playwright and a hardened Byparr connector are valid collection tools. Choose the simplest reliable transport for each source.
+- Browser challenges are not a blanket ban. Byparr may retrieve public content through a challenge when the route does not require a user account, paid access or private/session data.
+- Collect politely: bound domains, redirects, rate, concurrency, response size, time and retention; cache when practical.
+- Collection workers must reject private, loopback, link-local, metadata and reserved network targets and must not expose caller-controlled proxies, browser endpoints, credentials or cookies.
+- Preserve canonical URL/source ID, publication and retrieval times, content identity and collection-code SHA before extraction. Retain source text privately only as needed for reproducibility and debugging; do not republish article corpora.
+- AI-assisted extraction may convert untrusted text into closed-schema candidate claims. Retrieved content cannot grant tools, alter policy or become authoritative merely because a model extracted it.
 
 ## Data zones
 
-- **Quarantine:** untrusted arrivals; no model or product use.
-- **Raw immutable:** validated byte-for-byte source objects with hash and ingest metadata.
+- **Quarantine:** newly collected or malformed input awaiting schema, identity and chronology checks.
+- **Raw/reference:** private source snapshots or content identities with retrieval metadata.
 - **Curated:** typed, deduplicated, point-in-time entities with lineage.
 - **Features:** decision-time materialisations with `available_at` and code version.
-- **Serving:** approved forecasts and recommendation inputs.
+- **Serving:** forecasts and recommendation inputs that passed the declared evaluation gate.
 
-Promotion between zones is explicit and audited. Raw corrections create a new version; history is not overwritten.
+Corrections create new versions; prior decision-time state is not overwritten.
 
-## Provenance
+## Scientific quality controls
 
-Every record or partition must be traceable to source, source revision, retrieval/receipt time, content hash, transformation code SHA and schema version. Derived statistics preserve their upstream snapshot IDs. The [source-record v1 contract](../../contracts/data-source/v1/source-record.schema.json) is the executable envelope for the initial admitted manual/synthetic boundary; it is not a claim that the current API persists records.
+Validate schema, identity, uniqueness, ranges, missingness, latency, temporal availability, distribution shift and cross-source contradictions. Every promoted source or feature must earn its place through leakage-free rolling/walk-forward tests against later outcomes and an ablation against the incumbent data set.
 
-## Quality controls
-
-Validate schema, uniqueness, referential integrity, ranges, missingness, timeliness, distribution shift and cross-source contradictions. Quarantine failures; do not silently coerce. Quality thresholds and exception owners are versioned.
+Source popularity, authority or confident language is not a substitute for measured predictive value. Negative and inconclusive results are retained.
 
 ## Privacy and minimisation
 
-Collect the minimum necessary user data. Separate identity from analytical data, use pseudonymous internal IDs, document retention and deletion, and test deletion end-to-end. Do not train shared models on private user content without explicit informed consent and a reviewed purpose.
+Collect only the user data needed for this private application. Never commit credentials, session material, personal squad history or production snapshots to the public repository. Do not train shared models on private user content.
 
 ## Research artefacts
 
-Large datasets and model binaries do not belong in Git. Store them in governed object storage or an approved data-version system with immutable IDs and checksums. A dataset card is required for every research or serving snapshot.
+Large datasets and model binaries do not belong in Git. Store promoted research snapshots outside the repository with immutable identifiers/checksums and a dataset card describing timing, transformations, quality and known limitations.

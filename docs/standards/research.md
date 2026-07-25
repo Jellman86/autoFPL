@@ -62,7 +62,7 @@ At minimum compare with:
 
 - no-change/current squad;
 - simple minutes × rate or rolling average;
-- market/crowd baseline when lawfully available;
+- market/crowd baseline when point-in-time data is available;
 - incumbent production model;
 - deterministic expected-points optimiser without advanced uncertainty.
 
@@ -84,7 +84,7 @@ Report uncertainty intervals from resampling by time block/season where valid. D
 
 ### Decision quality
 
-Evaluate realised points, regret against an information-matched oracle, transfer-hit utility, constraint violations, rank/mini-league objective where lawful data exists, and robustness across seasons, positions, clubs, price bands, injury states and fixture congestion.
+Evaluate realised points, regret against an information-matched oracle, transfer-hit utility, constraint violations, rank/mini-league objective where point-in-time data exists, and robustness across seasons, positions, clubs, price bands, injury states and fixture congestion.
 
 A decision-focused metric must not silently use future ownership, final line-ups or other unavailable information.
 

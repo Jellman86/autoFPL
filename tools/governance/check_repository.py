@@ -47,6 +47,7 @@ REQUIRED_PATHS = (
     "docs/adr/0005-chatgpt-mcp-interface.md",
     "docs/adr/0006-optional-model-provider-adapters.md",
     "docs/adr/0007-evidence-grounded-ai-decision-orchestrator.md",
+    "docs/adr/0009-prediction-quality-first-private-research.md",
     "contracts/data-source/v1/source-record.schema.json",
     "contracts/data-source/v1/examples/manual.json",
     "contracts/data-source/v1/examples/synthetic.json",
@@ -79,8 +80,9 @@ REQUIRED_CONTENT_MARKERS = {
         "Keep a Changelog",
     ),
     "AGENTS.md": (
-        "human-in-the-loop",
-        "written Premier League permission",
+        "private, non-commercial home FPL research project",
+        "prediction quality",
+        "Byparr-assisted collection",
         "random train/test splits are forbidden",
         "available_at",
         "Never select a model",
@@ -89,11 +91,11 @@ REQUIRED_CONTENT_MARKERS = {
         "Lock every dependency set",
     ),
     "docs/compliance/fpl-terms-boundary.md": (
-        "automated access to or extraction",
-        "passwords, cookies or sessions",
-        "automatic transfers",
-        "written permission or contract",
-        "No “experimental”, “personal use” or feature flag bypass",
+        "private, non-commercial home research project",
+        "Direct written permission is not a general project requirement",
+        "passwords, authentication tokens, cookies or sessions",
+        "Do not automate transfers",
+        "Publicly reachable read-only pages and endpoints",
     ),
     "docs/standards/research.md": (
         "evidence review before implementation",
@@ -120,9 +122,9 @@ REQUIRED_CONTENT_MARKERS = {
         "OpenAI/Codex cached credentials",
     ),
     "docs/standards/data-governance.md": (
-        "licence/contract and permitted purposes",
-        "explicit authorisation",
-        "Technical accessibility is not permission",
+        "prediction quality",
+        "do not require direct written permission",
+        "Byparr connector",
         "content hash",
         "AI-assisted extraction",
     ),
@@ -221,6 +223,13 @@ REQUIRED_CONTENT_MARKERS = {
         "authoritative memory",
         "bounded orchestration",
         "human approval",
+    ),
+    "docs/adr/0009-prediction-quality-first-private-research.md": (
+        "prediction quality",
+        "without direct written permission",
+        "Byparr",
+        "rolling/walk-forward evaluation",
+        "private, non-commercial home research project",
     ),
 }
 
