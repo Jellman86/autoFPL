@@ -2,17 +2,19 @@
 
 ## Purpose and current boundary
 
-The container is a private development application for exercising deterministic metadata, squad, lineup, gameweek-selection, captaincy, automatic-substitution, composed effective-outcome and manual effective-score rules. It also serves the first read-only Gameweek decision-room UI against a clearly labelled synthetic fixture. It has no database, FPL data collection, credentials, autonomous actions or user-facing write operations.
+The container is a private development application for the Gameweek decision room, deterministic FPL rules and the first authoritative SQLite decision-snapshot slice. It has no FPL data collection, credentials, autonomous actions or account-write client. Its snapshot write route is an internal development boundary and must not be exposed publicly before authentication and authorisation exist.
 
 Routes:
 
 | Method | Path | Behavior |
 |---|---|---|
 | `GET` | `/` | Renders the responsive Gameweek decision room |
-| `GET` | `/api/v1/advice/demo` | Returns the typed, synthetic advice fixture used by the first UI slice |
+| `GET` | `/api/v1/advice/demo` | Returns the typed synthetic forecast fixture joined to persisted snapshot metadata/state |
 | `GET` | `/openapi/v1.json` | Returns the generated OpenAPI 3.1 HTTP contract |
 | `GET` | `/healthz` | Liveness response: `{"status":"healthy"}` |
-| `GET` | `/readyz` | Readiness response: `{"status":"ready"}` |
+| `GET` | `/readyz` | Returns ready only when the current SQLite migration is present |
+| `POST` | `/api/v1/decision-snapshots` | Persists validated squad/selection state and creates an immutable cutoff-correct snapshot |
+| `GET` | `/api/v1/decision-snapshots/{snapshotId}` | Reads one immutable snapshot after creation or restart |
 | `POST` | `/api/v1/decision-snapshot-metadata/validation` | Returns canonical metadata or a stable 400/422 problem response |
 | `POST` | `/api/v1/squads/validation` | Validates a manually supplied 15-player squad and returns its exact integer-tenths budget summary |
 | `POST` | `/api/v1/lineups/validation` | Validates a manually supplied starting XI, formation, captain and vice-captain against a valid squad |
@@ -23,6 +25,25 @@ Routes:
 | `POST` | `/api/v1/gameweek-outcomes/effective-score` | Scores the effective XI and normal captain multiplier from complete manual per-player points evidence |
 
 Decision-snapshot metadata request fields are exact and case-sensitive. Missing or `null` required fields, duplicate or undeclared fields, non-string field values and malformed payloads fail with 400. Present string values that are unsupported fail with the stable domain error code and 422. The request body is bounded to 16 KiB by Kestrel.
+
+Decision-snapshot writes require a complete valid squad and selection plus UTC observation, retrieval, availability, deadline and cutoff timestamps. Only the latest revision of each observation with `availableAtUtc <= decisionCutoffUtc` enters the materialised snapshot. Corrections must name the observation and snapshot they supersede; historical rows remain readable. Values are parameterised and decimal observations are stored canonically as text.
+
+On an empty development database, startup creates one clearly labelled synthetic acceptance snapshot (`demo-2026`, Gameweek 1). The decision room reads its snapshot ID, revision, deadline, cutoff and selection state from SQLite while forecast values remain the explicitly synthetic UI fixture. Set `AutoFpl__SeedDemoSnapshot=false` for isolated tests or an operator-managed database.
+
+## SQLite operations
+
+The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies three explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
+
+The root filesystem stays read-only. Production must mount a private, UID `1654`-writable persistent directory at `/data`; the CI smoke test uses an ephemeral `/data` tmpfs. Do not deploy the persistence image over the current stateless stack until that mount and backup destination are reviewed in `docker-configs`.
+
+Run the built-in integrity and online-backup commands with the same database configuration:
+
+```text
+dotnet AutoFpl.Api.dll --database-integrity-check
+dotnet AutoFpl.Api.dll --database-backup /data/backups/autofpl-YYYYMMDD.db
+```
+
+Integrity prints `ok` and exits zero only when both SQLite integrity and foreign-key checks pass. Backup refuses to overwrite an existing file and uses SQLite's online-backup API so the result is consistent with WAL activity.
 
 Squad requests reject undeclared fields and malformed JSON. They accept no external data or account credentials. Positions are `goalkeeper`, `defender`, `midfielder` and `forward`; money is represented as integer tenths rather than floating point.
 
@@ -52,7 +73,7 @@ The final image:
 - has an application-native Docker health check;
 - carries OCI source, revision and AGPL licence labels;
 - contains no test packages or JSON Schema validator;
-- supports a read-only root filesystem with a small `/tmp` tmpfs;
+- supports a read-only root filesystem with small `/tmp` and test-only `/data` tmpfs mounts;
 - is scanned for HIGH and CRITICAL OS and .NET vulnerabilities before publication.
 
 Build and smoke-test locally from the repository root:
@@ -90,8 +111,9 @@ The Git-backed Dockhand definition lives in `autofpl/` in the separate `docker-c
 - It joins only the external trusted `general_brg` network, where internal consumers can use `http://autofpl-api:8080`.
 - Do not publish a host port in the steady-state stack.
 - Use `read_only: true`, `cap_drop: [ALL]`, `security_opt: [no-new-privileges:true]`, and a bounded `/tmp` tmpfs.
+- Mount a private persistent host directory at `/data`, writable only by UID/GID `1654`; keep database and backups off public shares.
 - No Nginx Proxy Manager host or public DNS route is configured. Any public/user-authenticated API is a later threat-model and authentication decision.
-- Store future secrets only in Dockhand; this first image requires none.
+- Store future secrets only in Dockhand; SQLite configuration contains no credential.
 
 All stack lifecycle changes must follow the `docker-configs` repository's Git-backed Dockhand procedure. Do not run direct `docker compose pull` or `up` commands on the host.
 
@@ -104,4 +126,4 @@ No prior releasable digest exists yet, so an image rollback has not been exercis
 3. Redeploy the Git-backed stack through Dockhand.
 4. Verify container health and representative 200/400/422 behavior.
 
-This image has no persistent state, so rollback requires no data migration or volume restoration.
+Before deploying a schema-changing image, create an online backup and verify it with `--database-integrity-check` using a temporary database path. Image rollback is safe only while the older code supports the current schema; otherwise restore the matching verified backup through a separately reviewed, Git-backed operational change. Never copy the live WAL database file directly while the application is running.

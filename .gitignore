@@ -39,6 +39,9 @@ models/
 *.onnx
 *.pkl
 *.joblib
+*.db
+*.db-shm
+*.db-wal
 
 # Editors and OS
 .DS_Store

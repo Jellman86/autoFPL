@@ -51,6 +51,37 @@ public sealed class ManualEvidenceContractTests
         "outfieldSubstitutePlayerIds",
     ];
 
+    private static readonly string[] PersistedSnapshotFields =
+    [
+        "schemaVersion",
+        "seasonCode",
+        "gameweek",
+        "deadlineUtc",
+        "decisionCutoffUtc",
+        "budgetTenths",
+        "players",
+        "players[].playerId",
+        "players[].displayName",
+        "players[].clubId",
+        "players[].position",
+        "players[].priceTenths",
+        "startingPlayerIds",
+        "captainPlayerId",
+        "viceCaptainPlayerId",
+        "replacementGoalkeeperPlayerId",
+        "outfieldSubstitutePlayerIds",
+        "observations",
+        "observations[].sourceKey",
+        "observations[].playerId",
+        "observations[].metric",
+        "observations[].value",
+        "observations[].observedAtUtc",
+        "observations[].retrievedAtUtc",
+        "observations[].availableAtUtc",
+        "observations[].supersedesObservationId",
+        "supersedesSnapshotId",
+    ];
+
     private static readonly IReadOnlyDictionary<
         string,
         IReadOnlyDictionary<string, EvidenceSemantics>> ExpectedSemanticsByRoute =
@@ -59,6 +90,8 @@ public sealed class ManualEvidenceContractTests
         {
             ["/api/v1/decision-snapshot-metadata/validation"] = CreateSemantics(
                 (["schemaVersion", "sourceType"], ContractMetadata)),
+            ["/api/v1/decision-snapshots"] = CreateSemantics(
+                (PersistedSnapshotFields, new("schema-validated", "schema-validated"))),
             ["/api/v1/squads/validation"] = CreateSemantics(
                 (SquadDecisionFields, DecisionState)),
             ["/api/v1/lineups/validation"] = CreateSemantics(
@@ -120,10 +153,12 @@ public sealed class ManualEvidenceContractTests
         using JsonDocument catalog = await LoadCatalogAsync();
         JsonElement timing = catalog.RootElement.GetProperty("timingPolicy");
 
-        Assert.Equal("not-accepted-or-persisted", timing.GetProperty("requestTimestampHandling").GetString());
+        Assert.Equal(
+            "explicit-on-decision-snapshot-route",
+            timing.GetProperty("requestTimestampHandling").GetString());
         Assert.Equal("not-before-receipt", timing.GetProperty("replayAvailabilityPolicy").GetString());
         Assert.Equal("unknown-unless-separately-recorded", timing.GetProperty("observationTimePolicy").GetString());
-        Assert.Equal("stateless", catalog.RootElement.GetProperty("persistence").GetString());
+        Assert.Equal("mixed", catalog.RootElement.GetProperty("persistence").GetString());
         Assert.Equal("disabled", catalog.RootElement.GetProperty("requestBodyLogging").GetString());
         Assert.False(catalog.RootElement.GetProperty("credentialsAccepted").GetBoolean());
         Assert.False(catalog.RootElement.GetProperty("opaqueUploadsAccepted").GetBoolean());
@@ -154,6 +189,11 @@ public sealed class ManualEvidenceContractTests
             Assert.Equal(
                 expectedRoute.Keys.Order(),
                 fields.Select(field => field.GetProperty("jsonPath").GetString()!).Order());
+
+            if (StringComparer.Ordinal.Equals(routePath, "/api/v1/decision-snapshots"))
+            {
+                continue;
+            }
 
             foreach (JsonElement field in fields)
             {

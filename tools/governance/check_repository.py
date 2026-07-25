@@ -232,7 +232,7 @@ REQUIRED_CONTENT_MARKERS = {
     ),
     "contracts/manual-evidence/v1/current-post-routes.json": (
         '"sourceType": "manual"',
-        '"persistence": "stateless"',
+        '"persistence": "mixed"',
         '"requestBodyLogging": "disabled"',
         '"derivedRequestValuesAccepted": false',
         '"replayAvailabilityPolicy": "not-before-receipt"',

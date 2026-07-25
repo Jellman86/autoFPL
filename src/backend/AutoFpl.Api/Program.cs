@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using AutoFpl.Api.Advice;
 using AutoFpl.Api.Errors;
 using AutoFpl.Api.Health;
+using AutoFpl.Api.Persistence;
 using AutoFpl.Contracts.Advice;
 using AutoFpl.Contracts.Lineups;
 using AutoFpl.Contracts.Outcomes;
@@ -20,10 +21,24 @@ if (args.Length == 1 && StringComparer.Ordinal.Equals(args[0], "--health-check")
     return await HealthProbe.CheckAsync();
 }
 
-WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+bool runIntegrityCheck =
+    args.Length == 1
+    && StringComparer.Ordinal.Equals(args[0], "--database-integrity-check");
+bool runBackup =
+    args.Length == 2
+    && StringComparer.Ordinal.Equals(args[0], "--database-backup");
+bool runDatabaseCommand = runIntegrityCheck || runBackup;
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder(
+    runDatabaseCommand ? [] : args);
 
 builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi("v1");
+builder.Services.AddSingleton(serviceProvider =>
+    new DecisionSnapshotStore(
+        DatabaseOptions.FromConfiguration(
+            serviceProvider.GetRequiredService<IConfiguration>())));
+builder.Services.AddExceptionHandler<DecisionSnapshotPersistenceExceptionHandler>();
 builder.Services.AddExceptionHandler<DecisionSnapshotValidationExceptionHandler>();
 builder.Services.AddExceptionHandler<SquadValidationExceptionHandler>();
 builder.Services.AddExceptionHandler<LineupValidationExceptionHandler>();
@@ -51,6 +66,37 @@ builder.WebHost.ConfigureKestrel(options =>
 });
 
 WebApplication app = builder.Build();
+DecisionSnapshotStore snapshotStore =
+    app.Services.GetRequiredService<DecisionSnapshotStore>();
+if (runDatabaseCommand && !File.Exists(snapshotStore.DatabasePath))
+{
+    await Console.Error.WriteLineAsync(
+        $"Database does not exist: {snapshotStore.DatabasePath}");
+    return 2;
+}
+
+await snapshotStore.MigrateAsync();
+
+if (runIntegrityCheck)
+{
+    string result = await snapshotStore.IntegrityCheckAsync();
+    await Console.Out.WriteLineAsync(result);
+    return StringComparer.Ordinal.Equals(result, "ok") ? 0 : 1;
+}
+
+if (runBackup)
+{
+    await snapshotStore.BackupAsync(args[1]);
+    await Console.Out.WriteLineAsync(Path.GetFullPath(args[1]));
+    return 0;
+}
+
+if (!StringComparer.OrdinalIgnoreCase.Equals(
+    app.Configuration["AutoFpl:SeedDemoSnapshot"],
+    "false"))
+{
+    await SyntheticDecisionSnapshotSeeder.EnsureSeededAsync(snapshotStore);
+}
 
 app.UseExceptionHandler();
 app.UseDefaultFiles();
@@ -62,22 +108,77 @@ app.MapGet("/healthz", () => Results.Ok(new ProbeResponse("healthy")))
     .WithSummary("Report whether the application process is alive.")
     .WithTags("Operations")
     .Produces<ProbeResponse>();
-app.MapGet("/readyz", () => Results.Ok(new ProbeResponse("ready")))
+app.MapGet(
+    "/readyz",
+    async (DecisionSnapshotStore store, CancellationToken cancellationToken) =>
+        await store.IsReadyAsync(cancellationToken)
+            ? Results.Ok(new ProbeResponse("ready"))
+            : Results.StatusCode(StatusCodes.Status503ServiceUnavailable))
     .WithName("GetReadiness")
-    .WithSummary("Report whether the application is ready to serve requests.")
+    .WithSummary("Report whether the application and SQLite schema are ready.")
     .WithTags("Operations")
-    .Produces<ProbeResponse>();
+    .Produces<ProbeResponse>()
+    .Produces(StatusCodes.Status503ServiceUnavailable);
 app.MapGet(
     "/api/v1/advice/demo",
-    () =>
+    async (DecisionSnapshotStore store, CancellationToken cancellationToken) =>
     {
-        GameweekAdviceDocument advice = DemoGameweekAdvice.Create();
+        DecisionSnapshotDocument? snapshot = await store.GetLatestSnapshotAsync(
+            SyntheticDecisionSnapshotSeeder.SeasonCode,
+            SyntheticDecisionSnapshotSeeder.Gameweek,
+            cancellationToken);
+        GameweekAdviceDocument advice = DemoGameweekAdvice.Create(snapshot);
         return Results.Ok(advice);
     })
     .WithName("GetDemoGameweekAdvice")
     .WithSummary("Return the synthetic Gameweek advice fixture used by the decision-room preview.")
     .WithTags("Advice")
     .Produces<GameweekAdviceDocument>();
+app.MapPost(
+    "/api/v1/decision-snapshots",
+    async (
+        DecisionSnapshotPersistenceRequest request,
+        DecisionSnapshotStore store,
+        CancellationToken cancellationToken) =>
+    {
+        if (!DecisionSnapshotRequestMapper.TryMap(request, out DecisionSnapshotCommand? command))
+        {
+            return Results.BadRequest();
+        }
+
+        DecisionSnapshotDocument snapshot = await store.CreateSnapshotAsync(
+            command!,
+            cancellationToken);
+        return Results.Created($"/api/v1/decision-snapshots/{snapshot.SnapshotId}", snapshot);
+    })
+    .WithName("CreateDecisionSnapshot")
+    .WithSummary("Persist authoritative squad state and create a cutoff-correct decision snapshot.")
+    .WithTags("Decision snapshots")
+    .Produces<DecisionSnapshotDocument>(StatusCodes.Status201Created)
+    .ProducesProblem(StatusCodes.Status400BadRequest)
+    .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+app.MapGet(
+    "/api/v1/decision-snapshots/{snapshotId:long}",
+    async (
+        long snapshotId,
+        DecisionSnapshotStore store,
+        CancellationToken cancellationToken) =>
+    {
+        if (snapshotId <= 0)
+        {
+            return Results.NotFound();
+        }
+
+        DecisionSnapshotDocument? snapshot = await store.GetSnapshotAsync(
+            snapshotId,
+            cancellationToken);
+        return snapshot is null ? Results.NotFound() : Results.Ok(snapshot);
+    })
+    .WithName("GetDecisionSnapshot")
+    .WithSummary("Read one immutable decision snapshot by ID.")
+    .WithTags("Decision snapshots")
+    .Produces<DecisionSnapshotDocument>()
+    .Produces(StatusCodes.Status404NotFound);
 app.MapPost(
     "/api/v1/decision-snapshot-metadata/validation",
     (DecisionSnapshotMetadataRequest request) =>

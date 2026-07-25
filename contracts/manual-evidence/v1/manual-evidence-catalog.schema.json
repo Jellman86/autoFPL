@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "urn:autofpl:schema:manual-evidence-catalog:1.0",
   "title": "autoFPL manual evidence catalog v1",
-  "description": "Technical and temporal interpretation of fields accepted by the current stateless manual-evidence POST routes.",
+  "description": "Technical and temporal interpretation of fields accepted by current manual-evidence POST routes.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -33,7 +33,7 @@
     "persistence": {
       "type": "string",
       "enum": [
-        "stateless"
+        "mixed"
       ]
     },
     "requestBodyLogging": {
@@ -80,13 +80,13 @@
         "requestTimestampHandling": {
           "type": "string",
           "enum": [
-            "not-accepted-or-persisted"
+            "explicit-on-decision-snapshot-route"
           ]
         },
         "receiptTimeOwner": {
           "type": "string",
           "enum": [
-            "external-caller-or-future-ingestion-envelope"
+            "application-for-persisted-snapshots"
           ]
         },
         "replayAvailabilityPolicy": {
@@ -140,6 +140,7 @@
             "enum": [
               "metadata",
               "decision",
+              "decision-snapshot",
               "outcome"
             ]
           },
@@ -165,6 +166,8 @@
                   "type": "string",
                   "enum": [
                     "decision-state",
+                    "contract-metadata",
+                    "source-evidence",
                     "observed-event-evidence",
                     "outcome-evidence"
                   ]
@@ -173,6 +176,24 @@
                   "type": "string",
                   "enum": [
                     "contract-metadata",
+                    "snapshot-schema",
+                    "season-identity",
+                    "gameweek-identity",
+                    "gameweek-deadline",
+                    "decision-cutoff",
+                    "squad-state",
+                    "player-identity",
+                    "player-state",
+                    "selection-state",
+                    "observation-set",
+                    "source-identity",
+                    "subject-identity",
+                    "metric-identity",
+                    "observed-value",
+                    "event-time",
+                    "retrieval-time",
+                    "availability-time",
+                    "revision-lineage",
                     "decision-state-at-receipt",
                     "observation-known-at-receipt",
                     "outcome-known-at-receipt"
@@ -181,7 +202,10 @@
                 "replayAvailabilityPolicy": {
                   "type": "string",
                   "enum": [
-                    "not-before-receipt"
+                    "not-before-receipt",
+                    "persisted",
+                    "cutoff-filtered",
+                    "must-not-exceed-decision-cutoff"
                   ]
                 },
                 "notes": {
@@ -204,7 +228,60 @@
                     "temporalRole": {
                       "enum": [
                         "contract-metadata",
-                        "decision-state-at-receipt"
+                        "decision-state-at-receipt",
+                        "season-identity",
+                        "gameweek-identity",
+                        "gameweek-deadline",
+                        "decision-cutoff",
+                        "squad-state",
+                        "player-identity",
+                        "player-state",
+                        "selection-state",
+                        "revision-lineage"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "classification",
+                    "temporalRole"
+                  ],
+                  "properties": {
+                    "classification": {
+                      "enum": [
+                        "contract-metadata"
+                      ]
+                    },
+                    "temporalRole": {
+                      "enum": [
+                        "snapshot-schema"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "classification",
+                    "temporalRole"
+                  ],
+                  "properties": {
+                    "classification": {
+                      "enum": [
+                        "source-evidence"
+                      ]
+                    },
+                    "temporalRole": {
+                      "enum": [
+                        "observation-set",
+                        "source-identity",
+                        "subject-identity",
+                        "metric-identity",
+                        "observed-value",
+                        "event-time",
+                        "retrieval-time",
+                        "availability-time",
+                        "revision-lineage"
                       ]
                     }
                   }
