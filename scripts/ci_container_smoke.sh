@@ -94,7 +94,10 @@ substitution_invalid_request="$(mktemp)"
 substitution_valid_response="$(mktemp)"
 substitution_malformed_response="$(mktemp)"
 substitution_invalid_response="$(mktemp)"
-trap 'rm -f "$headers_file" "$invalid_file" "$unknown_file" "$duplicate_file" "$oversized_file" "$oversized_body" "$selection_valid_request" "$selection_malformed_request" "$selection_invalid_request" "$selection_valid_response" "$selection_malformed_response" "$selection_invalid_response" "$captaincy_valid_request" "$captaincy_malformed_request" "$captaincy_invalid_request" "$captaincy_duplicate_request" "$captaincy_valid_response" "$captaincy_malformed_response" "$captaincy_invalid_response" "$captaincy_duplicate_response" "$substitution_valid_request" "$substitution_malformed_request" "$substitution_invalid_request" "$substitution_valid_response" "$substitution_malformed_response" "$substitution_invalid_response"; cleanup' EXIT
+outcome_valid_response="$(mktemp)"
+outcome_malformed_response="$(mktemp)"
+outcome_invalid_response="$(mktemp)"
+trap 'rm -f "$headers_file" "$invalid_file" "$unknown_file" "$duplicate_file" "$oversized_file" "$oversized_body" "$selection_valid_request" "$selection_malformed_request" "$selection_invalid_request" "$selection_valid_response" "$selection_malformed_response" "$selection_invalid_response" "$captaincy_valid_request" "$captaincy_malformed_request" "$captaincy_invalid_request" "$captaincy_duplicate_request" "$captaincy_valid_response" "$captaincy_malformed_response" "$captaincy_invalid_response" "$captaincy_duplicate_response" "$substitution_valid_request" "$substitution_malformed_request" "$substitution_invalid_request" "$substitution_valid_response" "$substitution_malformed_response" "$substitution_invalid_response" "$outcome_valid_response" "$outcome_malformed_response" "$outcome_invalid_response"; cleanup' EXIT
 invalid_status="$(curl --silent --show-error --output "$invalid_file" --write-out '%{http_code}' \
   --header 'Content-Type: application/json' \
   --data '{"schemaVersion":"2.0","sourceType":"manual"}' \
@@ -213,6 +216,18 @@ substitution_invalid_status="$(curl --silent --show-error --output "$substitutio
   --header 'Content-Type: application/json' \
   --data-binary "@$substitution_invalid_request" \
   "$base_url/api/v1/gameweek-outcomes/substitution-resolution")"
+outcome_valid_status="$(curl --silent --show-error --output "$outcome_valid_response" --write-out '%{http_code}' \
+  --header 'Content-Type: application/json' \
+  --data-binary "@$substitution_valid_request" \
+  "$base_url/api/v1/gameweek-outcomes/effective-resolution")"
+outcome_malformed_status="$(curl --silent --show-error --output "$outcome_malformed_response" --write-out '%{http_code}' \
+  --header 'Content-Type: application/json' \
+  --data-binary "@$substitution_malformed_request" \
+  "$base_url/api/v1/gameweek-outcomes/effective-resolution")"
+outcome_invalid_status="$(curl --silent --show-error --output "$outcome_invalid_response" --write-out '%{http_code}' \
+  --header 'Content-Type: application/json' \
+  --data-binary "@$substitution_invalid_request" \
+  "$base_url/api/v1/gameweek-outcomes/effective-resolution")"
 
 python3 - "$health_body" "$ready_body" "$valid_body" "$invalid_file" "$invalid_status" "$unknown_status" "$duplicate_status" "$oversized_status" "$headers_file" <<'PY'
 import json, pathlib, sys
@@ -286,6 +301,24 @@ assert valid["originalStartingPlayerIds"] == [1, 3, 4, 5, 8, 9, 10, 11, 12, 13, 
 assert valid["effectivePlayerIds"] == [1, 6, 4, 5, 15, 9, 10, 11, 12, 13, 14], valid
 assert valid["activatedSubstitutePlayerIds"] == [15, 6], valid
 assert valid["unreplacedStartingPlayerIds"] == [], valid
+assert malformed_status == "400", malformed_status
+assert invalid_status == "422", invalid_status
+assert invalid["code"] == "outcome.played_player.not_in_squad", invalid
+assert invalid["field"] == "playerIdsWhoPlayed", invalid
+PY
+
+python3 - "$outcome_valid_response" "$outcome_valid_status" "$outcome_malformed_status" "$outcome_invalid_response" "$outcome_invalid_status" <<'PY'
+import json, pathlib, sys
+
+valid = json.loads(pathlib.Path(sys.argv[1]).read_text())
+valid_status, malformed_status = sys.argv[2:4]
+invalid = json.loads(pathlib.Path(sys.argv[4]).read_text())
+invalid_status = sys.argv[5]
+assert valid_status == "200", valid_status
+assert valid["effectivePlayerIds"] == [1, 6, 4, 5, 15, 9, 10, 11, 12, 13, 14], valid
+assert valid["activatedSubstitutePlayerIds"] == [15, 6], valid
+assert valid["effectiveCaptainPlayerId"] == 13, valid
+assert valid["captaincyTransferred"] is True, valid
 assert malformed_status == "400", malformed_status
 assert invalid_status == "422", invalid_status
 assert invalid["code"] == "outcome.played_player.not_in_squad", invalid

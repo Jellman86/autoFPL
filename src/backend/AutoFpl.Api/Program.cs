@@ -227,6 +227,50 @@ app.MapPost(
             playerIdsWhoPlayed);
         return Results.Ok(GameweekSubstitutionResolutionDocument.FromDomain(resolution));
     });
+app.MapPost(
+    "/api/v1/gameweek-outcomes/effective-resolution",
+    (GameweekSubstitutionResolutionRequest request) =>
+    {
+        if (request.BudgetTenths is null
+            || request.Players is null
+            || request.StartingPlayerIds is null
+            || request.CaptainPlayerId is null
+            || request.ViceCaptainPlayerId is null
+            || request.ReplacementGoalkeeperPlayerId is null
+            || request.OutfieldSubstitutePlayerIds is null
+            || request.PlayerIdsWhoPlayed is null
+            || request.Players.Any(PlayerRequestIsMalformed)
+            || request.StartingPlayerIds.Any(playerId => playerId is null)
+            || request.OutfieldSubstitutePlayerIds.Any(playerId => playerId is null)
+            || request.PlayerIdsWhoPlayed.Any(playerId => playerId is null))
+        {
+            return Results.BadRequest();
+        }
+
+        SquadPlayer[] players = CreateSquadPlayers(request.Players);
+        Squad squad = Squad.Create(request.BudgetTenths.Value, players);
+        int[] startingPlayerIds = request.StartingPlayerIds
+            .Select(playerId => playerId!.Value)
+            .ToArray();
+        int[] outfieldSubstitutePlayerIds = request.OutfieldSubstitutePlayerIds
+            .Select(playerId => playerId!.Value)
+            .ToArray();
+        int[] playerIdsWhoPlayed = request.PlayerIdsWhoPlayed
+            .Select(playerId => playerId!.Value)
+            .ToArray();
+        GameweekSelection selection = GameweekSelection.Create(
+            squad,
+            startingPlayerIds,
+            request.CaptainPlayerId.Value,
+            request.ViceCaptainPlayerId.Value,
+            request.ReplacementGoalkeeperPlayerId.Value,
+            outfieldSubstitutePlayerIds);
+        GameweekOutcomeResolution resolution = GameweekOutcomeResolution.Resolve(
+            squad,
+            selection,
+            playerIdsWhoPlayed);
+        return Results.Ok(GameweekOutcomeResolutionDocument.FromDomain(resolution));
+    });
 
 static bool PlayerRequestIsMalformed(SquadPlayerRequest? playerRequest) =>
     playerRequest is null

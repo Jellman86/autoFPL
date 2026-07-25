@@ -11,6 +11,7 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **Effective gameweek outcomes now compose existing deterministic rules.** A single fail-closed endpoint applies automatic substitutions and captain/vice fallback to the same valid complete selection and manually supplied play evidence, returning one internally consistent immutable result without scoring, status retrieval, persistence or account actions.
 - **Automatic substitutions are now deterministic executable product behavior.** A fail-closed endpoint composes a valid complete gameweek selection with manually supplied play evidence, applies goalkeeper and bench-priority substitution rules without breaking the existing formation constraints, and reports activated substitutes and unresolved starters without status ingestion, scoring or account actions.
 - **Effective captaincy is now deterministic executable product behavior.** A fail-closed endpoint composes a valid complete gameweek selection with manually supplied player-minute evidence, retaining the captain, promoting the vice-captain, or returning no effective captain according to the current official rule without status ingestion, substitution execution or scoring.
 - **Complete manual gameweek selections are now executable product behavior.** A fail-closed endpoint composes the existing squad and starting-XI rules with a replacement goalkeeper and three ordered outfield substitutes, preserving bench priority without FPL account access, appearance data, substitution execution or scoring.
