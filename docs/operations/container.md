@@ -14,6 +14,7 @@ Routes:
 | `GET` | `/healthz` | Liveness response: `{"status":"healthy"}` |
 | `GET` | `/readyz` | Returns ready only when the current SQLite migration is present |
 | `GET` | `/api/v1/data/official-fpl/latest` | Returns provenance, timing, hashes and counts for the latest private official FPL capture, or 404 before the first import |
+| `GET` | `/api/v1/data/official-fpl/replays/{seasonCode}/{gameweek}/pre-deadline` | Selects the newest immutable capture that was available no later than the deadline recorded in that capture |
 | `POST` | `/api/v1/decision-snapshots` | Persists validated squad/selection state and creates an immutable cutoff-correct snapshot |
 | `GET` | `/api/v1/decision-snapshots/{snapshotId}` | Reads one immutable snapshot after creation or restart |
 | `POST` | `/api/v1/decision-snapshot-metadata/validation` | Returns canonical metadata or a stable 400/422 problem response |
@@ -49,8 +50,11 @@ creates a new immutable revision.
 
 The web process does not expose an import route, accept a source URL or send
 cookies/credentials. The metadata GET route does not return raw provider
-content. A capture remains reference evidence only until rolling evaluation
-admits specific fields into a forecast.
+content. The pre-deadline replay route orders candidates by `availableAtUtc`,
+rejects every capture retrieved after its own recorded Gameweek deadline and
+returns only provenance, counts and the selected immutable capture identity.
+A capture remains reference evidence only until rolling evaluation admits
+specific fields into a forecast.
 
 ## SQLite operations
 

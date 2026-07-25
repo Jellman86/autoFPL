@@ -199,6 +199,30 @@ app.MapGet(
     .WithTags("Data")
     .Produces<OfficialFplCaptureDocument>()
     .Produces(StatusCodes.Status404NotFound);
+app.MapGet(
+    "/api/v1/data/official-fpl/replays/{seasonCode}/{gameweek:int:min(1):max(38)}/pre-deadline",
+    async (
+        string seasonCode,
+        int gameweek,
+        OfficialFplCaptureStore store,
+        CancellationToken cancellationToken) =>
+    {
+        OfficialFplReplayDocument? replay =
+            await store.GetLatestPreDeadlineReplayAsync(
+                seasonCode,
+                gameweek,
+                cancellationToken);
+        return replay is null ? Results.NotFound() : Results.Ok(replay);
+    })
+    .WithName("GetOfficialFplPreDeadlineReplay")
+    .WithSummary(
+        "Select the latest immutable official FPL capture available before a Gameweek deadline.")
+    .WithDescription(
+        "The selected capture is ordered by retrieval-time availability and must have been "
+        + "available no later than the deadline recorded in that same capture.")
+    .WithTags("Data")
+    .Produces<OfficialFplReplayDocument>()
+    .Produces(StatusCodes.Status404NotFound);
 app.MapPost(
     "/api/v1/decision-snapshots",
     async (

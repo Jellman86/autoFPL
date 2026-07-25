@@ -36,8 +36,10 @@ dotnet AutoFpl.Api.dll --import-official-fpl
 The command writes one JSON summary to stdout. A new database may be created;
 an existing database receives migrations first. The supported HTTP API exposes
 only capture metadata and counts at
-`GET /api/v1/data/official-fpl/latest`; it does not expose retained raw JSON or
-trigger collection.
+`GET /api/v1/data/official-fpl/latest`. It selects the newest qualifying
+pre-deadline capture at
+`GET /api/v1/data/official-fpl/replays/{seasonCode}/{gameweek}/pre-deadline`.
+Neither route exposes retained raw JSON or triggers collection.
 
 ## Timing and correction semantics
 
@@ -84,11 +86,14 @@ written.
   matching must use explicit provider codes and reviewed matching logic.
 - Availability/news values are provider state, not ground truth. Their
   predictive contribution requires rolling evaluation and ablation.
-- One current capture cannot establish historical replay. Repeated captures or
-  properly timestamped archives plus later outcomes are still required.
+- The pre-deadline selector proves which current capture is safe for an upcoming
+  deadline, but one current capture cannot establish historical evaluation.
+  Properly timestamped pre-deadline captures plus later player outcomes are
+  still required.
 
-The current slice does not join this data into a decision snapshot, render it
-as advice, fit a model or submit any FPL action.
+The current UI renders capture provenance and replay readiness separately from
+the explicitly synthetic advice fixture. The slice does not join official
+fields into a forecast, fit a model or submit any FPL action.
 
 ## Retention and responsible use
 

@@ -140,6 +140,77 @@ public sealed class OfficialFplCaptureStore
             : null;
     }
 
+    public async Task<OfficialFplReplayDocument?> GetLatestPreDeadlineReplayAsync(
+        string seasonCode,
+        int gameweek,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(seasonCode)
+            || seasonCode.Length > 16
+            || gameweek is < 1 or > 38)
+        {
+            return null;
+        }
+
+        await using SqliteConnection connection = new(_options.ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText =
+            """
+            SELECT
+                capture.schema_version,
+                capture.source_key,
+                capture.season_code,
+                event.event_id,
+                event.deadline_utc,
+                capture.capture_id,
+                capture.available_at_utc,
+                capture.bootstrap_sha256,
+                capture.fixtures_sha256,
+                capture.team_count,
+                capture.player_count,
+                (
+                    SELECT COUNT(*)
+                    FROM official_fpl_fixtures AS fixture
+                    WHERE fixture.capture_id = capture.capture_id
+                      AND fixture.event_id = event.event_id
+                ) AS gameweek_fixture_count
+            FROM official_fpl_captures AS capture
+            INNER JOIN official_fpl_events AS event
+                ON event.capture_id = capture.capture_id
+            WHERE capture.season_code = $seasonCode
+              AND event.event_id = $gameweek
+              AND capture.available_at_utc <= event.deadline_utc
+            ORDER BY capture.available_at_utc DESC, capture.capture_id DESC
+            LIMIT 1;
+            """;
+        command.Parameters.AddWithValue("$seasonCode", seasonCode);
+        command.Parameters.AddWithValue("$gameweek", gameweek);
+        await using SqliteDataReader reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+        if (!await reader.ReadAsync(cancellationToken))
+        {
+            return null;
+        }
+
+        DateTimeOffset deadlineUtc = ParseUtc(reader.GetString(4));
+        DateTimeOffset captureAvailableAtUtc = ParseUtc(reader.GetString(6));
+        return new(
+            reader.GetString(0),
+            reader.GetString(1),
+            reader.GetString(2),
+            reader.GetInt32(3),
+            deadlineUtc,
+            reader.GetInt64(5),
+            captureAvailableAtUtc,
+            checked((long)(deadlineUtc - captureAvailableAtUtc).TotalSeconds),
+            reader.GetString(7),
+            reader.GetString(8),
+            reader.GetInt32(9),
+            reader.GetInt32(10),
+            reader.GetInt32(11));
+    }
+
     private static async Task<long?> FindExistingCaptureIdAsync(
         SqliteConnection connection,
         SqliteTransaction transaction,

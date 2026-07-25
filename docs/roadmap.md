@@ -193,11 +193,14 @@ Its data is deliberately synthetic. It establishes the product contract but
 does not constitute a forecast.
 
 The SQLite persistence vertical slice is deployed and survives a managed
-container recreate. The next vertical slice adds an operator-triggered,
-fixed-origin official FPL capture with exact raw hashes, retrieval-time
-availability and normalised player/Gameweek/team/fixture rows. It is real
-reference data, but it is not yet a historical replay dataset or a promoted
-forecast. There is still no promoted model, scenario engine, optimiser, MCP
+container recreate. The operator-triggered fixed-origin official FPL capture
+stores exact raw hashes, retrieval-time availability and normalised
+player/Gameweek/team/fixture rows. The API can now select the newest capture
+that was available before a requested Gameweek's recorded deadline, and the
+decision room shows that real-data footing separately from its synthetic
+forecast fixture. A historical pre-deadline capture still needs to be paired
+with later player outcomes before it is a replay dataset suitable for baseline
+evaluation. There is still no promoted model, scenario engine, optimiser, MCP
 server, live AI provider or product release.
 
 ## v0.1 — Evidence-grounded single-Gameweek advisor
@@ -379,11 +382,10 @@ v1.0 hardens the proven product rather than introducing its first UI:
 
 The next development slices are:
 
-1. finish and visually verify the synthetic decision room;
-2. implement the smallest end-to-end SQLite snapshot from #41;
-3. hydrate the same screen from the persisted acceptance fixture;
-4. import one real replayable data package;
-5. build the first rolling-origin baseline command.
+1. capture and normalise later official player Gameweek outcomes;
+2. pair one real pre-deadline capture with its later outcome;
+3. build the first rolling-origin baseline command;
+4. populate real player cards only after that baseline has valid out-of-time evidence.
 
 Do not add another standalone governance, universal contract, infrastructure or
 AI-orchestrator project ahead of those slices.

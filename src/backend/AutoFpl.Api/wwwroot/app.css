@@ -211,6 +211,175 @@ h3 {
   align-items: stretch;
 }
 
+.source-tape {
+  display: grid;
+  grid-template-columns: minmax(20rem, 1.1fr) minmax(19rem, 0.9fr) minmax(17rem, 0.65fr);
+  gap: clamp(1.2rem, 3vw, 3rem);
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 1.25rem clamp(1.1rem, 3vw, 2rem);
+  border: 1px solid rgba(201, 215, 232, 0.9);
+  border-left: 0.42rem solid var(--amber);
+  border-radius: 0.35rem 1.25rem 1.25rem 0.35rem;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 12px 35px rgba(16, 35, 63, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+.source-tape[data-state="ready"] {
+  border-left-color: var(--turf);
+}
+
+.source-tape[data-state="error"] {
+  border-left-color: #b84949;
+}
+
+.source-title-row {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.source-title-row h2 {
+  margin: 0;
+  font-size: clamp(1.15rem, 2vw, 1.55rem);
+}
+
+.source-copy > p:last-child {
+  max-width: 64ch;
+  margin: 0.55rem 0 0;
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+  line-height: 1.48;
+}
+
+.source-state {
+  flex: none;
+  padding: 0.35rem 0.55rem;
+  border-radius: 999px;
+  color: #6d4a0c;
+  background: #fff1d5;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+[data-state="ready"] .source-state {
+  color: #15583f;
+  background: var(--turf-light);
+}
+
+[data-state="error"] .source-state {
+  color: #812b2b;
+  background: #fde3e3;
+}
+
+.provenance {
+  position: relative;
+  padding: 0 0.2rem;
+}
+
+.provenance-track {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.provenance-track::before {
+  position: absolute;
+  top: 0.42rem;
+  right: 1.5rem;
+  left: 1.5rem;
+  height: 1px;
+  background: var(--line);
+  content: "";
+}
+
+.provenance-track li {
+  position: relative;
+  padding-top: 1rem;
+}
+
+.provenance-track li:last-child {
+  text-align: right;
+}
+
+.provenance-track li::before {
+  position: absolute;
+  z-index: 1;
+  top: 0.1rem;
+  left: 0;
+  width: 0.65rem;
+  height: 0.65rem;
+  border: 2px solid var(--chalk);
+  border-radius: 50%;
+  background: var(--amber);
+  box-shadow: 0 0 0 1px var(--amber);
+  content: "";
+}
+
+.provenance-track li:last-child::before {
+  right: 0;
+  left: auto;
+  background: var(--violet);
+  box-shadow: 0 0 0 1px var(--violet);
+}
+
+[data-state="ready"] .provenance-track li:first-child::before {
+  background: var(--turf);
+  box-shadow: 0 0 0 1px var(--turf);
+}
+
+.provenance-track span,
+.source-counts dt {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 0.64rem;
+  font-weight: 700;
+}
+
+.provenance-track strong {
+  display: block;
+  margin-top: 0.25rem;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.72rem;
+}
+
+.lead-time {
+  margin: 0.65rem 0 0;
+  color: var(--violet);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.64rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.source-counts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+  margin: 0;
+}
+
+.source-counts div {
+  padding: 0.75rem;
+  border-left: 1px solid var(--line);
+}
+
+.source-counts dd {
+  margin: 0.35rem 0 0;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
 .formation-shell,
 .evidence-panel,
 .alternatives,
@@ -680,6 +849,7 @@ footer {
 @media (max-width: 980px) {
   .decision-header,
   .workspace,
+  .source-tape,
   .ai-desk {
     grid-template-columns: 1fr;
   }
@@ -694,6 +864,10 @@ footer {
 
   .formation-note {
     display: none;
+  }
+
+  .source-tape {
+    gap: 1.2rem;
   }
 }
 
@@ -739,6 +913,14 @@ footer {
   .alternative-list,
   .forecast-strip {
     grid-template-columns: 1fr;
+  }
+
+  .source-title-row {
+    align-items: flex-start;
+  }
+
+  .source-counts div:first-child {
+    border-left: 0;
   }
 
   .ai-composer > div {

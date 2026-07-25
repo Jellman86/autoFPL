@@ -13,6 +13,28 @@ function formatDeadline(value) {
   }).format(new Date(value));
 }
 
+function formatCompactInstant(value) {
+  return new Intl.DateTimeFormat(undefined, {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
+function formatLeadTime(totalSeconds) {
+  const hours = Math.floor(totalSeconds / 3600);
+  const days = Math.floor(hours / 24);
+  const remainingHours = hours % 24;
+  if (days > 0) {
+    return `${days}d ${remainingHours}h before deadline`;
+  }
+  if (hours > 0) {
+    return `${hours}h before deadline`;
+  }
+  return `${Math.max(0, Math.floor(totalSeconds / 60))}m before deadline`;
+}
+
 function createPlayerCard(player) {
   const button = document.createElement("button");
   button.type = "button";
@@ -180,5 +202,108 @@ async function loadAdvice() {
   }
 }
 
+function setOfficialDataState(state, label, title, summary) {
+  const panel = document.querySelector("#official-data");
+  panel.dataset.state = state;
+  document.querySelector("#source-state").textContent = label;
+  document.querySelector("#source-title").textContent = title;
+  document.querySelector("#source-summary").textContent = summary;
+}
+
+function renderCaptureCounts(capture) {
+  document.querySelector("#source-player-count").textContent =
+    capture.playerCount.toLocaleString();
+  document.querySelector("#source-fixture-count").textContent =
+    capture.fixtureCount.toLocaleString();
+  document.querySelector("#source-capture-id").textContent = `#${capture.captureId}`;
+  document.querySelector("#capture-time").textContent =
+    formatCompactInstant(capture.availableAtUtc);
+  document.querySelector("#source-deadline").textContent = capture.nextDeadlineUtc
+    ? formatCompactInstant(capture.nextDeadlineUtc)
+    : "Season complete";
+}
+
+async function loadOfficialData() {
+  try {
+    const captureResponse = await fetch("/api/v1/data/official-fpl/latest", {
+      headers: { Accept: "application/json" },
+    });
+    if (captureResponse.status === 404) {
+      setOfficialDataState(
+        "empty",
+        "Not captured",
+        "No real source capture yet.",
+        "Run the bounded official FPL import before treating this screen as replayable evidence.",
+      );
+      document.querySelector("#capture-lead-time").textContent = "No provenance available";
+      return;
+    }
+    if (!captureResponse.ok) {
+      throw new Error(`Official data request failed with ${captureResponse.status}`);
+    }
+
+    const capture = await captureResponse.json();
+    renderCaptureCounts(capture);
+
+    if (!capture.nextGameweekNumber || !capture.nextDeadlineUtc) {
+      setOfficialDataState(
+        "partial",
+        "Captured",
+        "Real source captured. No next deadline is published.",
+        `${capture.seasonCode} capture #${capture.captureId} is immutable and available for later analysis.`,
+      );
+      document.querySelector("#capture-lead-time").textContent =
+        `Available ${formatCompactInstant(capture.availableAtUtc)}`;
+      return;
+    }
+
+    const replayPath =
+      `/api/v1/data/official-fpl/replays/${encodeURIComponent(capture.seasonCode)}` +
+      `/${capture.nextGameweekNumber}/pre-deadline`;
+    const replayResponse = await fetch(replayPath, {
+      headers: { Accept: "application/json" },
+    });
+    if (replayResponse.status === 404) {
+      setOfficialDataState(
+        "partial",
+        "Captured",
+        "Real source captured. Replay cutoff not met.",
+        `Capture #${capture.captureId} is stored, but no Gameweek ${capture.nextGameweekNumber} capture qualifies as pre-deadline evidence.`,
+      );
+      document.querySelector("#capture-lead-time").textContent =
+        "No qualifying pre-deadline capture";
+      return;
+    }
+    if (!replayResponse.ok) {
+      throw new Error(`Replay request failed with ${replayResponse.status}`);
+    }
+
+    const replay = await replayResponse.json();
+    document.querySelector("#capture-time").textContent =
+      formatCompactInstant(replay.captureAvailableAtUtc);
+    document.querySelector("#source-deadline").textContent =
+      formatCompactInstant(replay.deadlineUtc);
+    document.querySelector("#source-capture-id").textContent =
+      `#${replay.selectedCaptureId}`;
+    document.querySelector("#capture-lead-time").textContent =
+      formatLeadTime(replay.captureLeadTimeSeconds);
+    setOfficialDataState(
+      "ready",
+      "Replay ready",
+      "Real source captured. Forecasts still synthetic.",
+      `Gameweek ${replay.gameweek} can be rebuilt from capture #${replay.selectedCaptureId} without using data retrieved after its deadline.`,
+    );
+  } catch (error) {
+    setOfficialDataState(
+      "error",
+      "Unavailable",
+      "The real data footing could not be checked.",
+      "The decision-room preview still works, but source provenance is unavailable until the data API recovers.",
+    );
+    document.querySelector("#capture-lead-time").textContent = "Provenance check failed";
+    console.error(error);
+  }
+}
+
 document.querySelector("#ai-form").addEventListener("submit", (event) => event.preventDefault());
-loadAdvice();
+Promise.all([loadAdvice(), loadOfficialData()]);
