@@ -325,6 +325,216 @@ public sealed class AutoFplApiTests : IClassFixture<WebApplicationFactory<Progra
     }
 
     [Fact]
+    public async Task Captaincy_resolution_promotes_vice_captain_when_captain_has_no_minutes()
+    {
+        using HttpResponseMessage response = await _client.PostAsJsonAsync(
+            "/api/v1/gameweek-outcomes/captaincy-resolution",
+            new
+            {
+                budgetTenths = 1_000,
+                players = ValidPlayers(),
+                startingPlayerIds = new[] { 1, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14 },
+                captainPlayerId = 8,
+                viceCaptainPlayerId = 13,
+                replacementGoalkeeperPlayerId = 2,
+                outfieldSubstitutePlayerIds = new[] { 6, 7, 15 },
+                playerIdsWithMinutes = new[] { 13 },
+            },
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using JsonDocument body = JsonDocument.Parse(
+            await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
+        Assert.Equal(8, body.RootElement.GetProperty("originalCaptainPlayerId").GetInt32());
+        Assert.Equal(13, body.RootElement.GetProperty("viceCaptainPlayerId").GetInt32());
+        Assert.Equal(13, body.RootElement.GetProperty("effectiveCaptainPlayerId").GetInt32());
+        Assert.True(body.RootElement.GetProperty("captaincyTransferred").GetBoolean());
+    }
+
+    [Fact]
+    public async Task Captaincy_resolution_keeps_captain_when_captain_played_minutes()
+    {
+        using HttpResponseMessage response = await _client.PostAsJsonAsync(
+            "/api/v1/gameweek-outcomes/captaincy-resolution",
+            new
+            {
+                budgetTenths = 1_000,
+                players = ValidPlayers(),
+                startingPlayerIds = new[] { 1, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14 },
+                captainPlayerId = 8,
+                viceCaptainPlayerId = 13,
+                replacementGoalkeeperPlayerId = 2,
+                outfieldSubstitutePlayerIds = new[] { 6, 7, 15 },
+                playerIdsWithMinutes = new[] { 8, 13 },
+            },
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using JsonDocument body = JsonDocument.Parse(
+            await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
+        Assert.Equal(8, body.RootElement.GetProperty("effectiveCaptainPlayerId").GetInt32());
+        Assert.False(body.RootElement.GetProperty("captaincyTransferred").GetBoolean());
+    }
+
+    [Fact]
+    public async Task Captaincy_resolution_returns_no_effective_captain_when_neither_played_minutes()
+    {
+        using HttpResponseMessage response = await _client.PostAsJsonAsync(
+            "/api/v1/gameweek-outcomes/captaincy-resolution",
+            new
+            {
+                budgetTenths = 1_000,
+                players = ValidPlayers(),
+                startingPlayerIds = new[] { 1, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14 },
+                captainPlayerId = 8,
+                viceCaptainPlayerId = 13,
+                replacementGoalkeeperPlayerId = 2,
+                outfieldSubstitutePlayerIds = new[] { 6, 7, 15 },
+                playerIdsWithMinutes = new[] { 1, 3, 4 },
+            },
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using JsonDocument body = JsonDocument.Parse(
+            await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
+        Assert.Equal(
+            JsonValueKind.Null,
+            body.RootElement.GetProperty("effectiveCaptainPlayerId").ValueKind);
+        Assert.False(body.RootElement.GetProperty("captaincyTransferred").GetBoolean());
+    }
+
+    [Fact]
+    public async Task Captaincy_resolution_returns_stable_problem_for_player_outside_squad()
+    {
+        using HttpResponseMessage response = await _client.PostAsJsonAsync(
+            "/api/v1/gameweek-outcomes/captaincy-resolution",
+            new
+            {
+                budgetTenths = 1_000,
+                players = ValidPlayers(),
+                startingPlayerIds = new[] { 1, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14 },
+                captainPlayerId = 8,
+                viceCaptainPlayerId = 13,
+                replacementGoalkeeperPlayerId = 2,
+                outfieldSubstitutePlayerIds = new[] { 6, 7, 15 },
+                playerIdsWithMinutes = new[] { 8, 99 },
+            },
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        using JsonDocument body = JsonDocument.Parse(
+            await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
+        Assert.Equal(
+            "outcome.minutes_player.not_in_squad",
+            body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("playerIdsWithMinutes", body.RootElement.GetProperty("field").GetString());
+    }
+
+    [Fact]
+    public async Task Captaincy_resolution_returns_stable_problem_for_duplicate_minute_evidence()
+    {
+        using HttpResponseMessage response = await _client.PostAsJsonAsync(
+            "/api/v1/gameweek-outcomes/captaincy-resolution",
+            new
+            {
+                budgetTenths = 1_000,
+                players = ValidPlayers(),
+                startingPlayerIds = new[] { 1, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14 },
+                captainPlayerId = 8,
+                viceCaptainPlayerId = 13,
+                replacementGoalkeeperPlayerId = 2,
+                outfieldSubstitutePlayerIds = new[] { 6, 7, 15 },
+                playerIdsWithMinutes = new[] { 8, 8 },
+            },
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        using JsonDocument body = JsonDocument.Parse(
+            await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
+        Assert.Equal(
+            "outcome.minutes_player.duplicate",
+            body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("playerIdsWithMinutes", body.RootElement.GetProperty("field").GetString());
+    }
+
+    [Theory]
+    [InlineData("\"playerIdsWithMinutes\":null")]
+    [InlineData("\"playerIdsWithMinutes\":[null]")]
+    [InlineData("\"playerIdsWithMinutes\":[\"8\"]")]
+    [InlineData("\"playerIdsWithMinutes\":{}")]
+    public async Task Captaincy_resolution_rejects_malformed_minute_evidence(
+        string malformedFragment)
+    {
+        string body = ValidCaptaincyResolutionJson();
+        string malformedBody = body.Replace(
+            "\"playerIdsWithMinutes\":[8]",
+            malformedFragment,
+            StringComparison.Ordinal);
+        Assert.NotEqual(body, malformedBody);
+        using var content = new StringContent(malformedBody, Encoding.UTF8, "application/json");
+
+        using HttpResponseMessage response = await _client.PostAsync(
+            "/api/v1/gameweek-outcomes/captaincy-resolution",
+            content,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Captaincy_resolution_rejects_missing_minute_evidence()
+    {
+        string body = ValidCaptaincyResolutionJson();
+        string malformedBody = body.Replace(
+            ",\"playerIdsWithMinutes\":[8]",
+            string.Empty,
+            StringComparison.Ordinal);
+        Assert.NotEqual(body, malformedBody);
+        using var content = new StringContent(malformedBody, Encoding.UTF8, "application/json");
+
+        using HttpResponseMessage response = await _client.PostAsync(
+            "/api/v1/gameweek-outcomes/captaincy-resolution",
+            content,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Captaincy_resolution_rejects_duplicate_json_properties()
+    {
+        string body = ValidCaptaincyResolutionJson();
+        string duplicateBody = body.Replace(
+            "\"playerIdsWithMinutes\":[8]",
+            "\"playerIdsWithMinutes\":[8],\"playerIdsWithMinutes\":[8]",
+            StringComparison.Ordinal);
+        Assert.NotEqual(body, duplicateBody);
+        using var content = new StringContent(duplicateBody, Encoding.UTF8, "application/json");
+
+        using HttpResponseMessage response = await _client.PostAsync(
+            "/api/v1/gameweek-outcomes/captaincy-resolution",
+            content,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Captaincy_resolution_rejects_unknown_json_properties()
+    {
+        string body = ValidCaptaincyResolutionJson();
+        string unknownBody = $"{body[..^1]},\"unexpected\":true}}";
+        using var content = new StringContent(unknownBody, Encoding.UTF8, "application/json");
+
+        using HttpResponseMessage response = await _client.PostAsync(
+            "/api/v1/gameweek-outcomes/captaincy-resolution",
+            content,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Gameweek_selection_returns_formation_captaincy_and_ordered_bench()
     {
         using HttpResponseMessage response = await _client.PostAsJsonAsync(
@@ -478,6 +688,21 @@ public sealed class AutoFplApiTests : IClassFixture<WebApplicationFactory<Progra
                 viceCaptainPlayerId = 13,
                 replacementGoalkeeperPlayerId = 2,
                 outfieldSubstitutePlayerIds = new[] { 6, 7, 15 },
+            },
+            JsonOptions);
+
+    private static string ValidCaptaincyResolutionJson() =>
+        JsonSerializer.Serialize(
+            new
+            {
+                budgetTenths = 1_000,
+                players = ValidPlayers(),
+                startingPlayerIds = new[] { 1, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14 },
+                captainPlayerId = 8,
+                viceCaptainPlayerId = 13,
+                replacementGoalkeeperPlayerId = 2,
+                outfieldSubstitutePlayerIds = new[] { 6, 7, 15 },
+                playerIdsWithMinutes = new[] { 8 },
             },
             JsonOptions);
 
