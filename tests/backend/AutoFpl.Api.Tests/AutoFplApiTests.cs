@@ -618,6 +618,25 @@ public sealed class AutoFplApiTests : IClassFixture<WebApplicationFactory<Progra
     }
 
     [Fact]
+    public async Task Effective_outcome_rejects_duplicate_json_properties()
+    {
+        string body = ValidSubstitutionResolutionJson();
+        string duplicateBody = body.Replace(
+            "\"playerIdsWhoPlayed\":[1]",
+            "\"playerIdsWhoPlayed\":[1],\"playerIdsWhoPlayed\":[1]",
+            StringComparison.Ordinal);
+        Assert.NotEqual(body, duplicateBody);
+        using var content = new StringContent(duplicateBody, Encoding.UTF8, "application/json");
+
+        using HttpResponseMessage response = await _client.PostAsync(
+            "/api/v1/gameweek-outcomes/effective-resolution",
+            content,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Effective_outcome_rejects_unknown_json_properties()
     {
         string body = ValidSubstitutionResolutionJson();
