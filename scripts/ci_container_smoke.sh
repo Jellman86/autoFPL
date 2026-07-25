@@ -71,6 +71,7 @@ valid_body="$(curl --fail --silent --show-error \
   "$base_url/api/v1/decision-snapshot-metadata/validation")"
 
 invalid_file="$(mktemp)"
+official_capture_file="$(mktemp)"
 unknown_file="$(mktemp)"
 duplicate_file="$(mktemp)"
 oversized_file="$(mktemp)"
@@ -104,11 +105,18 @@ score_invalid_request="$(mktemp)"
 score_valid_response="$(mktemp)"
 score_malformed_response="$(mktemp)"
 score_invalid_response="$(mktemp)"
-trap 'rm -f "$headers_file" "$invalid_file" "$unknown_file" "$duplicate_file" "$oversized_file" "$oversized_body" "$selection_valid_request" "$selection_malformed_request" "$selection_invalid_request" "$selection_valid_response" "$selection_malformed_response" "$selection_invalid_response" "$captaincy_valid_request" "$captaincy_malformed_request" "$captaincy_invalid_request" "$captaincy_duplicate_request" "$captaincy_valid_response" "$captaincy_malformed_response" "$captaincy_invalid_response" "$captaincy_duplicate_response" "$substitution_valid_request" "$substitution_malformed_request" "$substitution_invalid_request" "$substitution_valid_response" "$substitution_malformed_response" "$substitution_invalid_response" "$outcome_valid_response" "$outcome_malformed_response" "$outcome_invalid_response" "$score_valid_request" "$score_malformed_request" "$score_invalid_request" "$score_valid_response" "$score_malformed_response" "$score_invalid_response"; cleanup' EXIT
+trap 'rm -f "$headers_file" "$invalid_file" "$official_capture_file" "$unknown_file" "$duplicate_file" "$oversized_file" "$oversized_body" "$selection_valid_request" "$selection_malformed_request" "$selection_invalid_request" "$selection_valid_response" "$selection_malformed_response" "$selection_invalid_response" "$captaincy_valid_request" "$captaincy_malformed_request" "$captaincy_invalid_request" "$captaincy_duplicate_request" "$captaincy_valid_response" "$captaincy_malformed_response" "$captaincy_invalid_response" "$captaincy_duplicate_response" "$substitution_valid_request" "$substitution_malformed_request" "$substitution_invalid_request" "$substitution_valid_response" "$substitution_malformed_response" "$substitution_invalid_response" "$outcome_valid_response" "$outcome_malformed_response" "$outcome_invalid_response" "$score_valid_request" "$score_malformed_request" "$score_invalid_request" "$score_valid_response" "$score_malformed_response" "$score_invalid_response"; cleanup' EXIT
 invalid_status="$(curl --silent --show-error --output "$invalid_file" --write-out '%{http_code}' \
   --header 'Content-Type: application/json' \
   --data '{"schemaVersion":"2.0","sourceType":"manual"}' \
   "$base_url/api/v1/decision-snapshot-metadata/validation")"
+official_capture_status="$(curl --silent --show-error --output "$official_capture_file" --write-out '%{http_code}' \
+  "$base_url/api/v1/data/official-fpl/latest")"
+[[ "$official_capture_status" == "404" ]] || {
+  printf 'expected no implicit official FPL capture, got HTTP %s\n' "$official_capture_status" >&2
+  cat "$official_capture_file" >&2
+  exit 1
+}
 unknown_status="$(curl --silent --show-error --output "$unknown_file" --write-out '%{http_code}' \
   --header 'Content-Type: application/json' \
   --data '{"schemaVersion":"1.0","sourceType":"manual","unexpected":true}' \

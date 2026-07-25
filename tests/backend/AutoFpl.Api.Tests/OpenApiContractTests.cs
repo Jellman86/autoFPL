@@ -56,6 +56,13 @@ public sealed class OpenApiContractTests : IClassFixture<WebApplicationFactory<P
         Assert.Equal(
             "GetDecisionSnapshot",
             decisionSnapshotPath.GetProperty("get").GetProperty("operationId").GetString());
+        Assert.True(
+            paths.TryGetProperty(
+                "/api/v1/data/official-fpl/latest",
+                out JsonElement officialFplPath));
+        Assert.Equal(
+            "GetLatestOfficialFplCapture",
+            officialFplPath.GetProperty("get").GetProperty("operationId").GetString());
         Assert.True(paths.TryGetProperty("/api/v1/gameweek-outcomes/effective-score", out _));
     }
 

@@ -4,7 +4,7 @@ internal sealed record DatabaseMigration(int Version, string Name, string Sql);
 
 internal static class DatabaseMigrations
 {
-    public const int CurrentVersion = 3;
+    public const int CurrentVersion = 4;
 
     public static IReadOnlyList<DatabaseMigration> All { get; } =
     [
@@ -144,6 +144,114 @@ internal static class DatabaseMigrations
                 observation_id INTEGER NOT NULL
                     REFERENCES source_observations(observation_id) ON DELETE RESTRICT,
                 PRIMARY KEY (snapshot_id, observation_id)
+            );
+            """),
+        new(
+            4,
+            "official-fpl-capture",
+            """
+            CREATE TABLE official_fpl_captures (
+                capture_id INTEGER PRIMARY KEY,
+                schema_version TEXT NOT NULL CHECK (schema_version = '1.0'),
+                source_key TEXT NOT NULL CHECK (source_key = 'official-fpl-api/v1'),
+                season_code TEXT NOT NULL CHECK (length(season_code) BETWEEN 4 AND 16),
+                bootstrap_url TEXT NOT NULL,
+                fixtures_url TEXT NOT NULL,
+                retrieved_at_utc TEXT NOT NULL,
+                available_at_utc TEXT NOT NULL,
+                bootstrap_sha256 TEXT NOT NULL CHECK (length(bootstrap_sha256) = 64),
+                fixtures_sha256 TEXT NOT NULL CHECK (length(fixtures_sha256) = 64),
+                bootstrap_json BLOB NOT NULL,
+                fixtures_json BLOB NOT NULL,
+                event_count INTEGER NOT NULL CHECK (event_count BETWEEN 1 AND 38),
+                team_count INTEGER NOT NULL CHECK (team_count BETWEEN 1 AND 40),
+                player_count INTEGER NOT NULL CHECK (player_count BETWEEN 1 AND 2000),
+                fixture_count INTEGER NOT NULL CHECK (fixture_count BETWEEN 0 AND 1000),
+                next_gameweek_number INTEGER CHECK (next_gameweek_number BETWEEN 1 AND 38),
+                next_deadline_utc TEXT,
+                latest_completed_gameweek INTEGER
+                    CHECK (latest_completed_gameweek BETWEEN 1 AND 38),
+                created_at_utc TEXT NOT NULL,
+                UNIQUE (bootstrap_sha256, fixtures_sha256)
+            );
+
+            CREATE INDEX official_fpl_captures_latest_idx
+                ON official_fpl_captures (available_at_utc DESC, capture_id DESC);
+
+            CREATE TABLE official_fpl_events (
+                capture_id INTEGER NOT NULL
+                    REFERENCES official_fpl_captures(capture_id) ON DELETE RESTRICT,
+                event_id INTEGER NOT NULL CHECK (event_id BETWEEN 1 AND 38),
+                name TEXT NOT NULL CHECK (length(name) BETWEEN 1 AND 100),
+                deadline_utc TEXT NOT NULL,
+                finished INTEGER NOT NULL CHECK (finished IN (0, 1)),
+                data_checked INTEGER NOT NULL CHECK (data_checked IN (0, 1)),
+                is_current INTEGER NOT NULL CHECK (is_current IN (0, 1)),
+                is_next INTEGER NOT NULL CHECK (is_next IN (0, 1)),
+                PRIMARY KEY (capture_id, event_id)
+            );
+
+            CREATE TABLE official_fpl_teams (
+                capture_id INTEGER NOT NULL
+                    REFERENCES official_fpl_captures(capture_id) ON DELETE RESTRICT,
+                team_id INTEGER NOT NULL CHECK (team_id > 0),
+                code INTEGER NOT NULL CHECK (code > 0),
+                name TEXT NOT NULL CHECK (length(name) BETWEEN 1 AND 100),
+                short_name TEXT NOT NULL CHECK (length(short_name) BETWEEN 1 AND 8),
+                PRIMARY KEY (capture_id, team_id)
+            );
+
+            CREATE TABLE official_fpl_players (
+                capture_id INTEGER NOT NULL
+                    REFERENCES official_fpl_captures(capture_id) ON DELETE RESTRICT,
+                player_id INTEGER NOT NULL CHECK (player_id > 0),
+                code INTEGER NOT NULL CHECK (code > 0),
+                team_id INTEGER NOT NULL,
+                position TEXT NOT NULL
+                    CHECK (position IN ('goalkeeper', 'defender', 'midfielder', 'forward')),
+                first_name TEXT NOT NULL CHECK (length(first_name) BETWEEN 1 AND 100),
+                second_name TEXT NOT NULL CHECK (length(second_name) BETWEEN 1 AND 100),
+                web_name TEXT NOT NULL CHECK (length(web_name) BETWEEN 1 AND 100),
+                price_tenths INTEGER NOT NULL CHECK (price_tenths > 0),
+                status TEXT NOT NULL CHECK (length(status) BETWEEN 1 AND 8),
+                news TEXT NOT NULL,
+                news_added_utc TEXT,
+                chance_next_round INTEGER
+                    CHECK (chance_next_round BETWEEN 0 AND 100),
+                selected_by_percent TEXT NOT NULL,
+                total_points INTEGER NOT NULL,
+                minutes INTEGER NOT NULL CHECK (minutes >= 0),
+                starts INTEGER NOT NULL CHECK (starts >= 0),
+                PRIMARY KEY (capture_id, player_id),
+                FOREIGN KEY (capture_id, team_id)
+                    REFERENCES official_fpl_teams(capture_id, team_id) ON DELETE RESTRICT
+            );
+
+            CREATE TABLE official_fpl_fixtures (
+                capture_id INTEGER NOT NULL
+                    REFERENCES official_fpl_captures(capture_id) ON DELETE RESTRICT,
+                fixture_id INTEGER NOT NULL CHECK (fixture_id > 0),
+                event_id INTEGER CHECK (event_id BETWEEN 1 AND 38),
+                home_team_id INTEGER NOT NULL,
+                away_team_id INTEGER NOT NULL,
+                kickoff_utc TEXT,
+                started INTEGER NOT NULL CHECK (started IN (0, 1)),
+                finished INTEGER NOT NULL CHECK (finished IN (0, 1)),
+                finished_provisional INTEGER NOT NULL CHECK (finished_provisional IN (0, 1)),
+                home_score INTEGER,
+                away_score INTEGER,
+                PRIMARY KEY (capture_id, fixture_id),
+                FOREIGN KEY (capture_id, event_id)
+                    REFERENCES official_fpl_events(capture_id, event_id) ON DELETE RESTRICT,
+                FOREIGN KEY (capture_id, home_team_id)
+                    REFERENCES official_fpl_teams(capture_id, team_id) ON DELETE RESTRICT,
+                FOREIGN KEY (capture_id, away_team_id)
+                    REFERENCES official_fpl_teams(capture_id, team_id) ON DELETE RESTRICT,
+                CHECK (home_team_id <> away_team_id),
+                CHECK (
+                    (home_score IS NULL AND away_score IS NULL)
+                    OR (home_score >= 0 AND away_score >= 0)
+                )
             );
             """),
     ];

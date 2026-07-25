@@ -2,7 +2,7 @@
 
 ## Purpose and current boundary
 
-The container is a private development application for the Gameweek decision room, deterministic FPL rules and the first authoritative SQLite decision-snapshot slice. It has no FPL data collection, credentials, autonomous actions or account-write client. Its snapshot write route is an internal development boundary and must not be exposed publicly before authentication and authorisation exist.
+The container is a private development application for the Gameweek decision room, deterministic FPL rules, authoritative SQLite decision snapshots and the first operator-triggered official FPL reference capture. Collection uses two fixed public read-only URLs and no credentials. The application has no autonomous actions or account-write client. Its snapshot write route is an internal development boundary and must not be exposed publicly before authentication and authorisation exist.
 
 Routes:
 
@@ -13,6 +13,7 @@ Routes:
 | `GET` | `/openapi/v1.json` | Returns the generated OpenAPI 3.1 HTTP contract |
 | `GET` | `/healthz` | Liveness response: `{"status":"healthy"}` |
 | `GET` | `/readyz` | Returns ready only when the current SQLite migration is present |
+| `GET` | `/api/v1/data/official-fpl/latest` | Returns provenance, timing, hashes and counts for the latest private official FPL capture, or 404 before the first import |
 | `POST` | `/api/v1/decision-snapshots` | Persists validated squad/selection state and creates an immutable cutoff-correct snapshot |
 | `GET` | `/api/v1/decision-snapshots/{snapshotId}` | Reads one immutable snapshot after creation or restart |
 | `POST` | `/api/v1/decision-snapshot-metadata/validation` | Returns canonical metadata or a stable 400/422 problem response |
@@ -30,11 +31,36 @@ Decision-snapshot writes require a complete valid squad and selection plus UTC o
 
 On an empty development database, startup creates one clearly labelled synthetic acceptance snapshot (`demo-2026`, Gameweek 1). The decision room reads its snapshot ID, revision, deadline, cutoff and selection state from SQLite while forecast values remain the explicitly synthetic UI fixture. Set `AutoFpl__SeedDemoSnapshot=false` for isolated tests or an operator-managed database.
 
+## Official FPL capture
+
+Run the bounded fixed-origin import as an operator command:
+
+```text
+dotnet AutoFpl.Api.dll --import-official-fpl
+```
+
+The command retrieves only `bootstrap-static` and `fixtures` from
+`https://fantasy.premierleague.com`, writes one JSON summary to stdout and
+records `availableAtUtc` as the completed retrieval time. Redirects are
+disabled; response type, schema, cross-references, a 4 MiB per-resource size
+bound and a 20-second request timeout fail closed. Raw JSON remains private in
+SQLite. Identical hash pairs reuse the earliest capture; changed content
+creates a new immutable revision.
+
+The web process does not expose an import route, accept a source URL or send
+cookies/credentials. The metadata GET route does not return raw provider
+content. A capture remains reference evidence only until rolling evaluation
+admits specific fields into a forecast.
+
 ## SQLite operations
 
-The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies three explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
+The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies four explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
 
-The root filesystem stays read-only. Production must mount a private, UID `1654`-writable persistent directory at `/data`; the CI smoke test uses an ephemeral `/data` tmpfs. Do not deploy the persistence image over the current stateless stack until that mount and backup destination are reviewed in `docker-configs`.
+The root filesystem stays read-only. Production must mount a private, UID
+`1654`-writable persistent directory at `/data`; the CI smoke test uses an
+ephemeral `/data` tmpfs. The deployed Git-backed stack provides that private
+mount. Schema-changing promotions still require a verified backup and
+compatible rollback plan.
 
 Run the built-in integrity and online-backup commands with the same database configuration:
 

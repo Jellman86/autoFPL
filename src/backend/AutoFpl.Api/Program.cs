@@ -1,14 +1,18 @@
+using System.Net;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 using AutoFpl.Api.Advice;
 using AutoFpl.Api.Errors;
 using AutoFpl.Api.Health;
 using AutoFpl.Api.Persistence;
+using AutoFpl.Api.Sources;
 using AutoFpl.Contracts.Advice;
 using AutoFpl.Contracts.Lineups;
 using AutoFpl.Contracts.Outcomes;
 using AutoFpl.Contracts.Selections;
 using AutoFpl.Contracts.Snapshots;
+using AutoFpl.Contracts.Sources;
 using AutoFpl.Contracts.Squads;
 using AutoFpl.Domain.Lineups;
 using AutoFpl.Domain.Outcomes;
@@ -27,17 +31,47 @@ bool runIntegrityCheck =
 bool runBackup =
     args.Length == 2
     && StringComparer.Ordinal.Equals(args[0], "--database-backup");
-bool runDatabaseCommand = runIntegrityCheck || runBackup;
+bool runOfficialFplImport =
+    args.Length == 1
+    && StringComparer.Ordinal.Equals(args[0], "--import-official-fpl");
+bool runNonWebCommand = runIntegrityCheck || runBackup || runOfficialFplImport;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(
-    runDatabaseCommand ? [] : args);
+    runNonWebCommand ? [] : args);
+if (runNonWebCommand)
+{
+    builder.Logging.SetMinimumLevel(LogLevel.Warning);
+}
 
 builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi("v1");
 builder.Services.AddSingleton(serviceProvider =>
+    DatabaseOptions.FromConfiguration(
+        serviceProvider.GetRequiredService<IConfiguration>()));
+builder.Services.AddSingleton(serviceProvider =>
     new DecisionSnapshotStore(
-        DatabaseOptions.FromConfiguration(
-            serviceProvider.GetRequiredService<IConfiguration>())));
+        serviceProvider.GetRequiredService<DatabaseOptions>()));
+builder.Services.AddSingleton(serviceProvider =>
+    new OfficialFplCaptureStore(
+        serviceProvider.GetRequiredService<DatabaseOptions>()));
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services
+    .AddHttpClient<OfficialFplImporter>(
+        client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(20);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd(
+                "autoFPL-private-research/0.1");
+        })
+    .ConfigurePrimaryHttpMessageHandler(
+        () => new SocketsHttpHandler
+        {
+            AllowAutoRedirect = false,
+            AutomaticDecompression = DecompressionMethods.None,
+            ConnectTimeout = TimeSpan.FromSeconds(5),
+            MaxConnectionsPerServer = 2,
+            PooledConnectionLifetime = TimeSpan.FromMinutes(10),
+        });
 builder.Services.AddExceptionHandler<DecisionSnapshotPersistenceExceptionHandler>();
 builder.Services.AddExceptionHandler<DecisionSnapshotValidationExceptionHandler>();
 builder.Services.AddExceptionHandler<SquadValidationExceptionHandler>();
@@ -68,7 +102,7 @@ builder.WebHost.ConfigureKestrel(options =>
 WebApplication app = builder.Build();
 DecisionSnapshotStore snapshotStore =
     app.Services.GetRequiredService<DecisionSnapshotStore>();
-if (runDatabaseCommand && !File.Exists(snapshotStore.DatabasePath))
+if ((runIntegrityCheck || runBackup) && !File.Exists(snapshotStore.DatabasePath))
 {
     await Console.Error.WriteLineAsync(
         $"Database does not exist: {snapshotStore.DatabasePath}");
@@ -88,6 +122,19 @@ if (runBackup)
 {
     await snapshotStore.BackupAsync(args[1]);
     await Console.Out.WriteLineAsync(Path.GetFullPath(args[1]));
+    return 0;
+}
+
+if (runOfficialFplImport)
+{
+    OfficialFplCaptureDocument capture =
+        await app.Services
+            .GetRequiredService<OfficialFplImporter>()
+            .ImportLatestAsync();
+    await Console.Out.WriteLineAsync(
+        JsonSerializer.Serialize(
+            capture,
+            new JsonSerializerOptions(JsonSerializerDefaults.Web)));
     return 0;
 }
 
@@ -134,6 +181,24 @@ app.MapGet(
     .WithSummary("Return the synthetic Gameweek advice fixture used by the decision-room preview.")
     .WithTags("Advice")
     .Produces<GameweekAdviceDocument>();
+app.MapGet(
+    "/api/v1/data/official-fpl/latest",
+    async (
+        OfficialFplCaptureStore store,
+        CancellationToken cancellationToken) =>
+    {
+        OfficialFplCaptureDocument? capture = await store.GetLatestAsync(cancellationToken);
+        return capture is null ? Results.NotFound() : Results.Ok(capture);
+    })
+    .WithName("GetLatestOfficialFplCapture")
+    .WithSummary(
+        "Read provenance and counts for the latest immutable official FPL reference capture.")
+    .WithDescription(
+        "The fixed-origin operator import captures bootstrap and fixture JSON atomically. "
+        + "Provider publication time is unknown; availableAtUtc is the completed retrieval time.")
+    .WithTags("Data")
+    .Produces<OfficialFplCaptureDocument>()
+    .Produces(StatusCodes.Status404NotFound);
 app.MapPost(
     "/api/v1/decision-snapshots",
     async (

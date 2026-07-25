@@ -1,6 +1,6 @@
 # autoFPL documentation
 
-Use this index to find the maintained source for each topic. The deterministic private-development foundation is deployed and the first synthetic decision-room slice now establishes the v0.1 product contract. Real forecasting, simulation, optimisation, advisory MCP tools and proposal persistence do not yet exist.
+Use this index to find the maintained source for each topic. The deterministic private-development foundation, decision room and SQLite snapshots are deployed. The first fixed-origin official FPL capture is implemented, while real historical replay, forecasting, simulation, optimisation, advisory MCP tools and proposal persistence do not yet exist.
 
 ## Start here
 
@@ -41,6 +41,7 @@ Use this index to find the maintained source for each topic. The deterministic p
 - [Manual evidence timing v1](data/manual-evidence-timing-v1.md) — exact current POST-field inventory, evidence classes and leakage-safe replay semantics.
 - [Manual user input v1](data/sources/manual-user-input-v1.md) — versioned direct-entry scope, privacy and point-in-time constraints.
 - [Repository synthetic fixtures v1](data/sources/repository-synthetic-fixtures-v1.md) — versioned fictional test/evidence boundary.
+- [Official FPL read-only API v1](data/sources/official-fpl-api-v1.md) — fixed-origin player, Gameweek, team, fixture and outcome capture semantics.
 
 ## Research and evidence
 
