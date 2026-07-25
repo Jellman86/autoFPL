@@ -2,7 +2,7 @@
 
 ## Purpose and current boundary
 
-The container is a private development API for exercising deterministic metadata, squad, lineup, gameweek-selection, captaincy, automatic-substitution and composed effective-outcome rules. It has no database, FPL data collection, credentials, autonomous actions or user-facing write operations.
+The container is a private development API for exercising deterministic metadata, squad, lineup, gameweek-selection, captaincy, automatic-substitution, composed effective-outcome and manual effective-score rules. It has no database, FPL data collection, credentials, autonomous actions or user-facing write operations.
 
 Routes:
 
@@ -17,6 +17,7 @@ Routes:
 | `POST` | `/api/v1/gameweek-outcomes/captaincy-resolution` | Resolves the effective captain from a valid complete selection and manually supplied player IDs with minutes |
 | `POST` | `/api/v1/gameweek-outcomes/substitution-resolution` | Resolves automatic substitutions from a valid complete selection and manually supplied player IDs that played |
 | `POST` | `/api/v1/gameweek-outcomes/effective-resolution` | Returns one consistent substitution and captaincy outcome from the same valid selection and manual play evidence |
+| `POST` | `/api/v1/gameweek-outcomes/effective-score` | Scores the effective XI and normal captain multiplier from complete manual per-player points evidence |
 
 Decision-snapshot metadata request fields are exact and case-sensitive. Missing or `null` required fields, duplicate or undeclared fields, non-string field values and malformed payloads fail with 400. Present string values that are unsupported fail with the stable domain error code and 422. The request body is bounded to 16 KiB by Kestrel.
 
@@ -31,6 +32,8 @@ Captaincy-resolution requests compose the same valid squad and complete gameweek
 Substitution-resolution requests compose the same valid squad and complete selection with distinct, manually supplied squad-player IDs representing players who played in the Gameweek. A non-playing starting goalkeeper is replaced only by the replacement goalkeeper when that goalkeeper played. Played outfield substitutes are considered in bench-priority order and activated only when the existing formation rules remain valid; unresolved non-playing starters are reported explicitly. Structural failures return 400, and duplicate or non-squad play evidence returns a stable 422 problem response. The endpoint does not retrieve appearances or cards, calculate scores, persist outcomes or perform account actions.
 
 Effective-resolution requests pass one immutable manual play-evidence snapshot through the existing substitution and captaincy resolvers, then return both results together. This prevents clients from applying different evidence to the two deterministic rules. It retains the same strict 400/422 boundary and does not add scoring, chips, external retrieval, persistence, forecasting, simulation or account actions.
+
+Effective-score requests add exactly one integer points entry for every squad player to that composed outcome. Non-playing players must have zero points; unused bench points are excluded; the effective captain receives the normal `2` multiplier; and all totals use wide integers to avoid overflow across the accepted point values. Missing, duplicate, non-squad or contradictory point evidence returns a stable 422 response. The route consumes pre-calculated manual points and does not derive official scoring events, support chips, retrieve data, forecast, simulate, optimise, persist or act on an account.
 
 ## Image construction
 

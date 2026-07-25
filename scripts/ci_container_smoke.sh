@@ -97,7 +97,13 @@ substitution_invalid_response="$(mktemp)"
 outcome_valid_response="$(mktemp)"
 outcome_malformed_response="$(mktemp)"
 outcome_invalid_response="$(mktemp)"
-trap 'rm -f "$headers_file" "$invalid_file" "$unknown_file" "$duplicate_file" "$oversized_file" "$oversized_body" "$selection_valid_request" "$selection_malformed_request" "$selection_invalid_request" "$selection_valid_response" "$selection_malformed_response" "$selection_invalid_response" "$captaincy_valid_request" "$captaincy_malformed_request" "$captaincy_invalid_request" "$captaincy_duplicate_request" "$captaincy_valid_response" "$captaincy_malformed_response" "$captaincy_invalid_response" "$captaincy_duplicate_response" "$substitution_valid_request" "$substitution_malformed_request" "$substitution_invalid_request" "$substitution_valid_response" "$substitution_malformed_response" "$substitution_invalid_response" "$outcome_valid_response" "$outcome_malformed_response" "$outcome_invalid_response"; cleanup' EXIT
+score_valid_request="$(mktemp)"
+score_malformed_request="$(mktemp)"
+score_invalid_request="$(mktemp)"
+score_valid_response="$(mktemp)"
+score_malformed_response="$(mktemp)"
+score_invalid_response="$(mktemp)"
+trap 'rm -f "$headers_file" "$invalid_file" "$unknown_file" "$duplicate_file" "$oversized_file" "$oversized_body" "$selection_valid_request" "$selection_malformed_request" "$selection_invalid_request" "$selection_valid_response" "$selection_malformed_response" "$selection_invalid_response" "$captaincy_valid_request" "$captaincy_malformed_request" "$captaincy_invalid_request" "$captaincy_duplicate_request" "$captaincy_valid_response" "$captaincy_malformed_response" "$captaincy_invalid_response" "$captaincy_duplicate_response" "$substitution_valid_request" "$substitution_malformed_request" "$substitution_invalid_request" "$substitution_valid_response" "$substitution_malformed_response" "$substitution_invalid_response" "$outcome_valid_response" "$outcome_malformed_response" "$outcome_invalid_response" "$score_valid_request" "$score_malformed_request" "$score_invalid_request" "$score_valid_response" "$score_malformed_response" "$score_invalid_response"; cleanup' EXIT
 invalid_status="$(curl --silent --show-error --output "$invalid_file" --write-out '%{http_code}' \
   --header 'Content-Type: application/json' \
   --data '{"schemaVersion":"2.0","sourceType":"manual"}' \
@@ -119,7 +125,7 @@ oversized_status="$(curl --silent --show-error --output "$oversized_file" --writ
   --data-binary "@$oversized_body" \
   "$base_url/api/v1/decision-snapshot-metadata/validation")"
 
-python3 - "$selection_valid_request" "$selection_malformed_request" "$selection_invalid_request" "$captaincy_valid_request" "$captaincy_malformed_request" "$captaincy_invalid_request" "$captaincy_duplicate_request" "$substitution_valid_request" "$substitution_malformed_request" "$substitution_invalid_request" <<'PY'
+python3 - "$selection_valid_request" "$selection_malformed_request" "$selection_invalid_request" "$captaincy_valid_request" "$captaincy_malformed_request" "$captaincy_invalid_request" "$captaincy_duplicate_request" "$substitution_valid_request" "$substitution_malformed_request" "$substitution_invalid_request" "$score_valid_request" "$score_malformed_request" "$score_invalid_request" <<'PY'
 import json, pathlib, sys
 
 players = [
@@ -161,6 +167,19 @@ substitution_valid = dict(
 )
 substitution_malformed = dict(valid, playerIdsWhoPlayed=["1"])
 substitution_invalid = dict(valid, playerIdsWhoPlayed=[1, 99])
+score_points = [
+    {"playerId": player_id, "points": points}
+    for player_id, points in enumerate([2, 0, 0, 6, 1, 8, 0, 0, 3, -1, 5, 2, 7, 4, 10], start=1)
+]
+score_valid = dict(substitution_valid, playerPoints=score_points)
+score_malformed = dict(
+    substitution_valid,
+    playerPoints=[dict(entry) for entry in score_points],
+)
+score_malformed["playerPoints"][0]["points"] = "2"
+score_invalid_points = [dict(entry) for entry in score_points]
+score_invalid_points[-1]["playerId"] = 1
+score_invalid = dict(substitution_valid, playerPoints=score_invalid_points)
 payloads = [
     valid,
     selection_malformed,
@@ -172,6 +191,9 @@ payloads = [
     substitution_valid,
     substitution_malformed,
     substitution_invalid,
+    score_valid,
+    score_malformed,
+    score_invalid,
 ]
 for path, payload in zip(sys.argv[1:], payloads, strict=True):
     pathlib.Path(path).write_text(json.dumps(payload))
@@ -228,6 +250,18 @@ outcome_invalid_status="$(curl --silent --show-error --output "$outcome_invalid_
   --header 'Content-Type: application/json' \
   --data-binary "@$substitution_invalid_request" \
   "$base_url/api/v1/gameweek-outcomes/effective-resolution")"
+score_valid_status="$(curl --silent --show-error --output "$score_valid_response" --write-out '%{http_code}' \
+  --header 'Content-Type: application/json' \
+  --data-binary "@$score_valid_request" \
+  "$base_url/api/v1/gameweek-outcomes/effective-score")"
+score_malformed_status="$(curl --silent --show-error --output "$score_malformed_response" --write-out '%{http_code}' \
+  --header 'Content-Type: application/json' \
+  --data-binary "@$score_malformed_request" \
+  "$base_url/api/v1/gameweek-outcomes/effective-score")"
+score_invalid_status="$(curl --silent --show-error --output "$score_invalid_response" --write-out '%{http_code}' \
+  --header 'Content-Type: application/json' \
+  --data-binary "@$score_invalid_request" \
+  "$base_url/api/v1/gameweek-outcomes/effective-score")"
 
 python3 - "$health_body" "$ready_body" "$valid_body" "$invalid_file" "$invalid_status" "$unknown_status" "$duplicate_status" "$oversized_status" "$headers_file" <<'PY'
 import json, pathlib, sys
@@ -323,6 +357,25 @@ assert malformed_status == "400", malformed_status
 assert invalid_status == "422", invalid_status
 assert invalid["code"] == "outcome.played_player.not_in_squad", invalid
 assert invalid["field"] == "playerIdsWhoPlayed", invalid
+PY
+
+python3 - "$score_valid_response" "$score_valid_status" "$score_malformed_status" "$score_invalid_response" "$score_invalid_status" <<'PY'
+import json, pathlib, sys
+
+valid = json.loads(pathlib.Path(sys.argv[1]).read_text())
+valid_status, malformed_status = sys.argv[2:4]
+invalid = json.loads(pathlib.Path(sys.argv[4]).read_text())
+invalid_status = sys.argv[5]
+assert valid_status == "200", valid_status
+assert valid["outcome"]["effectivePlayerIds"] == [1, 6, 4, 5, 15, 9, 10, 11, 12, 13, 14], valid
+assert valid["outcome"]["effectiveCaptainPlayerId"] == 13, valid
+assert valid["basePoints"] == 47, valid
+assert valid["captainBonusPoints"] == 7, valid
+assert valid["totalPoints"] == 54, valid
+assert malformed_status == "400", malformed_status
+assert invalid_status == "422", invalid_status
+assert invalid["code"] == "outcome.player_points.duplicate", invalid
+assert invalid["field"] == "playerPoints", invalid
 PY
 
 printf 'container smoke test passed for %s\n' "$image"

@@ -27,6 +27,7 @@ builder.Services.AddExceptionHandler<LineupValidationExceptionHandler>();
 builder.Services.AddExceptionHandler<GameweekSelectionValidationExceptionHandler>();
 builder.Services.AddExceptionHandler<GameweekCaptaincyResolutionValidationExceptionHandler>();
 builder.Services.AddExceptionHandler<GameweekSubstitutionResolutionValidationExceptionHandler>();
+builder.Services.AddExceptionHandler<GameweekScoreResolutionValidationExceptionHandler>();
 builder.Services.Configure<RouteHandlerOptions>(options =>
 {
     options.ThrowOnBadRequest = false;
@@ -270,6 +271,57 @@ app.MapPost(
             selection,
             playerIdsWhoPlayed);
         return Results.Ok(GameweekOutcomeResolutionDocument.FromDomain(resolution));
+    });
+app.MapPost(
+    "/api/v1/gameweek-outcomes/effective-score",
+    (GameweekScoreResolutionRequest request) =>
+    {
+        if (request.BudgetTenths is null
+            || request.Players is null
+            || request.StartingPlayerIds is null
+            || request.CaptainPlayerId is null
+            || request.ViceCaptainPlayerId is null
+            || request.ReplacementGoalkeeperPlayerId is null
+            || request.OutfieldSubstitutePlayerIds is null
+            || request.PlayerIdsWhoPlayed is null
+            || request.PlayerPoints is null
+            || request.Players.Any(PlayerRequestIsMalformed)
+            || request.StartingPlayerIds.Any(playerId => playerId is null)
+            || request.OutfieldSubstitutePlayerIds.Any(playerId => playerId is null)
+            || request.PlayerIdsWhoPlayed.Any(playerId => playerId is null)
+            || request.PlayerPoints.Any(
+                entry => entry is null || entry.PlayerId is null || entry.Points is null))
+        {
+            return Results.BadRequest();
+        }
+
+        SquadPlayer[] players = CreateSquadPlayers(request.Players);
+        Squad squad = Squad.Create(request.BudgetTenths.Value, players);
+        int[] startingPlayerIds = request.StartingPlayerIds
+            .Select(playerId => playerId!.Value)
+            .ToArray();
+        int[] outfieldSubstitutePlayerIds = request.OutfieldSubstitutePlayerIds
+            .Select(playerId => playerId!.Value)
+            .ToArray();
+        int[] playerIdsWhoPlayed = request.PlayerIdsWhoPlayed
+            .Select(playerId => playerId!.Value)
+            .ToArray();
+        PlayerGameweekPoints[] playerPoints = request.PlayerPoints
+            .Select(entry => new PlayerGameweekPoints(entry!.PlayerId!.Value, entry.Points!.Value))
+            .ToArray();
+        GameweekSelection selection = GameweekSelection.Create(
+            squad,
+            startingPlayerIds,
+            request.CaptainPlayerId.Value,
+            request.ViceCaptainPlayerId.Value,
+            request.ReplacementGoalkeeperPlayerId.Value,
+            outfieldSubstitutePlayerIds);
+        GameweekScoreResolution resolution = GameweekScoreResolution.Resolve(
+            squad,
+            selection,
+            playerIdsWhoPlayed,
+            playerPoints);
+        return Results.Ok(GameweekScoreResolutionDocument.FromDomain(resolution));
     });
 
 static bool PlayerRequestIsMalformed(SquadPlayerRequest? playerRequest) =>
