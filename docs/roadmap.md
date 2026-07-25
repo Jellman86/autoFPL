@@ -192,8 +192,12 @@ The first decision-room slice adds:
 Its data is deliberately synthetic. It establishes the product contract but
 does not constitute a forecast.
 
-The first SQLite persistence vertical slice is in development. There is still
-no production ingestion, promoted model, scenario engine, optimiser, MCP
+The SQLite persistence vertical slice is deployed and survives a managed
+container recreate. The next vertical slice adds an operator-triggered,
+fixed-origin official FPL capture with exact raw hashes, retrieval-time
+availability and normalised player/Gameweek/team/fixture rows. It is real
+reference data, but it is not yet a historical replay dataset or a promoted
+forecast. There is still no promoted model, scenario engine, optimiser, MCP
 server, live AI provider or product release.
 
 ## v0.1 — Evidence-grounded single-Gameweek advisor
@@ -223,10 +227,10 @@ is tested.
 
 Tracked by [#41](https://github.com/Jellman86/autoFPL/issues/41).
 
-**Status:** active — the database, explicit migrations, cutoff-correct
+**Status:** complete — the database, explicit migrations, cutoff-correct
 snapshot API, revision lineage, restart readback, integrity check, online
-backup and a visibly persisted synthetic UI fixture are implemented on the
-feature branch. Git/Dockhand persistent-volume promotion remains.
+backup, persistent Quark volume and visibly persisted synthetic UI fixture are
+deployed.
 
 - Persist season/Gameweek deadlines, player identity, position and price,
   current squad/selection, source observations and immutable snapshots.
@@ -241,6 +245,12 @@ feature branch. Git/Dockhand persistent-volume promotion remains.
 and cutoff.
 
 ### Milestone C — real point-in-time evidence
+
+**Status:** active — the first official FPL bootstrap/fixture capture is
+implemented with bounded fixed-origin retrieval, raw content hashes,
+retrieval-time availability, immutable revisions and normalised reference rows.
+Historical pre-deadline replay and automatic later-outcome reconstruction
+remain.
 
 - Implement the smallest useful real historical/current importer alongside the
   fields it actually supplies.

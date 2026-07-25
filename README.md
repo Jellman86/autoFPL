@@ -7,7 +7,7 @@ A rigorous private home-research platform for **high-quality, human-approved Fan
 
 ## Status
 
-**Decision room deployed; SQLite snapshot slice in development.** The private application renders the responsive formation, bench, interactive player evidence, alternatives and honest synthetic/AI-unavailable state. It validates deterministic squad/selection rules and now has a feature-branch vertical slice for authoritative SQLite squad state, cutoff-correct observations, immutable snapshot revisions, restart readback and online backup. It does not yet ingest a production dataset, forecast, simulate, optimise or provide real advice.
+**Decision room and SQLite snapshots deployed; first real source capture in development.** The private application renders the responsive formation, bench, interactive player evidence, alternatives and honest synthetic/AI-unavailable state. It validates deterministic squad/selection rules and persists authoritative SQLite squad state, cutoff-correct observations and immutable snapshot revisions. The next slice captures fixed-origin official FPL player, Gameweek, team, fixture and outcome data with exact content hashes and retrieval-time availability. It does not yet replay a historical deadline, forecast, simulate, optimise or provide real advice.
 
 The [delivery roadmap](docs/roadmap.md) defines the dependency-ordered route from the current foundation through v0.1 single-Gameweek advice, transfer and chip planning, and the v1.0 human-approved advisor. See the [documentation index](docs/index.md) and [changelog](CHANGELOG.md) for maintained guidance and implemented changes.
 

@@ -1,6 +1,6 @@
 # Threat Model
 
-- **Status:** SQLite persistence baseline
+- **Status:** fixed-origin official FPL ingestion baseline
 - **Reviewed:** 2026-07-25
 - **Owners:** Jellman86
 - **Method:** assets, trust boundaries, misuse cases and STRIDE-informed analysis
@@ -55,7 +55,7 @@ Update this model when a PR materially changes a trust boundary: identity, MCP/e
 | Provider output substitution | Generated prose changes a forecast, or an extracted claim bypasses quarantine/validation | Structured artefact remains authoritative and visible, source-linked candidate state, immutable values, output schema separation, response provenance and failure isolation |
 | Unauthorised action | Prompt induces a transfer or chip action | No FPL write client; separate capability scopes; deterministic policy; exact human approval if future permission exists |
 | Prompt/tool injection | Article tells agent to disclose data or call a tool | Treat content as data, source labels, strict MCP schemas, tool allowlists, no model-authoritative mutation |
-| SSRF/data exfiltration | User URL reaches internal service | Destination allowlists, DNS/IP validation, bounded fetcher, network egress policy, no ambient secrets |
+| SSRF/data exfiltration | User URL reaches internal service | The first importer has compile-time HTTPS origins, no redirects, no caller URL/proxy/header/cookie input, bounded responses and no ambient secrets; future general fetchers require destination and resolved-IP controls |
 | Data poisoning | Manipulated injury report changes recommendation | Source evaluation, corroboration, provenance, confidence/expiry, anomaly detection, reversible snapshots |
 | Temporal leakage | Corrected post-match data enters backtest | `available_at`, immutable pre-deadline snapshots, embargoes, walk-forward tests and independent review |
 | Model/solver tampering | Artefact or constraint silently replaced | Content hashes, signed provenance, immutable IDs, feasibility checks and append-only audit |
@@ -87,11 +87,24 @@ Update this model when a PR materially changes a trust boundary: identity, MCP/e
 
 ## Residual foundation risks
 
-The private application now has an unauthenticated decision-snapshot write route intended only for its trusted internal network. It must not receive a public route before identity and authorisation are implemented. SQLite state is authoritative and therefore requires a persistent volume, protected file access, consistent backups before destructive migration or rollback, and retention/deletion work before storing real personal history. There is still no ingestion, forecasting, simulation, optimiser or account-action runtime. Source behaviour, access conditions and data availability can change, so future collectors need observable failure modes and a kill switch.
+The private application has an unauthenticated decision-snapshot write route intended only for its trusted internal network. It must not receive a public route before identity and authorisation are implemented. SQLite state is authoritative and therefore requires a persistent volume, protected file access, consistent backups before destructive migration or rollback, and retention/deletion work before storing real personal history.
+
+The operator-triggered official FPL importer adds outbound public HTTPS and
+untrusted provider JSON. Its origins are compile-time constants; redirects,
+non-JSON responses, oversized responses, malformed schemas and broken entity
+references fail closed before an atomic write. It sends no credentials and
+exposes no web import route. Residual risks are silent provider semantic
+changes, source downtime, operator over-collection and growth from repeated
+private raw captures. Captures do not influence advice until point-in-time
+evaluation admits specific fields.
+
+There is still no forecasting, simulation, optimiser or account-action
+runtime. Source behaviour, access conditions and data availability can change,
+so collection must remain observable and operator-disableable.
 
 ## Review triggers
 
-- First ingestion, forecasting, AI/advisory service or public endpoint.
+- First non-fixed-origin ingestion, forecasting, AI/advisory service or public endpoint.
 - Authentication, user upload or MCP implementation.
 - First external data provider or automated retrieval.
 - First model that influences a recommendation.
