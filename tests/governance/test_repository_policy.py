@@ -127,6 +127,26 @@ class RepositoryPolicyTests(unittest.TestCase):
             configured = set(REQUIRED_CONTENT_MARKERS.get(relative_path, ()))
             self.assertTrue(markers.issubset(configured), markers - configured)
 
+    def test_prediction_quality_private_research_boundary_is_mandatory(self) -> None:
+        from tools.governance.check_repository import (
+            REQUIRED_CONTENT_MARKERS,
+            REQUIRED_PATHS,
+        )
+
+        decision = "docs/adr/0009-prediction-quality-first-private-research.md"
+        self.assertIn(decision, REQUIRED_PATHS)
+        self.assertIn("prediction quality", REQUIRED_CONTENT_MARKERS[decision])
+        self.assertIn("without direct written permission", REQUIRED_CONTENT_MARKERS[decision])
+        self.assertIn("Byparr", REQUIRED_CONTENT_MARKERS[decision])
+        self.assertNotIn(
+            "written Premier League permission",
+            REQUIRED_CONTENT_MARKERS["AGENTS.md"],
+        )
+        self.assertNotIn(
+            "explicit authorisation",
+            REQUIRED_CONTENT_MARKERS["docs/standards/data-governance.md"],
+        )
+
     def test_data_source_contract_and_policy_gate_are_mandatory(self) -> None:
         from tools.governance.check_repository import (
             REQUIRED_CONTENT_MARKERS,

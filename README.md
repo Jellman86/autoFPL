@@ -1,15 +1,15 @@
 # autoFPL
 
-A rigorous, evidence-driven research platform for **human-approved Fantasy Premier League decision support**.
+A rigorous private home-research platform for **high-quality, human-approved Fantasy Premier League predictions and decision support**.
 
 > [!IMPORTANT]
-> autoFPL is not an autonomous FPL bot. Until the Premier League grants written permission and supported data/write access, the project must not scrape or automate FPL, collect Premier League credentials, replay user sessions, or submit team changes.
+> autoFPL's north star is prediction quality using useful free or self-hosted methods. Public-source search, scraping, browser rendering, public read-only endpoints and bounded Byparr-assisted collection are in scope. The project does not collect FPL credentials/session material, bypass login or paid access, or submit team changes; the user acts manually.
 
 ## Status
 
-**Foundation phase.** This repository currently establishes the research, engineering, security, data-governance and release standards that every later feature must satisfy.
+**Deterministic foundation deployed; v0.1 evidence loop next.** The private development API now validates manual squad/selection state, resolves substitutions and captaincy, and scores an effective Gameweek outcome. It does not yet ingest a production dataset, forecast, simulate, optimise or provide the planned advisory product.
 
-See the [documentation index](docs/index.md), [roadmap](docs/roadmap.md) and [changelog](CHANGELOG.md) for maintained guidance, planned outcomes and implemented changes.
+The [delivery roadmap](docs/roadmap.md) defines the dependency-ordered route from the current foundation through v0.1 single-Gameweek advice, transfer and chip planning, and the v1.0 human-approved advisor. See the [documentation index](docs/index.md) and [changelog](CHANGELOG.md) for maintained guidance and implemented changes.
 
 ## Intended architecture
 
@@ -23,19 +23,19 @@ See the [documentation index](docs/index.md), [roadmap](docs/roadmap.md) and [ch
 - **Optional model-provider adapters** — OpenRouter API or a private Hermes proxy may perform bounded extraction/classification and generate explanations behind a provider-neutral boundary; outputs are quarantined or non-authoritative and neither provider is required for core operation.
 - **Evidence-grounded AI decision orchestrator** — the strategic “mind” retrieves relevant data and memory, asks forecasting/simulation/optimisation tools for evidence and compares feasible plans. Application-managed mode persists a structured unapproved proposal; client-hosted ChatGPT/Hermes returns an evidence-grounded advisory synthesis without proposal persistence.
 
-The approved boundaries are recorded in [ADR-0001](docs/adr/0001-hybrid-modular-architecture.md), [ADR-0005](docs/adr/0005-chatgpt-mcp-interface.md), [ADR-0006](docs/adr/0006-optional-model-provider-adapters.md), [ADR-0007](docs/adr/0007-evidence-grounded-ai-decision-orchestrator.md), [ADR-0008](docs/adr/0008-versioned-json-contracts.md) and the [FPL terms boundary](docs/compliance/fpl-terms-boundary.md).
+The approved boundaries are recorded in [ADR-0001](docs/adr/0001-hybrid-modular-architecture.md), [ADR-0005](docs/adr/0005-chatgpt-mcp-interface.md), [ADR-0006](docs/adr/0006-optional-model-provider-adapters.md), [ADR-0007](docs/adr/0007-evidence-grounded-ai-decision-orchestrator.md), [ADR-0008](docs/adr/0008-versioned-json-contracts.md), [ADR-0009](docs/adr/0009-prediction-quality-first-private-research.md) and the [FPL access boundary](docs/compliance/fpl-terms-boundary.md).
 
 ## Non-negotiable quality principles
 
-1. Safety and terms compliance before convenience.
-2. Human approval before any external account action.
-3. Tests first for every behaviour change.
-4. Point-in-time-correct data and walk-forward evaluation only.
-5. Probabilistic forecasts must be calibrated and compared with simple baselines.
-6. Optimiser outputs must be feasible, reproducible and independently checked.
-7. Every material result must link code, data snapshot, environment, seed and evidence.
-8. No secrets, mutable CI dependencies or unreviewed direct pushes.
-9. Claims must be labelled as observed fact, sourced evidence, assumption or judgement.
+1. Maximise leakage-free out-of-time prediction quality and decision utility.
+2. Tests first for every behaviour change.
+3. Point-in-time-correct data and rolling/walk-forward evaluation only.
+4. Calibrate probabilistic forecasts and compare them with simple and incumbent baselines.
+5. Require every new source, feature or model to justify itself through ablation and failure-slice evidence.
+6. Keep optimiser outputs feasible, reproducible and independently checked.
+7. Link every material result to code, data snapshot, environment, seed and evidence.
+8. Keep credentials, private data and account actions outside the analytical pipeline.
+9. Label claims as observed fact, sourced evidence, assumption or judgement.
 10. A feature is not complete until the repository's [Definition of Done](docs/standards/definition-of-done.md) is satisfied.
 
 ## Branch and release flow
@@ -82,4 +82,4 @@ make verify
 
 autoFPL source code is licensed under **GNU AGPL-3.0-only**. See [LICENSE](LICENSE). If a modified version is offered for users to interact with over a network, the licence requires an opportunity for those users to receive the corresponding source code.
 
-Runtime and user data are not licensed by the source-code licence. Third-party datasets, papers, model artefacts, source snapshots and derived fields require documented provenance and compatible collection, use and redistribution rights before inclusion. Personal squad history, private research snapshots, credentials and deployment configuration belong in ignored local/runtime storage—not this public repository. No absence of a technical access control implies permission to collect or reuse data.
+Runtime and user data are not licensed by the source-code licence. Public-source research inputs require technical provenance, decision-time availability and quality evidence; they do not require direct written permission as a general project gate. Third-party article/data corpora stay private and are not republished. Personal squad history, research snapshots, credentials and deployment configuration belong in ignored local/runtime storage—not this public repository.

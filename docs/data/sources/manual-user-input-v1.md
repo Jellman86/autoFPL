@@ -8,27 +8,24 @@
 - **Provider/subject:** the individual user operating their own autoFPL decision-support workflow
 - **Authoritative URL:** not applicable; no remote collection occurs
 
-## Purpose and authorisation
+## Purpose and provenance
 
-This source permits deliberate values typed or explicitly uploaded by the user for their own human-in-the-loop decision support, when the user is entitled to use those values for that purpose. The collection method is direct user submission through a reviewed autoFPL contract. It does not authorise autoFPL to fetch, discover or enrich data from FPL or any third party.
+This source represents deliberate values typed or submitted by the user for their own human-in-the-loop decision support. Values may originate from the user's knowledge or public research. The collection method is direct user submission through a versioned autoFPL contract; provenance and timing metadata describe the evidence rather than acting as a legal-origin gate.
 
-The current stateless service accepts only decision-snapshot metadata (`schemaVersion` and `sourceType`). Any additional field set, upload format or purpose requires a new reviewed contract and a new version of this record before implementation.
+The original source-record example covers decision-snapshot metadata (`schemaVersion` and `sourceType`). Later stateless deterministic endpoints accept typed squad, selection, play and points evidence; issue #54 aligns their timing/provenance semantics without withdrawing useful routes merely because a value was manually sourced.
 
 ## Allowed content
 
-- for the current service, only the exact `schemaVersion` and `sourceType` metadata fields;
-- in a future separately reviewed contract, the user's own current squad choices, private constraints, assumptions and annotations needed for the stated decision;
+- the exact fields accepted by the current versioned API contracts;
+- the user's current squad choices, public-source observations, private constraints, assumptions and annotations needed for the stated decision;
 - explicit source/timing annotations when the user knows them;
 - local pseudonymous identifiers created by autoFPL when an identifier is necessary.
 
 ## Prohibited content and methods
 
 - passwords, cookies, sessions, authentication tokens, recovery material or account-action instructions;
-- values produced by automated FPL extraction, undocumented endpoints, browser automation or request replay;
-- manually copied player catalogues, prices, fixtures, rules, historical statistics or other provider-backed reference datasets; each requires a separately admitted source with recorded rights;
 - opaque archives, executable content, hidden URLs or bulk copied third-party datasets;
 - unnecessary names, email addresses, contact details, financial details or other personal/sensitive data;
-- content the user is not permitted to use for the recorded purpose;
 - a user-entered assertion of an earlier time being treated as proof that information was available then.
 
 Validation must reject undeclared fields and over-size inputs. Application logs must not record request bodies.
@@ -44,7 +41,7 @@ Schema, range, cross-field, deadline and deterministic-rule checks are required 
 The current service accepts no timestamp or snapshot-identity fields and creates no retained snapshot. A future separately reviewed contract must apply these semantics:
 
 - `observed_at`: when the described event/state occurred, if known; otherwise absent.
-- `published_at`: absent unless tied to separately admitted publication evidence.
+- `published_at`: source publication time when known; otherwise absent.
 - `retrieved_at`: when autoFPL receives the submission.
 - `available_at`: no earlier than `retrieved_at` for decision use; a user-supplied historical time cannot backdate availability.
 
@@ -54,8 +51,8 @@ A future persistence contract must generate an immutable snapshot ID, canonical-
 
 The present service is stateless and discards the request after returning validation output. It has no request-body logging, user database or dataset redistribution. Future persistence requires a versioned schema, minimisation and deletion design, threat/privacy review, retention period and end-to-end deletion tests.
 
-Manual user content is private to that user's workflow by default. It must not be committed to the repository, included in shared test fixtures, used to train shared models or redistributed without a separately recorded lawful purpose and explicit informed permission.
+Manual user content is private to that user's workflow by default. It must not be committed to the repository, included in shared test fixtures, used to train shared models or publicly redistributed.
 
 ## Maintenance
 
-Review before every material contract/purpose change and at least once per season while enabled. Deprecate immediately if the collection method, terms boundary or privacy assumptions no longer hold. No connector is authorised by this record.
+Review before material contract or timing-semantics changes and at least once per season while enabled. Deprecate when the contract, collection path or privacy assumptions no longer support reproducible use. Connector engineering is tracked separately from this manual-input record.

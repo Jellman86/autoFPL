@@ -2,9 +2,11 @@
 
 These instructions apply to every human and automated contributor. More specific `AGENTS.md` files may add constraints but may not weaken this file.
 
-## Mission boundary
+## Mission and product boundary
 
-autoFPL is a human-in-the-loop FPL decision-support research project. Do not implement scraping, credential collection, session replay, transfer submission, chip activation or other automated FPL account actions without a repository ADR recording written Premier League permission and a reviewed supported integration.
+autoFPL is a private, non-commercial home FPL research project. Its overriding north star is prediction quality: make predictions as close to reality as possible using useful free or self-hosted data, collection, modelling, simulation and AI methods. Judge additions by leakage-free out-of-time predictive gain, calibration, decision utility and reproducibility—not enterprise compliance ceremony.
+
+Public-web search, scraping, browser rendering, public read-only endpoints and bounded Byparr-assisted collection are in scope. Do not collect credentials/session material, bypass login or paid access, access private user data, create abusive traffic or automate FPL account actions. The user continues to enact recommendations manually.
 
 ## Required workflow
 

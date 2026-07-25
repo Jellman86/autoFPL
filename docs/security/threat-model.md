@@ -56,7 +56,7 @@ This model must be updated whenever a PR introduces a new data source, identity 
 | Unauthorised action | Prompt induces a transfer or chip action | No FPL write client; separate capability scopes; deterministic policy; exact human approval if future permission exists |
 | Prompt/tool injection | Article tells agent to disclose data or call a tool | Treat content as data, source labels, strict MCP schemas, tool allowlists, no model-authoritative mutation |
 | SSRF/data exfiltration | User URL reaches internal service | Destination allowlists, DNS/IP validation, bounded fetcher, network egress policy, no ambient secrets |
-| Data poisoning | Manipulated injury report changes recommendation | Source admission, corroboration, provenance, confidence/expiry, anomaly detection, reversible snapshots |
+| Data poisoning | Manipulated injury report changes recommendation | Source evaluation, corroboration, provenance, confidence/expiry, anomaly detection, reversible snapshots |
 | Temporal leakage | Corrected post-match data enters backtest | `available_at`, immutable pre-deadline snapshots, embargoes, walk-forward tests and independent review |
 | Model/solver tampering | Artefact or constraint silently replaced | Content hashes, signed provenance, immutable IDs, feasibility checks and append-only audit |
 | Supply-chain compromise | Mutable Action/tag becomes malicious | Full-SHA Action pins, lockfiles, Dependabot review, SBOM/provenance, restricted workflow permissions |
@@ -65,7 +65,7 @@ This model must be updated whenever a PR introduces a new data source, identity 
 | Denial of service | Deadline traffic or expensive simulation exhausts service | Quotas, bounded jobs, timeouts, cancellation, cached versioned results, resource limits, graceful degradation |
 | Repudiation | Recommendation changed without trace | Immutable audit with actor, time, code/data/model versions, objective and approval state |
 | Privacy overcollection | Research stores unnecessary user history | Data minimisation, separation, retention/deletion policy, access audit and consent boundaries |
-| Licence/terms breach | Undocumented FPL endpoint becomes production feed | Source admission gate, compliance ADR and supported licensed interface requirement |
+| Access or legal breach | Collector accesses private/login/paid data, misuses credentials or creates harmful load | Public-source boundary, no ambient credentials, bounded rate/concurrency, source-specific review and a kill switch |
 
 ## Abuse cases that must fail closed
 
@@ -87,11 +87,11 @@ This model must be updated whenever a PR introduces a new data source, identity 
 
 ## Residual foundation risks
 
-No application code or runtime exists yet. Later PRs must convert these controls into automated tests and operational evidence. FPL terms can change each season; compliance review is therefore time-bounded. Licensed-data availability and permitted commercial use remain unresolved product prerequisites.
+A private deterministic development API is deployed; no ingestion, forecasting, simulation, optimiser, advisory or account-action runtime exists yet. Later implementation PRs must convert the relevant controls into automated tests and operational evidence. Source behaviour, access conditions and data availability can change, so collectors need observable failure modes and a kill switch.
 
 ## Review triggers
 
-- First deployed service or public endpoint.
+- First ingestion, forecasting, AI/advisory service or public endpoint.
 - Authentication, user upload or MCP implementation.
 - First external data provider or automated retrieval.
 - First model that influences a recommendation.
