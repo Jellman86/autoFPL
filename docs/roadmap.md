@@ -487,9 +487,9 @@ The next development slices are:
    feature;
 5. keep exercising the implemented official-photo decision room and
    cutoff-aware dossiers against live captures as prior outcomes accumulate;
-6. build the point-in-time temporal feature table and compare
-   regularised/tabular and scraped-feature challengers only when they
-   can be evaluated against the retained incumbents;
+6. feed the implemented point-in-time player/team temporal feature table into
+   regularised/tabular challengers as real folds accumulate, adding scraped
+   features only when they can be evaluated against the retained incumbents;
 7. populate the implemented player cards with promoted forecasts only after a
    baseline has valid out-of-time evidence.
 
