@@ -61,9 +61,14 @@ public sealed class RequestLoggingTests
                 request.Value.Body,
                 Encoding.UTF8,
                 "application/json");
-            using HttpResponseMessage response = await client.PostAsync(
-                request.Key,
-                content,
+            using var message = new HttpRequestMessage(HttpMethod.Post, request.Key)
+            {
+                Content = content,
+            };
+            message.Headers.Accept.ParseAdd("application/json");
+            message.Headers.Accept.ParseAdd("text/event-stream");
+            using HttpResponseMessage response = await client.SendAsync(
+                message,
                 TestContext.Current.CancellationToken);
 
             string responseBody = await response.Content.ReadAsStringAsync(
@@ -152,6 +157,24 @@ public sealed class RequestLoggingTests
             string,
             (string Body, string Sentinel, HttpStatusCode ExpectedStatus)>(StringComparer.Ordinal)
         {
+            ["/mcp/"] = (
+                """
+                {
+                  "jsonrpc": "2.0",
+                  "id": 1,
+                  "method": "initialize",
+                  "params": {
+                    "protocolVersion": "2025-11-25",
+                    "capabilities": {},
+                    "clientInfo": {
+                      "name": "AUTOFPL_PRIVATE_SENTINEL_MCP",
+                      "version": "1.0"
+                    }
+                  }
+                }
+                """,
+                "AUTOFPL_PRIVATE_SENTINEL_MCP",
+                HttpStatusCode.OK),
             ["/api/v1/selections/drafts"] = (
                 Serialize(new { forecastArtifactId = SentinelPlayerId }),
                 sentinel,

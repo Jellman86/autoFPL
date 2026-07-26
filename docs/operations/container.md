@@ -16,6 +16,7 @@ Routes:
 | `GET` | `/api/v1/data/fpl-form-forecast/{captureId}/identity-coverage` | Reports deterministic cutoff-correct official player/fixture coverage for one immutable forecast capture |
 | `GET` | `/api/v1/data/historical-fpl/{seasonCode}` | Returns provenance and normalized coverage counts for the fixed prior-season archive; raw CSV and player rows remain private |
 | `GET` | `/api/v1/evidence/claims/{seasonCode}/{gameweek}?decisionCutoffUtc=...` | Returns immutable quarantined typed claims available by the requested cutoff; claims do not influence forecasts |
+| `POST` | `/mcp` | Stateless Streamable HTTP MCP endpoint; currently advertises only the anonymous read-only public player-dossier tool |
 | `GET` | `/openapi/v1.json` | Returns the generated OpenAPI 3.1 HTTP contract |
 | `GET` | `/healthz` | Liveness response: `{"status":"healthy"}` |
 | `GET` | `/readyz` | Returns ready only when the current SQLite migration is present |
@@ -36,6 +37,14 @@ Routes:
 | `POST` | `/api/v1/gameweek-outcomes/effective-score` | Scores the effective XI and normal captain multiplier from complete manual per-player points evidence |
 
 Decision-snapshot metadata request fields are exact and case-sensitive. Missing or `null` required fields, duplicate or undeclared fields, non-string field values and malformed payloads fail with 400. Present string values that are unsupported fail with the stable domain error code and 422. The request body is bounded to 16 KiB by Kestrel.
+
+The first MCP surface deliberately exposes only `get_player_dossier`. It reads
+the same cutoff-correct service as the dashboard and returns official identity,
+form, fixtures and quarantined public research claims as structured content.
+Its advertised annotations are read-only, non-destructive and closed-world.
+It cannot read a user's draft or locked selection, trigger collection, run a
+forecast or mutate any state. User-specific MCP tools remain absent until the
+owner identity and OAuth 2.1 resource-server boundary are implemented.
 
 Decision-snapshot writes require a complete valid squad and selection plus UTC observation, retrieval, availability, deadline and cutoff timestamps. Only the latest revision of each observation with `availableAtUtc <= decisionCutoffUtc` enters the materialised snapshot. Corrections must name the observation and snapshot they supersede; historical rows remain readable. Values are parameterised and decimal observations are stored canonically as text.
 

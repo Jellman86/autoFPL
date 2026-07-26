@@ -605,6 +605,12 @@ and the UI can compare at least three strategies plus the user's selection.
 
 Tracked initially by [#46](https://github.com/Jellman86/autoFPL/issues/46).
 
+**Status:** active — the application now hosts a stateless Streamable HTTP MCP
+endpoint with one typed anonymous `get_player_dossier` tool over the same
+cutoff-correct read service as the decision room. It is explicitly read-only,
+non-destructive and closed-world, and exposes no owner selection data. Plugin
+packaging, OAuth, user-specific tools and host integration tests remain.
+
 - Expose typed read-only tools for snapshots, player forecasts, candidate
   comparison, evidence and data freshness.
 - Package the MCP server as a ChatGPT/Codex plugin and test the subscription

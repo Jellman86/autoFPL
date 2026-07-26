@@ -15,6 +15,9 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 
+using ModelContextProtocol.Client;
+using ModelContextProtocol.Protocol;
+
 using Xunit;
 
 namespace AutoFpl.Api.Tests;
@@ -366,6 +369,44 @@ public sealed class OfficialFplOutcomeImporterTests
         Assert.Equal(
             JsonSerializer.Serialize(dossier),
             JsonSerializer.Serialize(served));
+
+        await using var transport = new HttpClientTransport(
+            new()
+            {
+                Endpoint = new Uri(api.BaseAddress!, "/mcp"),
+                Name = "autoFPL integration test",
+                TransportMode = HttpTransportMode.StreamableHttp,
+            },
+            api);
+        await using McpClient mcpClient = await McpClient.CreateAsync(
+            transport,
+            cancellationToken: TestContext.Current.CancellationToken);
+        McpClientTool tool = Assert.Single(
+            await mcpClient.ListToolsAsync(
+                cancellationToken: TestContext.Current.CancellationToken));
+        Assert.Equal("get_player_dossier", tool.Name);
+        Assert.True(tool.ProtocolTool.Annotations?.ReadOnlyHint);
+        Assert.False(tool.ProtocolTool.Annotations?.DestructiveHint);
+        Assert.False(tool.ProtocolTool.Annotations?.OpenWorldHint);
+        Assert.NotNull(tool.ProtocolTool.OutputSchema);
+
+        CallToolResult toolResult = await mcpClient.CallToolAsync(
+            "get_player_dossier",
+            new Dictionary<string, object?>
+            {
+                ["seasonCode"] = "2026-27",
+                ["gameweek"] = 2,
+                ["playerId"] = 1,
+            },
+            cancellationToken: TestContext.Current.CancellationToken);
+        Assert.NotEqual(true, toolResult.IsError);
+        Assert.NotNull(toolResult.StructuredContent);
+        OfficialFplPlayerDossierDocument? mcpDossier =
+            toolResult.StructuredContent.Value
+                .Deserialize<OfficialFplPlayerDossierDocument>();
+        Assert.Equal(
+            JsonSerializer.Serialize(dossier),
+            JsonSerializer.Serialize(mcpDossier));
     }
 
     [Fact]

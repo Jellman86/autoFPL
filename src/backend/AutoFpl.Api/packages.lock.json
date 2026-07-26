@@ -28,6 +28,15 @@
         "resolved": "2.11.0",
         "contentHash": "/ignjfdeKT2SGLIR7QEv19KnI0rvoxRG/TYDOZdK9EsWLjKK9IK8i1Mo5NRm9PRV3i64DzlTqnIflWvoyfljLg=="
       },
+      "ModelContextProtocol.AspNetCore": {
+        "type": "Direct",
+        "requested": "[1.4.1, )",
+        "resolved": "1.4.1",
+        "contentHash": "AoI+00fRxb0GAMMabMUgpV5QhNoa/F7I9oiVGHfJKtBZ4g/DEyoDdTS9Rp/m4e3MnXhhvSBeu2wTafhesdf52w==",
+        "dependencies": {
+          "ModelContextProtocol": "1.4.1"
+        }
+      },
       "SQLitePCLRaw.lib.e_sqlite3": {
         "type": "Direct",
         "requested": "[2.1.12, )",
@@ -40,6 +49,27 @@
         "contentHash": "TPCs0ldm7AWqcKmp6f/Xr+14sat7hx4rHfRlS4RgCURBH2thEWbAKEyX7cCWr63zVJVOJIJZTg2cBiUXa8ys6g==",
         "dependencies": {
           "SQLitePCLRaw.core": "2.1.11"
+        }
+      },
+      "Microsoft.Extensions.AI.Abstractions": {
+        "type": "Transitive",
+        "resolved": "10.5.2",
+        "contentHash": "Ei+YWV9Ybnps7pR1dgjlG29gelXEwZkhLVAcWmKe6HvXS6LNBYgSdWiY3Hk9OZXYtK34rv/NtLWBQYQGOBQYPQ=="
+      },
+      "ModelContextProtocol": {
+        "type": "Transitive",
+        "resolved": "1.4.1",
+        "contentHash": "mP5hvBpoWe5EbWBqHWD09A4Dy6Pq+/vV2dumOV4uegCZcg+yqf8q8wrxtuZ3EQyXEJn9jzsnoiI/qyfJAihlZQ==",
+        "dependencies": {
+          "ModelContextProtocol.Core": "1.4.1"
+        }
+      },
+      "ModelContextProtocol.Core": {
+        "type": "Transitive",
+        "resolved": "1.4.1",
+        "contentHash": "G/hOBZkJsvF3MSy0sOvXdxca5uRe2Sb4xk7xRuTWNZI45khVBjOLo6nSzGilctIICavNVxbxUF908fLYI9RxkQ==",
+        "dependencies": {
+          "Microsoft.Extensions.AI.Abstractions": "10.5.2"
         }
       },
       "SQLitePCLRaw.bundle_e_sqlite3": {
