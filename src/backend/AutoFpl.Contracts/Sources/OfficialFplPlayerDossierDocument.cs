@@ -47,7 +47,25 @@ public sealed record OfficialFplPlayerOutcomeDocument(
     [property: JsonPropertyName("saves")] int Saves,
     [property: JsonPropertyName("bonus")] int Bonus,
     [property: JsonPropertyName("yellowCards")] int YellowCards,
-    [property: JsonPropertyName("redCards")] int RedCards);
+    [property: JsonPropertyName("redCards")] int RedCards,
+    [property: JsonPropertyName("ownGoals")] int? OwnGoals,
+    [property: JsonPropertyName("penaltiesSaved")] int? PenaltiesSaved,
+    [property: JsonPropertyName("penaltiesMissed")] int? PenaltiesMissed,
+    [property: JsonPropertyName("bps")] int? Bps,
+    [property: JsonPropertyName("influence")] decimal? Influence,
+    [property: JsonPropertyName("creativity")] decimal? Creativity,
+    [property: JsonPropertyName("threat")] decimal? Threat,
+    [property: JsonPropertyName("ictIndex")] decimal? IctIndex,
+    [property: JsonPropertyName("clearancesBlocksInterceptions")]
+        int? ClearancesBlocksInterceptions,
+    [property: JsonPropertyName("recoveries")] int? Recoveries,
+    [property: JsonPropertyName("tackles")] int? Tackles,
+    [property: JsonPropertyName("defensiveContribution")] int? DefensiveContribution,
+    [property: JsonPropertyName("expectedGoals")] decimal? ExpectedGoals,
+    [property: JsonPropertyName("expectedAssists")] decimal? ExpectedAssists,
+    [property: JsonPropertyName("expectedGoalInvolvements")]
+        decimal? ExpectedGoalInvolvements,
+    [property: JsonPropertyName("expectedGoalsConceded")] decimal? ExpectedGoalsConceded);
 
 public sealed record OfficialFplPlayerFixtureDocument(
     [property: JsonPropertyName("fixtureId")] int FixtureId,

@@ -997,31 +997,48 @@ h3 {
   grid-template-columns: repeat(9, 1fr);
 }
 
-.form-stats > span {
+.underlying-stats {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(123, 255, 98, 0.035);
+}
+
+.form-stats > span,
+.underlying-stats > span {
   min-width: 0;
   padding: 0.45rem 0.25rem;
   border-right: 1px solid rgba(255, 255, 255, 0.08);
   text-align: center;
 }
 
-.form-stats > span:last-child {
+.form-stats > span:last-child,
+.underlying-stats > span:last-child {
   border-right: 0;
 }
 
 .form-stats small,
-.form-stats strong {
+.form-stats strong,
+.underlying-stats small,
+.underlying-stats strong {
   display: block;
 }
 
-.form-stats small {
+.form-stats small,
+.underlying-stats small {
   margin-bottom: 0.2rem;
   color: #739198;
   font-size: 0.46rem;
 }
 
-.form-stats strong {
+.form-stats strong,
+.underlying-stats strong {
   color: var(--white);
   font-size: 0.68rem;
+}
+
+.underlying-stats strong {
+  color: var(--lime);
 }
 
 .fixture-ribbon {

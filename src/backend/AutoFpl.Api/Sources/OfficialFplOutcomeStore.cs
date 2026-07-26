@@ -422,7 +422,23 @@ public sealed class OfficialFplOutcomeStore
                     saves,
                     bonus,
                     yellow_cards,
-                    red_cards
+                    red_cards,
+                    own_goals,
+                    penalties_saved,
+                    penalties_missed,
+                    bps,
+                    influence,
+                    creativity,
+                    threat,
+                    ict_index,
+                    clearances_blocks_interceptions,
+                    recoveries,
+                    tackles,
+                    defensive_contribution,
+                    expected_goals,
+                    expected_assists,
+                    expected_goal_involvements,
+                    expected_goals_conceded
                 )
                 VALUES (
                     $outcomeCaptureId,
@@ -438,7 +454,23 @@ public sealed class OfficialFplOutcomeStore
                     $saves,
                     $bonus,
                     $yellowCards,
-                    $redCards
+                    $redCards,
+                    $ownGoals,
+                    $penaltiesSaved,
+                    $penaltiesMissed,
+                    $bps,
+                    $influence,
+                    $creativity,
+                    $threat,
+                    $ictIndex,
+                    $clearancesBlocksInterceptions,
+                    $recoveries,
+                    $tackles,
+                    $defensiveContribution,
+                    $expectedGoals,
+                    $expectedAssists,
+                    $expectedGoalInvolvements,
+                    $expectedGoalsConceded
                 );
                 """;
             command.Parameters.AddWithValue("$outcomeCaptureId", outcomeCaptureId);
@@ -455,6 +487,30 @@ public sealed class OfficialFplOutcomeStore
             command.Parameters.AddWithValue("$bonus", player.Bonus);
             command.Parameters.AddWithValue("$yellowCards", player.YellowCards);
             command.Parameters.AddWithValue("$redCards", player.RedCards);
+            command.Parameters.AddWithValue("$ownGoals", player.OwnGoals);
+            command.Parameters.AddWithValue("$penaltiesSaved", player.PenaltiesSaved);
+            command.Parameters.AddWithValue("$penaltiesMissed", player.PenaltiesMissed);
+            command.Parameters.AddWithValue("$bps", player.Bps);
+            command.Parameters.AddWithValue("$influence", (double)player.Influence);
+            command.Parameters.AddWithValue("$creativity", (double)player.Creativity);
+            command.Parameters.AddWithValue("$threat", (double)player.Threat);
+            command.Parameters.AddWithValue("$ictIndex", (double)player.IctIndex);
+            command.Parameters.AddWithValue(
+                "$clearancesBlocksInterceptions",
+                player.ClearancesBlocksInterceptions);
+            command.Parameters.AddWithValue("$recoveries", player.Recoveries);
+            command.Parameters.AddWithValue("$tackles", player.Tackles);
+            command.Parameters.AddWithValue(
+                "$defensiveContribution",
+                player.DefensiveContribution);
+            command.Parameters.AddWithValue("$expectedGoals", (double)player.ExpectedGoals);
+            command.Parameters.AddWithValue("$expectedAssists", (double)player.ExpectedAssists);
+            command.Parameters.AddWithValue(
+                "$expectedGoalInvolvements",
+                (double)player.ExpectedGoalInvolvements);
+            command.Parameters.AddWithValue(
+                "$expectedGoalsConceded",
+                (double)player.ExpectedGoalsConceded);
             await command.ExecuteNonQueryAsync(cancellationToken);
         }
     }
