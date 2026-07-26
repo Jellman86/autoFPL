@@ -207,6 +207,7 @@ function selectPlayer(playerId, options = {}) {
   document.querySelector("#player-minutes").textContent = `${player.expectedMinutes}′`;
   document.querySelector("#player-range").textContent =
     `${player.lower80.toFixed(0)}–${player.upper80.toFixed(0)}`;
+  document.querySelector("#published-xpts").hidden = true;
   setDossierPortrait(player.name, player.photoUrl);
 
   const badge = document.querySelector("#player-badge");
@@ -405,6 +406,14 @@ async function loadPlayerDossier(player) {
       "ready",
       `Official capture #${dossier.selectedCaptureId} · evidence available ${formatCompactInstant(dossier.captureAvailableAtUtc)} · cutoff ${formatCompactInstant(dossier.decisionCutoffUtc)}`,
     );
+    const published = document.querySelector("#published-xpts");
+    if (dossier.publishedExpectedPoints) {
+      document.querySelector("#published-xpts-value").textContent =
+        `${Number(dossier.publishedExpectedPoints.expectedPoints).toFixed(1)} pts`;
+      published.hidden = false;
+    } else {
+      published.hidden = true;
+    }
     renderRecentForm(dossier.recentOutcomes);
     renderUpcomingFixtures(dossier.upcomingFixtures);
   } catch (error) {

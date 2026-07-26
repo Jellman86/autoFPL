@@ -43,6 +43,10 @@ public sealed class OfficialFplImporterTests
         OfficialFplCaptureDocument first =
             await importer.ImportLatestAsync(TestContext.Current.CancellationToken);
         await ClearPhotoIdentifierAsync(files.DatabasePath, first.CaptureId, playerId: 1);
+        await ClearExpectedPointsNextAsync(
+            files.DatabasePath,
+            first.CaptureId,
+            playerId: 1);
         OfficialFplCaptureDocument duplicate =
             await importer.ImportCapturedPayloadAsync(
                 bootstrap,
@@ -80,6 +84,12 @@ public sealed class OfficialFplImporterTests
         Assert.Equal(
             "101.jpg",
             await ReadPhotoIdentifierAsync(
+                files.DatabasePath,
+                first.CaptureId,
+                playerId: 1));
+        Assert.Equal(
+            4.2m,
+            await ReadExpectedPointsNextAsync(
                 files.DatabasePath,
                 first.CaptureId,
                 playerId: 1));
@@ -290,6 +300,30 @@ public sealed class OfficialFplImporterTests
     }
 
     [Fact]
+    public async Task Invalid_published_expected_points_is_rejected_before_any_rows_are_written()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = CreateOptions(files.DatabasePath);
+        await new DecisionSnapshotStore(options)
+            .MigrateAsync(TestContext.Current.CancellationToken);
+        var captureStore = new OfficialFplCaptureStore(options);
+        using var httpClient = new HttpClient(new StaticOfficialFplHandler(
+            CreateBootstrap(60, firstPlayerExpectedPointsNext: "not-a-number"),
+            CreateFixtures()));
+        var importer = new OfficialFplImporter(
+            httpClient,
+            captureStore,
+            new FixedTimeProvider(RetrievedAtUtc));
+
+        OfficialFplPayloadException exception =
+            await Assert.ThrowsAsync<OfficialFplPayloadException>(
+                () => importer.ImportLatestAsync(TestContext.Current.CancellationToken));
+
+        Assert.Contains("ep_next", exception.Message, StringComparison.Ordinal);
+        Assert.Null(await captureStore.GetLatestAsync(TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
     public async Task Non_json_response_is_rejected()
     {
         using var files = new TemporaryDatabaseFiles();
@@ -348,7 +382,8 @@ public sealed class OfficialFplImporterTests
     private static byte[] CreateBootstrap(
         int priceTenths,
         int firstPlayerTeamId = 1,
-        string? firstPlayerPhoto = null)
+        string? firstPlayerPhoto = null,
+        string? firstPlayerExpectedPointsNext = "4.2")
     {
         object[] players =
         [
@@ -361,7 +396,8 @@ public sealed class OfficialFplImporterTests
                 "Keeper",
                 "Keeper",
                 priceTenths,
-                firstPlayerPhoto),
+                firstPlayerPhoto,
+                firstPlayerExpectedPointsNext),
             Player(2, 102, 1, 2, "Bea", "Back", "Back", 50),
             Player(3, 103, 2, 3, "Mia", "Middle", "Middle", 75),
             Player(4, 104, 2, 4, "Fran", "Forward", "Forward", 80),
@@ -410,7 +446,8 @@ public sealed class OfficialFplImporterTests
         string secondName,
         string webName,
         int priceTenths,
-        string? photoIdentifier = null) =>
+        string? photoIdentifier = null,
+        string? expectedPointsNext = "3.0") =>
         new
         {
             id,
@@ -427,6 +464,7 @@ public sealed class OfficialFplImporterTests
             news_added = (string?)null,
             chance_of_playing_next_round = (int?)null,
             selected_by_percent = "10.5",
+            ep_next = expectedPointsNext,
             total_points = 10,
             minutes = 90,
             starts = 1,
@@ -472,6 +510,27 @@ public sealed class OfficialFplImporterTests
             await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken));
     }
 
+    private static async Task ClearExpectedPointsNextAsync(
+        string databasePath,
+        long captureId,
+        int playerId)
+    {
+        await using var connection = new SqliteConnection($"Data Source={databasePath}");
+        await connection.OpenAsync(TestContext.Current.CancellationToken);
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText =
+            """
+            UPDATE official_fpl_players
+            SET expected_points_next = NULL
+            WHERE capture_id = $captureId AND player_id = $playerId;
+            """;
+        command.Parameters.AddWithValue("$captureId", captureId);
+        command.Parameters.AddWithValue("$playerId", playerId);
+        Assert.Equal(
+            1,
+            await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken));
+    }
+
     private static async Task<string?> ReadPhotoIdentifierAsync(
         string databasePath,
         long captureId,
@@ -490,6 +549,29 @@ public sealed class OfficialFplImporterTests
         command.Parameters.AddWithValue("$playerId", playerId);
         return (string?)await command.ExecuteScalarAsync(
             TestContext.Current.CancellationToken);
+    }
+
+    private static async Task<decimal?> ReadExpectedPointsNextAsync(
+        string databasePath,
+        long captureId,
+        int playerId)
+    {
+        await using var connection = new SqliteConnection($"Data Source={databasePath}");
+        await connection.OpenAsync(TestContext.Current.CancellationToken);
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText =
+            """
+            SELECT expected_points_next
+            FROM official_fpl_players
+            WHERE capture_id = $captureId AND player_id = $playerId;
+            """;
+        command.Parameters.AddWithValue("$captureId", captureId);
+        command.Parameters.AddWithValue("$playerId", playerId);
+        object? result = await command.ExecuteScalarAsync(
+            TestContext.Current.CancellationToken);
+        return result is string value
+            ? decimal.Parse(value, System.Globalization.CultureInfo.InvariantCulture)
+            : null;
     }
 
     private static async Task AssertDatabaseShapeAsync(

@@ -266,7 +266,7 @@ public sealed class FplFormForecastImporterTests
         Assert.True(reader.IsDBNull(3));
         Assert.Equal(2, reader.GetInt32(4));
         Assert.Equal(1, reader.GetInt64(5));
-        Assert.Equal(13, reader.GetInt64(6));
+        Assert.Equal(14, reader.GetInt64(6));
     }
 
     private static DatabaseOptions CreateOptions(string databasePath)
@@ -324,6 +324,12 @@ public sealed class FplFormForecastImporterTests
                 yellow_cards INTEGER NOT NULL,
                 red_cards INTEGER NOT NULL,
                 PRIMARY KEY (outcome_capture_id, player_id)
+            );
+
+            CREATE TABLE official_fpl_players (
+                capture_id INTEGER NOT NULL,
+                player_id INTEGER NOT NULL,
+                PRIMARY KEY (capture_id, player_id)
             );
 
             CREATE TABLE fpl_form_forecast_captures (

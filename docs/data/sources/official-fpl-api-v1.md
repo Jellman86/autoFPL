@@ -96,7 +96,8 @@ normalised fields:
 - Gameweek ID, name, deadline and completion/current/next flags;
 - team ID, provider code, name and short name;
 - player ID/code, team, position, names, price, availability status/news,
-  official photo identifier, selection percentage, total points, minutes and
+  official photo identifier, selection percentage, the provider-published
+  next-Gameweek expected-points value when present, total points, minutes and
   starts; and
 - fixture ID, Gameweek, teams, kickoff, state and final/provisional score.
 
@@ -124,6 +125,10 @@ photo identifiers from the unchanged retained bootstrap bytes.
 
 - The endpoints are public read-only application resources, not a formally
   versioned provider API. Fields and behaviour may change without notice.
+- `ep_next` is retained as a provider-published point forecast tied to the
+  capture's recorded next Gameweek. It is an external challenger, not an
+  autoFPL prediction, calibrated distribution or promoted model. It may be
+  missing when the provider has no next event.
 - Pre-season cumulative player statistics can reflect prior-season context.
   No stored statistic is treated as a same-season feature until its semantics
   and decision-time availability are tested.

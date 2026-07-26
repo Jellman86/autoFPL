@@ -10,6 +10,8 @@ public sealed record OfficialFplPlayerDossierDocument(
     [property: JsonPropertyName("selectedCaptureId")] long SelectedCaptureId,
     [property: JsonPropertyName("captureAvailableAtUtc")] DateTimeOffset CaptureAvailableAtUtc,
     [property: JsonPropertyName("player")] OfficialFplPlayerIdentityDocument Player,
+    [property: JsonPropertyName("publishedExpectedPoints")]
+        OfficialFplPublishedExpectedPointsDocument? PublishedExpectedPoints,
     [property: JsonPropertyName("recentOutcomes")]
         IReadOnlyList<OfficialFplPlayerOutcomeDocument> RecentOutcomes,
     [property: JsonPropertyName("upcomingFixtures")]
@@ -29,6 +31,12 @@ public sealed record OfficialFplPlayerIdentityDocument(
     [property: JsonPropertyName("news")] string News,
     [property: JsonPropertyName("photoIdentifier")] string? PhotoIdentifier,
     [property: JsonPropertyName("photoUrl")] string? PhotoUrl);
+
+public sealed record OfficialFplPublishedExpectedPointsDocument(
+    [property: JsonPropertyName("sourceKey")] string SourceKey,
+    [property: JsonPropertyName("targetGameweek")] int TargetGameweek,
+    [property: JsonPropertyName("expectedPoints")] decimal ExpectedPoints,
+    [property: JsonPropertyName("evidenceStatus")] string EvidenceStatus);
 
 public sealed record OfficialFplPlayerOutcomeDocument(
     [property: JsonPropertyName("gameweek")] int Gameweek,

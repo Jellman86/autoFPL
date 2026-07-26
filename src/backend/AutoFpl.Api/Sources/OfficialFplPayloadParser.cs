@@ -203,6 +203,7 @@ internal static class OfficialFplPayloadParser
                     OptionalUtcInstant(value, "news_added"),
                     OptionalInt32(value, "chance_of_playing_next_round", 0, 100),
                     RequireDecimalString(value, "selected_by_percent", 0m, 100m),
+                    OptionalDecimalString(value, "ep_next", -20m, 100m),
                     RequireInt32(value, "total_points", int.MinValue, int.MaxValue),
                     RequireInt32(value, "minutes", 0, int.MaxValue),
                     RequireInt32(value, "starts", 0, int.MaxValue)));
@@ -427,6 +428,33 @@ internal static class OfficialFplPayloadParser
             || result > maximum)
         {
             throw Invalid($"{name} must be a decimal string in the supported range.");
+        }
+
+        return result;
+    }
+
+    private static decimal? OptionalDecimalString(
+        JsonElement value,
+        string name,
+        decimal minimum,
+        decimal maximum)
+    {
+        if (!value.TryGetProperty(name, out JsonElement property)
+            || property.ValueKind == JsonValueKind.Null)
+        {
+            return null;
+        }
+
+        if (property.ValueKind != JsonValueKind.String
+            || !decimal.TryParse(
+                property.GetString(),
+                NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign,
+                CultureInfo.InvariantCulture,
+                out decimal result)
+            || result < minimum
+            || result > maximum)
+        {
+            throw Invalid($"{name} must be null or a decimal string in the supported range.");
         }
 
         return result;
