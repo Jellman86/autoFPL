@@ -55,6 +55,20 @@ if (requestedEvidenceClaimImport && !runEvidenceClaimImport)
         "Usage: --import-evidence-claim <json-file>");
     return 2;
 }
+bool requestedResearchSourceCapture =
+    args.Length > 0
+    && StringComparer.Ordinal.Equals(args[0], "--capture-research-source");
+bool runResearchSourceCapture =
+    requestedResearchSourceCapture
+    && args.Length == 2
+    && !string.IsNullOrWhiteSpace(args[1])
+    && args[1].Length <= 100;
+if (requestedResearchSourceCapture && !runResearchSourceCapture)
+{
+    await Console.Error.WriteLineAsync(
+        "Usage: --capture-research-source <source-key>");
+    return 2;
+}
 bool requestedFplFormForecastEvaluation =
     args.Length > 0
     && StringComparer.Ordinal.Equals(args[0], "--evaluate-fpl-form-forecast");
@@ -108,6 +122,7 @@ bool runNonWebCommand =
     || runOfficialFplImport
     || runFplFormForecastImport
     || runEvidenceClaimImport
+    || runResearchSourceCapture
     || runFplFormForecastEvaluation
     || runOfficialExpectedPointsEvaluation
     || runOfficialFplOutcomeImport;
@@ -174,6 +189,10 @@ builder.Services.AddSingleton(serviceProvider =>
         serviceProvider.GetRequiredService<DatabaseOptions>(),
         serviceProvider.GetRequiredService<TimeProvider>()));
 builder.Services.AddSingleton<EvidenceClaimImporter>();
+builder.Services.AddSingleton(serviceProvider =>
+    new ResearchSourceSnapshotStore(
+        serviceProvider.GetRequiredService<DatabaseOptions>(),
+        serviceProvider.GetRequiredService<TimeProvider>()));
 FplFormForecastPollingOptions fplFormPollingOptions =
     FplFormForecastPollingOptions.FromConfiguration(builder.Configuration);
 builder.Services.AddSingleton(fplFormPollingOptions);
@@ -241,7 +260,35 @@ builder.Services
             MaxConnectionsPerServer = 1,
             PooledConnectionLifetime = TimeSpan.FromMinutes(10),
         });
+builder.Services
+    .AddHttpClient<SpiderMcpClient>(
+        (serviceProvider, client) =>
+        {
+            string configured =
+                serviceProvider.GetRequiredService<IConfiguration>()[
+                    "AutoFpl:Research:SpiderMcpUrl"]
+                ?? "http://spider-mcp:8080/mcp";
+            if (!Uri.TryCreate(configured, UriKind.Absolute, out Uri? endpoint)
+                || endpoint.Scheme is not ("http" or "https"))
+            {
+                throw new InvalidOperationException(
+                    "AutoFpl:Research:SpiderMcpUrl must be an absolute HTTP(S) URL.");
+            }
+
+            client.BaseAddress = endpoint;
+            client.Timeout = TimeSpan.FromSeconds(150);
+        })
+    .ConfigurePrimaryHttpMessageHandler(
+        () => new SocketsHttpHandler
+        {
+            AllowAutoRedirect = false,
+            AutomaticDecompression = DecompressionMethods.None,
+            ConnectTimeout = TimeSpan.FromSeconds(5),
+            MaxConnectionsPerServer = 1,
+            PooledConnectionLifetime = TimeSpan.FromMinutes(10),
+        });
 builder.Services.AddTransient<FplFormForecastImporter>();
+builder.Services.AddTransient<ResearchSourceSnapshotImporter>();
 if (fplFormPollingOptions.Enabled)
 {
     builder.Services.AddHostedService<FplFormForecastPoller>();
@@ -363,6 +410,27 @@ if (runEvidenceClaimImport)
             or FileNotFoundException
             or InvalidDataException
             or JsonException)
+    {
+        await Console.Error.WriteLineAsync(exception.Message);
+        return 2;
+    }
+}
+
+if (runResearchSourceCapture)
+{
+    try
+    {
+        ResearchSourceSnapshotDocument snapshot =
+            await app.Services
+                .GetRequiredService<ResearchSourceSnapshotImporter>()
+                .ImportAsync(args[1]);
+        await Console.Out.WriteLineAsync(
+            JsonSerializer.Serialize(
+                snapshot,
+                new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+        return 0;
+    }
+    catch (ResearchSourceSnapshotException exception)
     {
         await Console.Error.WriteLineAsync(exception.Message);
         return 2;
@@ -710,6 +778,21 @@ app.MapGet(
     .WithTags("Evidence")
     .Produces<EvidenceClaimSetDocument>()
     .ProducesValidationProblem();
+app.MapGet(
+    "/api/v1/research/sources",
+    async (
+        ResearchSourceSnapshotStore store,
+        CancellationToken cancellationToken) =>
+        Results.Ok(await store.GetInventoryAsync(cancellationToken)))
+    .WithName("GetResearchSourceInventory")
+    .WithSummary(
+        "Read the fixed shadow-source inventory and latest immutable capture metadata.")
+    .WithDescription(
+        "The inventory deliberately spans official availability, a specialist predicted "
+        + "lineup and a dependent consensus. Captures remain shadow-only and expose no "
+        + "third-party article text or forecast influence.")
+    .WithTags("Research")
+    .Produces<ResearchSourceInventoryDocument>();
 app.MapGet(
     "/api/v1/data/fpl-form-forecast/status",
     async (

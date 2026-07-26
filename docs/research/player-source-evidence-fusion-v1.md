@@ -22,6 +22,13 @@ candidate for sparse and new-player histories. Direct tabular and position
 ensembles remain strong challengers rather than being excluded by the
 generative design.
 
+Durable player ability does not reset with the official new-season totals.
+Cutoff-safe prior-season match histories, current-season matches, transfers,
+team/manager changes and injury/return-to-play chronology are candidate inputs.
+Rolling 1/3/5/10-match, exponentially decayed and long-run partially pooled
+states are compared inside temporal training windows; no fixed lookback is
+assumed best.
+
 ## Human and published evidence
 
 Public prose, selections and forecasts enter as immutable typed claims, never
@@ -101,9 +108,10 @@ season.
 3. **Implemented as a quarantine boundary:** persist immutable typed claims
    with official player identity and cutoff-safe reads. Source adapters,
    outcome scoring and promotion remain.
-4. Inventory and shadow-capture the smallest useful official club/manager,
-   predicted-lineup, quantitative and named-expert source set through Quark's
-   existing research services.
+4. **Implemented for three diverse public pages:** inventory and shadow-capture
+   official availability, specialist predicted-lineup and dependent-consensus
+   sources through Quark's existing Spider service. Quantitative reproduction,
+   named experts, extraction and scoring remain.
 5. Score sources by target and lead time, then implement same-fold no-source
    versus source-feature ablations.
 6. Add Bayesian component updates and/or predictive-distribution stacking only
