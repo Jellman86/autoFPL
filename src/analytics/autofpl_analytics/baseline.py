@@ -338,12 +338,11 @@ def _require_schema(connection: sqlite3.Connection) -> None:
             "The database does not contain autoFPL migrations.",
         ) from exception
     version = None if row is None else row["version"]
-    if version != REQUIRED_DATABASE_VERSION:
+    if version is None or version < REQUIRED_DATABASE_VERSION:
         raise EvaluationError(
             "database.schema-version",
-            "Baseline evaluation requires autoFPL database version {}.".format(
-                REQUIRED_DATABASE_VERSION
-            ),
+            "Baseline evaluation requires autoFPL database version {} or "
+            "newer.".format(REQUIRED_DATABASE_VERSION),
         )
 
 

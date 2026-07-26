@@ -211,11 +211,11 @@ def _require_schema(connection: sqlite3.Connection) -> None:
             "The database does not contain autoFPL migrations.",
         ) from exception
     version = None if row is None else row["version"]
-    if version != REQUIRED_DATABASE_VERSION:
+    if version is None or version < REQUIRED_DATABASE_VERSION:
         raise FeatureTableError(
             "database.schema-version",
             "Temporal features require autoFPL database version "
-            f"{REQUIRED_DATABASE_VERSION}.",
+            f"{REQUIRED_DATABASE_VERSION} or newer.",
         )
 
 
