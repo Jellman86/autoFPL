@@ -23,7 +23,7 @@ Provider references:
 ## Existing research-stack collection boundary
 
 The operator importer asks Quark's existing isolated Playwright MCP service to
-navigate once to:
+fetch one fixed public page through its request context:
 
 - `https://fplform.com/fpl-predicted-points`
 
@@ -33,17 +33,21 @@ the hardened Quark research-egress policy. The caller cannot provide a URL,
 script, proxy, header, cookie or credential. autoFPL verifies the MCP protocol
 and Playwright server identity, opens one isolated session, invokes only
 one versioned hard-coded `browser_run_code_unsafe` call, then closes the page
-and deletes the session. Navigation and extraction happen in that single call
-so Playwright MCP does not attempt to create a huge accessibility snapshot of
-the provider page.
+and deletes the session. The code does not render or execute the provider page:
+full browser navigation exhausts the Node process on the unusually large
+document. It reads the server-rendered response through Playwright's existing
+proxy-aware request context instead.
 
 The page currently embeds roughly 105 MB of multi-season data. The extraction
-function parses that data inside the existing browser process and returns only
-the active Gameweek rows plus a SHA-256 digest of the complete decoded
-`data-players` payload. The bounded MCP response is at most 6 MiB and the
+function first reads the small `data-nw` sentinel, so the off-season path never
+parses the embedded player history. For an active Gameweek it scans one encoded
+top-level player object at a time, decodes and parses only that bounded object,
+and returns only active-Gameweek rows plus a chunked SHA-256 digest of the
+complete encoded `data-players` attribute. It never constructs the complete
+decoded player object graph. The bounded MCP response is at most 6 MiB and the
 retained canonical evidence is at most 4 MiB. Spider MCP remains the appropriate
 transport for bounded news/article text, but its intentional 128 KiB result cap
-means it is not the right transport for this structured export.
+means it is not the right transport for this structured payload.
 
 Run one capture with:
 
@@ -74,10 +78,11 @@ a Gameweek comparison only when that availability time is no later than the
 official Gameweek deadline.
 
 SHA-256 over the canonical retained active-Gameweek evidence is the immutable
-capture identity. A second SHA-256 identifies the provider's complete decoded
-embedded player payload. The capture records transport
-`playwright-mcp/v1` and extraction version `fpl-form-dom/v1`; legacy direct-HTTP
-test/early-development rows remain distinguishable. Identical active evidence
+capture identity. A second SHA-256 identifies the provider's complete encoded
+embedded player attribute. The capture records transport
+`playwright-mcp/v1` and extraction version `fpl-form-stream-extract/v2`; legacy
+direct-HTTP and v1 MCP test/early-development rows remain distinguishable.
+Identical active evidence
 returns the earliest stored capture. Changed evidence creates a new immutable
 capture. Historical predictions visible in a page retrieved after their
 deadlines are not backdated or treated as point-in-time evidence.

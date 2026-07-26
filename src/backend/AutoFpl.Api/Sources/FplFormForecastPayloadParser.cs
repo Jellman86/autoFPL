@@ -9,7 +9,7 @@ internal static class FplFormForecastPayloadParser
     private const int MaximumPlayers = 2_000;
     private const int MaximumPredictions = 4_000;
     private const int MaximumExtractedEvidenceBytes = 4 * 1024 * 1024;
-    private const string ExtractedSchemaVersion = "fpl-form-dom/v1";
+    private const string ExtractedSchemaVersion = "fpl-form-stream-extract/v2";
     private const string ForecastUrl =
         "https://fplform.com/fpl-predicted-points";
     private const string DirectTransport = "direct-http/v1";

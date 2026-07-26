@@ -15,96 +15,224 @@ public sealed class PlaywrightMcpFplFormCollector
     private const string CollectionCode =
         """
         async (page) => {
-          await page.goto(
-            "https://fplform.com/fpl-predicted-points",
-            { waitUntil: "domcontentloaded", timeout: 30000 });
-          return await page.evaluate(async () => {
-            const prefix = "AUTOFPL_FPL_FORM_V1:";
-            const node = document.querySelector("#php-data");
-            if (!node) {
-              throw new Error("FPL Form page is missing #php-data");
+          const prefix = "AUTOFPL_FPL_FORM_V1:";
+          const sourceUrl = "https://fplform.com/fpl-predicted-points";
+          const response = await page.request.get(
+            sourceUrl,
+            { timeout: 30000 });
+          if (response.status() !== 200 || response.url() !== sourceUrl) {
+            throw new Error("FPL Form returned an unexpected response");
+          }
+
+          let html = await response.text();
+          await response.dispose();
+
+          const readAttribute = name => {
+            const marker = `${name}="`;
+            const start = html.indexOf(marker);
+            if (start < 0) {
+              throw new Error(`FPL Form page is missing ${name}`);
             }
 
-            const parsedGameweek = Number(node.getAttribute("data-nw"));
-            const gameweek = Number.isInteger(parsedGameweek) ? parsedGameweek : 99;
-            if (gameweek < 1 || gameweek > 38) {
-              return prefix + JSON.stringify({
-                schemaVersion: "fpl-form-dom/v1",
-                sourceUrl: location.href,
-                season: 20,
-                gameweek,
-                providerPayloadSha256: null,
-                predictions: []
+            const valueStart = start + marker.length;
+            const end = html.indexOf('"', valueStart);
+            if (end < 0) {
+              throw new Error(`FPL Form page contains unterminated ${name}`);
+            }
+
+            return html.slice(valueStart, end);
+          };
+
+          const parsedGameweek = Number(readAttribute("data-nw"));
+          const gameweek = Number.isInteger(parsedGameweek) ? parsedGameweek : 99;
+          if (gameweek < 1 || gameweek > 38) {
+            return prefix + JSON.stringify({
+              schemaVersion: "fpl-form-stream-extract/v2",
+              sourceUrl,
+              season: 20,
+              gameweek,
+              providerPayloadSha256: null,
+              predictions: []
+            });
+          }
+
+          const encodedPlayers = readAttribute("data-players");
+          html = "";
+          if (!encodedPlayers.startsWith("{")
+              || !encodedPlayers.endsWith("}")) {
+            throw new Error("FPL Form data-players is not an object");
+          }
+
+          const entities = new Map([
+            ["&quot;", '"'],
+            ["&amp;", "&"],
+            ["&lt;", "<"],
+            ["&gt;", ">"],
+            ["&apos;", "'"],
+            ["&#39;", "'"],
+            ["&#039;", "'"]
+          ]);
+          const supportedEntity = /&(?:quot|amp|lt|gt|apos|#39|#039);/g;
+          const anyEntity = /&(?:#[0-9]+|[A-Za-z]+);/g;
+          const decodeObject = encoded => {
+            for (const match of encoded.matchAll(anyEntity)) {
+              if (!entities.has(match[0])) {
+                throw new Error("FPL Form data-players contains an unsupported entity");
+              }
+            }
+
+            return encoded.replace(
+              supportedEntity,
+              value => entities.get(value));
+          };
+
+          const visitPlayers = visitor => {
+            let depth = 0;
+            let inString = false;
+            let playerStart = -1;
+            let sourcePlayerId = 0;
+            let count = 0;
+            for (let index = 0; index < encodedPlayers.length; index += 1) {
+              if (encodedPlayers.startsWith("&quot;", index)) {
+                let slashCount = 0;
+                for (let cursor = index - 1;
+                  cursor >= 0 && encodedPlayers[cursor] === "\\";
+                  cursor -= 1) {
+                  slashCount += 1;
+                }
+
+                if (slashCount % 2 === 0) {
+                  inString = !inString;
+                }
+
+                index += "&quot;".length - 1;
+                continue;
+              }
+
+              if (inString) {
+                continue;
+              }
+
+              const token = encodedPlayers[index];
+              if (token === "{") {
+                if (depth === 1) {
+                  const prefixStart = Math.max(0, index - 64);
+                  const property = /&quot;([0-9]{1,10})&quot;\s*:\s*$/
+                    .exec(encodedPlayers.slice(prefixStart, index));
+                  sourcePlayerId = property === null
+                    ? 0
+                    : Number(property[1]);
+                  if (!Number.isInteger(sourcePlayerId)
+                      || sourcePlayerId < 1) {
+                    throw new Error("FPL Form contains an invalid player identity");
+                  }
+
+                  playerStart = index;
+                }
+
+                depth += 1;
+                continue;
+              }
+
+              if (token !== "}") {
+                continue;
+              }
+
+              depth -= 1;
+              if (depth < 0) {
+                throw new Error("FPL Form data-players is structurally invalid");
+              }
+
+              if (depth === 1 && playerStart >= 0) {
+                const player = JSON.parse(
+                  decodeObject(encodedPlayers.slice(playerStart, index + 1)));
+                visitor(sourcePlayerId, player);
+                count += 1;
+                playerStart = -1;
+                sourcePlayerId = 0;
+              }
+            }
+
+            if (depth !== 0 || inString || playerStart >= 0 || count === 0) {
+              throw new Error("FPL Form data-players is structurally invalid");
+            }
+
+            return count;
+          };
+
+          let season = 0;
+          const playerCount = visitPlayers((_sourcePlayerId, player) => {
+            for (const candidate of Object.keys(player.fixtures ?? {})) {
+              const parsed = Number(candidate);
+              if (Number.isInteger(parsed) && parsed >= 20 && parsed <= 99) {
+                season = Math.max(season, parsed);
+              }
+            }
+          });
+          if (season === 0 || playerCount > 2000) {
+            throw new Error("FPL Form data-players has unsupported dimensions");
+          }
+
+          const predictions = [];
+          const secondPassCount = visitPlayers((sourcePlayerId, player) => {
+            const fixtures =
+              player.fixtures?.[String(season)]?.[String(gameweek)] ?? {};
+            for (const [kickoffIdentity, prediction] of Object.entries(fixtures)) {
+              if (prediction.predicted_points === null
+                  || prediction.predicted_points === undefined) {
+                continue;
+              }
+
+              if (Number(prediction.season) !== season
+                  || Number(prediction.event) !== gameweek
+                  || String(prediction.kickoff) !== kickoffIdentity) {
+                throw new Error("FPL Form prediction identity is inconsistent");
+              }
+
+              predictions.push({
+                sourcePlayerId,
+                fixtureId: Number(prediction.fixture),
+                playerName: player.name,
+                teamName: player.team_name,
+                position: player.position,
+                kickoffLocal: prediction.kickoff,
+                predictedPoints: String(prediction.predicted_points),
+                appearanceProbability:
+                  prediction.probability_of_playing === null
+                  || prediction.probability_of_playing === undefined
+                    ? null
+                    : String(prediction.probability_of_playing)
               });
             }
+          });
+          if (secondPassCount !== playerCount
+              || predictions.length < 1
+              || predictions.length > 4000) {
+            throw new Error("FPL Form predictions have unsupported dimensions");
+          }
 
-            const rawPlayers = node.getAttribute("data-players");
-            if (!rawPlayers) {
-              throw new Error("FPL Form page is missing data-players");
-            }
+          predictions.sort(
+            (left, right) =>
+              left.sourcePlayerId - right.sourcePlayerId
+              || left.fixtureId - right.fixtureId);
+          const { createHash } = await import("node:crypto");
+          const hash = createHash("sha256");
+          const hashChunkSize = 1024 * 1024;
+          for (let offset = 0;
+            offset < encodedPlayers.length;
+            offset += hashChunkSize) {
+            hash.update(
+              encodedPlayers.slice(offset, offset + hashChunkSize),
+              "utf8");
+          }
 
-            const players = JSON.parse(rawPlayers);
-            let season = 0;
-            for (const player of Object.values(players)) {
-              for (const candidate of Object.keys(player.fixtures ?? {})) {
-                const parsed = Number(candidate);
-                if (Number.isInteger(parsed) && parsed >= 20 && parsed <= 99) {
-                  season = Math.max(season, parsed);
-                }
-              }
-            }
-
-            const predictions = [];
-            for (const [sourcePlayerId, player] of Object.entries(players)) {
-              const fixtures =
-                player.fixtures?.[String(season)]?.[String(gameweek)] ?? {};
-              for (const [kickoffIdentity, prediction] of Object.entries(fixtures)) {
-                if (prediction.predicted_points === null
-                    || prediction.predicted_points === undefined) {
-                  continue;
-                }
-
-                if (Number(prediction.season) !== season
-                    || Number(prediction.event) !== gameweek
-                    || String(prediction.kickoff) !== kickoffIdentity) {
-                  throw new Error("FPL Form prediction identity is inconsistent");
-                }
-
-                predictions.push({
-                  sourcePlayerId: Number(sourcePlayerId),
-                  fixtureId: Number(prediction.fixture),
-                  playerName: player.name,
-                  teamName: player.team_name,
-                  position: player.position,
-                  kickoffLocal: prediction.kickoff,
-                  predictedPoints: String(prediction.predicted_points),
-                  appearanceProbability:
-                    prediction.probability_of_playing === null
-                    || prediction.probability_of_playing === undefined
-                      ? null
-                      : String(prediction.probability_of_playing)
-                });
-              }
-            }
-
-            predictions.sort(
-              (left, right) =>
-                left.sourcePlayerId - right.sourcePlayerId
-                || left.fixtureId - right.fixtureId);
-            const digest = await crypto.subtle.digest(
-              "SHA-256",
-              new TextEncoder().encode(rawPlayers));
-            const providerPayloadSha256 = Array.from(new Uint8Array(digest))
-              .map(value => value.toString(16).padStart(2, "0"))
-              .join("");
-            return prefix + JSON.stringify({
-              schemaVersion: "fpl-form-dom/v1",
-              sourceUrl: location.href,
-              season,
-              gameweek,
-              providerPayloadSha256,
-              predictions
-            });
+          return prefix + JSON.stringify({
+            schemaVersion: "fpl-form-stream-extract/v2",
+            sourceUrl,
+            season,
+            gameweek,
+            providerPayloadSha256: hash.digest("hex"),
+            predictions
           });
         }
         """;

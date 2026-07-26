@@ -63,7 +63,7 @@ public sealed class FplFormForecastImporterTests
         Assert.Equal(RetrievedAtUtc, first.AvailableAtUtc);
         Assert.Equal(64, first.ContentSha256.Length);
         Assert.Equal("playwright-mcp/v1", first.Transport);
-        Assert.Equal("fpl-form-dom/v1", first.ExtractionVersion);
+        Assert.Equal("fpl-form-stream-extract/v2", first.ExtractionVersion);
         Assert.Equal(new string('a', 64), first.ProviderPayloadSha256);
         Assert.Equal(2, first.PlayerCount);
         Assert.Equal(2, first.FixturePredictionCount);
@@ -451,7 +451,7 @@ public sealed class FplFormForecastImporterTests
         return JsonSerializer.SerializeToUtf8Bytes(
             new
             {
-                schemaVersion = "fpl-form-dom/v1",
+                schemaVersion = "fpl-form-stream-extract/v2",
                 sourceUrl = FplFormForecastImporter.ForecastUri.AbsoluteUri,
                 season = 26,
                 gameweek = nextGameweek,
@@ -634,9 +634,10 @@ public sealed class FplFormForecastImporterTests
                     FplFormForecastImporter.ForecastUri.AbsoluteUri,
                     code,
                     StringComparison.Ordinal);
-                Assert.Contains("page.goto", code, StringComparison.Ordinal);
-                Assert.Contains("#php-data", code, StringComparison.Ordinal);
-                Assert.Contains("crypto.subtle.digest", code, StringComparison.Ordinal);
+                Assert.Contains("page.request.get", code, StringComparison.Ordinal);
+                Assert.Contains("response.dispose", code, StringComparison.Ordinal);
+                Assert.Contains("visitPlayers", code, StringComparison.Ordinal);
+                Assert.Contains("hashChunkSize", code, StringComparison.Ordinal);
                 Assert.Contains("prediction.season", code, StringComparison.Ordinal);
                 Assert.Contains("kickoffIdentity", code, StringComparison.Ordinal);
                 string extracted = Encoding.UTF8.GetString(evidence);
