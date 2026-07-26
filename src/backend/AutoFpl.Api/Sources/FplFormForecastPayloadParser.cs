@@ -144,7 +144,7 @@ internal static class FplFormForecastPayloadParser
             int gameweek = RequireInteger(root, "gameweek", 1, 99);
             if (gameweek is < 1 or > 38)
             {
-                throw Invalid("FPL Form has no active next-Gameweek forecast.");
+                throw Unavailable();
             }
 
             int season = RequireInteger(root, "season", 20, 99);
@@ -284,7 +284,7 @@ internal static class FplFormForecastPayloadParser
             || consumed != raw.Length
             || result is < 1 or > 38)
         {
-            throw Invalid("FPL Form has no active next-Gameweek forecast.");
+            throw Unavailable();
         }
 
         return result;
@@ -686,17 +686,31 @@ internal static class FplFormForecastPayloadParser
         string? AppearanceProbability);
 
     private static FplFormForecastPayloadException Invalid(string message) => new(message);
+
+    private static FplFormForecastPayloadException Unavailable() =>
+        new(
+            "FPL Form has no active next-Gameweek forecast.",
+            "provider-no-active-gameweek");
 }
 
 public sealed class FplFormForecastPayloadException : Exception
 {
+    public string Code { get; }
+
     public FplFormForecastPayloadException(string message)
+        : this(message, "invalid-evidence")
+    {
+    }
+
+    public FplFormForecastPayloadException(string message, string code)
         : base(message)
     {
+        Code = code;
     }
 
     public FplFormForecastPayloadException(string message, Exception innerException)
         : base(message, innerException)
     {
+        Code = "invalid-evidence";
     }
 }

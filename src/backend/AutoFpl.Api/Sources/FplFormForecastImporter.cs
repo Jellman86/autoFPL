@@ -27,7 +27,22 @@ public sealed class FplFormForecastImporter
     public async Task<FplFormForecastCaptureDocument> ImportLatestAsync(
         CancellationToken cancellationToken = default)
     {
-        byte[] evidence = await _collector.CaptureAsync(cancellationToken);
+        byte[] evidence;
+        try
+        {
+            evidence = await _collector.CaptureAsync(cancellationToken);
+        }
+        catch (FplFormForecastPayloadException)
+        {
+            await _store.RecordCheckAsync(
+                _timeProvider.GetUtcNow(),
+                "failed",
+                "collection-failed",
+                null,
+                cancellationToken);
+            throw;
+        }
+
         return await ImportExtractedEvidenceAsync(
             evidence,
             _timeProvider.GetUtcNow(),
@@ -41,9 +56,28 @@ public sealed class FplFormForecastImporter
     {
         ArgumentNullException.ThrowIfNull(evidence);
         ValidateRetrievalTime(retrievedAtUtc);
-        FplFormForecastPayload payload =
-            FplFormForecastPayloadParser.ParseExtractedEvidence(evidence);
-        return await _store.SaveAsync(payload, retrievedAtUtc, cancellationToken);
+        try
+        {
+            FplFormForecastPayload payload =
+                FplFormForecastPayloadParser.ParseExtractedEvidence(evidence);
+            FplFormForecastCaptureDocument capture =
+                await _store.SaveAsync(payload, retrievedAtUtc, cancellationToken);
+            await _store.RecordCheckAsync(
+                retrievedAtUtc,
+                "captured",
+                null,
+                capture.CaptureId,
+                cancellationToken);
+            return capture;
+        }
+        catch (FplFormForecastPayloadException exception)
+        {
+            await RecordPayloadFailureAsync(
+                exception,
+                retrievedAtUtc,
+                cancellationToken);
+            throw;
+        }
     }
 
     public async Task<FplFormForecastCaptureDocument> ImportCapturedHtmlAsync(
@@ -60,9 +94,39 @@ public sealed class FplFormForecastImporter
                 "FPL Form response exceeds the supported response size.");
         }
 
-        FplFormForecastPayload payload = FplFormForecastPayloadParser.Parse(html);
-        return await _store.SaveAsync(payload, retrievedAtUtc, cancellationToken);
+        try
+        {
+            FplFormForecastPayload payload = FplFormForecastPayloadParser.Parse(html);
+            FplFormForecastCaptureDocument capture =
+                await _store.SaveAsync(payload, retrievedAtUtc, cancellationToken);
+            await _store.RecordCheckAsync(
+                retrievedAtUtc,
+                "captured",
+                null,
+                capture.CaptureId,
+                cancellationToken);
+            return capture;
+        }
+        catch (FplFormForecastPayloadException exception)
+        {
+            await RecordPayloadFailureAsync(
+                exception,
+                retrievedAtUtc,
+                cancellationToken);
+            throw;
+        }
     }
+
+    private Task RecordPayloadFailureAsync(
+        FplFormForecastPayloadException exception,
+        DateTimeOffset checkedAtUtc,
+        CancellationToken cancellationToken) =>
+        _store.RecordCheckAsync(
+            checkedAtUtc,
+            exception.Code == "provider-no-active-gameweek" ? "waiting" : "failed",
+            exception.Code,
+            null,
+            cancellationToken);
 
     private static void ValidateRetrievalTime(DateTimeOffset retrievedAtUtc)
     {

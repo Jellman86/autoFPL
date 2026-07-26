@@ -153,6 +153,96 @@ public sealed class FplFormForecastStore
             : null;
     }
 
+    public async Task<FplFormForecastStatusDocument> GetStatusAsync(
+        CancellationToken cancellationToken = default)
+    {
+        FplFormForecastCaptureDocument? latestCapture =
+            await GetLatestAsync(cancellationToken);
+
+        await using var connection = new SqliteConnection(_options.ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText =
+            """
+            SELECT checked_at_utc, status, reason_code
+            FROM fpl_form_forecast_checks
+            ORDER BY checked_at_utc DESC, check_id DESC
+            LIMIT 1;
+            """;
+        await using SqliteDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
+        if (!await reader.ReadAsync(cancellationToken))
+        {
+            return latestCapture is null
+                ? new FplFormForecastStatusDocument(
+                    "1.0",
+                    FplFormForecastImporter.SourceKey,
+                    "not-checked",
+                    null,
+                    null,
+                    null)
+                : new FplFormForecastStatusDocument(
+                    "1.0",
+                    FplFormForecastImporter.SourceKey,
+                    "captured",
+                    latestCapture.AvailableAtUtc,
+                    null,
+                    latestCapture);
+        }
+
+        return new FplFormForecastStatusDocument(
+            "1.0",
+            FplFormForecastImporter.SourceKey,
+            reader.GetString(1),
+            DateTimeOffset.Parse(
+                reader.GetString(0),
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.RoundtripKind),
+            reader.IsDBNull(2) ? null : reader.GetString(2),
+            latestCapture);
+    }
+
+    internal async Task RecordCheckAsync(
+        DateTimeOffset checkedAtUtc,
+        string status,
+        string? reasonCode,
+        long? captureId,
+        CancellationToken cancellationToken)
+    {
+        await using var connection = new SqliteConnection(_options.ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText =
+            """
+            INSERT INTO fpl_form_forecast_checks (
+                source_key,
+                checked_at_utc,
+                status,
+                reason_code,
+                capture_id,
+                created_at_utc
+            )
+            VALUES (
+                $sourceKey,
+                $checkedAtUtc,
+                $status,
+                $reasonCode,
+                $captureId,
+                $createdAtUtc
+            );
+            """;
+        command.Parameters.AddWithValue("$sourceKey", FplFormForecastImporter.SourceKey);
+        command.Parameters.AddWithValue("$checkedAtUtc", FormatUtc(checkedAtUtc));
+        command.Parameters.AddWithValue("$status", status);
+        command.Parameters.AddWithValue(
+            "$reasonCode",
+            reasonCode is null ? DBNull.Value : reasonCode);
+        command.Parameters.AddWithValue(
+            "$captureId",
+            captureId is null ? DBNull.Value : captureId.Value);
+        command.Parameters.AddWithValue("$createdAtUtc", FormatUtc(checkedAtUtc));
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
     private async Task<FplFormForecastCaptureDocument?> GetAsync(
         long captureId,
         CancellationToken cancellationToken)

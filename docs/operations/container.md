@@ -11,6 +11,7 @@ Routes:
 | `GET` | `/` | Renders the responsive Gameweek decision room |
 | `GET` | `/api/v1/advice/demo` | Returns the typed synthetic forecast fixture joined to persisted snapshot metadata/state |
 | `GET` | `/api/v1/data/fpl-form-forecast/latest` | Returns provenance and counts for the latest immutable public FPL Form forecast capture |
+| `GET` | `/api/v1/data/fpl-form-forecast/status` | Distinguishes not checked, provider waiting, collection failure and retained forecast states |
 | `GET` | `/api/v1/data/fpl-form-forecast/{captureId}/identity-coverage` | Reports deterministic cutoff-correct official player/fixture coverage for one immutable forecast capture |
 | `GET` | `/openapi/v1.json` | Returns the generated OpenAPI 3.1 HTTP contract |
 | `GET` | `/healthz` | Liveness response: `{"status":"healthy"}` |
@@ -98,7 +99,10 @@ dotnet AutoFpl.Api.dll --import-fpl-form-forecast
 
 The command uses Quark's existing isolated Playwright MCP browser to visit one
 fixed public page and return only the active next-Gameweek prediction set. It
-rejects the provider's off-season sentinel without writing a capture. autoFPL
+records the bounded check result and rejects the provider's off-season sentinel
+without writing a capture. The decision room reads that status separately from
+any retained immutable forecast, so provider waiting and collection failure are
+not presented as equivalent. autoFPL
 verifies the MCP server and final source URL, invokes only a hard-coded
 versioned extraction, hashes the complete embedded provider payload and stores
 bounded canonical extracted evidence. It does not deploy or control another

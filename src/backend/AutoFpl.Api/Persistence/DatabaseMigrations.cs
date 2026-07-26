@@ -4,7 +4,7 @@ internal sealed record DatabaseMigration(int Version, string Name, string Sql);
 
 internal static class DatabaseMigrations
 {
-    public const int CurrentVersion = 10;
+    public const int CurrentVersion = 11;
 
     public static IReadOnlyList<DatabaseMigration> All { get; } =
     [
@@ -807,6 +807,43 @@ internal static class DatabaseMigrations
                         expected_goals_conceded IS NULL
                         OR expected_goals_conceded BETWEEN 0 AND 100
                     );
+            """),
+        new(
+            11,
+            "fpl-form-forecast-checks",
+            """
+            CREATE TABLE fpl_form_forecast_checks (
+                check_id INTEGER PRIMARY KEY,
+                source_key TEXT NOT NULL
+                    CHECK (source_key = 'fpl-form-public-forecast/v1'),
+                checked_at_utc TEXT NOT NULL,
+                status TEXT NOT NULL
+                    CHECK (status IN ('captured', 'waiting', 'failed')),
+                reason_code TEXT
+                    CHECK (
+                        reason_code IS NULL
+                        OR length(reason_code) BETWEEN 1 AND 64
+                    ),
+                capture_id INTEGER
+                    REFERENCES fpl_form_forecast_captures(capture_id)
+                    ON DELETE RESTRICT,
+                created_at_utc TEXT NOT NULL,
+                CHECK (
+                    (status = 'captured'
+                        AND capture_id IS NOT NULL
+                        AND reason_code IS NULL)
+                    OR
+                    (status IN ('waiting', 'failed')
+                        AND capture_id IS NULL
+                        AND reason_code IS NOT NULL)
+                )
+            );
+
+            CREATE INDEX fpl_form_forecast_checks_latest_idx
+                ON fpl_form_forecast_checks (
+                    checked_at_utc DESC,
+                    check_id DESC
+                );
             """),
     ];
 }
