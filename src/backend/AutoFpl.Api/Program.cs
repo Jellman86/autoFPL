@@ -288,6 +288,9 @@ builder.Services.AddSingleton(fplFormPollingOptions);
 OfficialFplPollingOptions officialFplPollingOptions =
     OfficialFplPollingOptions.FromConfiguration(builder.Configuration);
 builder.Services.AddSingleton(officialFplPollingOptions);
+ResearchSourcePollingOptions researchSourcePollingOptions =
+    ResearchSourcePollingOptions.FromConfiguration(builder.Configuration);
+builder.Services.AddSingleton(researchSourcePollingOptions);
 builder.Services
     .AddHttpClient<OfficialFplImporter>(
         client =>
@@ -403,6 +406,10 @@ if (fplFormPollingOptions.Enabled)
 if (officialFplPollingOptions.Enabled)
 {
     builder.Services.AddHostedService<OfficialFplPoller>();
+}
+if (researchSourcePollingOptions.Enabled)
+{
+    builder.Services.AddHostedService<ResearchSourcePoller>();
 }
 builder.Services.AddExceptionHandler<DecisionSnapshotPersistenceExceptionHandler>();
 builder.Services.AddExceptionHandler<DecisionSnapshotValidationExceptionHandler>();
@@ -1001,8 +1008,10 @@ app.MapGet(
         "Read the fixed shadow-source inventory and latest immutable capture metadata.")
     .WithDescription(
         "The inventory deliberately spans official availability, a specialist predicted "
-        + "lineup and a dependent consensus. Captures remain shadow-only and expose no "
-        + "third-party article text or forecast influence.")
+        + "lineup and a dependent consensus. Latest FFScout coverage reports only exact "
+        + "snapshot-linked start classifications; partial and missing clubs remain unknown. "
+        + "Captures remain shadow-only and expose no third-party article text or forecast "
+        + "influence.")
     .WithTags("Research")
     .Produces<ResearchSourceInventoryDocument>();
 app.MapGet(

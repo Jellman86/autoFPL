@@ -209,17 +209,144 @@ public sealed class ResearchSourceSnapshotStore
             ORDER BY source_key;
             """;
         var snapshots = new List<ResearchSourceSnapshotDocument>();
-        await using SqliteDataReader reader =
-            await command.ExecuteReaderAsync(cancellationToken);
-        while (await reader.ReadAsync(cancellationToken))
+        await using (SqliteDataReader reader =
+            await command.ExecuteReaderAsync(cancellationToken))
         {
-            snapshots.Add(Read(reader));
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                snapshots.Add(Read(reader));
+            }
+        }
+
+        var coverage = new List<ResearchSourceStartCoverageDocument>();
+        foreach (ResearchSourceSnapshotDocument snapshot in snapshots.Where(
+                     item => StringComparer.Ordinal.Equals(
+                         item.SourceKey,
+                         ResearchSourceClaimExtractor.FfScoutSourceKey)))
+        {
+            coverage.Add(
+                await ReadStartCoverageAsync(
+                    connection,
+                    snapshot,
+                    cancellationToken));
         }
 
         return new(
             "1.0",
             ResearchSourceRegistry.All.Select(source => source.ToDocument()).ToArray(),
-            snapshots);
+            snapshots,
+            coverage);
+    }
+
+    private static async Task<ResearchSourceStartCoverageDocument>
+        ReadStartCoverageAsync(
+            SqliteConnection connection,
+            ResearchSourceSnapshotDocument snapshot,
+            CancellationToken cancellationToken)
+    {
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText =
+            """
+            WITH snapshot_claims AS (
+                SELECT
+                    player_id,
+                    claim_type,
+                    start_status
+                FROM evidence_claims
+                WHERE source_key = $sourceKey
+                    AND identity_capture_id = $identityCaptureId
+                    AND content_sha256 = $contentSha256
+                    AND source_revision = $sourceRevision
+            )
+            SELECT
+                team.team_id,
+                team.name,
+                team.short_name,
+                COUNT(DISTINCT player.player_id) AS player_count,
+                COUNT(DISTINCT CASE
+                    WHEN claim.claim_type = 'start' THEN claim.player_id
+                END) AS classified_player_count,
+                COUNT(DISTINCT CASE
+                    WHEN claim.claim_type = 'start'
+                        AND claim.start_status = 'starts'
+                    THEN claim.player_id
+                END) AS predicted_starter_count,
+                COUNT(DISTINCT CASE
+                    WHEN claim.claim_type = 'start'
+                        AND claim.start_status = 'does-not-start'
+                    THEN claim.player_id
+                END) AS predicted_non_starter_count,
+                COUNT(DISTINCT CASE
+                    WHEN claim.claim_type = 'availability' THEN claim.player_id
+                END) AS availability_player_count
+            FROM official_fpl_teams AS team
+            INNER JOIN official_fpl_players AS player
+                ON player.capture_id = team.capture_id
+                AND player.team_id = team.team_id
+            LEFT JOIN snapshot_claims AS claim
+                ON claim.player_id = player.player_id
+            WHERE team.capture_id = $identityCaptureId
+            GROUP BY team.team_id, team.name, team.short_name
+            ORDER BY team.name;
+            """;
+        command.Parameters.AddWithValue("$sourceKey", snapshot.SourceKey);
+        command.Parameters.AddWithValue(
+            "$identityCaptureId",
+            snapshot.IdentityCaptureId);
+        command.Parameters.AddWithValue(
+            "$contentSha256",
+            snapshot.ContentSha256);
+        command.Parameters.AddWithValue(
+            "$sourceRevision",
+            snapshot.SourceRevision);
+
+        var teams = new List<ResearchSourceTeamStartCoverageDocument>();
+        await using SqliteDataReader reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            int playerCount = reader.GetInt32(3);
+            int classifiedPlayerCount = reader.GetInt32(4);
+            string status = classifiedPlayerCount == playerCount
+                ? "complete"
+                : classifiedPlayerCount == 0
+                    ? "missing"
+                    : "partial";
+            teams.Add(
+                new(
+                    reader.GetInt32(0),
+                    reader.GetString(1),
+                    reader.GetString(2),
+                    playerCount,
+                    classifiedPlayerCount,
+                    reader.GetInt32(5),
+                    reader.GetInt32(6),
+                    reader.GetInt32(7),
+                    status));
+        }
+
+        return new(
+            snapshot.SourceKey,
+            snapshot.SnapshotId,
+            snapshot.IdentityCaptureId,
+            snapshot.SeasonCode,
+            snapshot.Gameweek,
+            snapshot.RetrievedAtUtc,
+            teams.Sum(team => team.PlayerCount),
+            teams.Sum(team => team.ClassifiedPlayerCount),
+            teams.Sum(team => team.PredictedStarterCount),
+            teams.Sum(team => team.PredictedNonStarterCount),
+            teams.Sum(team => team.AvailabilityPlayerCount),
+            teams.Count(team => StringComparer.Ordinal.Equals(
+                team.Status,
+                "complete")),
+            teams.Count(team => StringComparer.Ordinal.Equals(
+                team.Status,
+                "partial")),
+            teams.Count(team => StringComparer.Ordinal.Equals(
+                team.Status,
+                "missing")),
+            teams);
     }
 
     internal async Task<ResearchSourceSnapshotContent?> ReadContentAsync(

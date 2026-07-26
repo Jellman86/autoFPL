@@ -287,12 +287,25 @@ application must share only the dedicated Spider MCP Docker network required
 to reach that private service; Spider retains its separate Chromium and
 research-egress trust domains.
 
+Set `AutoFpl__Research__ResearchSourcePollIntervalMinutes` to an integer from
+`60` through `1440` to refresh the complete fixed inventory in the background.
+The setting is absent by default, preserving operator-only collection. An
+enabled instance captures each allowlisted source once on startup and then at
+the bounded interval. FFScout and strAIghtred captures immediately run their
+existing deterministic extractors; the Premier League injury capture remains
+retained without claims until its fail-closed adapter exists. A failed source
+does not suppress the other sources in that cycle.
+
 Each successful capture is tied to the latest official capture available at
 retrieval and that capture's recorded next Gameweek/deadline. Source text is
 compressed in private SQLite storage for later deterministic extraction and
 replay; the API returns only source class, dependence group, timing, revision,
-size and hash metadata. Repeated identical content is idempotent. Every source
-remains `shadow-only` and cannot alter claims, predictions or selections.
+size and hash metadata. For the latest FFScout snapshot it also returns
+snapshot-linked start-classification counts by official club. Complete,
+partial and missing states describe identity coverage only; missing players
+remain unknown. Repeated identical content is idempotent. Every source remains
+`shadow-only` and cannot alter predictions or selections, while supported
+derived claims remain `quarantined`.
 
 Extract identity-checked claims from one supported retained snapshot explicitly:
 

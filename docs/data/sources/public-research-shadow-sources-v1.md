@@ -19,8 +19,10 @@
   revision and SHA-256 of exact retained text.
 - **Retention:** bounded Markdown is Brotli-compressed in private SQLite.
   Duplicate content for the same source and official target is idempotent.
-- **Serving:** only inventory, timing, size, revision and hash metadata. Raw
-  third-party text is not returned by the API or committed to Git.
+- **Serving:** inventory, timing, size, revision and hash metadata, plus
+  exact-snapshot FFScout start-classification counts by official club. Raw
+  third-party text is not returned by the API or committed to Git; missing
+  coverage remains unknown rather than a negative prediction.
 - **Quality status:** unknown. Source classes and dependence groups are
   explicit. FFScout start/availability and strAIghtred consensus extraction
   produce only identity-checked `quarantined` claims; snapshots remain
@@ -29,7 +31,8 @@
 - **Failure behavior:** unknown source keys, wrong MCP identity, redirects to a
   different resource, non-200 results, missing trust markers, oversized or
   malformed responses and missing official target identity fail closed without
-  a partial snapshot.
+  a partial snapshot. Optional bounded background refresh isolates each source,
+  so one failure does not suppress the rest of the fixed portfolio.
 
 This record admits a collection boundary, not a predictive feature. See the
 [source portfolio](../../research/research-source-portfolio-v1.md) for the

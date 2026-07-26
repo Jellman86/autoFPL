@@ -19,9 +19,8 @@ public sealed partial class ResearchSourceClaimExtractor
         "ffscout-availability/v1";
     public const string StraightredExtractionVersion =
         "straightred-consensus/v1";
-
-    private const string FfScoutSourceKey = "ffscout-predicted-lineups";
-    private const string StraightredSourceKey =
+    public const string FfScoutSourceKey = "ffscout-predicted-lineups";
+    public const string StraightredSourceKey =
         "straightred-lineup-consensus";
 
     private static readonly IReadOnlyDictionary<string, string> TeamAliases =

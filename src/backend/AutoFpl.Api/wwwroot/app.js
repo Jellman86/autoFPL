@@ -1441,6 +1441,129 @@ async function loadForecastSource() {
   }
 }
 
+function setResearchCoverageState(state, label, title, summary) {
+  const panel = document.querySelector("#research-coverage");
+  panel.dataset.state = state;
+  document.querySelector("#research-coverage-state").textContent = label;
+  document.querySelector("#research-coverage-title").textContent = title;
+  document.querySelector("#research-coverage-summary").textContent = summary;
+}
+
+function renderClubCoverage(teams) {
+  const board = document.querySelector("#club-coverage-board");
+  board.replaceChildren();
+  for (const team of teams) {
+    const club = document.createElement("div");
+    club.className = "club-coverage";
+    club.dataset.status = team.status;
+    club.setAttribute("role", "listitem");
+    club.setAttribute(
+      "aria-label",
+      `${team.teamName}: ${team.classifiedPlayerCount} of ${team.playerCount} players classified, ${team.status}`,
+    );
+
+    const name = document.createElement("strong");
+    name.textContent = team.teamShortName;
+    const count = document.createElement("span");
+    count.textContent = `${team.classifiedPlayerCount}/${team.playerCount}`;
+    club.append(name, count);
+    board.append(club);
+  }
+}
+
+function renderResearchCoverageEmpty(message) {
+  const board = document.querySelector("#club-coverage-board");
+  board.replaceChildren();
+  const empty = document.createElement("p");
+  empty.className = "club-coverage-empty";
+  empty.textContent = message;
+  board.append(empty);
+}
+
+async function loadResearchCoverage() {
+  const playerCoverage = document.querySelector("#research-player-coverage");
+  const clubCoverage = document.querySelector("#research-club-coverage");
+  const capturedAt = document.querySelector("#research-captured-at");
+  try {
+    const response = await fetch("/api/v1/research/sources", {
+      headers: { Accept: "application/json" },
+    });
+    if (!response.ok) {
+      throw new Error(`Research coverage request failed with ${response.status}`);
+    }
+
+    const inventory = await response.json();
+    const coverage = inventory.latestStartCoverage?.find(
+      (item) => item.sourceKey === "ffscout-predicted-lineups",
+    );
+    if (!coverage) {
+      playerCoverage.textContent = "0 · no snapshot";
+      clubCoverage.textContent = "0 · awaiting capture";
+      capturedAt.textContent = "None retained";
+      renderResearchCoverageEmpty(
+        "No FFScout snapshot has been retained for the current official target.",
+      );
+      setResearchCoverageState(
+        "empty",
+        "Awaiting",
+        "No team sheet retained yet.",
+        "The bounded research refresh will populate club coverage when a pre-deadline source page is available.",
+      );
+      return;
+    }
+
+    playerCoverage.textContent =
+      `${coverage.classifiedPlayerCount.toLocaleString()} / ${coverage.playerCount.toLocaleString()}`;
+    clubCoverage.textContent =
+      `${coverage.completeTeamCount} / ${coverage.teams.length}`;
+    capturedAt.textContent =
+      `GW${coverage.gameweek} · ${formatCompactInstant(coverage.retrievedAtUtc)}`;
+    renderClubCoverage(coverage.teams);
+
+    if (coverage.classifiedPlayerCount === 0) {
+      setResearchCoverageState(
+        "warning",
+        "Not extracted",
+        "Snapshot retained; classifications pending.",
+        "The page is safely stored, but no exact snapshot-linked start claims have been extracted yet.",
+      );
+      return;
+    }
+
+    const gaps = coverage.partialTeamCount + coverage.missingTeamCount;
+    if (gaps === 0) {
+      setResearchCoverageState(
+        "ready",
+        "Complete",
+        "All clubs have a classified team sheet.",
+        `${coverage.predictedStarterCount} starters and ${coverage.predictedNonStarterCount} non-starters are linked to the retained FFScout snapshot.`,
+      );
+      return;
+    }
+
+    setResearchCoverageState(
+      "warning",
+      "Gaps visible",
+      "The team sheet is useful, not complete.",
+      `${coverage.completeTeamCount} clubs are complete, ${coverage.partialTeamCount} partial and ${coverage.missingTeamCount} missing. Unknown players remain unknown.`,
+    );
+  } catch (error) {
+    playerCoverage.textContent = "Unavailable";
+    clubCoverage.textContent = "Unavailable";
+    capturedAt.textContent = "Unknown";
+    renderResearchCoverageEmpty(
+      "Club-level research coverage could not be loaded.",
+    );
+    setResearchCoverageState(
+      "error",
+      "Unavailable",
+      "The research team sheet could not be checked.",
+      "The official data footing and prediction remain available; research gaps cannot be audited until this route recovers.",
+    );
+    console.error(error);
+  }
+}
+
 function trapDossierFocus(event) {
   if (
     event.key !== "Tab" ||
@@ -1522,4 +1645,9 @@ document.querySelector("#confirm-selection-lock").addEventListener(
   confirmSelectionLock,
 );
 
-Promise.all([loadAdvice(), loadOfficialData(), loadForecastSource()]);
+Promise.all([
+  loadAdvice(),
+  loadOfficialData(),
+  loadForecastSource(),
+  loadResearchCoverage(),
+]);
