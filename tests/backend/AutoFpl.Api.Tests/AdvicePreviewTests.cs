@@ -37,6 +37,10 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
         Assert.Contains("Capture to deadline provenance", body, StringComparison.Ordinal);
         Assert.Contains("External forecast challenger", body, StringComparison.Ordinal);
         Assert.Contains("Refresh prediction", body, StringComparison.Ordinal);
+        Assert.Contains("Selection lifecycle", body, StringComparison.Ordinal);
+        Assert.Contains("Use prediction as draft", body, StringComparison.Ordinal);
+        Assert.Contains("Lock this selection?", body, StringComparison.Ordinal);
+        Assert.Contains("does not submit or change", body, StringComparison.Ordinal);
         Assert.Contains("<dt>Outcome</dt>", body, StringComparison.Ordinal);
         Assert.Contains(
             "<dt id=\"artifact-reference-label\">Snapshot</dt>",

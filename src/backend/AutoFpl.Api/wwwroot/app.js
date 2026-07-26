@@ -3,6 +3,7 @@ const mobileDossierQuery = window.matchMedia("(max-width: 980px)");
 
 let selectedPlayerId = null;
 let advice = null;
+let selectionRevision = null;
 let lastSelectedCard = null;
 let dossierRequest = 0;
 
@@ -526,6 +527,206 @@ function renderAdvice(adviceDocument) {
   });
 }
 
+function setSelectionRail(status) {
+  const order = ["draft", "locked", "frozen"];
+  const current = status === "expired" ? "draft" : status;
+  const currentIndex = order.indexOf(current);
+  document.querySelectorAll("[data-selection-step]").forEach((step) => {
+    const index = order.indexOf(step.dataset.selectionStep);
+    step.classList.toggle("is-complete", currentIndex >= 0 && index < currentIndex);
+    step.classList.toggle("is-current", index === currentIndex);
+  });
+}
+
+function setSelectionFeedback(message, state = null) {
+  const panel = document.querySelector("#selection-workflow");
+  if (state) panel.dataset.state = state;
+  document.querySelector("#selection-feedback").textContent = message;
+}
+
+function renderSelectionState(revision, feedback = "") {
+  selectionRevision = revision;
+  const panel = document.querySelector("#selection-workflow");
+  const title = document.querySelector("#selection-workflow-title");
+  const state = document.querySelector("#selection-state");
+  const summary = document.querySelector("#selection-workflow-summary");
+  const create = document.querySelector("#create-selection-draft");
+  const lock = document.querySelector("#lock-selection");
+  const revisionLabel = document.querySelector("#selection-revision");
+  const forecast = document.querySelector("#selection-forecast");
+  const lockedAt = document.querySelector("#selection-locked-at");
+
+  create.disabled = true;
+  lock.disabled = true;
+  if (!revision) {
+    const hasForecast = Boolean(advice?.forecastArtifactId);
+    const deadlinePassed = advice
+      ? new Date(advice.deadlineUtc).getTime() <= Date.now()
+      : false;
+    panel.dataset.state = hasForecast && !deadlinePassed ? "uncreated" : "unavailable";
+    title.textContent = hasForecast
+      ? deadlinePassed
+        ? "The deadline passed without a saved selection."
+        : "This prediction is not your decision yet."
+      : "A persisted real forecast is required.";
+    state.textContent = hasForecast && !deadlinePassed ? "Not started" : "Unavailable";
+    summary.textContent = hasForecast
+      ? deadlinePassed
+        ? "autoFPL will not backdate a draft or lock after the recorded deadline."
+        : "Preserve the exact predicted XI, bench and captaincy as a draft before you explicitly lock it."
+      : "Synthetic previews remain inspectable, but they cannot become an authoritative user selection.";
+    revisionLabel.textContent = "None";
+    forecast.textContent = advice?.forecastArtifactId
+      ? `#${advice.forecastArtifactId}`
+      : "Preview only";
+    lockedAt.textContent = "Not locked";
+    create.disabled = !hasForecast || deadlinePassed;
+    setSelectionRail("");
+    setSelectionFeedback(feedback);
+    return;
+  }
+
+  panel.dataset.state = revision.status;
+  state.textContent = revision.status;
+  revisionLabel.textContent = `r${revision.revision} · #${revision.selectionRevisionId}`;
+  forecast.textContent =
+    `#${revision.forecastArtifactId} · ${revision.forecastArtifactContentHash.slice(0, 8)}`;
+  lockedAt.textContent = revision.lockedAtUtc
+    ? formatCompactInstant(revision.lockedAtUtc)
+    : "Not locked";
+  setSelectionRail(revision.status);
+
+  if (revision.status === "draft") {
+    title.textContent = `Draft revision ${revision.revision} is ready to lock.`;
+    summary.textContent =
+      "This immutable draft matches the persisted forecast. Locking needs a separate confirmation and does not submit anything to FPL.";
+    lock.disabled = !revision.canLock;
+  } else if (revision.status === "locked") {
+    title.textContent = `Your Gameweek ${revision.gameweek} selection is locked.`;
+    summary.textContent =
+      "This is the current owner-approved choice. Any later pre-deadline change must become and lock a newer revision.";
+  } else if (revision.status === "frozen") {
+    title.textContent = "Your deadline selection is frozen.";
+    summary.textContent =
+      "The stored choice no longer changes. Only deterministic official substitutions and captain fallback can affect the effective XI.";
+  } else {
+    title.textContent = "The deadline passed without locking this draft.";
+    summary.textContent =
+      "autoFPL preserves the draft as history but will not treat it as your approved Gameweek selection.";
+  }
+  setSelectionFeedback(feedback, revision.status);
+}
+
+async function loadSelectionState() {
+  if (!advice?.forecastArtifactId) {
+    renderSelectionState(null);
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/v1/selections/current", {
+      headers: { Accept: "application/json" },
+    });
+    if (response.status === 404) {
+      renderSelectionState(null);
+      return;
+    }
+    if (!response.ok) {
+      throw new Error(`Selection request failed with ${response.status}`);
+    }
+    renderSelectionState(await response.json());
+  } catch (error) {
+    selectionRevision = null;
+    document.querySelector("#selection-workflow-title").textContent =
+      "Selection state could not be loaded.";
+    document.querySelector("#selection-state").textContent = "Unavailable";
+    document.querySelector("#selection-workflow-summary").textContent =
+      "The forecast remains visible, but drafting and locking stay unavailable until persisted state can be verified.";
+    document.querySelector("#create-selection-draft").disabled = true;
+    document.querySelector("#lock-selection").disabled = true;
+    setSelectionRail("");
+    setSelectionFeedback("Selection storage check failed.", "error");
+    console.error(error);
+  }
+}
+
+async function createSelectionDraft() {
+  if (!advice?.forecastArtifactId) return;
+  const create = document.querySelector("#create-selection-draft");
+  create.disabled = true;
+  create.textContent = "Creating draft…";
+  setSelectionFeedback("Preserving the forecast selection as an immutable draft.");
+  try {
+    const response = await fetch("/api/v1/selections/drafts", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ forecastArtifactId: advice.forecastArtifactId }),
+    });
+    if (!response.ok) {
+      throw new Error(`Draft request failed with ${response.status}`);
+    }
+    renderSelectionState(
+      await response.json(),
+      "Draft created. Review the squad, then lock it when you are satisfied.",
+    );
+  } catch (error) {
+    setSelectionFeedback(
+      "The draft was not created. Refresh the forecast and try again.",
+      "error",
+    );
+    create.disabled = false;
+    console.error(error);
+  } finally {
+    create.textContent = "Use prediction as draft";
+  }
+}
+
+function openSelectionLockDialog() {
+  if (!selectionRevision?.canLock) return;
+  document.querySelector("#lock-dialog-copy").textContent =
+    `Revision ${selectionRevision.revision} will become your chosen Gameweek ${selectionRevision.gameweek} selection before ${formatDeadline(selectionRevision.deadlineUtc)}.`;
+  document.querySelector("#lock-dialog").showModal();
+}
+
+async function confirmSelectionLock() {
+  if (!selectionRevision?.canLock) return;
+  const dialog = document.querySelector("#lock-dialog");
+  const confirm = document.querySelector("#confirm-selection-lock");
+  confirm.disabled = true;
+  confirm.textContent = "Locking…";
+  setSelectionFeedback("Recording your explicit lock.");
+  try {
+    const response = await fetch(
+      `/api/v1/selections/${selectionRevision.selectionRevisionId}/lock`,
+      {
+        method: "PUT",
+        headers: { Accept: "application/json" },
+      },
+    );
+    if (!response.ok) {
+      throw new Error(`Lock request failed with ${response.status}`);
+    }
+    renderSelectionState(
+      await response.json(),
+      "Selection locked. No action was sent to your FPL account.",
+    );
+    dialog.close();
+  } catch (error) {
+    dialog.close();
+    setSelectionFeedback(
+      "The selection was not locked. Reload its current state before trying again.",
+      "error",
+    );
+    console.error(error);
+  } finally {
+    confirm.disabled = false;
+    confirm.textContent = "Confirm lock";
+  }
+}
+
 async function loadAdvice() {
   const refresh = document.querySelector("#refresh-prediction");
   refresh.disabled = true;
@@ -536,6 +737,7 @@ async function loadAdvice() {
     });
     if (!response.ok) throw new Error(`Advice request failed with ${response.status}`);
     renderAdvice(await response.json());
+    await loadSelectionState();
   } catch (error) {
     document.querySelector("#evidence-status").textContent = "Evidence unavailable";
     document.querySelector("#recommendation-summary").textContent =
@@ -819,5 +1021,17 @@ window.addEventListener("popstate", () => {
 });
 document.querySelector("#ai-form").addEventListener("submit", (event) => event.preventDefault());
 document.querySelector("#refresh-prediction").addEventListener("click", loadAdvice);
+document.querySelector("#create-selection-draft").addEventListener(
+  "click",
+  createSelectionDraft,
+);
+document.querySelector("#lock-selection").addEventListener(
+  "click",
+  openSelectionLockDialog,
+);
+document.querySelector("#confirm-selection-lock").addEventListener(
+  "click",
+  confirmSelectionLock,
+);
 
 Promise.all([loadAdvice(), loadOfficialData(), loadForecastSource()]);

@@ -369,6 +369,8 @@ The decision room now includes:
 - interactive player evidence cards;
 - official player portraits and cutoff-aware player dossiers;
 - an immutable, capture-linked Baseline v0 expected-points artefact;
+- an immutable user-owned forecast draft with an explicit one-time pre-deadline
+  lock and computed locked, expired or frozen status;
 - deterministic explanation and risk sections;
 - alternative-strategy summaries; and
 - an explicit, unavailable-until-grounded AI composer.
@@ -522,6 +524,10 @@ cutoff-aware evidence trail for any selected player.
 
 Tracked by [#44](https://github.com/Jellman86/autoFPL/issues/44) and
 [#45](https://github.com/Jellman86/autoFPL/issues/45).
+
+**Status:** active — the exact persisted forecast can now become an immutable
+user-owned draft and explicit lock revision; direct draft editing, superseding
+changed revisions, scenario distributions and alternative generation remain.
 
 - Implement reproducible CPU Monte Carlo and the GPU parity/benchmark path.
 - Generate recommended, safer and higher-ceiling legal selections.

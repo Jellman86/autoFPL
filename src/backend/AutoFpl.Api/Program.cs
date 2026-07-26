@@ -6,6 +6,7 @@ using AutoFpl.Api.Advice;
 using AutoFpl.Api.Errors;
 using AutoFpl.Api.Health;
 using AutoFpl.Api.Persistence;
+using AutoFpl.Api.Selections;
 using AutoFpl.Api.Sources;
 using AutoFpl.Contracts.Advice;
 using AutoFpl.Contracts.Lineups;
@@ -128,6 +129,10 @@ builder.Services.AddSingleton(serviceProvider =>
         serviceProvider.GetRequiredService<OfficialDecisionRoomPreviewStore>(),
         serviceProvider.GetRequiredService<TimeProvider>()));
 builder.Services.AddSingleton(serviceProvider =>
+    new SelectionRevisionStore(
+        serviceProvider.GetRequiredService<DatabaseOptions>(),
+        serviceProvider.GetRequiredService<TimeProvider>()));
+builder.Services.AddSingleton(serviceProvider =>
     new FplFormForecastStore(
         serviceProvider.GetRequiredService<DatabaseOptions>()));
 builder.Services.AddSingleton(serviceProvider =>
@@ -222,6 +227,7 @@ builder.Services.AddExceptionHandler<DecisionSnapshotValidationExceptionHandler>
 builder.Services.AddExceptionHandler<SquadValidationExceptionHandler>();
 builder.Services.AddExceptionHandler<LineupValidationExceptionHandler>();
 builder.Services.AddExceptionHandler<GameweekSelectionValidationExceptionHandler>();
+builder.Services.AddExceptionHandler<SelectionWorkflowExceptionHandler>();
 builder.Services.AddExceptionHandler<GameweekCaptaincyResolutionValidationExceptionHandler>();
 builder.Services.AddExceptionHandler<GameweekSubstitutionResolutionValidationExceptionHandler>();
 builder.Services.AddExceptionHandler<GameweekScoreResolutionValidationExceptionHandler>();
@@ -400,6 +406,101 @@ app.MapGet(
         "Return the latest persisted Baseline v0 forecast or the synthetic acceptance fixture.")
     .WithTags("Advice")
     .Produces<GameweekAdviceDocument>();
+app.MapGet(
+    "/api/v1/selections/current",
+    async (
+        SelectionRevisionStore store,
+        CancellationToken cancellationToken) =>
+    {
+        SelectionRevisionDocument? revision =
+            await store.GetCurrentAsync(cancellationToken);
+        return revision is null ? Results.NotFound() : Results.Ok(revision);
+    })
+    .WithName("GetCurrentSelectionRevision")
+    .WithSummary(
+        "Read the latest user-owned selection revision for the current forecast target.")
+    .WithDescription(
+        "The status is computed from the immutable revision, its one-time lock event "
+        + "and the current deadline. A locked revision becomes frozen at the deadline.")
+    .WithTags("Selections")
+    .Produces<SelectionRevisionDocument>()
+    .Produces(StatusCodes.Status404NotFound);
+app.MapGet(
+    "/api/v1/selections/{selectionRevisionId:long:min(1)}",
+    async (
+        long selectionRevisionId,
+        SelectionRevisionStore store,
+        CancellationToken cancellationToken) =>
+    {
+        SelectionRevisionDocument? revision =
+            await store.GetAsync(selectionRevisionId, cancellationToken);
+        return revision is null ? Results.NotFound() : Results.Ok(revision);
+    })
+    .WithName("GetSelectionRevision")
+    .WithSummary("Read one immutable user-owned selection revision.")
+    .WithTags("Selections")
+    .Produces<SelectionRevisionDocument>()
+    .Produces(StatusCodes.Status404NotFound);
+app.MapPost(
+    "/api/v1/selections/drafts",
+    async (
+        SelectionDraftFromForecastRequest request,
+        SelectionRevisionStore store,
+        CancellationToken cancellationToken) =>
+    {
+        if (request.ForecastArtifactId is null or <= 0)
+        {
+            return Results.ValidationProblem(
+                new Dictionary<string, string[]>
+                {
+                    ["forecastArtifactId"] =
+                    [
+                        "forecastArtifactId must identify a persisted forecast artifact.",
+                    ],
+                });
+        }
+
+        SelectionRevisionDocument? revision =
+            await store.CreateDraftFromForecastAsync(
+                request.ForecastArtifactId.Value,
+                cancellationToken);
+        return revision is null
+            ? Results.NotFound()
+            : Results.Created(
+                $"/api/v1/selections/{revision.SelectionRevisionId}",
+                revision);
+    })
+    .WithName("CreateSelectionDraftFromForecast")
+    .WithSummary(
+        "Preserve a persisted forecast selection as an immutable user-owned draft.")
+    .WithDescription(
+        "This does not lock, submit or write to an FPL account. Repeating the exact "
+        + "forecast draft is idempotent; later changed selections create new revisions.")
+    .WithTags("Selections")
+    .Produces<SelectionRevisionDocument>(StatusCodes.Status201Created)
+    .ProducesValidationProblem()
+    .Produces(StatusCodes.Status404NotFound)
+    .ProducesProblem(StatusCodes.Status409Conflict);
+app.MapPut(
+    "/api/v1/selections/{selectionRevisionId:long:min(1)}/lock",
+    async (
+        long selectionRevisionId,
+        SelectionRevisionStore store,
+        CancellationToken cancellationToken) =>
+    {
+        SelectionRevisionDocument? revision =
+            await store.LockAsync(selectionRevisionId, cancellationToken);
+        return revision is null ? Results.NotFound() : Results.Ok(revision);
+    })
+    .WithName("LockSelectionRevision")
+    .WithSummary("Explicitly lock the latest user-owned selection revision.")
+    .WithDescription(
+        "Locking is idempotent and available only before the recorded deadline. "
+        + "A newer revision makes an older draft stale; no FPL account action occurs.")
+    .WithTags("Selections")
+    .Produces<SelectionRevisionDocument>()
+    .Produces(StatusCodes.Status404NotFound)
+    .ProducesProblem(StatusCodes.Status409Conflict);
 app.MapGet(
     "/api/v1/data/official-fpl/latest",
     async (

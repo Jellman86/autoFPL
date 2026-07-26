@@ -86,7 +86,7 @@
         "receiptTimeOwner": {
           "type": "string",
           "enum": [
-            "application-for-persisted-snapshots"
+            "application-for-persisted-state"
           ]
         },
         "replayAvailabilityPolicy": {
