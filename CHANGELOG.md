@@ -15,6 +15,7 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **The first leakage-safe baseline evaluator is executable.** A dependency-free local Python command reads complete SQLite replay/outcome pairs without writing the database, applies expanding Gameweek origins, excludes outcome corrections unavailable at each target deadline, compares five auditable point baselines with MAE/RMSE/bias and position slices, and emits deterministic hash-identified exploratory reports while failing closed on insufficient or incomplete data.
 - **Official per-player Gameweek outcomes now complete the replay data path.** A bounded fixed-origin operator command fails closed until the official event is finished and data-checked, all Gameweek fixtures are final and player IDs exactly cover the reference capture; exact raw bytes and normalised outcomes are stored immutably, exposed through typed read-only OpenAPI routes and paired only with a complete cutoff-safe replay.
 - **The decision room reports outcome readiness.** Its official-data footing now distinguishes an awaiting final result from a fully player-matched replay/outcome pair without presenting the still-synthetic forecast as real advice.
 - **Official FPL captures can now be selected as leakage-safe pre-deadline replays.** A typed OpenAPI route chooses the newest immutable capture whose retrieval-time availability is no later than that capture's recorded Gameweek deadline, returns the exact content identities and lead time, and excludes later corrections.
