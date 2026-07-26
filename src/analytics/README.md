@@ -5,6 +5,14 @@ backtesting and optimisation where the scientific ecosystem is useful. It
 returns versioned candidate artefacts; the backend validates and records any
 artefact promoted into product state.
 
+Install the hash-locked scientific dependencies before running tabular
+challengers:
+
+```bash
+python3 -m pip install --require-hashes \
+  --requirement requirements-analytics.txt
+```
+
 ## Baseline evaluation v4
 
 The first local command reads the authoritative SQLite database in read-only
@@ -72,3 +80,24 @@ complete historical feature/outcome pairs exist.
 
 The fixed feature and evaluation design are recorded in the
 [temporal ridge specification](../../docs/research/temporal-ridge-v1.md).
+
+## Temporal histogram-tree challenger v1
+
+The nonlinear comparison reuses the ridge evaluator's exact folds, target
+players and incumbents:
+
+```bash
+PYTHONPATH=src/analytics python3 -m autofpl_analytics.temporal_tree \
+  --database /path/to/autofpl.db \
+  --season 2026-27 \
+  --minimum-training-gameweeks 3 \
+  --output /path/to/temporal-tabular-report.json
+```
+
+Its scikit-learn implementation and transitive scientific dependencies are
+version- and hash-locked. Missing branches and unsplittable feature removal are
+learned inside each training fold. The model remains exploratory and fixed
+before real evaluation.
+
+See the
+[temporal tree specification](../../docs/research/temporal-tree-v1.md).

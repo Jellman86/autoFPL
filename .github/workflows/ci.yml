@@ -41,6 +41,10 @@ jobs:
         run: >-
           python3 -m pip install --disable-pip-version-check --require-hashes
           --requirement requirements-governance.txt
+      - name: Install locked analytics dependencies
+        run: >-
+          python3 -m pip install --disable-pip-version-check --require-hashes
+          --requirement requirements-analytics.txt
       - name: Restore locked .NET dependencies
         run: dotnet restore src/backend/AutoFpl.slnx --locked-mode --nologo
       - name: Run .NET tests

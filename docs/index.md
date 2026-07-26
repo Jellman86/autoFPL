@@ -51,6 +51,7 @@ Use this index to find the maintained source for each topic. The deterministic p
 - [FPL Form external evaluation v1](research/fpl-form-external-evaluation-v1.md) — cutoff- and identity-gated scoring of published conditional points and the separately named appearance-adjusted challenger.
 - [Temporal feature table v1](research/temporal-feature-table-v1.md) — cutoff-safe player and team match-leading features with explicit missingness and correction chronology.
 - [Temporal ridge challenger v1](research/temporal-ridge-v1.md) — fold-local regularised total-points challenger over the cutoff-safe temporal feature table.
+- [Temporal histogram-tree challenger v1](research/temporal-tree-v1.md) — fixed nonlinear comparison on the ridge evaluator's identical expanding-origin folds.
 - [Predictive research-review template](research/literature-review-template.md) — optional working note for method selection and promotion registration.
 - [Dataset-card template](research/dataset-card-template.md) — provenance, rights and quality record.
 - [Model-card template](research/model-card-template.md) — intended use, evaluation, limitations and monitoring.
