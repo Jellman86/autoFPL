@@ -73,10 +73,16 @@ and run identity
 Those identities describe that capture-specific research run, not a persisted
 product artifact.
 
-## Next gate
+## Product boundary and next gate
 
-The backend import must validate schema, model/evaluation identity, exact
-official capture, eligible player coverage, stable IDs, finite bounded values
-and content hash before immutable persistence. The decision room may then show
-the comparison and limitations, but advice remains on Baseline v0 until the
-availability and probabilistic components earn their own temporal evidence.
+Migration 20 and the operator importer validate schema, fixed model/evaluation
+identity, exact official and historical captures, the exact Baseline v0 cohort,
+stable identities, finite bounded values and full eligible-player coverage
+before immutable persistence. Identical content is idempotent and conflicting
+content for the same capture fails closed. The read-only API and player dossier
+show the comparison, immutable artifact hash and its limitations.
+
+Advice remains on Baseline v0. The next gate is a separately evaluated
+appearance/start/minutes model plus an empirical or calibrated point
+distribution. Availability must improve rolling out-of-time scoring and
+decision utility before it can transform this raw fitted mean.

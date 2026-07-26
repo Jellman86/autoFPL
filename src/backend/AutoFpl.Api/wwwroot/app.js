@@ -211,6 +211,7 @@ function selectPlayer(playerId, options = {}) {
   document.querySelector("#player-range").textContent =
     `${player.lower80.toFixed(0)}–${player.upper80.toFixed(0)}`;
   document.querySelector("#published-xpts").hidden = true;
+  document.querySelector("#preseason-challenger").hidden = true;
   setDossierPortrait(player.name, player.photoUrl);
 
   const badge = document.querySelector("#player-badge");
@@ -597,6 +598,29 @@ async function loadPlayerDossier(player) {
       published.hidden = false;
     } else {
       published.hidden = true;
+    }
+    const challenger = document.querySelector("#preseason-challenger");
+    if (dossier.preseasonChallenger) {
+      const forecast = dossier.preseasonChallenger;
+      const difference = Number(forecast.differenceFromBaselineV0);
+      const direction = difference > 0 ? "+" : "";
+      document.querySelector("#preseason-challenger-value").textContent =
+        `${Number(forecast.expectedPoints).toFixed(1)} pts`;
+      document.querySelector("#preseason-challenger-delta").textContent =
+        `${direction}${difference.toFixed(1)} vs Baseline v0`;
+      const warnings = [];
+      if (forecast.availabilityStatus !== "available") {
+        warnings.push(`availability: ${forecast.availabilityStatus}`);
+      }
+      if (forecast.priorSeasonIdentityStatus !== "matched-by-stable-code") {
+        warnings.push("no matched prior-season identity");
+      }
+      document.querySelector("#preseason-challenger-note").textContent =
+        `Comparison only · ${(Number(forecast.lockedHoldoutMaeImprovementFraction) * 100).toFixed(1)}% lower locked-holdout MAE · no calibrated distribution`
+        + (warnings.length ? ` · ${warnings.join(" · ")}` : "");
+      challenger.hidden = false;
+    } else {
+      challenger.hidden = true;
     }
     renderRecentForm(dossier.recentOutcomes);
     renderUpcomingFixtures(dossier.upcomingFixtures);

@@ -1,6 +1,10 @@
 using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 
 using AutoFpl.Api.Persistence;
+using AutoFpl.Contracts.Forecasts;
 using AutoFpl.Contracts.Sources;
 
 using Microsoft.Data.Sqlite;
@@ -125,9 +129,15 @@ public sealed class OfficialFplPlayerDossierStore
             cancellationToken);
         OfficialFplPlayerResearchEvidenceDocument researchEvidence =
             CreateResearchEvidence(evidenceRows, replay.DeadlineUtc);
+        OfficialFplPreseasonChallengerDocument? preseasonChallenger =
+            await ReadPreseasonChallengerAsync(
+                connection,
+                replay.SelectedCaptureId,
+                identity.PlayerId,
+                cancellationToken);
 
         return new(
-            "1.2",
+            "1.3",
             seasonCode,
             targetGameweek,
             replay.DeadlineUtc,
@@ -154,9 +164,71 @@ public sealed class OfficialFplPlayerDossierStore
                     expectedPointsNext,
                     "published-challenger-not-promoted")
                 : null,
+            preseasonChallenger,
             outcomes,
             upcoming,
             researchEvidence);
+    }
+
+    private static async Task<OfficialFplPreseasonChallengerDocument?>
+        ReadPreseasonChallengerAsync(
+            SqliteConnection connection,
+            long captureId,
+            int playerId,
+            CancellationToken cancellationToken)
+    {
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText =
+            """
+            SELECT
+                forecast_artifact_id,
+                document_json,
+                content_sha256
+            FROM preseason_player_forecast_artifacts
+            WHERE official_capture_id = $captureId
+            LIMIT 1;
+            """;
+        command.Parameters.AddWithValue("$captureId", captureId);
+        await using SqliteDataReader reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+        if (!await reader.ReadAsync(cancellationToken))
+        {
+            return null;
+        }
+
+        long artifactId = reader.GetInt64(0);
+        string documentJson = reader.GetString(1);
+        string contentSha256 = reader.GetString(2);
+        string calculatedHash = Convert.ToHexStringLower(
+            SHA256.HashData(Encoding.UTF8.GetBytes(documentJson)));
+        if (!StringComparer.Ordinal.Equals(contentSha256, calculatedHash))
+        {
+            throw new InvalidOperationException(
+                "The persisted preseason challenger content hash is invalid.");
+        }
+
+        PreseasonPlayerForecastDocument document =
+            JsonSerializer.Deserialize<PreseasonPlayerForecastDocument>(
+                documentJson,
+                new JsonSerializerOptions(JsonSerializerDefaults.Web))
+            ?? throw new InvalidOperationException(
+                "The persisted preseason challenger could not be read.");
+        PreseasonPlayerForecastPlayerDocument? player =
+            document.Players.SingleOrDefault(item => item.PlayerId == playerId);
+        return player is null
+            ? null
+            : new(
+                document.ModelKey,
+                player.ExpectedPoints,
+                player.BaselineV0ExpectedPoints,
+                player.DifferenceFromBaselineV0,
+                player.AvailabilityStatus,
+                player.PriorSeasonIdentityStatus,
+                document.DistributionStatus,
+                document.Comparison.LockedHoldoutMaeImprovementFraction,
+                document.InfluencesAdvice,
+                artifactId,
+                contentSha256);
     }
 
     private static async Task<PlayerIdentityRow?> ReadIdentityAsync(

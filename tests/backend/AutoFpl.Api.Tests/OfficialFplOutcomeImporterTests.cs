@@ -282,7 +282,7 @@ public sealed class OfficialFplOutcomeImporterTests
             TestContext.Current.CancellationToken);
 
         Assert.NotNull(dossier);
-        Assert.Equal("1.2", dossier.SchemaVersion);
+        Assert.Equal("1.3", dossier.SchemaVersion);
         Assert.Equal("2026-27", dossier.SeasonCode);
         Assert.Equal(2, dossier.TargetGameweek);
         Assert.Equal(
@@ -307,6 +307,7 @@ public sealed class OfficialFplOutcomeImporterTests
         Assert.Equal(
             "published-challenger-not-promoted",
             dossier.PublishedExpectedPoints.EvidenceStatus);
+        Assert.Null(dossier.PreseasonChallenger);
 
         OfficialFplPlayerOutcomeDocument outcome = Assert.Single(dossier.RecentOutcomes);
         Assert.Equal(1, outcome.Gameweek);

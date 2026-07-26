@@ -11,6 +11,7 @@ Routes:
 | `GET` | `/` | Renders the responsive Gameweek decision room |
 | `GET` | `/api/v1/advice/demo` | Returns the latest persisted Baseline v0 artifact, or the typed synthetic acceptance fixture when no qualifying capture exists |
 | `GET` | `/api/v1/forecasts/player-gameweek/latest` | Returns the latest immutable provisional Baseline v0 artifact for every eligible official player |
+| `GET` | `/api/v1/forecasts/preseason-challenger/latest` | Returns the latest immutable holdout-supported GW1 point-mean challenger; it cannot influence advice |
 | `GET` | `/api/v1/data/fpl-form-forecast/latest` | Returns provenance and counts for the latest immutable public FPL Form forecast capture |
 | `GET` | `/api/v1/data/fpl-form-forecast/status` | Distinguishes not checked, provider waiting, collection failure and retained forecast states |
 | `GET` | `/api/v1/data/fpl-form-forecast/{captureId}/identity-coverage` | Reports deterministic cutoff-correct official player/fixture coverage for one immutable forecast capture |
@@ -72,6 +73,29 @@ minutes. Its status is `provisional-unvalidated`, its distribution status is
 `interval-only-uncalibrated`, and start/60-minute probabilities remain `null`
 until a fitted temporal model earns promotion. The selected 15-player advice
 artifact remains the downstream squad decision result.
+
+## Provisional preseason challenger
+
+Generate the capture-specific artifact with the analytics command documented in
+`src/analytics/README.md`, copy that JSON into the container's private data
+volume and run:
+
+```text
+dotnet AutoFpl.Api.dll \
+  --import-preseason-player-forecast <json-file>
+```
+
+The input is strict JSON bounded to 2 MiB. Migration 20 accepts only the fixed
+holdout-supported model/evaluation and pinned archive identities, the exact
+current official capture and Baseline v0 artifact, and complete eligible-player
+coverage. It recomputes cohort, stable-code history and point differences from
+SQLite before an immutable, content-hashed insert. Repeating identical content
+is idempotent; a conflict fails closed.
+
+The command is the only write boundary. The web process exposes a read-only
+latest-artifact route, and the cutoff-aware dossier shows the per-player point
+mean and comparison warnings. The artifact has no calibrated distribution and
+cannot alter advice, a selection revision or Baseline v0.
 
 ## Official FPL capture
 

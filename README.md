@@ -15,7 +15,9 @@ pre-selected rolling-three baseline on the pinned 2025/26 archive. That result
 now feeds a deterministic GW1 player-artifact generator tied to the exact
 evaluated archive and current official capture. The fitted means are comparison
 evidence only: current availability is explicit, no distribution is invented,
-and the model does not silently replace Baseline v0.
+and the model does not silently replace Baseline v0. A strict operator import
+persists the artifact immutably, a read-only OpenAPI route exposes it and each
+player dossier presents the comparison with its evidence boundary.
 
 The [delivery roadmap](docs/roadmap.md) defines the dependency-ordered route from the current foundation through v0.1 single-Gameweek advice, transfer and chip planning, and the v1.0 human-approved advisor. See the [documentation index](docs/index.md) and [changelog](CHANGELOG.md) for maintained guidance and implemented changes.
 
