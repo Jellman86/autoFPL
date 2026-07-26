@@ -149,6 +149,40 @@ hosted third-party website consume a user's ChatGPT subscription for embedded
 inference. Do not present that option in the standalone UI unless a supported
 OpenAI product specifically provides it.
 
+### Integration configuration boundary
+
+Integration configuration is split deliberately between deployment policy and
+user interaction:
+
+- **Compose/environment bootstrap:** publish instance-wide, non-secret settings
+  such as the public base URL, enabled integration types, authentication mode,
+  OAuth/OIDC issuer, provider endpoint allowlist, default model policy and
+  resource/cost ceilings. Inject instance credentials through the deployment
+  secret store or mounted secret files; never commit them to Compose or a
+  tracked `.env`.
+- **Integrations settings UI:** show connection health, capabilities, granted
+  scopes, model/provider selection, usage limits and last successful test.
+  Allow an authorised user to connect, re-authorise, test and disconnect an
+  integration. Secrets are accepted only by the backend, are write-only after
+  submission and are never returned to browser code, logs or API responses.
+- **Policy precedence:** deployment policy defines what may be enabled and its
+  maximum privileges. User settings can choose only within that allowlist and
+  cannot override network, scope, cost or write-action restrictions.
+
+The ChatGPT/Codex path does not require an OpenAI key in autoFPL. ChatGPT hosts
+the model session and connects to autoFPL's OAuth-protected MCP plugin; the
+OAuth flow authenticates the user to autoFPL. The standalone embedded-chat path
+is separate and requires an explicitly configured API provider. A future
+multi-user bring-your-own-key mode requires an encrypted credential store and
+per-user lifecycle controls; it must not represent per-user keys as Compose
+environment variables or retain them as plaintext SQLite values.
+
+Use established standards rather than provider-specific login plumbing:
+OpenID Connect for the autoFPL web session, OAuth 2.1 protected-resource
+metadata and PKCE for MCP clients, and OpenAPI plus MCP schemas for the
+integration contracts. Prefer an established identity provider over an
+autoFPL-authored authorization server.
+
 ## Scientific programme
 
 Prediction quality is evaluated out of time and at the decision cutoff. Every
@@ -408,6 +442,11 @@ Tracked initially by [#46](https://github.com/Jellman86/autoFPL/issues/46).
   experience in the OpenAI host.
 - Support Hermes and generic MCP clients through the same tools.
 - Add optional standalone conversation through a server-side provider adapter.
+- Add an Integrations settings surface for connection state, scoped linking,
+  provider selection, limits, testing and revocation while keeping instance
+  policy and secret injection in the Compose/deployment boundary.
+- Implement standards-based autoFPL identity and MCP OAuth before exposing
+  user-specific data beyond the trusted single-user network.
 - Scope every conversation to explicit snapshot and candidate IDs.
 - Require citations/tool evidence for factual claims; keep deterministic
   explanations available without AI.
@@ -415,7 +454,8 @@ Tracked initially by [#46](https://github.com/Jellman86/autoFPL/issues/46).
   independently validated before comparison.
 
 **Exit:** ChatGPT, Hermes and the standalone provider path receive equivalent
-evidence, provider failure leaves the core UI usable, and AI cannot mutate
+evidence; integrations can be configured, tested and revoked without exposing
+secrets; provider failure leaves the core UI usable; and AI cannot mutate
 authoritative state or perform FPL actions.
 
 ### Milestone H — v0.1 proof and private release
