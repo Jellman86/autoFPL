@@ -1,0 +1,5 @@
+# Direct dependencies for executable forecasting challengers.
+# Compile with Python 3.12+:
+# pip-compile --generate-hashes requirements-analytics.in
+numpy==2.5.1
+scikit-learn==1.9.0

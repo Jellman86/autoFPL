@@ -528,9 +528,9 @@ The next development slices are:
    named probability-adjusted challenger before using any value as a feature;
 5. keep exercising the implemented official-photo decision room and
    cutoff-aware dossiers against live captures as prior outcomes accumulate;
-6. run the implemented fold-local temporal ridge challenger as real folds
-   accumulate, then compare a fixed tree-based challenger and add scraped
-   features only as explicit ablations against the retained incumbents;
+6. run the implemented fold-local ridge and fixed histogram-tree challengers
+   as real folds accumulate, adding scraped features only as explicit ablations
+   against the retained incumbents;
 7. populate the implemented player cards with promoted forecasts only after a
    baseline has valid out-of-time evidence.
 
