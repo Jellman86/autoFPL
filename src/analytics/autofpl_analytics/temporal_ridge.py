@@ -504,20 +504,22 @@ def _predict_fold(
     global_mean = sum(train_y) / len(train_y)
     predictions: List[Prediction] = []
     for sample, ridge_value in zip(target, ridge_values):
-        position_values = position_points[sample.position]
-        position_mean = (
-            sum(position_values) / len(position_values)
-            if position_values
-            else global_mean
-        )
-        history = sorted(player_points[sample.player_id])
-        last_points = float(history[-1][1]) if history else position_mean
-        official_mean = (
-            sample.features["cumulativePointsPerPriorGameweek"]
-        )
-        assert official_mean is not None
         values = {model_name: ridge_value}
         if include_baselines:
+            position_values = position_points[sample.position]
+            position_mean = (
+                sum(position_values) / len(position_values)
+                if position_values
+                else global_mean
+            )
+            history = sorted(player_points[sample.player_id])
+            last_points = (
+                float(history[-1][1]) if history else position_mean
+            )
+            official_mean = sample.features[
+                "cumulativePointsPerPriorGameweek"
+            ]
+            assert official_mean is not None
             values.update(
                 {
                     "zero-points": 0.0,
