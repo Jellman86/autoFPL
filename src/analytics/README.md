@@ -51,3 +51,24 @@ exploratory and never overwrites an existing file.
 
 The exact boundary and limitations are recorded in the
 [temporal feature table specification](../../docs/research/temporal-feature-table-v1.md).
+
+## Temporal ridge challenger v1
+
+The first feature-consuming challenger fits a fixed regularised linear model
+inside honest expanding Gameweek origins:
+
+```bash
+PYTHONPATH=src/analytics python3 -m autofpl_analytics.temporal_ridge \
+  --database /path/to/autofpl.db \
+  --season 2026-27 \
+  --minimum-training-gameweeks 3 \
+  --output /path/to/temporal-ridge-report.json
+```
+
+All median imputation, missing indicators, standardisation and fitting are
+training-fold local. The deterministic report compares ridge with four simple
+point baselines, remains explicitly exploratory, and exits `2` when too few
+complete historical feature/outcome pairs exist.
+
+The fixed feature and evaluation design are recorded in the
+[temporal ridge specification](../../docs/research/temporal-ridge-v1.md).

@@ -230,6 +230,25 @@ class BaselineEvaluationTests(unittest.TestCase):
         self.assertEqual(first, second)
         self.assertEqual(before, after)
 
+    def test_additive_newer_database_schema_is_supported(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            database = Path(temporary_directory) / "autofpl.db"
+            self._create_database(database)
+            self._seed_complete_history(database)
+            with sqlite3.connect(database) as connection:
+                connection.executemany(
+                    """
+                    INSERT INTO schema_migrations
+                        (version, name, applied_at_utc)
+                    VALUES (?, ?, '2026-07-02T00:00:00.0000000Z');
+                    """,
+                    [(8, "additive-eight"), (9, "additive-nine")],
+                )
+
+            report = evaluate_database(database, season_code="2026-27")
+
+        self.assertEqual("complete", report["status"])
+
     def test_expected_minutes_scores_double_gameweek_total_without_cap(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             database = Path(temporary_directory) / "autofpl.db"

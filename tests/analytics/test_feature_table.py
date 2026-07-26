@@ -212,6 +212,18 @@ class FeatureTableTests(unittest.TestCase):
                 build_feature_table(database_path, "2026-27", 5)
         self.assertEqual("data.target-replay-not-found", raised.exception.code)
 
+    def test_additive_newer_database_schema_is_supported(self) -> None:
+        with self._database() as database_path:
+            with sqlite3.connect(database_path) as connection:
+                connection.executemany(
+                    "INSERT INTO schema_migrations (version) VALUES (?);",
+                    [(8,), (9,)],
+                )
+
+            table = build_feature_table(database_path, "2026-27", 4)
+
+        self.assertEqual(4, table["gameweek"])
+
     def test_incomplete_history_capture_fails_closed(self) -> None:
         with self._database() as database_path:
             with sqlite3.connect(database_path) as connection:
