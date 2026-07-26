@@ -1,6 +1,6 @@
 # autoFPL documentation
 
-Use this index to find the maintained source for each topic. The deterministic private-development foundation, decision room and SQLite snapshots are deployed. The first fixed-origin official FPL capture is implemented, while real historical replay, forecasting, simulation, optimisation, advisory MCP tools and proposal persistence do not yet exist.
+Use this index to find the maintained source for each topic. The deterministic private-development foundation, decision room and SQLite snapshots are deployed. Fixed-origin official FPL reference and final-outcome capture plus cutoff-safe pairing are implemented; the first completed 2026/27 Gameweek pair, forecasting, simulation, optimisation, advisory MCP tools and proposal persistence do not yet exist.
 
 ## Start here
 

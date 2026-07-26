@@ -363,7 +363,7 @@ h3 {
 
 .source-counts {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 0.4rem;
   margin: 0;
 }
@@ -920,6 +920,14 @@ footer {
   }
 
   .source-counts div:first-child {
+    border-left: 0;
+  }
+
+  .source-counts {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .source-counts div:nth-child(3) {
     border-left: 0;
   }
 

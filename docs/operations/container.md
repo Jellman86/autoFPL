@@ -2,7 +2,7 @@
 
 ## Purpose and current boundary
 
-The container is a private development application for the Gameweek decision room, deterministic FPL rules, authoritative SQLite decision snapshots and the first operator-triggered official FPL reference capture. Collection uses two fixed public read-only URLs and no credentials. The application has no autonomous actions or account-write client. Its snapshot write route is an internal development boundary and must not be exposed publicly before authentication and authorisation exist.
+The container is a private development application for the Gameweek decision room, deterministic FPL rules, authoritative SQLite decision snapshots and operator-triggered official FPL reference/outcome capture. Collection uses fixed public read-only URL templates and no credentials. The application has no autonomous actions or account-write client. Its snapshot write route is an internal development boundary and must not be exposed beyond the trusted private environment before authentication and authorisation exist.
 
 Routes:
 
@@ -15,6 +15,8 @@ Routes:
 | `GET` | `/readyz` | Returns ready only when the current SQLite migration is present |
 | `GET` | `/api/v1/data/official-fpl/latest` | Returns provenance, timing, hashes and counts for the latest private official FPL capture, or 404 before the first import |
 | `GET` | `/api/v1/data/official-fpl/replays/{seasonCode}/{gameweek}/pre-deadline` | Selects the newest immutable capture that was available no later than the deadline recorded in that capture |
+| `GET` | `/api/v1/data/official-fpl/outcomes/{seasonCode}/{gameweek}/latest` | Returns the latest immutable final per-player outcome capture metadata, or 404 |
+| `GET` | `/api/v1/data/official-fpl/replays/{seasonCode}/{gameweek}/outcome` | Pairs a cutoff-safe replay with the latest final outcome only when every replay player matches |
 | `POST` | `/api/v1/decision-snapshots` | Persists validated squad/selection state and creates an immutable cutoff-correct snapshot |
 | `GET` | `/api/v1/decision-snapshots/{snapshotId}` | Reads one immutable snapshot after creation or restart |
 | `POST` | `/api/v1/decision-snapshot-metadata/validation` | Returns canonical metadata or a stable 400/422 problem response |
@@ -56,9 +58,25 @@ returns only provenance, counts and the selected immutable capture identity.
 A capture remains reference evidence only until rolling evaluation admits
 specific fields into a forecast.
 
+After the provider marks a Gameweek final, run:
+
+```text
+dotnet AutoFpl.Api.dll --import-official-fpl-outcome <gameweek>
+```
+
+This first refreshes the two reference resources, then retrieves only
+`https://fantasy.premierleague.com/api/event/<gameweek>/live/`. It writes
+nothing unless the refreshed event is finished and data-checked, at least one
+target fixture exists, every target fixture is finished, the live payload is
+non-empty and its player IDs exactly cover the refreshed reference capture.
+The exact live bytes, SHA-256 identity and bounded points/minutes/scoring-event
+fields are retained immutably. The provider supplies no separately verifiable
+publication time, so availability is the completed retrieval time. The web
+process exposes no collection route.
+
 ## SQLite operations
 
-The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies four explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
+The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies five explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
 
 The root filesystem stays read-only. Production must mount a private, UID
 `1654`-writable persistent directory at `/data`; the CI smoke test uses an
@@ -142,18 +160,23 @@ The Git-backed Dockhand definition lives in `autofpl/` in the separate `docker-c
 - Do not publish a host port in the steady-state stack.
 - Use `read_only: true`, `cap_drop: [ALL]`, `security_opt: [no-new-privileges:true]`, and a bounded `/tmp` tmpfs.
 - Mount a private persistent host directory at `/data`, writable only by UID/GID `1654`; keep database and backups off public shares.
-- No Nginx Proxy Manager host or public DNS route is configured. Any public/user-authenticated API is a later threat-model and authentication decision.
+- The home-lab DNS record and Nginx Proxy Manager host expose `autofpl.pownet.uk` through the trusted deployment environment. Do not broaden that route or treat it as a multi-user authenticated product until identity and authorisation are implemented.
 - Store future secrets only in Dockhand; SQLite configuration contains no credential.
 
 All stack lifecycle changes must follow the `docker-configs` repository's Git-backed Dockhand procedure. Do not run direct `docker compose pull` or `up` commands on the host.
 
 ## Rollback
 
-No prior releasable digest exists yet, so an image rollback has not been exercised. When a prior verified digest exists:
+When rolling back to a prior verified digest:
 
 1. Select the previously verified image digest from Git/GHCR history.
 2. Revert the `docker-configs` digest change and push it through review.
 3. Redeploy the Git-backed stack through Dockhand.
 4. Verify container health and representative 200/400/422 behavior.
 
-Before deploying a schema-changing image, create an online backup and verify it with `--database-integrity-check` using a temporary database path. Image rollback is safe only while the older code supports the current schema; otherwise restore the matching verified backup through a separately reviewed, Git-backed operational change. Never copy the live WAL database file directly while the application is running.
+Before deploying this fifth migration, create an online backup and verify the
+live database with `--database-integrity-check`. Version-four code rejects a
+version-five database, so rollback requires restoring the matching
+pre-migration backup before redeploying the older image. Apply that restore
+through a separately reviewed operational change. Never copy the live WAL
+database file directly while the application is running.

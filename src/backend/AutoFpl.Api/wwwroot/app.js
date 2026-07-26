@@ -224,6 +224,7 @@ function renderCaptureCounts(capture) {
 }
 
 async function loadOfficialData() {
+  const outcomeStatus = document.querySelector("#source-outcome-status");
   try {
     const captureResponse = await fetch("/api/v1/data/official-fpl/latest", {
       headers: { Accept: "application/json" },
@@ -293,7 +294,40 @@ async function loadOfficialData() {
       "Real source captured. Forecasts still synthetic.",
       `Gameweek ${replay.gameweek} can be rebuilt from capture #${replay.selectedCaptureId} without using data retrieved after its deadline.`,
     );
+
+    const outcomeGameweek = capture.latestCompletedGameweek ?? replay.gameweek;
+    const pairPath =
+      `/api/v1/data/official-fpl/replays/${encodeURIComponent(capture.seasonCode)}` +
+      `/${outcomeGameweek}/outcome`;
+    const pairResponse = await fetch(pairPath, {
+      headers: { Accept: "application/json" },
+    });
+    if (pairResponse.status === 404) {
+      outcomeStatus.textContent = "Awaiting";
+      return;
+    }
+    if (!pairResponse.ok) {
+      throw new Error(`Outcome pair request failed with ${pairResponse.status}`);
+    }
+
+    const pair = await pairResponse.json();
+    outcomeStatus.textContent = "Paired";
+    document.querySelector("#capture-time").textContent =
+      formatCompactInstant(pair.replay.captureAvailableAtUtc);
+    document.querySelector("#source-deadline").textContent =
+      formatCompactInstant(pair.replay.deadlineUtc);
+    document.querySelector("#source-capture-id").textContent =
+      `#${pair.replay.selectedCaptureId}`;
+    document.querySelector("#capture-lead-time").textContent =
+      formatLeadTime(pair.replay.captureLeadTimeSeconds);
+    setOfficialDataState(
+      "ready",
+      "Outcome paired",
+      "Replay and final outcome are fully matched.",
+      `Gameweek ${pair.replay.gameweek} links cutoff-safe capture #${pair.replay.selectedCaptureId} to official outcome #${pair.outcome.outcomeCaptureId} across all ${pair.matchedPlayerCount.toLocaleString()} players. Forecasts remain synthetic.`,
+    );
   } catch (error) {
+    outcomeStatus.textContent = "Unknown";
     setOfficialDataState(
       "error",
       "Unavailable",

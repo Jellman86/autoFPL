@@ -211,6 +211,61 @@ public sealed class OfficialFplCaptureStore
             reader.GetInt32(11));
     }
 
+    internal async Task<OfficialFplOutcomeContext?> GetOutcomeContextAsync(
+        long captureId,
+        int gameweek,
+        CancellationToken cancellationToken = default)
+    {
+        if (captureId <= 0 || gameweek is < 1 or > 38)
+        {
+            return null;
+        }
+
+        await using SqliteConnection connection = new(_options.ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText =
+            """
+            SELECT
+                capture.season_code,
+                event.deadline_utc,
+                event.finished,
+                event.data_checked,
+                capture.player_count,
+                COUNT(fixture.fixture_id),
+                COALESCE(SUM(fixture.finished), 0)
+            FROM official_fpl_captures AS capture
+            INNER JOIN official_fpl_events AS event
+                ON event.capture_id = capture.capture_id
+               AND event.event_id = $gameweek
+            LEFT JOIN official_fpl_fixtures AS fixture
+                ON fixture.capture_id = capture.capture_id
+               AND fixture.event_id = event.event_id
+            WHERE capture.capture_id = $captureId
+            GROUP BY
+                capture.season_code,
+                event.deadline_utc,
+                event.finished,
+                event.data_checked,
+                capture.player_count;
+            """;
+        command.Parameters.AddWithValue("$captureId", captureId);
+        command.Parameters.AddWithValue("$gameweek", gameweek);
+        await using SqliteDataReader reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+        return await reader.ReadAsync(cancellationToken)
+            ? new(
+                reader.GetString(0),
+                gameweek,
+                ParseUtc(reader.GetString(1)),
+                reader.GetBoolean(2),
+                reader.GetBoolean(3),
+                reader.GetInt32(4),
+                reader.GetInt32(5),
+                reader.GetInt32(6))
+            : null;
+    }
+
     private static async Task<long?> FindExistingCaptureIdAsync(
         SqliteConnection connection,
         SqliteTransaction transaction,
@@ -596,4 +651,21 @@ public sealed class OfficialFplCaptureStore
             "yyyy-MM-dd'T'HH:mm:ss.fffffff'Z'",
             CultureInfo.InvariantCulture,
             DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+}
+
+internal sealed record OfficialFplOutcomeContext(
+    string SeasonCode,
+    int Gameweek,
+    DateTimeOffset DeadlineUtc,
+    bool EventFinished,
+    bool DataChecked,
+    int PlayerCount,
+    int FixtureCount,
+    int FinishedFixtureCount)
+{
+    public bool IsFinal =>
+        EventFinished
+        && DataChecked
+        && FixtureCount > 0
+        && FinishedFixtureCount == FixtureCount;
 }

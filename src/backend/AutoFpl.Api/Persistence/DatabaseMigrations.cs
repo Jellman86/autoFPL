@@ -4,7 +4,7 @@ internal sealed record DatabaseMigration(int Version, string Name, string Sql);
 
 internal static class DatabaseMigrations
 {
-    public const int CurrentVersion = 4;
+    public const int CurrentVersion = 5;
 
     public static IReadOnlyList<DatabaseMigration> All { get; } =
     [
@@ -252,6 +252,68 @@ internal static class DatabaseMigrations
                     (home_score IS NULL AND away_score IS NULL)
                     OR (home_score >= 0 AND away_score >= 0)
                 )
+            );
+            """),
+        new(
+            5,
+            "official-fpl-gameweek-outcome",
+            """
+            CREATE TABLE official_fpl_outcome_captures (
+                outcome_capture_id INTEGER PRIMARY KEY,
+                schema_version TEXT NOT NULL CHECK (schema_version = '1.0'),
+                source_key TEXT NOT NULL
+                    CHECK (source_key = 'official-fpl-api-event-live/v1'),
+                season_code TEXT NOT NULL CHECK (length(season_code) BETWEEN 4 AND 16),
+                gameweek INTEGER NOT NULL CHECK (gameweek BETWEEN 1 AND 38),
+                reference_capture_id INTEGER NOT NULL
+                    REFERENCES official_fpl_captures(capture_id) ON DELETE RESTRICT,
+                live_url TEXT NOT NULL,
+                retrieved_at_utc TEXT NOT NULL,
+                available_at_utc TEXT NOT NULL,
+                live_sha256 TEXT NOT NULL CHECK (length(live_sha256) = 64),
+                live_json BLOB NOT NULL,
+                player_count INTEGER NOT NULL CHECK (player_count BETWEEN 1 AND 2000),
+                gameweek_fixture_count INTEGER NOT NULL
+                    CHECK (gameweek_fixture_count BETWEEN 1 AND 100),
+                created_at_utc TEXT NOT NULL,
+                UNIQUE (season_code, gameweek, live_sha256),
+                UNIQUE (outcome_capture_id, reference_capture_id)
+            );
+
+            CREATE INDEX official_fpl_outcome_captures_latest_idx
+                ON official_fpl_outcome_captures (
+                    season_code,
+                    gameweek,
+                    available_at_utc DESC,
+                    outcome_capture_id DESC
+                );
+
+            CREATE TABLE official_fpl_player_outcomes (
+                outcome_capture_id INTEGER NOT NULL,
+                reference_capture_id INTEGER NOT NULL,
+                player_id INTEGER NOT NULL CHECK (player_id > 0),
+                minutes INTEGER NOT NULL CHECK (minutes BETWEEN 0 AND 400),
+                starts INTEGER NOT NULL CHECK (starts BETWEEN 0 AND 4),
+                total_points INTEGER NOT NULL CHECK (total_points BETWEEN -100 AND 500),
+                goals_scored INTEGER NOT NULL CHECK (goals_scored BETWEEN 0 AND 20),
+                assists INTEGER NOT NULL CHECK (assists BETWEEN 0 AND 20),
+                clean_sheets INTEGER NOT NULL CHECK (clean_sheets BETWEEN 0 AND 4),
+                goals_conceded INTEGER NOT NULL CHECK (goals_conceded BETWEEN 0 AND 50),
+                saves INTEGER NOT NULL CHECK (saves BETWEEN 0 AND 100),
+                bonus INTEGER NOT NULL CHECK (bonus BETWEEN 0 AND 30),
+                yellow_cards INTEGER NOT NULL CHECK (yellow_cards BETWEEN 0 AND 4),
+                red_cards INTEGER NOT NULL CHECK (red_cards BETWEEN 0 AND 4),
+                PRIMARY KEY (outcome_capture_id, player_id),
+                FOREIGN KEY (outcome_capture_id, reference_capture_id)
+                    REFERENCES official_fpl_outcome_captures(
+                        outcome_capture_id,
+                        reference_capture_id
+                    ) ON DELETE RESTRICT,
+                FOREIGN KEY (reference_capture_id, player_id)
+                    REFERENCES official_fpl_players(
+                        capture_id,
+                        player_id
+                    ) ON DELETE RESTRICT
             );
             """),
     ];

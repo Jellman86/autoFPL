@@ -16,7 +16,7 @@ that every provider field is a valid predictive feature.
 
 ## Fixed resources
 
-The importer performs one GET against each fixed HTTPS URL:
+The reference importer performs one GET against each fixed HTTPS URL:
 
 - `https://fantasy.premierleague.com/api/bootstrap-static/`
 - `https://fantasy.premierleague.com/api/fixtures/`
@@ -27,10 +27,19 @@ are disabled. Each response must be JSON, complete within the configured
 most two connections to the provider because the two resources form one
 capture.
 
+The final-outcome importer first refreshes that reference capture and then
+performs one GET against the bounded Gameweek template:
+
+- `https://fantasy.premierleague.com/api/event/{gameweek}/live/`
+
+`gameweek` must be an integer from 1 through 38; no other origin, path, query,
+header or credential is caller-controlled.
+
 Run an operator capture with:
 
 ```text
 dotnet AutoFpl.Api.dll --import-official-fpl
+dotnet AutoFpl.Api.dll --import-official-fpl-outcome <gameweek>
 ```
 
 The command writes one JSON summary to stdout. A new database may be created;
@@ -39,7 +48,11 @@ only capture metadata and counts at
 `GET /api/v1/data/official-fpl/latest`. It selects the newest qualifying
 pre-deadline capture at
 `GET /api/v1/data/official-fpl/replays/{seasonCode}/{gameweek}/pre-deadline`.
-Neither route exposes retained raw JSON or triggers collection.
+Final outcome metadata is available at
+`GET /api/v1/data/official-fpl/outcomes/{seasonCode}/{gameweek}/latest`, and a
+fully matched pair at
+`GET /api/v1/data/official-fpl/replays/{seasonCode}/{gameweek}/outcome`.
+None of these routes exposes retained raw JSON or triggers collection.
 
 ## Timing and correction semantics
 
@@ -59,6 +72,13 @@ response bytes. The pair is the immutable content identity:
 - downstream features select captures by `availableAtUtc`, never by a later
   corrected value.
 
+Outcome SHA-256 is calculated over the exact live response bytes. Identical
+season/Gameweek hashes reuse the earliest stored outcome; corrected bytes create
+a new immutable outcome. Before any write, the reference event must be finished
+and data-checked, all of its fixtures must be finished, and live player IDs must
+exactly match the post-event reference players. This deliberately rejects the
+provider's current pre-season empty `elements` response.
+
 ## Persisted fields
 
 The private SQLite capture retains the exact two JSON responses plus bounded
@@ -70,6 +90,10 @@ normalised fields:
 - player ID/code, team, position, names, price, availability status/news,
   selection percentage, total points, minutes and starts; and
 - fixture ID, Gameweek, teams, kickoff, state and final/provisional score.
+
+Final outcome rows retain player ID, minutes, starts, total points, goals,
+assists, clean sheets, goals conceded, saves, bonus and cards. The exact live
+JSON remains private for later parser correction and audit.
 
 Foreign keys and range checks reject unknown teams, events, positions,
 one-sided scores, duplicate IDs and schema/type drift before a transaction is
@@ -86,10 +110,10 @@ written.
   matching must use explicit provider codes and reviewed matching logic.
 - Availability/news values are provider state, not ground truth. Their
   predictive contribution requires rolling evaluation and ablation.
-- The pre-deadline selector proves which current capture is safe for an upcoming
-  deadline, but one current capture cannot establish historical evaluation.
-  Properly timestamped pre-deadline captures plus later player outcomes are
-  still required.
+- The pairing route proves chronology and complete player identity for one
+  Gameweek; it does not by itself establish a useful sample size, target
+  quality or model validity. Multiple completed cutoff-safe Gameweeks are still
+  required for rolling evaluation.
 
 The current UI renders capture provenance and replay readiness separately from
 the explicitly synthetic advice fixture. The slice does not join official
@@ -113,4 +137,6 @@ Provider references:
 On 2026-07-25 the fixed-origin importer accepted the live 2026/27 payload with
 38 Gameweeks, 20 teams, 558 players and 380 fixtures, then passed SQLite
 integrity checking. Counts are observations from that capture, not stable
-provider guarantees.
+provider guarantees. On 2026-07-26 the Gameweek 1 live resource returned an
+empty `elements` array before the season started; the outcome importer correctly
+treats that state as unavailable rather than a final result.
