@@ -55,6 +55,7 @@ yet exist.
 - [Evidence base](research/evidence-base.md) — durable sources supporting the research approach.
 - [Baseline evaluation v4](research/baseline-evaluation-v4.md) — executable point, expected-minutes, availability and empirical distribution baselines with rolling chronology, proper scores and calibration diagnostics.
 - [FPL Form external evaluation v1](research/fpl-form-external-evaluation-v1.md) — cutoff- and identity-gated scoring of published conditional points and the separately named appearance-adjusted challenger.
+- [Official FPL published expected-points evaluation v1](research/official-fpl-published-expected-points-evaluation-v1.md) — standalone deadline-correct scoring of retained `ep_next` values against later official outcomes.
 - [Temporal feature table v2](research/temporal-feature-table-v2.md) — cutoff-safe player, underlying-outcome and team match-leading features with explicit missingness and correction chronology.
 - [Official underlying feature ablation v1](research/official-underlying-feature-ablation-v1.md) — same-fold ridge/tree comparison of the unchanged official contract with fixed xG/xA/xGC, ICT/BPS and defensive additions.
 - [Temporal ridge challenger v1](research/temporal-ridge-v1.md) — fold-local regularised total-points challenger over the cutoff-safe temporal feature table.

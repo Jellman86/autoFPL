@@ -160,6 +160,13 @@ that predate their normalisation. A single-fixture outcome is match-specific;
 double-Gameweek statistics remain visibly aggregated while the individual
 opponents are listed.
 
+The read-only operator command
+`--evaluate-official-fpl-expected-points [season-code]` scores complete
+deadline-eligible `ep_next` captures against later final outcomes without
+modifying the database. Its deterministic report keeps zero-minute players and
+position slices visible and remains explicitly unpromoted. See the
+[evaluation specification](../../research/official-fpl-published-expected-points-evaluation-v1.md).
+
 ## Retention and responsible use
 
 Captures remain in the private runtime database and are not committed or

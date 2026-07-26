@@ -15,6 +15,19 @@ The wire boundary is deliberately separate from the domain:
 
 The API rejects undeclared, duplicate, missing or malformed request data with 400 and returns stable RFC problem responses with 422 for domain-invalid values. Kestrel limits request bodies to 16 KiB and request bodies are not logged. Validation/outcome routes remain stateless; `/api/v1/decision-snapshots` is the explicit persisted exception and is private-network-only until authentication exists. The [manual evidence timing contract](../../docs/data/manual-evidence-timing-v1.md) defines its cutoff and revision semantics. The API container is documented in the [container runbook](../../docs/operations/container.md).
 
+The backend also owns read-only source evaluation where authoritative capture
+and identity joins are the primary concern. Run the official published
+expected-points baseline with:
+
+```text
+dotnet AutoFpl.Api.dll \
+  --evaluate-official-fpl-expected-points [season-code]
+```
+
+It emits deterministic exploratory JSON, returns exit `2` until one complete
+deadline-correct forecast/outcome pair exists, and never promotes the provider
+value into product advice.
+
 The validator and licensing decision is recorded in [ADR-0008](../../docs/adr/0008-versioned-json-contracts.md).
 
 Run the locked .NET test suite from the repository root:

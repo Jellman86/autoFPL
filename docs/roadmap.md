@@ -403,8 +403,9 @@ and cutoff.
 ### Milestone C — real point-in-time evidence
 
 **Status:** active — bounded immutable reference capture, cutoff-safe replay,
-final per-player outcome capture and complete replay/outcome pairing are
-implemented. The first real pair awaits a completed 2026/27 Gameweek.
+final per-player outcome capture, complete replay/outcome pairing and
+standalone official published-expected-points evaluation are implemented. The
+first real pair awaits a completed 2026/27 Gameweek.
 
 - Implement the smallest useful real historical/current importer alongside the
   fields it actually supplies.
