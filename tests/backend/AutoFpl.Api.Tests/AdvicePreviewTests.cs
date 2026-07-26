@@ -97,6 +97,21 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
             "<dt id=\"artifact-reference-label\">Snapshot</dt>",
             body,
             StringComparison.Ordinal);
+        string script = await _client.GetStringAsync(
+            "/app.js",
+            TestContext.Current.CancellationToken);
+        Assert.Contains(
+            "priorSeasonIdentityStatus !== \"stable-code-match\"",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "official availability shown, not modelled",
+            script,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "matched-by-stable-code",
+            script,
+            StringComparison.Ordinal);
     }
 
     [Fact]
