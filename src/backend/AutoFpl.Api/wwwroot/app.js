@@ -609,10 +609,12 @@ async function loadPlayerDossier(player) {
       document.querySelector("#preseason-challenger-delta").textContent =
         `${direction}${difference.toFixed(1)} vs Baseline v0`;
       const warnings = [];
-      if (forecast.availabilityStatus !== "available") {
+      if (forecast.availabilityStatus === "authoritative-current-official-not-modelled") {
+        warnings.push("official availability shown, not modelled");
+      } else {
         warnings.push(`availability: ${forecast.availabilityStatus}`);
       }
-      if (forecast.priorSeasonIdentityStatus !== "matched-by-stable-code") {
+      if (forecast.priorSeasonIdentityStatus !== "stable-code-match") {
         warnings.push("no matched prior-season identity");
       }
       document.querySelector("#preseason-challenger-note").textContent =
