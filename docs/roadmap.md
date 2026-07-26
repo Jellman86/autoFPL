@@ -55,6 +55,50 @@ when the scientific ecosystem materially helps. A separate long-running
 service, another database or distributed infrastructure requires a measured
 need.
 
+## Decision-room visual direction
+
+The next UI iteration should feel like a focused football analysis desk rather
+than a generic administration dashboard. The pitch remains the primary
+selection surface; official player portraits, forecast uncertainty and
+selection role make each player immediately recognisable. Dense research detail
+belongs in one selected-player dossier instead of being repeated across every
+card.
+
+On the pitch and bench, each player card shows:
+
+- an official FPL/Premier League photo when available, with a deterministic
+  initials-and-club fallback;
+- name, club, position, opponent and home/away state;
+- expected points, expected minutes and a compact uncertainty cue;
+- captain, vice-captain, bench order and availability status; and
+- a clear selected/focus state for mouse, touch and keyboard.
+
+Activating a card opens the same player dossier as a persistent side sheet on
+wide screens and a full-screen sheet on mobile. Its sections are:
+
+1. **Forecast** — point/minutes distributions, starting and 60-minute
+   probabilities, freshness, model/run identity and selection rationale;
+2. **Recent form** — chronological prior Gameweeks with opponent, home/away,
+   minutes, starts, points, goals, assists, clean sheets, saves, bonus and
+   cards;
+3. **Fixtures** — the upcoming fixture sequence, rest days, congestion and
+   home/away context; and
+4. **Evidence** — observed facts, source timestamps, assumptions, risks and the
+   specific evidence that materially moved the forecast.
+
+Recent form initially uses the existing immutable Gameweek outcome captures.
+Rows with one fixture are match-specific; multi-fixture Gameweeks are visibly
+labelled as aggregated. Add a bounded, cached per-fixture history collector
+only if the product or evaluation shows that the extra granularity is useful.
+The dossier never fills unavailable fields with invented values.
+
+The selected player's portrait and chronological forecast-to-outcome ribbon are
+the signature interaction: selection on the pitch should visually connect to
+the evidence used to judge that player. Motion is limited to this transition,
+respects reduced-motion preferences and never obscures values. The sheet must
+support Escape, focus trapping/restoration, deep linking and complete keyboard
+operation.
+
 ## AI access and identity
 
 autoFPL supports three complementary modes. All modes consume the same versioned
@@ -118,6 +162,26 @@ The first forecast produces a distribution, not only a point estimate, for:
 - expected minutes conditional on availability;
 - Gameweek points and important scoring-event components; and
 - joint squad outcomes needed for captaincy and lineup decisions.
+
+### Temporal feature set
+
+Every target Gameweek is represented using only observations available before
+its deadline. The first richer feature table should add:
+
+- player lags and rolling 1/3/5-Gameweek rates for minutes, starts, points and
+  scoring components;
+- exponentially weighted player form, retaining the raw missingness and sample
+  count;
+- team and opponent attacking/defensive form split by home and away;
+- fixture opponent, venue, rest days, fixture count and congestion;
+- availability/status/news changes with their actual capture timestamps; and
+- explicit promoted/new-player and insufficient-history indicators.
+
+Transforms, weights, imputers and encoders are fitted inside each training
+window. Later corrections cannot rewrite an earlier decision row. Current
+Gameweek-level outcomes are sufficient for the initial table; match-level
+granularity and previous-season joins remain separate challengers until
+fixture-level collection and cross-season player identity are reliable.
 
 ### Baselines and challengers
 
@@ -260,6 +324,11 @@ implemented. The first real pair awaits a completed 2026/27 Gameweek.
 - Preserve source identity, retrieval/publication/availability times, content
   identity, corrections, missingness and player matching.
 - Reconstruct at least one historical deadline without future-known values.
+- Retain the official bootstrap player photo identifier alongside player code
+  and identity. Construct image references only from an allowlisted official
+  Premier League asset origin; never accept an arbitrary image URL.
+- Expose a cutoff-aware player dossier read model joining identity, prior
+  outcomes and fixtures without exposing retained raw provider JSON.
 - After the core minutes and points incumbents exist, ingest one bounded public
   predicted-points/minutes source as a timestamped external baseline. Score its
   published forecast alone before testing it as a model feature.
@@ -290,7 +359,7 @@ unavailable until completed replay/outcome pairs exist.
 **Exit:** one command produces a leakage-tested comparison report from real
 replayable data.
 
-### Milestone E — calibrated player forecasts
+### Milestone E — calibrated player forecasts and player experience
 
 Tracked by [#43](https://github.com/Jellman86/autoFPL/issues/43).
 
@@ -298,11 +367,20 @@ Tracked by [#43](https://github.com/Jellman86/autoFPL/issues/43).
   valid baseline.
 - Store a compact forecast artefact linked to snapshot, model/run, code, data
   and configuration identities.
-- Populate the real player cards with expected points, expected minutes,
-  uncertainty, freshness and structured reason inputs.
+- Replace the current compact text-only pitch cards with official-photo player
+  cards that retain legible expected points, minutes, uncertainty and selection
+  role at desktop and mobile sizes.
+- Make every pitch and bench card open the typed player dossier described
+  above, with chronological form, fixtures, forecast evidence and honest
+  missing/aggregated states.
+- Keep the pitch, dossier and alternative selection in sync without a page
+  reload, and preserve the selected player in a shareable URL.
+- Prove loading, empty, missing-photo, missing-history, stale-data and provider
+  failure states with accessible keyboard/touch interaction.
 
 **Exit:** the decision room displays the first honest out-of-time-evaluated
-forecast.
+forecast on recognisable player cards, and a user can inspect the complete
+cutoff-aware evidence trail for any selected player.
 
 ### Milestone F — scenarios and feasible alternatives
 
@@ -348,7 +426,8 @@ The automated acceptance journey must:
 1. restore a known historical fixture after application restart;
 2. reconstruct the same cutoff-correct snapshot;
 3. reproduce the promoted forecast and scenario artefacts;
-4. display the recommendation and inspect a player's explanation;
+4. display the recommendation, open a photo-backed player card and inspect its
+   forecast, recent form, fixtures and explanation;
 5. compare a user-edited selection;
 6. answer a grounded question through at least one MCP client;
 7. remain useful when every AI provider is unavailable; and
@@ -402,9 +481,15 @@ The next development slices are:
 4. next, add one bounded public predicted-points/minutes adapter, preserving its
    publication, retrieval and availability times, and score it as an external
    incumbent before using any of its values as features;
-5. compare regularised/tabular and scraped-feature challengers only when they
+5. add the official photo identifier, cutoff-aware player-dossier API and
+   previous-Gameweek/fixture read model;
+6. implement the decision-room visual overhaul and clickable responsive player
+   dossier against honest synthetic and recorded states;
+7. build the point-in-time temporal feature table and compare
+   regularised/tabular and scraped-feature challengers only when they
    can be evaluated against the retained incumbents;
-6. populate real player cards only after a baseline has valid out-of-time evidence.
+8. populate player cards with promoted forecasts only after a baseline has
+   valid out-of-time evidence.
 
 Do not add another standalone governance, universal contract, infrastructure or
 AI-orchestrator project ahead of those slices.
