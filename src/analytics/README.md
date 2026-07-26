@@ -62,6 +62,29 @@ never overwrites an existing file.
 The exact boundary and limitations are recorded in the
 [temporal feature table specification](../../docs/research/temporal-feature-table-v2.md).
 
+## Official underlying feature ablation v1
+
+The official feature ablation compares the unchanged ridge/tree contract with
+fixed xG/xA/xGC, ICT/BPS and defensive-contribution additions on identical
+expanding-origin folds:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.official_underlying_ablation \
+  --database /path/to/autofpl.db \
+  --season 2026-27 \
+  --minimum-training-gameweeks 3 \
+  --output /path/to/official-underlying-ablation.json
+```
+
+Rolling-three and exponentially weighted means carry observed sample counts.
+Ridge preprocessing and tree feature removal remain training-fold local. The
+report is deterministic, read-only and unpromoted, and returns exit code `2`
+until an eligible official fold exists.
+
+See the
+[official underlying feature ablation specification](../../docs/research/official-underlying-feature-ablation-v1.md).
+
 ## Temporal ridge challenger v1
 
 The first feature-consuming challenger fits a fixed regularised linear model
