@@ -523,9 +523,9 @@ The next development slices are:
 4. operate the Playwright-MCP-backed bounded FPL Form public predicted-points
    adapter once its 2026/27 active forecast is available, preserve retrieval,
    availability, transport and extraction identities, run the implemented
-   fail-closed player/fixture identity coverage report, and score its
-   conditional published values as an external incumbent before using any
-   value as a feature;
+   fail-closed player/fixture identity coverage report, and run the implemented
+   external evaluator over its conditional published values and separately
+   named probability-adjusted challenger before using any value as a feature;
 5. keep exercising the implemented official-photo decision room and
    cutoff-aware dossiers against live captures as prior outcomes accumulate;
 6. feed the implemented point-in-time player/team temporal feature table into

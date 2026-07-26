@@ -184,6 +184,171 @@ public sealed class FplFormIdentityCoverageStoreTests
         Assert.False(late.IsComplete);
     }
 
+    [Fact]
+    public async Task External_evaluation_scores_conditional_and_adjusted_values_separately()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = await CreateDatabaseAsync(files.DatabasePath);
+        await SeedAsync(files.DatabasePath);
+        await SeedOutcomeAsync(files.DatabasePath, totalPoints: 4, minutes: 0);
+        var identityStore = new FplFormIdentityCoverageStore(options);
+        var evaluator = new FplFormForecastEvaluationStore(options, identityStore);
+
+        FplFormForecastEvaluationDocument first = await evaluator.EvaluateAsync(
+            "2026-27",
+            TestContext.Current.CancellationToken);
+        FplFormForecastEvaluationDocument second = await evaluator.EvaluateAsync(
+            "2026-27",
+            TestContext.Current.CancellationToken);
+
+        Assert.Equivalent(first, second, strict: true);
+        Assert.Equal("complete", first.Status);
+        Assert.Null(first.Reason);
+        Assert.Equal(1, first.CandidateCaptureCount);
+        Assert.Equal(1, first.EligiblePairCount);
+        Assert.Equal(64, first.DataIdentitySha256.Length);
+        Assert.Equal(64, first.RunIdentitySha256.Length);
+        Assert.Empty(first.ExcludedCaptures);
+        FplFormForecastEvaluationFoldDocument fold = Assert.Single(first.Folds);
+        Assert.Equal(1, fold.PlayerCount);
+        Assert.Equal(1, fold.FixturePredictionCount);
+        Assert.Equal(1, fold.ProbabilityAdjustedPlayerCount);
+        Assert.Equal(2.25, fold.PublishedConditionalMetrics.Mae);
+        Assert.Equal(1.9375, fold.ProbabilityAdjustedMetrics!.Mae);
+
+        Assert.Equal(2, first.Models.Count);
+        FplFormForecastEvaluationModelDocument published = first.Models.Single(
+            model => model.Name == "fpl-form-published-conditional-points");
+        Assert.Equal(2.25, published.Metrics!.Mae);
+        Assert.Equal(2.25, published.Metrics.Bias);
+        Assert.Equal(1, published.ZeroMinuteMetrics!.SampleCount);
+        FplFormForecastEvaluationModelDocument adjusted = first.Models.Single(
+            model => model.Name
+                == "autofpl-appearance-probability-adjusted-points");
+        Assert.Equal(1.9375, adjusted.Metrics!.Mae);
+        Assert.Equal(0, adjusted.MissingPlayerCount);
+    }
+
+    [Fact]
+    public async Task External_evaluation_reports_missing_appearance_probabilities()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = await CreateDatabaseAsync(files.DatabasePath);
+        await SeedAsync(files.DatabasePath);
+        await SeedOutcomeAsync(files.DatabasePath, totalPoints: 4, minutes: 90);
+        await using (var connection = new SqliteConnection($"Data Source={files.DatabasePath}"))
+        {
+            await connection.OpenAsync(TestContext.Current.CancellationToken);
+            await using SqliteCommand command = connection.CreateCommand();
+            command.CommandText =
+                """
+                UPDATE fpl_form_fixture_predictions
+                SET appearance_probability = NULL
+                WHERE capture_id = 20;
+                UPDATE fpl_form_forecast_captures
+                SET appearance_probability_count = 0
+                WHERE capture_id = 20;
+                """;
+            await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
+        }
+
+        var identityStore = new FplFormIdentityCoverageStore(options);
+        var evaluator = new FplFormForecastEvaluationStore(options, identityStore);
+        FplFormForecastEvaluationDocument report = await evaluator.EvaluateAsync(
+            cancellationToken: TestContext.Current.CancellationToken);
+
+        Assert.Equal("complete", report.Status);
+        FplFormForecastEvaluationModelDocument adjusted = report.Models.Single(
+            model => model.Name
+                == "autofpl-appearance-probability-adjusted-points");
+        Assert.Equal(0, adjusted.SampleCount);
+        Assert.Equal(1, adjusted.MissingPlayerCount);
+        Assert.Null(adjusted.Metrics);
+        Assert.Empty(adjusted.PositionSlices);
+    }
+
+    [Fact]
+    public async Task External_evaluation_reports_missing_outcome_without_promoting_source()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = await CreateDatabaseAsync(files.DatabasePath);
+        await SeedAsync(files.DatabasePath);
+        var identityStore = new FplFormIdentityCoverageStore(options);
+        var evaluator = new FplFormForecastEvaluationStore(options, identityStore);
+
+        FplFormForecastEvaluationDocument report = await evaluator.EvaluateAsync(
+            cancellationToken: TestContext.Current.CancellationToken);
+
+        Assert.Equal("insufficient-data", report.Status);
+        Assert.Equal("no-complete-forecast-outcome-pairs", report.Reason);
+        Assert.Equal(1, report.CandidateCaptureCount);
+        Assert.Equal(0, report.EligiblePairCount);
+        Assert.Empty(report.Folds);
+        Assert.Empty(report.Models);
+        FplFormForecastEvaluationExclusionDocument exclusion =
+            Assert.Single(report.ExcludedCaptures);
+        Assert.Equal("official-outcome-unavailable", exclusion.Reason);
+    }
+
+    [Fact]
+    public async Task External_evaluation_does_not_cherry_pick_older_complete_capture()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = await CreateDatabaseAsync(files.DatabasePath);
+        await SeedAsync(files.DatabasePath);
+        await SeedOutcomeAsync(files.DatabasePath, totalPoints: 4, minutes: 90);
+        await using (var connection = new SqliteConnection($"Data Source={files.DatabasePath}"))
+        {
+            await connection.OpenAsync(TestContext.Current.CancellationToken);
+            await using SqliteCommand command = connection.CreateCommand();
+            command.CommandText =
+                """
+                INSERT INTO fpl_form_forecast_captures (
+                    capture_id, schema_version, source_key, source_url,
+                    season_code, gameweek, retrieved_at_utc, available_at_utc,
+                    content_sha256, transport, extraction_version,
+                    provider_payload_sha256, evidence_brotli,
+                    player_count, fixture_prediction_count,
+                    appearance_probability_count, created_at_utc
+                )
+                SELECT
+                    21, schema_version, source_key, source_url,
+                    season_code, gameweek,
+                    '2026-08-14T11:00:00+00:00',
+                    '2026-08-14T11:00:00+00:00',
+                    $contentSha, transport, extraction_version,
+                    $providerSha, evidence_brotli,
+                    player_count, fixture_prediction_count,
+                    appearance_probability_count,
+                    '2026-08-14T11:00:00+00:00'
+                FROM fpl_form_forecast_captures
+                WHERE capture_id = 20;
+                INSERT INTO fpl_form_fixture_predictions
+                SELECT
+                    21, source_player_id, fixture_id, gameweek,
+                    player_name, 'Wrong Team', position, kickoff_local,
+                    predicted_points, appearance_probability
+                FROM fpl_form_fixture_predictions
+                WHERE capture_id = 20;
+                """;
+            command.Parameters.AddWithValue("$contentSha", new string('f', 64));
+            command.Parameters.AddWithValue("$providerSha", new string('1', 64));
+            await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
+        }
+
+        var identityStore = new FplFormIdentityCoverageStore(options);
+        var evaluator = new FplFormForecastEvaluationStore(options, identityStore);
+        FplFormForecastEvaluationDocument report = await evaluator.EvaluateAsync(
+            cancellationToken: TestContext.Current.CancellationToken);
+
+        Assert.Equal("insufficient-data", report.Status);
+        Assert.Empty(report.Folds);
+        FplFormForecastEvaluationExclusionDocument exclusion =
+            Assert.Single(report.ExcludedCaptures);
+        Assert.Equal(21, exclusion.ForecastCaptureId);
+        Assert.Equal("incomplete", exclusion.Reason);
+    }
+
     private static async Task<DatabaseOptions> CreateDatabaseAsync(string databasePath)
     {
         IConfiguration configuration = new ConfigurationBuilder()
@@ -284,6 +449,50 @@ public sealed class FplFormIdentityCoverageStoreTests
         command.Parameters.AddWithValue("$sourceFixtureId", sourceFixtureId);
         command.Parameters.AddWithValue("$playerName", playerName);
         command.Parameters.AddWithValue("$teamName", teamName);
+        await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
+    }
+
+    private static async Task SeedOutcomeAsync(
+        string databasePath,
+        int totalPoints,
+        int minutes)
+    {
+        await using var connection = new SqliteConnection(
+            new SqliteConnectionStringBuilder
+            {
+                DataSource = databasePath,
+                ForeignKeys = true,
+            }.ToString());
+        await connection.OpenAsync(TestContext.Current.CancellationToken);
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText =
+            """
+            INSERT INTO official_fpl_outcome_captures (
+                outcome_capture_id, schema_version, source_key,
+                season_code, gameweek, reference_capture_id, live_url,
+                retrieved_at_utc, available_at_utc, live_sha256, live_json,
+                player_count, gameweek_fixture_count, created_at_utc
+            ) VALUES (
+                30, '1.0', 'official-fpl-api-event-live/v1',
+                '2026-27', 1, 10,
+                'https://fantasy.premierleague.com/api/event/1/live/',
+                '2026-08-24T12:00:00+00:00',
+                '2026-08-24T12:00:00+00:00',
+                $liveSha, X'00', 1, 1, '2026-08-24T12:00:00+00:00'
+            );
+            INSERT INTO official_fpl_player_outcomes (
+                outcome_capture_id, reference_capture_id, player_id,
+                minutes, starts, total_points, goals_scored, assists,
+                clean_sheets, goals_conceded, saves, bonus,
+                yellow_cards, red_cards
+            ) VALUES (
+                30, 10, 101, $minutes, 0, $totalPoints,
+                0, 0, 0, 0, 0, 0, 0, 0
+            );
+            """;
+        command.Parameters.AddWithValue("$liveSha", new string('e', 64));
+        command.Parameters.AddWithValue("$totalPoints", totalPoints);
+        command.Parameters.AddWithValue("$minutes", minutes);
         await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
     }
 

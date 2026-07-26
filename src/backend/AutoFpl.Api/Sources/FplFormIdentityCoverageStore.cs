@@ -25,6 +25,11 @@ public sealed class FplFormIdentityCoverageStore
 
     public async Task<FplFormIdentityCoverageDocument?> GetAsync(
         long forecastCaptureId,
+        CancellationToken cancellationToken = default) =>
+        (await GetResolutionAsync(forecastCaptureId, cancellationToken))?.Document;
+
+    internal async Task<FplFormIdentityResolution?> GetResolutionAsync(
+        long forecastCaptureId,
         CancellationToken cancellationToken = default)
     {
         if (forecastCaptureId <= 0)
@@ -32,7 +37,11 @@ public sealed class FplFormIdentityCoverageStore
             return null;
         }
 
-        await using SqliteConnection connection = new(_options.ConnectionString);
+        await using SqliteConnection connection = new(
+            new SqliteConnectionStringBuilder(_options.ConnectionString)
+            {
+                Mode = SqliteOpenMode.ReadOnly,
+            }.ToString());
         await connection.OpenAsync(cancellationToken);
         ForecastCapture? forecast = await ReadForecastAsync(
             connection,
@@ -53,7 +62,7 @@ public sealed class FplFormIdentityCoverageStore
             cancellationToken);
         if (official is null)
         {
-            return CreateUnavailableDocument(forecast, predictions);
+            return new(CreateUnavailableDocument(forecast, predictions), []);
         }
 
         List<OfficialPlayer> officialPlayers = await ReadOfficialPlayersAsync(
@@ -68,7 +77,7 @@ public sealed class FplFormIdentityCoverageStore
         return Resolve(forecast, official, predictions, officialPlayers, officialFixtures);
     }
 
-    private static FplFormIdentityCoverageDocument Resolve(
+    private static FplFormIdentityResolution Resolve(
         ForecastCapture forecast,
         OfficialCapture official,
         IReadOnlyList<SourcePrediction> predictions,
@@ -111,6 +120,7 @@ public sealed class FplFormIdentityCoverageStore
         int fallbackFixtures = 0;
         int unmatchedPredictions = 0;
         int conflictingPredictions = 0;
+        var resolvedPredictions = new List<FplFormResolvedPrediction>();
         foreach (SourcePrediction prediction in predictions)
         {
             PlayerResolution player = playerResolutions[prediction.SourcePlayerId];
@@ -122,9 +132,17 @@ public sealed class FplFormIdentityCoverageStore
             {
                 case ResolutionKind.Direct:
                     directFixtures++;
+                    resolvedPredictions.Add(CreateResolvedPrediction(
+                        prediction,
+                        player,
+                        resolution));
                     break;
                 case ResolutionKind.Fallback:
                     fallbackFixtures++;
+                    resolvedPredictions.Add(CreateResolvedPrediction(
+                        prediction,
+                        player,
+                        resolution));
                     break;
                 case ResolutionKind.Unmatched:
                     unmatchedPredictions++;
@@ -156,34 +174,48 @@ public sealed class FplFormIdentityCoverageStore
             : identitiesComplete
                 ? Complete
                 : Incomplete;
-        return new FplFormIdentityCoverageDocument(
-            "1.0",
-            status,
-            beforeDeadline && identitiesComplete,
-            forecast.CaptureId,
-            forecast.ContentSha256,
-            forecast.SeasonCode,
-            forecast.Gameweek,
-            forecast.AvailableAtUtc,
-            official.CaptureId,
-            official.AvailableAtUtc,
-            official.BootstrapSha256,
-            official.FixturesSha256,
-            official.DeadlineUtc,
-            playerResolutions.Count,
-            directPlayers + fallbackPlayers,
-            directPlayers,
-            fallbackPlayers,
-            unmatchedPlayers,
-            conflictingPlayers,
-            predictions.Count,
-            directFixtures + fallbackFixtures,
-            directFixtures,
-            fallbackFixtures,
-            unmatchedPredictions,
-            conflictingPredictions,
-            issues);
+        var document = new FplFormIdentityCoverageDocument(
+                "1.0",
+                status,
+                beforeDeadline && identitiesComplete,
+                forecast.CaptureId,
+                forecast.ContentSha256,
+                forecast.SeasonCode,
+                forecast.Gameweek,
+                forecast.AvailableAtUtc,
+                official.CaptureId,
+                official.AvailableAtUtc,
+                official.BootstrapSha256,
+                official.FixturesSha256,
+                official.DeadlineUtc,
+                playerResolutions.Count,
+                directPlayers + fallbackPlayers,
+                directPlayers,
+                fallbackPlayers,
+                unmatchedPlayers,
+                conflictingPlayers,
+                predictions.Count,
+                directFixtures + fallbackFixtures,
+                directFixtures,
+                fallbackFixtures,
+                unmatchedPredictions,
+                conflictingPredictions,
+                issues);
+        return new(document, identitiesComplete ? resolvedPredictions : []);
     }
+
+    private static FplFormResolvedPrediction CreateResolvedPrediction(
+        SourcePrediction prediction,
+        PlayerResolution player,
+        FixtureResolution fixture) =>
+        new(
+            prediction.SourcePlayerId,
+            prediction.FixtureId,
+            player.Player!.PlayerId,
+            fixture.Fixture!.FixtureId,
+            prediction.Position,
+            prediction.PredictedPoints,
+            prediction.AppearanceProbability);
 
     private static PlayerResolution ResolvePlayer(
         IEnumerable<SourcePrediction> sourcePredictions,
@@ -232,12 +264,16 @@ public sealed class FplFormIdentityCoverageStore
                 playerResolution.Kind == ResolutionKind.Conflict
                     ? ResolutionKind.Conflict
                     : ResolutionKind.Unmatched,
+                null,
                 "official-player-unresolved");
         }
 
         if (!TryParseLondonKickoff(source.KickoffLocal, out DateTimeOffset kickoffUtc))
         {
-            return new(ResolutionKind.Conflict, "invalid-or-ambiguous-local-kickoff");
+            return new(
+                ResolutionKind.Conflict,
+                null,
+                "invalid-or-ambiguous-local-kickoff");
         }
 
         OfficialFixture? idMatch = officialFixtures.FirstOrDefault(
@@ -245,8 +281,11 @@ public sealed class FplFormIdentityCoverageStore
         if (idMatch is not null)
         {
             return FixtureAttributesMatch(idMatch, playerResolution.Player.TeamId, kickoffUtc)
-                ? new(ResolutionKind.Direct, "source-fixture-id")
-                : new(ResolutionKind.Conflict, "source-fixture-id-attributes-disagree");
+                ? new(ResolutionKind.Direct, idMatch, "source-fixture-id")
+                : new(
+                    ResolutionKind.Conflict,
+                    null,
+                    "source-fixture-id-attributes-disagree");
         }
 
         List<OfficialFixture> attributeMatches = officialFixtures
@@ -257,9 +296,15 @@ public sealed class FplFormIdentityCoverageStore
             .ToList();
         return attributeMatches.Count switch
         {
-            0 => new(ResolutionKind.Unmatched, "no-official-fixture-match"),
-            1 => new(ResolutionKind.Fallback, "unique-team-and-kickoff"),
-            _ => new(ResolutionKind.Conflict, "ambiguous-official-fixture-match"),
+            0 => new(ResolutionKind.Unmatched, null, "no-official-fixture-match"),
+            1 => new(
+                ResolutionKind.Fallback,
+                attributeMatches[0],
+                "unique-team-and-kickoff"),
+            _ => new(
+                ResolutionKind.Conflict,
+                null,
+                "ambiguous-official-fixture-match"),
         };
     }
 
@@ -445,7 +490,9 @@ public sealed class FplFormIdentityCoverageStore
                 player_name,
                 team_name,
                 position,
-                kickoff_local
+                kickoff_local,
+                predicted_points,
+                appearance_probability
             FROM fpl_form_fixture_predictions
             WHERE capture_id = $captureId
             ORDER BY source_player_id, fixture_id;
@@ -462,7 +509,13 @@ public sealed class FplFormIdentityCoverageStore
                     reader.GetString(2),
                     reader.GetString(3),
                     reader.GetString(4),
-                    reader.GetString(5)));
+                    reader.GetString(5),
+                    decimal.Parse(reader.GetString(6), CultureInfo.InvariantCulture),
+                    reader.IsDBNull(7)
+                        ? null
+                        : decimal.Parse(
+                            reader.GetString(7),
+                            CultureInfo.InvariantCulture)));
         }
 
         return predictions;
@@ -605,7 +658,9 @@ public sealed class FplFormIdentityCoverageStore
         string PlayerName,
         string TeamName,
         string Position,
-        string KickoffLocal);
+        string KickoffLocal,
+        decimal PredictedPoints,
+        decimal? AppearanceProbability);
 
     private sealed record OfficialCapture(
         long CaptureId,
@@ -634,7 +689,10 @@ public sealed class FplFormIdentityCoverageStore
         OfficialPlayer? Player,
         string Reason);
 
-    private sealed record FixtureResolution(ResolutionKind Kind, string Reason);
+    private sealed record FixtureResolution(
+        ResolutionKind Kind,
+        OfficialFixture? Fixture,
+        string Reason);
 
     private enum ResolutionKind
     {
@@ -644,3 +702,16 @@ public sealed class FplFormIdentityCoverageStore
         Conflict,
     }
 }
+
+internal sealed record FplFormIdentityResolution(
+    FplFormIdentityCoverageDocument Document,
+    IReadOnlyList<FplFormResolvedPrediction> Predictions);
+
+internal sealed record FplFormResolvedPrediction(
+    int SourcePlayerId,
+    int SourceFixtureId,
+    int OfficialPlayerId,
+    int OfficialFixtureId,
+    string Position,
+    decimal PredictedPoints,
+    decimal? AppearanceProbability);
