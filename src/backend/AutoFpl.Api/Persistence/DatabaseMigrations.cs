@@ -4,7 +4,7 @@ internal sealed record DatabaseMigration(int Version, string Name, string Sql);
 
 internal static class DatabaseMigrations
 {
-    public const int CurrentVersion = 16;
+    public const int CurrentVersion = 17;
 
     public static IReadOnlyList<DatabaseMigration> All { get; } =
     [
@@ -1136,6 +1136,51 @@ internal static class DatabaseMigrations
             BEFORE DELETE ON evidence_claims
             BEGIN
                 SELECT RAISE(ABORT, 'evidence claims cannot be deleted');
+            END;
+            """),
+        new(
+            17,
+            "player-gameweek-forecast-artifacts",
+            """
+            CREATE TABLE player_gameweek_forecast_artifacts (
+                forecast_artifact_id INTEGER PRIMARY KEY,
+                schema_version TEXT NOT NULL CHECK (schema_version = '1.0'),
+                model_key TEXT NOT NULL
+                    CHECK (
+                        model_key = 'official-market-baseline-v0-player-table'
+                    ),
+                official_capture_id INTEGER NOT NULL
+                    REFERENCES official_fpl_captures(capture_id)
+                    ON DELETE RESTRICT,
+                season_code TEXT NOT NULL CHECK (length(season_code) BETWEEN 4 AND 16),
+                gameweek INTEGER NOT NULL CHECK (gameweek BETWEEN 1 AND 38),
+                decision_cutoff_utc TEXT NOT NULL,
+                document_json TEXT NOT NULL
+                    CHECK (length(document_json) BETWEEN 2 AND 2097152),
+                content_sha256 TEXT NOT NULL UNIQUE
+                    CHECK (length(content_sha256) = 64),
+                created_at_utc TEXT NOT NULL,
+                UNIQUE (official_capture_id, model_key)
+            );
+
+            CREATE INDEX player_gameweek_forecast_artifacts_latest_idx
+                ON player_gameweek_forecast_artifacts (
+                    season_code,
+                    gameweek,
+                    decision_cutoff_utc DESC,
+                    forecast_artifact_id DESC
+                );
+
+            CREATE TRIGGER player_gameweek_forecast_artifacts_immutable
+            BEFORE UPDATE ON player_gameweek_forecast_artifacts
+            BEGIN
+                SELECT RAISE(ABORT, 'player forecast artifacts are immutable');
+            END;
+
+            CREATE TRIGGER player_gameweek_forecast_artifacts_no_delete
+            BEFORE DELETE ON player_gameweek_forecast_artifacts
+            BEGIN
+                SELECT RAISE(ABORT, 'player forecast artifacts cannot be deleted');
             END;
             """),
     ];

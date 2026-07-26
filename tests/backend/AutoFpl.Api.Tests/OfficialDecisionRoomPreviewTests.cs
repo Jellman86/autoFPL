@@ -5,6 +5,7 @@ using AutoFpl.Api.Advice;
 using AutoFpl.Api.Persistence;
 using AutoFpl.Api.Sources;
 using AutoFpl.Contracts.Advice;
+using AutoFpl.Contracts.Forecasts;
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -109,6 +110,36 @@ public sealed class OfficialDecisionRoomPreviewTests
                 Assert.True(player.Lower80 <= player.ExpectedPoints);
                 Assert.True(player.ExpectedPoints <= player.Upper80);
             });
+        PlayerGameweekForecastDocument? playerForecast =
+            await client.GetFromJsonAsync<PlayerGameweekForecastDocument>(
+                "/api/v1/forecasts/player-gameweek/latest",
+                TestContext.Current.CancellationToken);
+        Assert.NotNull(playerForecast);
+        Assert.Equal("provisional-unvalidated", playerForecast.Status);
+        Assert.Equal(
+            "official-market-baseline-v0-player-table",
+            playerForecast.ModelKey);
+        Assert.Equal("interval-only-uncalibrated", playerForecast.DistributionStatus);
+        Assert.Equal(CaptureTime, playerForecast.DecisionCutoffUtc);
+        Assert.Equal(20, playerForecast.Players.Count);
+        Assert.NotNull(playerForecast.ForecastArtifactId);
+        Assert.Equal(64, playerForecast.ForecastArtifactContentSha256?.Length);
+        Assert.All(
+            playerForecast.Players,
+            player =>
+            {
+                Assert.Null(player.StartProbability);
+                Assert.Null(player.SixtyMinuteProbability);
+                Assert.True(player.Lower80 <= player.ExpectedPoints);
+                Assert.True(player.ExpectedPoints <= player.Upper80);
+                Assert.StartsWith(
+                    "https://resources.premierleague.com/premierleague/photos/players/110x140/",
+                    player.PhotoUrl,
+                    StringComparison.Ordinal);
+            });
+        Assert.Subset(
+            playerForecast.Players.Select(player => player.PlayerId).ToHashSet(),
+            advice.Selection.Players.Select(player => player.PlayerId).ToHashSet());
 
         await using WebApplicationFactory<Program> restartedFactory =
             new WebApplicationFactory<Program>()
@@ -129,6 +160,17 @@ public sealed class OfficialDecisionRoomPreviewTests
         Assert.Equal(
             advice.ForecastArtifactContentHash,
             restartedAdvice.ForecastArtifactContentHash);
+        PlayerGameweekForecastDocument? restartedPlayerForecast =
+            await restartedClient.GetFromJsonAsync<PlayerGameweekForecastDocument>(
+                "/api/v1/forecasts/player-gameweek/latest",
+                TestContext.Current.CancellationToken);
+        Assert.NotNull(restartedPlayerForecast);
+        Assert.Equal(
+            playerForecast.ForecastArtifactId,
+            restartedPlayerForecast.ForecastArtifactId);
+        Assert.Equal(
+            playerForecast.ForecastArtifactContentSha256,
+            restartedPlayerForecast.ForecastArtifactContentSha256);
     }
 
     private static byte[] CreateBootstrap()

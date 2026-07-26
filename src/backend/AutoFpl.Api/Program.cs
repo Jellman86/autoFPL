@@ -4,12 +4,14 @@ using System.Text.Json.Serialization;
 
 using AutoFpl.Api.Advice;
 using AutoFpl.Api.Errors;
+using AutoFpl.Api.Forecasts;
 using AutoFpl.Api.Health;
 using AutoFpl.Api.Intelligence;
 using AutoFpl.Api.Persistence;
 using AutoFpl.Api.Selections;
 using AutoFpl.Api.Sources;
 using AutoFpl.Contracts.Advice;
+using AutoFpl.Contracts.Forecasts;
 using AutoFpl.Contracts.Intelligence;
 using AutoFpl.Contracts.Lineups;
 using AutoFpl.Contracts.Outcomes;
@@ -141,6 +143,11 @@ builder.Services.AddSingleton(serviceProvider =>
         serviceProvider.GetRequiredService<OfficialFplCaptureStore>()));
 builder.Services.AddSingleton(serviceProvider =>
     new BaselineForecastArtifactStore(
+        serviceProvider.GetRequiredService<DatabaseOptions>(),
+        serviceProvider.GetRequiredService<OfficialDecisionRoomPreviewStore>(),
+        serviceProvider.GetRequiredService<TimeProvider>()));
+builder.Services.AddSingleton(serviceProvider =>
+    new PlayerGameweekForecastArtifactStore(
         serviceProvider.GetRequiredService<DatabaseOptions>(),
         serviceProvider.GetRequiredService<OfficialDecisionRoomPreviewStore>(),
         serviceProvider.GetRequiredService<TimeProvider>()));
@@ -306,6 +313,9 @@ if (runOfficialFplImport)
     await app.Services
         .GetRequiredService<BaselineForecastArtifactStore>()
         .RefreshLatestAsync();
+    await app.Services
+        .GetRequiredService<PlayerGameweekForecastArtifactStore>()
+        .RefreshLatestAsync();
     await Console.Out.WriteLineAsync(
         JsonSerializer.Serialize(
             capture,
@@ -407,6 +417,9 @@ if (!StringComparer.OrdinalIgnoreCase.Equals(
 await app.Services
     .GetRequiredService<BaselineForecastArtifactStore>()
     .RefreshLatestAsync();
+await app.Services
+    .GetRequiredService<PlayerGameweekForecastArtifactStore>()
+    .RefreshLatestAsync();
 
 app.UseExceptionHandler();
 app.UseDefaultFiles();
@@ -452,6 +465,25 @@ app.MapGet(
         "Return the latest persisted Baseline v0 forecast or the synthetic acceptance fixture.")
     .WithTags("Advice")
     .Produces<GameweekAdviceDocument>();
+app.MapGet(
+    "/api/v1/forecasts/player-gameweek/latest",
+    async (
+        PlayerGameweekForecastArtifactStore store,
+        CancellationToken cancellationToken) =>
+    {
+        PlayerGameweekForecastDocument? forecast =
+            await store.GetLatestAsync(cancellationToken);
+        return forecast is null ? Results.NotFound() : Results.Ok(forecast);
+    })
+    .WithName("GetLatestPlayerGameweekForecast")
+    .WithSummary(
+        "Read the latest immutable provisional forecast for every eligible player.")
+    .WithDescription(
+        "Baseline v0 currently exposes an uncalibrated interval and availability-weighted "
+        + "minutes proxy. Missing fitted start and 60-minute probabilities remain null.")
+    .WithTags("Forecasts")
+    .Produces<PlayerGameweekForecastDocument>()
+    .Produces(StatusCodes.Status404NotFound);
 app.MapGet(
     "/api/v1/selections/current",
     async (

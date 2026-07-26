@@ -537,6 +537,12 @@ replayable data.
 
 Tracked by [#43](https://github.com/Jellman86/autoFPL/issues/43).
 
+**Status:** active — the immutable all-eligible-player Baseline v0 artifact and
+typed read route are implemented with explicit provisional status,
+uncalibrated interval-only values and null fitted start/60-minute
+probabilities. Calibrated component distributions still require real temporal
+folds and promotion evidence.
+
 - Promote the best candidate that satisfies the registered rule, or retain the
   valid baseline.
 - Keep the visible Baseline v0 as the honest provisional incumbent while real
@@ -678,9 +684,9 @@ v1.0 hardens the proven product rather than introducing its first UI:
 
 The next development slices are:
 
-1. emit the first complete, versioned player-Gameweek forecast artifact from
-   the existing cutoff-safe official feature boundary, preserving explicit
-   provisional status until real rolling folds justify calibration;
+1. extend the implemented provisional all-player artifact with fitted
+   appearance/start/minutes and point-distribution components only as real
+   rolling folds justify them;
 2. inventory the smallest useful official club/manager, predicted-lineup,
    quantitative and named-expert sources, then populate the implemented
    quarantined claim ledger through typed adapters over Quark's existing
