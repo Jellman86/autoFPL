@@ -48,6 +48,13 @@ public sealed record ResearchSourceClaimExtractionDocument(
     [property: JsonPropertyName("sourceKey")] string SourceKey,
     [property: JsonPropertyName("extractionVersion")] string ExtractionVersion,
     [property: JsonPropertyName("candidateCount")] int CandidateCount,
+    [property: JsonPropertyName("startClaimCount")] int StartClaimCount,
+    [property: JsonPropertyName("availabilityCandidateCount")]
+        int AvailabilityCandidateCount,
+    [property: JsonPropertyName("availabilityClaimCount")]
+        int AvailabilityClaimCount,
+    [property: JsonPropertyName("unresolvedAvailabilityCount")]
+        int UnresolvedAvailabilityCount,
     [property: JsonPropertyName("claimCount")] int ClaimCount,
     [property: JsonPropertyName("unresolvedPlayerCodes")]
         IReadOnlyList<int> UnresolvedPlayerCodes);
