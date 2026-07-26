@@ -64,6 +64,19 @@ class HistoricalParticipationEvaluationTests(unittest.TestCase):
                     for fold in task["lockedHoldout"]["folds"]
                 ],
             )
+            self.assertNotIn(
+                task["candidate"],
+                {
+                    model["name"]
+                    for model in task["development"]["models"]
+                },
+            )
+            self.assertTrue(
+                all(
+                    not fold["diagnostics"]["candidateFit"]
+                    for fold in task["development"]["folds"]
+                )
+            )
             for fold in task["lockedHoldout"]["folds"]:
                 self.assertTrue(
                     all(

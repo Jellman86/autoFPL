@@ -40,7 +40,7 @@ from .temporal_tree import (
 )
 
 SCHEMA_VERSION = "1.0"
-EVALUATOR_VERSION = "historical-participation-evaluation-v1"
+EVALUATOR_VERSION = "historical-participation-evaluation-v1.1"
 BINARY_TARGETS = ("appearance", "start", "played-60")
 MINUTES_TARGET = "minutes"
 TARGETS = (*BINARY_TARGETS, MINUTES_TARGET)
@@ -154,24 +154,30 @@ def _evaluate_target(
             for sample in samples_by_gameweek[gameweek]
         ]
         target = samples_by_gameweek[target_gameweek]
-        predictions, diagnostics = _predict(
-            target_name,
-            training,
-            target,
-            candidate,
-        )
-        fold = _fold(
-            target_name,
-            target_gameweek,
-            training_gameweeks,
-            training,
-            target,
-            predictions,
-            diagnostics,
-        )
         if target_gameweek < holdout_start_gameweek:
+            predictions = _baseline_predictions(
+                target_name,
+                training,
+                target,
+            )
             development_predictions.extend(predictions)
-            development_folds.append(fold)
+            development_folds.append(
+                _fold(
+                    target_name,
+                    target_gameweek,
+                    training_gameweeks,
+                    training,
+                    target,
+                    predictions,
+                    {
+                        "candidateFit": False,
+                        "reason": (
+                            "fixed-candidate-is-not-selected-or-tuned-on-"
+                            "development-folds"
+                        ),
+                    },
+                )
+            )
             continue
         if selected_baseline is None:
             if not development_folds:
@@ -181,8 +187,24 @@ def _evaluate_target(
                 development_predictions,
                 baselines,
             )
+        predictions, diagnostics = _predict(
+            target_name,
+            training,
+            target,
+            candidate,
+        )
         holdout_predictions.extend(predictions)
-        holdout_folds.append(fold)
+        holdout_folds.append(
+            _fold(
+                target_name,
+                target_gameweek,
+                training_gameweeks,
+                training,
+                target,
+                predictions,
+                diagnostics,
+            )
+        )
 
     if not development_folds or not holdout_folds or selected_baseline is None:
         return {
@@ -206,7 +228,7 @@ def _evaluate_target(
     development_models = _summaries(
         target_name,
         development_predictions,
-        (candidate, *baselines),
+        baselines,
     )
     holdout_models = _summaries(
         target_name,
@@ -741,6 +763,7 @@ def _base(
             "binaryBaselines": list(BINARY_BASELINES),
             "minutesBaselines": list(MINUTES_BASELINES),
             "features": list(FEATURES),
+            "candidateFitScope": "locked-holdout-folds-only",
             "minimumScoreImprovementFraction": (
                 MINIMUM_SCORE_IMPROVEMENT
             ),
