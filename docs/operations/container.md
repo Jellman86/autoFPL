@@ -13,6 +13,7 @@ Routes:
 | `GET` | `/api/v1/data/fpl-form-forecast/latest` | Returns provenance and counts for the latest immutable public FPL Form forecast capture |
 | `GET` | `/api/v1/data/fpl-form-forecast/status` | Distinguishes not checked, provider waiting, collection failure and retained forecast states |
 | `GET` | `/api/v1/data/fpl-form-forecast/{captureId}/identity-coverage` | Reports deterministic cutoff-correct official player/fixture coverage for one immutable forecast capture |
+| `GET` | `/api/v1/evidence/claims/{seasonCode}/{gameweek}?decisionCutoffUtc=...` | Returns immutable quarantined typed claims available by the requested cutoff; claims do not influence forecasts |
 | `GET` | `/openapi/v1.json` | Returns the generated OpenAPI 3.1 HTTP contract |
 | `GET` | `/healthz` | Liveness response: `{"status":"healthy"}` |
 | `GET` | `/readyz` | Returns ready only when the current SQLite migration is present |
@@ -171,9 +172,34 @@ MAE/RMSE/bias with deterministic content identities. It exits `2` with
 `insufficient-data` until a captured forecast has a later final outcome. See
 the [evaluation specification](../research/official-fpl-published-expected-points-evaluation-v1.md).
 
+## Quarantined evidence claims
+
+Typed output from an admitted operator-side source adapter can be imported
+without exposing a web write route:
+
+```text
+dotnet AutoFpl.Api.dll --import-evidence-claim <json-file>
+```
+
+The input is strict, case-sensitive JSON bounded to 64 KiB. It records one
+version `1.0` availability, start, minutes or role claim with canonical source
+URL and revision, publication/retrieval/availability times, source SHA-256,
+target season/Gameweek/player, directness, a bounded supporting span,
+extraction method/version/confidence and optional duplicate-cluster SHA-256.
+The source content itself is not imported. The claimed player must exist in an
+official FPL capture for that season and Gameweek that was already available
+when the claim became available.
+
+Imports are content-idempotent and permanently quarantined. They cannot change
+Baseline v0, a user selection or authoritative state. The read route requires
+`decisionCutoffUtc` and returns only claims whose `availableAtUtc` is no later
+than that instant. Later source admission, outcome scoring and same-fold
+ablation determine whether a derived feature ever becomes a model challenger.
+See the [evidence-fusion programme](../research/player-source-evidence-fusion-v1.md).
+
 ## SQLite operations
 
-The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies fourteen explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
+The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies sixteen explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
 
 The root filesystem stays read-only. Production must mount a private, UID
 `1654`-writable persistent directory at `/data`; the CI smoke test uses an

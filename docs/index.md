@@ -53,6 +53,7 @@ yet exist.
 ## Research and evidence
 
 - [Evidence base](research/evidence-base.md) — durable sources supporting the research approach.
+- [Player and source evidence fusion v1](research/player-source-evidence-fusion-v1.md) — probabilistic player state, typed pundit/news claims, reliability learning, aggregation and multi-Gameweek evaluation plan.
 - [Baseline evaluation v4](research/baseline-evaluation-v4.md) — executable point, expected-minutes, availability and empirical distribution baselines with rolling chronology, proper scores and calibration diagnostics.
 - [FPL Form external evaluation v1](research/fpl-form-external-evaluation-v1.md) — cutoff- and identity-gated scoring of published conditional points and the separately named appearance-adjusted challenger.
 - [Official FPL published expected-points evaluation v1](research/official-fpl-published-expected-points-evaluation-v1.md) — standalone deadline-correct scoring of retained `ep_next` values against later official outcomes.

@@ -4,7 +4,7 @@ internal sealed record DatabaseMigration(int Version, string Name, string Sql);
 
 internal static class DatabaseMigrations
 {
-    public const int CurrentVersion = 15;
+    public const int CurrentVersion = 16;
 
     public static IReadOnlyList<DatabaseMigration> All { get; } =
     [
@@ -990,6 +990,152 @@ internal static class DatabaseMigrations
             BEFORE DELETE ON selection_revisions
             BEGIN
                 SELECT RAISE(ABORT, 'selection revisions cannot be deleted');
+            END;
+            """),
+        new(
+            16,
+            "quarantined-evidence-claims",
+            """
+            CREATE TABLE evidence_claims (
+                claim_id INTEGER PRIMARY KEY,
+                schema_version TEXT NOT NULL CHECK (schema_version = '1.0'),
+                status TEXT NOT NULL CHECK (status = 'quarantined'),
+                source_key TEXT NOT NULL CHECK (length(source_key) BETWEEN 1 AND 100),
+                canonical_url TEXT NOT NULL
+                    CHECK (length(canonical_url) BETWEEN 8 AND 2048),
+                author TEXT CHECK (author IS NULL OR length(author) BETWEEN 1 AND 150),
+                published_at_utc TEXT,
+                retrieved_at_utc TEXT NOT NULL,
+                available_at_utc TEXT NOT NULL,
+                content_sha256 TEXT NOT NULL CHECK (length(content_sha256) = 64),
+                source_revision INTEGER NOT NULL CHECK (source_revision > 0),
+                season_code TEXT NOT NULL CHECK (length(season_code) BETWEEN 4 AND 16),
+                gameweek INTEGER NOT NULL CHECK (gameweek BETWEEN 1 AND 38),
+                deadline_utc TEXT NOT NULL,
+                player_id INTEGER NOT NULL CHECK (player_id > 0),
+                identity_capture_id INTEGER NOT NULL
+                    REFERENCES official_fpl_captures(capture_id)
+                    ON DELETE RESTRICT,
+                claim_type TEXT NOT NULL
+                    CHECK (claim_type IN ('availability', 'start', 'minutes', 'role')),
+                availability_status TEXT
+                    CHECK (
+                        availability_status IS NULL
+                        OR availability_status IN (
+                            'available',
+                            'doubtful',
+                            'unavailable',
+                            'expected-return'
+                        )
+                    ),
+                start_status TEXT
+                    CHECK (
+                        start_status IS NULL
+                        OR start_status IN (
+                            'starts',
+                            'does-not-start',
+                            'uncertain'
+                        )
+                    ),
+                forecast_probability TEXT
+                    CHECK (
+                        forecast_probability IS NULL
+                        OR CAST(forecast_probability AS REAL) BETWEEN 0.0 AND 1.0
+                    ),
+                expected_minutes INTEGER
+                    CHECK (
+                        expected_minutes IS NULL
+                        OR expected_minutes BETWEEN 0 AND 180
+                    ),
+                role TEXT CHECK (role IS NULL OR length(role) BETWEEN 1 AND 100),
+                directness TEXT NOT NULL
+                    CHECK (
+                        directness IN (
+                            'direct-quote',
+                            'reported',
+                            'opinion',
+                            'model-forecast'
+                        )
+                    ),
+                source_span TEXT NOT NULL CHECK (length(source_span) BETWEEN 1 AND 500),
+                extraction_method TEXT NOT NULL
+                    CHECK (
+                        extraction_method IN ('deterministic', 'human', 'llm')
+                    ),
+                extraction_version TEXT NOT NULL
+                    CHECK (length(extraction_version) BETWEEN 1 AND 100),
+                extraction_confidence TEXT NOT NULL
+                    CHECK (
+                        CAST(extraction_confidence AS REAL) BETWEEN 0.0 AND 1.0
+                    ),
+                duplicate_cluster_key TEXT
+                    CHECK (
+                        duplicate_cluster_key IS NULL
+                        OR length(duplicate_cluster_key) = 64
+                    ),
+                claim_content_sha256 TEXT NOT NULL
+                    UNIQUE CHECK (length(claim_content_sha256) = 64),
+                created_at_utc TEXT NOT NULL,
+                CHECK (
+                    published_at_utc IS NULL
+                    OR published_at_utc <= retrieved_at_utc
+                ),
+                CHECK (retrieved_at_utc <= available_at_utc),
+                CHECK (
+                    (claim_type = 'availability'
+                        AND availability_status IS NOT NULL
+                        AND start_status IS NULL
+                        AND expected_minutes IS NULL
+                        AND role IS NULL)
+                    OR
+                    (claim_type = 'start'
+                        AND availability_status IS NULL
+                        AND start_status IS NOT NULL
+                        AND expected_minutes IS NULL
+                        AND role IS NULL)
+                    OR
+                    (claim_type = 'minutes'
+                        AND availability_status IS NULL
+                        AND start_status IS NULL
+                        AND forecast_probability IS NULL
+                        AND expected_minutes IS NOT NULL
+                        AND role IS NULL)
+                    OR
+                    (claim_type = 'role'
+                        AND availability_status IS NULL
+                        AND start_status IS NULL
+                        AND forecast_probability IS NULL
+                        AND expected_minutes IS NULL
+                        AND role IS NOT NULL)
+                )
+            );
+
+            CREATE INDEX evidence_claims_cutoff_idx
+                ON evidence_claims (
+                    season_code,
+                    gameweek,
+                    available_at_utc,
+                    player_id,
+                    claim_type
+                );
+
+            CREATE INDEX evidence_claims_source_score_idx
+                ON evidence_claims (
+                    source_key,
+                    claim_type,
+                    available_at_utc
+                );
+
+            CREATE TRIGGER evidence_claims_immutable
+            BEFORE UPDATE ON evidence_claims
+            BEGIN
+                SELECT RAISE(ABORT, 'evidence claims are immutable');
+            END;
+
+            CREATE TRIGGER evidence_claims_no_delete
+            BEFORE DELETE ON evidence_claims
+            BEGIN
+                SELECT RAISE(ABORT, 'evidence claims cannot be deleted');
             END;
             """),
     ];

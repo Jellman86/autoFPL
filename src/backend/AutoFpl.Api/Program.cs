@@ -5,10 +5,12 @@ using System.Text.Json.Serialization;
 using AutoFpl.Api.Advice;
 using AutoFpl.Api.Errors;
 using AutoFpl.Api.Health;
+using AutoFpl.Api.Intelligence;
 using AutoFpl.Api.Persistence;
 using AutoFpl.Api.Selections;
 using AutoFpl.Api.Sources;
 using AutoFpl.Contracts.Advice;
+using AutoFpl.Contracts.Intelligence;
 using AutoFpl.Contracts.Lineups;
 using AutoFpl.Contracts.Outcomes;
 using AutoFpl.Contracts.Selections;
@@ -38,6 +40,19 @@ bool runOfficialFplImport =
 bool runFplFormForecastImport =
     args.Length == 1
     && StringComparer.Ordinal.Equals(args[0], "--import-fpl-form-forecast");
+bool requestedEvidenceClaimImport =
+    args.Length > 0
+    && StringComparer.Ordinal.Equals(args[0], "--import-evidence-claim");
+bool runEvidenceClaimImport =
+    requestedEvidenceClaimImport
+    && args.Length == 2
+    && !string.IsNullOrWhiteSpace(args[1]);
+if (requestedEvidenceClaimImport && !runEvidenceClaimImport)
+{
+    await Console.Error.WriteLineAsync(
+        "Usage: --import-evidence-claim <json-file>");
+    return 2;
+}
 bool requestedFplFormForecastEvaluation =
     args.Length > 0
     && StringComparer.Ordinal.Equals(args[0], "--evaluate-fpl-form-forecast");
@@ -90,6 +105,7 @@ bool runNonWebCommand =
     || runBackup
     || runOfficialFplImport
     || runFplFormForecastImport
+    || runEvidenceClaimImport
     || runFplFormForecastEvaluation
     || runOfficialExpectedPointsEvaluation
     || runOfficialFplOutcomeImport;
@@ -146,6 +162,11 @@ builder.Services.AddSingleton(serviceProvider =>
     new OfficialFplExpectedPointsEvaluationStore(
         serviceProvider.GetRequiredService<DatabaseOptions>()));
 builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton(serviceProvider =>
+    new EvidenceClaimStore(
+        serviceProvider.GetRequiredService<DatabaseOptions>(),
+        serviceProvider.GetRequiredService<TimeProvider>()));
+builder.Services.AddSingleton<EvidenceClaimImporter>();
 FplFormForecastPollingOptions fplFormPollingOptions =
     FplFormForecastPollingOptions.FromConfiguration(builder.Configuration);
 builder.Services.AddSingleton(fplFormPollingOptions);
@@ -307,6 +328,31 @@ if (runFplFormForecastImport)
         return 0;
     }
     catch (FplFormForecastPayloadException exception)
+    {
+        await Console.Error.WriteLineAsync(exception.Message);
+        return 2;
+    }
+}
+
+if (runEvidenceClaimImport)
+{
+    try
+    {
+        EvidenceClaimDocument claim =
+            await app.Services
+                .GetRequiredService<EvidenceClaimImporter>()
+                .ImportFileAsync(args[1]);
+        await Console.Out.WriteLineAsync(
+            JsonSerializer.Serialize(
+                claim,
+                new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+        return 0;
+    }
+    catch (Exception exception)
+        when (exception is EvidenceClaimValidationException
+            or FileNotFoundException
+            or InvalidDataException
+            or JsonException)
     {
         await Console.Error.WriteLineAsync(exception.Message);
         return 2;
@@ -591,6 +637,47 @@ app.MapGet(
     .WithTags("Data")
     .Produces<FplFormForecastCaptureDocument>()
     .Produces(StatusCodes.Status404NotFound);
+app.MapGet(
+    "/api/v1/evidence/claims/{seasonCode}/{gameweek:int:min(1):max(38)}",
+    async (
+        string seasonCode,
+        int gameweek,
+        DateTimeOffset? decisionCutoffUtc,
+        EvidenceClaimStore store,
+        CancellationToken cancellationToken) =>
+    {
+        if (seasonCode.Length is < 4 or > 16 || decisionCutoffUtc is null)
+        {
+            return Results.ValidationProblem(
+                new Dictionary<string, string[]>
+                {
+                    [decisionCutoffUtc is null
+                        ? "decisionCutoffUtc"
+                        : "seasonCode"] =
+                    [
+                        decisionCutoffUtc is null
+                            ? "decisionCutoffUtc is required."
+                            : "seasonCode must contain 4 to 16 characters.",
+                    ],
+                });
+        }
+
+        EvidenceClaimSetDocument claims = await store.GetForGameweekAsync(
+            seasonCode,
+            gameweek,
+            decisionCutoffUtc.Value,
+            cancellationToken);
+        return Results.Ok(claims);
+    })
+    .WithName("GetEvidenceClaimsForGameweek")
+    .WithSummary(
+        "Read quarantined, point-in-time evidence claims available by a decision cutoff.")
+    .WithDescription(
+        "Claims are immutable source-linked candidates with verified official player "
+        + "identity. They do not influence forecasts or authoritative squad state.")
+    .WithTags("Evidence")
+    .Produces<EvidenceClaimSetDocument>()
+    .ProducesValidationProblem();
 app.MapGet(
     "/api/v1/data/fpl-form-forecast/status",
     async (

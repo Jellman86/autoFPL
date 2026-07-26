@@ -318,6 +318,43 @@ such as log score or CRPS where applicable, Brier scores for discrete events,
 calibration error, decision regret/utility and meaningful failure slices.
 Random temporal splits and future-known features cannot support promotion.
 
+### Player and source evidence fusion
+
+The forecast target is a player-Gameweek distribution, not one context-free
+player score. The model programme separates:
+
+- appearance, start and minutes distributions;
+- player event rates conditional on minutes, position, team and opponent;
+- shared match state and correlated scoring, clean-sheet, bonus and defensive
+  events; and
+- the resulting expected FPL points, quantiles and blank/return/haul
+  probabilities.
+
+Hierarchical partial pooling is a candidate for sparse and new-player history.
+Direct position-specific tabular models remain challengers, and predictive
+distributions may be stacked only with weights learned inside temporal
+training windows.
+
+News, scout, pundit, elite-manager and social evidence enters only through a
+closed typed claim ledger. A claim records source and author, publication,
+retrieval and availability times, content and revision identity, player,
+Gameweek, claim target, directness, short supporting span, extraction identity
+and duplicate cluster. Extraction confidence is not truth probability.
+Unvalidated AI or scraper output remains quarantined and cannot alter a
+forecast or squad.
+
+Reliability is estimated by source, claim type and lead time, with shrinkage
+for sparse sources, time/regime effects and dependence control for copied
+reports. Reputation or historic manager rank can select a source for
+evaluation but never sets its weight. Explicit source forecasts are first
+scored alone, then tested as same-fold features or predictive distributions.
+Broad sentiment and repeated mentions are not additive evidence.
+
+The initial squad is a receding-horizon decision. The first registered
+candidate horizons are 3, 6 and 8 Gameweeks; the final comparison, rather than
+preference, chooses among them. See the focused
+[player and source evidence-fusion programme](research/player-source-evidence-fusion-v1.md).
+
 ### Mathematical decision layer
 
 The decision layer should progress from exact small cases to stronger methods:
@@ -442,8 +479,11 @@ and cutoff.
 
 **Status:** active — bounded immutable reference capture, cutoff-safe replay,
 final per-player outcome capture, complete replay/outcome pairing and
-standalone official published-expected-points evaluation are implemented. The
-first real pair awaits a completed 2026/27 Gameweek.
+standalone official published-expected-points evaluation are implemented.
+Migration 16 also provides an immutable quarantined typed-claim ledger with
+official player identity and cutoff-safe reads; it is empty until admitted
+source adapters populate it and cannot influence forecasts. The first real
+replay/outcome pair awaits a completed 2026/27 Gameweek.
 
 - Implement the smallest useful real historical/current importer alongside the
   fields it actually supplies.
@@ -464,6 +504,10 @@ first real pair awaits a completed 2026/27 Gameweek.
   out-of-time evaluation is complete.
 - Keep richer news, scout, browser and Byparr sources optional until an ablation
   shows predictive value.
+- Shadow-capture admitted typed claims through Quark's existing research
+  services. Learn reliability separately by claim target and lead time, cluster
+  repeated reports, and retain conflicting/missing evidence without changing
+  Baseline v0.
 
 **Exit:** the application can replay a real historical pre-deadline snapshot and
 later outcome without manual catalogue entry.
@@ -501,6 +545,11 @@ Tracked by [#43](https://github.com/Jellman86/autoFPL/issues/43).
 - Retain the implemented immutable Baseline v0 artifact linked to its exact
   official capture and content hash; extend it with model/run, code and
   configuration identities before promoting a fitted challenger.
+- Emit a versioned forecast artifact for every eligible player, including
+  appearance/start/minutes and point-distribution components when supported,
+  explicit missing components and provisional/calibrated status. The selected
+  15-player advice artifact remains a downstream decision result rather than
+  the complete player forecast table.
 - Replace the provisional Baseline v0 values on the implemented official-photo
   pitch cards only when a persisted forecast artefact satisfies the promotion
   rule.
@@ -629,27 +678,34 @@ v1.0 hardens the proven product rather than introducing its first UI:
 
 The next development slices are:
 
-1. run the final-outcome command after the first completed, data-checked
+1. emit the first complete, versioned player-Gameweek forecast artifact from
+   the existing cutoff-safe official feature boundary, preserving explicit
+   provisional status until real rolling folds justify calibration;
+2. inventory the smallest useful official club/manager, predicted-lineup,
+   quantitative and named-expert sources, then populate the implemented
+   quarantined claim ledger through typed adapters over Quark's existing
+   Spider/Playwright/research services;
+3. run the final-outcome command after the first completed, data-checked
    Gameweek and verify the resulting real replay/outcome pair;
-2. run the baseline command as complete pairs accumulate and retain the
+4. run the baseline command as complete pairs accumulate and retain the
    machine-readable reports;
-3. retain the point, probability-of-60-minutes, expected-minutes and empirical
+5. retain the point, probability-of-60-minutes, expected-minutes and empirical
    distribution reports as real folds accumulate;
-4. operate the Playwright-MCP-backed bounded FPL Form public predicted-points
+6. operate the Playwright-MCP-backed bounded FPL Form public predicted-points
    adapter once its 2026/27 active forecast is available, preserve retrieval,
    availability, transport and extraction identities, run the implemented
    fail-closed player/fixture identity coverage report, and run the implemented
    external evaluator over its conditional published values and separately
    named probability-adjusted challenger before using any value as a feature;
-5. keep exercising the implemented official-photo decision room and
+7. keep exercising the implemented official-photo decision room and
    cutoff-aware dossiers against live captures as prior outcomes accumulate;
-6. run the implemented fold-local ridge and fixed histogram-tree challengers
+8. run the implemented fold-local ridge and fixed histogram-tree challengers
    as real folds accumulate, then run the implemented identical-fold official
    underlying-feature ablation before changing the incumbent feature contract;
-7. run the implemented exact-cutoff, source-complete FPL Form feature ablation
+9. run the implemented exact-cutoff, source-complete FPL Form feature ablation
    comparing official-only, conditional-points and appearance-adjusted variants
    on identical folds;
-8. retain the implemented, persisted and explicitly unvalidated Baseline v0 on
+10. retain the implemented, persisted and explicitly unvalidated Baseline v0 on
    player cards while gathering enough real folds to promote or replace it
    through the registered out-of-time rule.
 
@@ -659,11 +715,13 @@ AI-orchestrator project ahead of those slices.
 ## Conditional enhancements
 
 - News/scout/pundit source evaluation
-  [#55](https://github.com/Jellman86/autoFPL/issues/55), claim extraction
-  [#56](https://github.com/Jellman86/autoFPL/issues/56) and a hardened Byparr
-  connector [#57](https://github.com/Jellman86/autoFPL/issues/57) follow the
-  first direct public-forecast comparison. Each remains a challenger until an
-  out-of-time ablation shows gain.
+  [#55](https://github.com/Jellman86/autoFPL/issues/55) and claim extraction,
+  corroboration and reliability [#56](https://github.com/Jellman86/autoFPL/issues/56)
+  are now an explicit shadow-research workstream. The immutable claim-ledger
+  foundation is implemented; source admission, extraction and scoring remain.
+  Each source remains a challenger until an out-of-time ablation shows gain.
+  A hardened Byparr connector [#57](https://github.com/Jellman86/autoFPL/issues/57)
+  is used only when it improves admitted source coverage.
 - Accelerator investigation [#30](https://github.com/Jellman86/autoFPL/issues/30)
   is activated by the representative Monte Carlo workload and deployed hardware,
   not by unused device availability.

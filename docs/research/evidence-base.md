@@ -1,6 +1,6 @@
 # Foundation Evidence Base
 
-Reviewed 24 July 2026. Primary and strong peer-reviewed sources are preferred; live documents must be rechecked when relied on because they can change.
+Reviewed 26 July 2026. Primary and strong peer-reviewed sources are preferred; live documents must be rechecked when relied on because they can change.
 
 ## Scientific and reproducible research
 
@@ -10,6 +10,9 @@ Reviewed 24 July 2026. Primary and strong peer-reviewed sources are preferred; l
 - [FAIR software recommendations](https://fair-software.eu/) — repository, licence, registry, citation and checklist practices.
 - [scikit-learn common pitfalls](https://scikit-learn.org/stable/common_pitfalls.html) — train/test separation, pipelines and reproducible randomness.
 - [Gneiting & Raftery, Strictly Proper Scoring Rules](https://doi.org/10.1198/016214506000001437) — evaluate probabilistic forecasts with incentives for honest distributions.
+- [Whitaker et al., Bayesian player abilities in football](https://doi.org/10.1111/rssc.12454) — interpretable hierarchical player-event abilities with uncertainty and team scoring context.
+- [Kahn, Bayesian aggregation of expert probabilities](https://arxiv.org/abs/1207.4144) — models source bias, calibration, accuracy and dependence rather than treating expert reports as independent votes.
+- [Yao et al., stacking Bayesian predictive distributions](https://doi.org/10.1214/17-BA1091) — combines predictive distributions under proper scores in settings where every candidate model may be misspecified.
 - [Waghmare & Ziegel, Proper scoring rules for estimation and forecast evaluation](https://arxiv.org/abs/2504.01781v1) — current review of scoring-rule foundations and applications; version-pinned preprint evidence, not a substitute for local validation.
 - [Model Cards for Model Reporting](https://doi.org/10.1145/3287560.3287596) — intended use, evaluation conditions, limitations and disaggregated reporting.
 - [Datasheets for Datasets](https://doi.org/10.1145/3458723) — dataset motivation, composition, collection, processing, uses, distribution and maintenance.
@@ -18,6 +21,8 @@ Reviewed 24 July 2026. Primary and strong peer-reviewed sources are preferred; l
 ## FPL and decision research
 
 This foundation list establishes the programme's initial boundaries; it does not authorize a predictive implementation by itself. Each predictive feature requires a topic-specific review created from [`literature-review-template.md`](literature-review-template.md), including an updated search for established and frontier methods.
+
+The focused [player and source evidence-fusion programme](player-source-evidence-fusion-v1.md) translates the player-model, expert-aggregation, social/crowd and multi-horizon evidence into autoFPL's next candidate sequence.
 
 - [Matthews, Ramchurn & Chalkiadakis, AAAI 2012](https://doi.org/10.1609/aaai.v26i1.8259) — sequential team formation under partial observability; historically relevant, not evidence of current repeatability.
 - [O'Brien, Gleeson & O'Sullivan, PLOS ONE 2021](https://doi.org/10.1371/journal.pone.0246698) — evidence of skill, planning and persistent manager performance alongside luck.
