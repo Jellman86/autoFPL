@@ -61,6 +61,8 @@ public sealed class OfficialDecisionRoomPreviewTests
         Assert.Equal("official-market-baseline-v0", advice.EvidenceStatus);
         Assert.Equal("Baseline v0 · limited preseason evidence", advice.ModelLabel);
         Assert.Null(advice.SnapshotId);
+        Assert.NotNull(advice.ForecastArtifactId);
+        Assert.Equal(64, advice.ForecastArtifactContentHash?.Length);
         Assert.Equal(CaptureTime, advice.DecisionCutoffUtc);
         Assert.Equal(15, advice.Selection.Players.Count);
         Assert.Equal(
@@ -107,6 +109,26 @@ public sealed class OfficialDecisionRoomPreviewTests
                 Assert.True(player.Lower80 <= player.ExpectedPoints);
                 Assert.True(player.ExpectedPoints <= player.Upper80);
             });
+
+        await using WebApplicationFactory<Program> restartedFactory =
+            new WebApplicationFactory<Program>()
+                .WithWebHostBuilder(
+                    builder =>
+                    {
+                        builder.UseSetting("AutoFpl:DatabasePath", files.DatabasePath);
+                        builder.UseSetting("AutoFpl:SeedDemoSnapshot", "false");
+                    });
+        using HttpClient restartedClient = restartedFactory.CreateClient();
+        GameweekAdviceDocument? restartedAdvice =
+            await restartedClient.GetFromJsonAsync<GameweekAdviceDocument>(
+                "/api/v1/advice/demo",
+                TestContext.Current.CancellationToken);
+
+        Assert.NotNull(restartedAdvice);
+        Assert.Equal(advice.ForecastArtifactId, restartedAdvice.ForecastArtifactId);
+        Assert.Equal(
+            advice.ForecastArtifactContentHash,
+            restartedAdvice.ForecastArtifactContentHash);
     }
 
     private static byte[] CreateBootstrap()

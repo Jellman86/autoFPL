@@ -370,7 +370,7 @@ public sealed class FplFormIdentityCoverageStoreTests
         int sourceFixtureId = 10,
         string playerName = "Ada Forward",
         string teamName = "North London",
-        string officialAvailableAtUtc = "2026-08-14T09:00:00+00:00",
+        string officialAvailableAtUtc = "2026-08-14T09:00:00.0000000Z",
         string forecastAvailableAtUtc = "2026-08-14T10:00:00+00:00")
     {
         await using var connection = new SqliteConnection(
@@ -440,7 +440,9 @@ public sealed class FplFormIdentityCoverageStoreTests
             """;
         command.Parameters.AddWithValue("$officialAvailableAtUtc", officialAvailableAtUtc);
         command.Parameters.AddWithValue("$forecastAvailableAtUtc", forecastAvailableAtUtc);
-        command.Parameters.AddWithValue("$deadlineUtc", "2026-08-21T17:30:00+00:00");
+        command.Parameters.AddWithValue(
+            "$deadlineUtc",
+            "2026-08-21T17:30:00.0000000Z");
         command.Parameters.AddWithValue("$bootstrapSha", new string('a', 64));
         command.Parameters.AddWithValue("$fixturesSha", new string('b', 64));
         command.Parameters.AddWithValue("$forecastSha", new string('c', 64));

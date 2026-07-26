@@ -17,7 +17,10 @@ public sealed record GameweekAdviceDocument(
     [property: JsonPropertyName("recommendationSummary")] string RecommendationSummary,
     [property: JsonPropertyName("selection")] AdviceSelectionDocument Selection,
     [property: JsonPropertyName("alternatives")] IReadOnlyList<AdviceAlternativeDocument> Alternatives,
-    [property: JsonPropertyName("aiAccess")] AdviceAiAccessDocument AiAccess);
+    [property: JsonPropertyName("aiAccess")] AdviceAiAccessDocument AiAccess,
+    [property: JsonPropertyName("forecastArtifactId")] long? ForecastArtifactId = null,
+    [property: JsonPropertyName("forecastArtifactContentHash")]
+        string? ForecastArtifactContentHash = null);
 
 public sealed record AdviceSelectionDocument(
     [property: JsonPropertyName("name")] string Name,

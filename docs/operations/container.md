@@ -9,7 +9,7 @@ Routes:
 | Method | Path | Behavior |
 |---|---|---|
 | `GET` | `/` | Renders the responsive Gameweek decision room |
-| `GET` | `/api/v1/advice/demo` | Returns Baseline v0 from the latest stored cutoff-safe official capture, or the typed synthetic acceptance fixture when no qualifying capture exists |
+| `GET` | `/api/v1/advice/demo` | Returns the latest persisted Baseline v0 artifact, or the typed synthetic acceptance fixture when no qualifying capture exists |
 | `GET` | `/api/v1/data/fpl-form-forecast/latest` | Returns provenance and counts for the latest immutable public FPL Form forecast capture |
 | `GET` | `/api/v1/data/fpl-form-forecast/status` | Distinguishes not checked, provider waiting, collection failure and retained forecast states |
 | `GET` | `/api/v1/data/fpl-form-forecast/{captureId}/identity-coverage` | Reports deterministic cutoff-correct official player/fixture coverage for one immutable forecast capture |
@@ -46,8 +46,12 @@ fixture context. It enforces the £100m budget, position quotas, three-per-club
 limit and legal formation, then exposes official portraits and cutoff-aware
 player dossiers. This is a selection heuristic and deliberately wide,
 unvalidated preseason baseline—not a promoted model or optimisation claim.
-Refreshing the prediction only rereads stored evidence; the independent
-background collectors remain responsible for adding new captures.
+Migration 13 stores one immutable forecast document and content hash for each
+exact official capture and model key. Startup backfills the latest qualifying
+capture; explicit official import and the background official poller persist a
+new artifact after a successful capture. The advice route and “Refresh
+prediction” action only read the latest artifact; they never start collection
+or mutate forecast state.
 
 ## Official FPL capture
 

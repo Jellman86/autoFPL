@@ -432,10 +432,21 @@ function renderAdvice(adviceDocument) {
     adviceDocument.decisionCutoffUtc
       ? formatDeadline(adviceDocument.decisionCutoffUtc)
       : "Not persisted";
-  document.querySelector("#snapshot-reference").textContent =
-    adviceDocument.snapshotId
+  const artifactLabel = document.querySelector("#artifact-reference-label");
+  const artifactReference = document.querySelector("#snapshot-reference");
+  if (
+    adviceDocument.forecastArtifactId &&
+    adviceDocument.forecastArtifactContentHash
+  ) {
+    artifactLabel.textContent = "Forecast";
+    artifactReference.textContent =
+      `#${adviceDocument.forecastArtifactId} · ${adviceDocument.forecastArtifactContentHash.slice(0, 8)}`;
+  } else {
+    artifactLabel.textContent = "Snapshot";
+    artifactReference.textContent = adviceDocument.snapshotId
       ? `#${adviceDocument.snapshotId} · revision ${adviceDocument.snapshotRevision}`
-      : "Identity preview";
+      : "Preview only";
+  }
   document.querySelector("#model-label").textContent = adviceDocument.modelLabel;
   document.querySelector("#team-points").textContent =
     adviceDocument.selection.expectedPoints.toFixed(1);

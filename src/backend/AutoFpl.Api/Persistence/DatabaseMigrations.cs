@@ -4,7 +4,7 @@ internal sealed record DatabaseMigration(int Version, string Name, string Sql);
 
 internal static class DatabaseMigrations
 {
-    public const int CurrentVersion = 12;
+    public const int CurrentVersion = 13;
 
     public static IReadOnlyList<DatabaseMigration> All { get; } =
     [
@@ -878,6 +878,32 @@ internal static class DatabaseMigrations
                 ON official_fpl_checks (
                     checked_at_utc DESC,
                     check_id DESC
+                );
+            """),
+        new(
+            13,
+            "baseline-forecast-artifacts",
+            """
+            CREATE TABLE baseline_forecast_artifacts (
+                artifact_id INTEGER PRIMARY KEY,
+                schema_version TEXT NOT NULL CHECK (schema_version = '1.0'),
+                model_key TEXT NOT NULL
+                    CHECK (model_key = 'official-market-baseline-v0'),
+                capture_id INTEGER NOT NULL
+                    REFERENCES official_fpl_captures(capture_id)
+                    ON DELETE RESTRICT,
+                document_json TEXT NOT NULL
+                    CHECK (length(document_json) BETWEEN 2 AND 262144),
+                content_sha256 TEXT NOT NULL CHECK (length(content_sha256) = 64),
+                created_at_utc TEXT NOT NULL,
+                UNIQUE (capture_id, model_key),
+                UNIQUE (content_sha256)
+            );
+
+            CREATE INDEX baseline_forecast_artifacts_latest_idx
+                ON baseline_forecast_artifacts (
+                    capture_id DESC,
+                    artifact_id DESC
                 );
             """),
     ];

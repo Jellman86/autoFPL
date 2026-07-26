@@ -409,8 +409,9 @@ Tracked by [#43](https://github.com/Jellman86/autoFPL/issues/43).
 - Keep the visible Baseline v0 as the honest provisional incumbent while real
   outcome folds accumulate; never relabel it as validated based on plausibility
   or in-sample fit.
-- Store a compact forecast artefact linked to snapshot, model/run, code, data
-  and configuration identities.
+- Retain the implemented immutable Baseline v0 artifact linked to its exact
+  official capture and content hash; extend it with model/run, code and
+  configuration identities before promoting a fitted challenger.
 - Replace the provisional Baseline v0 values on the implemented official-photo
   pitch cards only when a persisted forecast artefact satisfies the promotion
   rule.
@@ -542,9 +543,9 @@ The next development slices are:
 7. run the implemented exact-cutoff, source-complete FPL Form feature ablation
    comparing official-only, conditional-points and appearance-adjusted variants
    on identical folds;
-8. retain the implemented, explicitly unvalidated Baseline v0 on player cards
-   while persisting forecast artefacts and gathering enough real folds to
-   promote or replace it through the registered out-of-time rule.
+8. retain the implemented, persisted and explicitly unvalidated Baseline v0 on
+   player cards while gathering enough real folds to promote or replace it
+   through the registered out-of-time rule.
 
 Do not add another standalone governance, universal contract, infrastructure or
 AI-orchestrator project ahead of those slices.

@@ -38,7 +38,10 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
         Assert.Contains("External forecast challenger", body, StringComparison.Ordinal);
         Assert.Contains("Refresh prediction", body, StringComparison.Ordinal);
         Assert.Contains("<dt>Outcome</dt>", body, StringComparison.Ordinal);
-        Assert.Contains("<dt>Snapshot</dt>", body, StringComparison.Ordinal);
+        Assert.Contains(
+            "<dt id=\"artifact-reference-label\">Snapshot</dt>",
+            body,
+            StringComparison.Ordinal);
     }
 
     [Fact]
