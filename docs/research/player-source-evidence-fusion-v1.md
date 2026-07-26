@@ -110,8 +110,11 @@ season.
    outcome scoring and promotion remain.
 4. **Implemented for three diverse public pages:** inventory and shadow-capture
    official availability, specialist predicted-lineup and dependent-consensus
-   sources through Quark's existing Spider service. Quantitative reproduction,
-   named experts, extraction and scoring remain.
+   sources through Quark's existing Spider service. A deterministic first
+   adapter now resolves FFScout predicted-XI entries by embedded official photo
+   code and writes quarantined categorical start claims; official-injury and
+   consensus extraction, quantitative reproduction, named experts and scoring
+   remain.
 5. Score sources by target and lead time, then implement same-fold no-source
    versus source-feature ablations.
 6. Add Bayesian component updates and/or predictive-distribution stacking only

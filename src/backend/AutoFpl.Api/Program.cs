@@ -72,6 +72,24 @@ if (requestedResearchSourceCapture && !runResearchSourceCapture)
         "Usage: --capture-research-source <source-key>");
     return 2;
 }
+bool requestedResearchSourceClaimExtraction =
+    args.Length > 0
+    && StringComparer.Ordinal.Equals(
+        args[0],
+        "--extract-research-source-claims");
+long researchSnapshotId = 0;
+bool runResearchSourceClaimExtraction =
+    requestedResearchSourceClaimExtraction
+    && args.Length == 2
+    && long.TryParse(args[1], out researchSnapshotId)
+    && researchSnapshotId > 0;
+if (requestedResearchSourceClaimExtraction
+    && !runResearchSourceClaimExtraction)
+{
+    await Console.Error.WriteLineAsync(
+        "Usage: --extract-research-source-claims <snapshot-id>");
+    return 2;
+}
 bool requestedFplFormForecastEvaluation =
     args.Length > 0
     && StringComparer.Ordinal.Equals(args[0], "--evaluate-fpl-form-forecast");
@@ -127,6 +145,7 @@ bool runNonWebCommand =
     || runFplFormForecastImport
     || runEvidenceClaimImport
     || runResearchSourceCapture
+    || runResearchSourceClaimExtraction
     || runFplFormForecastEvaluation
     || runOfficialExpectedPointsEvaluation
     || runOfficialFplOutcomeImport;
@@ -313,6 +332,7 @@ builder.Services
         });
 builder.Services.AddTransient<FplFormForecastImporter>();
 builder.Services.AddTransient<ResearchSourceSnapshotImporter>();
+builder.Services.AddTransient<ResearchSourceClaimExtractor>();
 if (fplFormPollingOptions.Enabled)
 {
     builder.Services.AddHostedService<FplFormForecastPoller>();
@@ -475,6 +495,27 @@ if (runResearchSourceCapture)
         await Console.Out.WriteLineAsync(
             JsonSerializer.Serialize(
                 snapshot,
+                new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+        return 0;
+    }
+    catch (ResearchSourceSnapshotException exception)
+    {
+        await Console.Error.WriteLineAsync(exception.Message);
+        return 2;
+    }
+}
+
+if (runResearchSourceClaimExtraction)
+{
+    try
+    {
+        ResearchSourceClaimExtractionDocument extraction =
+            await app.Services
+                .GetRequiredService<ResearchSourceClaimExtractor>()
+                .ExtractAsync(researchSnapshotId);
+        await Console.Out.WriteLineAsync(
+            JsonSerializer.Serialize(
+                extraction,
                 new JsonSerializerOptions(JsonSerializerDefaults.Web)));
         return 0;
     }

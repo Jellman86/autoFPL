@@ -697,9 +697,10 @@ The next development slices are:
    inventory; then add reproducible quantitative, market/team-strength and
    attributable named-expert challengers without treating correlated reports
    as independent votes;
-4. extract identity-checked typed claims from retained source snapshots, score
-   them by target and lead time, and populate the quarantined claim ledger only
-   after deterministic validation;
+4. operate the implemented deterministic FFScout predicted-XI adapter, which
+   resolves embedded official photo codes and populates only quarantined
+   categorical start claims; then add fail-closed official-injury and consensus
+   adapters and score claims by target and lead time before any feature use;
 5. run the final-outcome command after the first completed, data-checked
    Gameweek and verify the resulting real replay/outcome pair;
 6. run the baseline command as complete pairs accumulate and retain the
