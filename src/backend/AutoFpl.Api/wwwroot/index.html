@@ -16,9 +16,14 @@
       <span class="wordmark-mark">aF</span>
       <span>autoFPL</span>
     </a>
-    <div class="run-state">
-      <span class="status-dot" aria-hidden="true"></span>
-      <span id="evidence-status">Loading evidence</span>
+    <div class="header-actions">
+      <button class="refresh-prediction" id="refresh-prediction" type="button">
+        Refresh prediction
+      </button>
+      <div class="run-state">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span id="evidence-status">Loading evidence</span>
+      </div>
     </div>
   </header>
 
@@ -212,7 +217,7 @@
             <div class="dossier-section-heading">
               <span>01</span>
               <h3 id="forecast-title">Forecast</h3>
-              <small>Synthetic preview</small>
+              <small id="forecast-kind">Loading evidence</small>
             </div>
             <div class="forecast-strip">
               <div>
@@ -271,8 +276,8 @@
           </section>
 
           <div class="synthetic-callout" id="synthetic-callout">
-            <strong>Forecast preview</strong>
-            <span>Official identity and history; synthetic estimates until a model is promoted.</span>
+            <strong id="forecast-callout-title">Forecast preview</strong>
+            <span id="forecast-callout-copy">Loading the latest evidence boundary.</span>
           </div>
         </div>
       </aside>

@@ -147,51 +147,37 @@ public static class DemoGameweekAdvice
         GameweekAdviceDocument fixture,
         OfficialDecisionRoomPreview preview)
     {
-        IReadOnlyDictionary<string, Queue<OfficialDecisionRoomPlayer>> byPosition =
-            preview.Players
-                .GroupBy(player => player.Position, StringComparer.Ordinal)
-                .ToDictionary(
-                    group => group.Key,
-                    group => new Queue<OfficialDecisionRoomPlayer>(group),
-                    StringComparer.Ordinal);
-        AdvicePlayerDocument[] players = fixture.Selection.Players
-            .Select(template =>
-            {
-                if (!byPosition.TryGetValue(
-                        template.Position,
-                        out Queue<OfficialDecisionRoomPlayer>? candidates)
-                    || candidates.Count == 0)
-                {
-                    throw new InvalidOperationException(
-                        "Official preview does not satisfy the selection shape.");
-                }
-
-                OfficialDecisionRoomPlayer identity = candidates.Dequeue();
-                return template with
-                {
-                    PlayerId = identity.PlayerId,
-                    Name = identity.Name,
-                    ClubShortName = identity.ClubShortName,
-                    Opponent = identity.Opponent,
-                    IsHome = identity.IsHome,
-                    Reasons =
-                    [
-                        "Official identity and fixture context are loaded from the cutoff-safe FPL capture.",
-                        "The points and minutes shown remain synthetic UI values, not a fitted forecast.",
-                    ],
-                    Risks =
-                    [
-                        "Do not use this preview as transfer, captaincy or lineup advice.",
-                    ],
-                    PhotoUrl = identity.PhotoUrl,
-                    DossierPath = identity.DossierPath,
-                };
-            })
+        AdvicePlayerDocument[] players = preview.Players
+            .Select(player => new AdvicePlayerDocument(
+                player.PlayerId,
+                player.Name,
+                player.ClubShortName,
+                player.Position,
+                player.LineupPlace,
+                player.BenchOrder,
+                player.Captaincy,
+                player.Opponent,
+                player.IsHome,
+                player.ExpectedPoints,
+                player.Lower80,
+                player.Upper80,
+                player.ExpectedMinutes,
+                player.Reasons,
+                player.Risks,
+                player.PhotoUrl,
+                player.DossierPath))
             .ToArray();
+        decimal startingPoints = players
+            .Where(player => player.LineupPlace == "starting")
+            .Sum(player => player.ExpectedPoints);
+        decimal captainPoints = players
+            .Single(player => player.Captaincy == "captain")
+            .ExpectedPoints;
 
         return fixture with
         {
-            EvidenceStatus = "synthetic-forecast-real-identities",
+            EvidenceStatus = "official-market-baseline-v0",
+            IsSynthetic = false,
             SnapshotId = null,
             SnapshotRevision = null,
             SnapshotContentHash = null,
@@ -199,16 +185,19 @@ public static class DemoGameweekAdvice
             Gameweek = preview.Gameweek,
             DeadlineUtc = preview.DeadlineUtc,
             GeneratedAtUtc = preview.CaptureAvailableAtUtc,
-            ModelLabel = $"Synthetic estimates · official {preview.SeasonCode} identities",
+            ModelLabel = "Baseline v0 · limited preseason evidence",
             RecommendationSummary =
-                "A decision-room preview using official players, portraits and fixtures. "
-                + "Every forecast value remains synthetic until an evaluated model is promoted.",
+                "A first evidence-based squad from official price, ownership, availability "
+                + "and fixture context. Wide intervals reflect the missing current-season history.",
             Selection = fixture.Selection with
             {
+                ExpectedPoints = startingPoints + captainPoints,
                 Objective =
-                    "Demonstrate the official identity and player-dossier journey; not a recommendation.",
+                    "A Baseline v0 squad prioritising expected points under the £100m budget, "
+                    + "position, formation, club, bench and captaincy constraints.",
                 Players = players,
             },
+            Alternatives = [],
         };
     }
 

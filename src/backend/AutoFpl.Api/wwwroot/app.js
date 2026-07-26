@@ -86,7 +86,7 @@ function createPlayerCard(player) {
   button.setAttribute("aria-pressed", String(player.playerId === selectedPlayerId));
   button.setAttribute(
     "aria-label",
-    `${player.name}, ${player.expectedPoints} synthetic expected points, ${player.expectedMinutes} expected minutes. Open player dossier.`,
+    `${player.name}, ${player.expectedPoints} ${advice?.isSynthetic ? "synthetic " : ""}expected points, ${player.expectedMinutes} expected minutes. Open player dossier.`,
   );
 
   const portrait = createPortrait(player.name, player.photoUrl, "card-portrait");
@@ -445,8 +445,17 @@ function renderAdvice(adviceDocument) {
 
   const callout = document.querySelector("#synthetic-callout");
   callout.dataset.realIdentities = String(
-    adviceDocument.evidenceStatus === "synthetic-forecast-real-identities",
+    !adviceDocument.isSynthetic,
   );
+  document.querySelector("#forecast-kind").textContent = adviceDocument.isSynthetic
+    ? "Synthetic preview"
+    : "Baseline v0";
+  document.querySelector("#forecast-callout-title").textContent =
+    adviceDocument.isSynthetic ? "Forecast preview" : "Limited preseason evidence";
+  document.querySelector("#forecast-callout-copy").textContent =
+    adviceDocument.isSynthetic
+      ? "Official identity and history; synthetic estimates until evidence is available."
+      : "Real official inputs and a transparent market baseline; not yet out-of-time validated.";
 
   const starters = adviceDocument.selection.players.filter(
     (player) => player.lineupPlace === "starting",
@@ -498,6 +507,9 @@ function renderAdvice(adviceDocument) {
 }
 
 async function loadAdvice() {
+  const refresh = document.querySelector("#refresh-prediction");
+  refresh.disabled = true;
+  refresh.textContent = advice ? "Refreshing…" : "Building…";
   try {
     const response = await fetch("/api/v1/advice/demo", {
       headers: { Accept: "application/json" },
@@ -509,6 +521,9 @@ async function loadAdvice() {
     document.querySelector("#recommendation-summary").textContent =
       "The preview could not load. Check that the autoFPL API is running and try again.";
     console.error(error);
+  } finally {
+    refresh.disabled = false;
+    refresh.textContent = "Refresh prediction";
   }
 }
 
@@ -600,8 +615,8 @@ async function loadOfficialData() {
     setOfficialDataState(
       "ready",
       "Replay ready",
-      "Official identities ready. Forecasts still synthetic.",
-      `Gameweek ${replay.gameweek} can be rebuilt from capture #${replay.selectedCaptureId} without using data retrieved after its deadline.`,
+      "Official evidence is ready for prediction.",
+      `Gameweek ${replay.gameweek} can be rebuilt from capture #${replay.selectedCaptureId} without using data retrieved after its deadline. The advice panel states whether the current forecast is synthetic or Baseline v0.`,
     );
 
     if (!capture.latestCompletedGameweek) {
@@ -638,7 +653,7 @@ async function loadOfficialData() {
       "ready",
       "Outcome paired",
       "Replay and final outcome are fully matched.",
-      `Gameweek ${pair.replay.gameweek} links cutoff-safe capture #${pair.replay.selectedCaptureId} to official outcome #${pair.outcome.outcomeCaptureId} across all ${pair.matchedPlayerCount.toLocaleString()} players. Forecasts remain synthetic.`,
+      `Gameweek ${pair.replay.gameweek} links cutoff-safe capture #${pair.replay.selectedCaptureId} to official outcome #${pair.outcome.outcomeCaptureId} across all ${pair.matchedPlayerCount.toLocaleString()} players. The advice panel states the current forecast maturity.`,
     );
   } catch (error) {
     outcomeStatus.textContent = "Unknown";
@@ -783,5 +798,6 @@ window.addEventListener("popstate", () => {
   }
 });
 document.querySelector("#ai-form").addEventListener("submit", (event) => event.preventDefault());
+document.querySelector("#refresh-prediction").addEventListener("click", loadAdvice);
 
 Promise.all([loadAdvice(), loadOfficialData(), loadForecastSource()]);

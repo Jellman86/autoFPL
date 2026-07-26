@@ -62,9 +62,11 @@ desk rather than a generic administration dashboard. The pitch remains the
 primary selection surface; official player portraits, forecast uncertainty and
 selection role make each player immediately recognisable. Dense research detail
 belongs in one selected-player dossier instead of being repeated across every
-card. Forecast-specific fields remain synthetic until promotion, while identity,
-prior outcomes and fixtures can already come from the cutoff-safe official
-capture.
+card. With qualifying official evidence, forecast fields now use a plainly
+labelled, deliberately wide Baseline v0 built from market, availability,
+capture-reported aggregate and fixture inputs. It is useful as an initial prediction without
+being confused with an out-of-time validated or promoted model; identity, prior
+outcomes and fixtures come from the same cutoff-safe official capture.
 
 On the pitch and bench, each player card shows:
 
@@ -404,11 +406,14 @@ Tracked by [#43](https://github.com/Jellman86/autoFPL/issues/43).
 
 - Promote the best candidate that satisfies the registered rule, or retain the
   valid baseline.
+- Keep the visible Baseline v0 as the honest provisional incumbent while real
+  outcome folds accumulate; never relabel it as validated based on plausibility
+  or in-sample fit.
 - Store a compact forecast artefact linked to snapshot, model/run, code, data
   and configuration identities.
-- Retain the implemented official-photo pitch cards and responsive player
-  dossier while replacing their synthetic point, minute and uncertainty values
-  with the promoted forecast artefact.
+- Replace the provisional Baseline v0 values on the implemented official-photo
+  pitch cards only when a persisted forecast artefact satisfies the promotion
+  rule.
 - Extend the implemented chronological form and fixture views with model/run
   identity, freshness and material feature evidence.
 - Keep the implemented pitch/dossier URL synchronisation while adding editable
@@ -537,8 +542,9 @@ The next development slices are:
 7. run the implemented exact-cutoff, source-complete FPL Form feature ablation
    comparing official-only, conditional-points and appearance-adjusted variants
    on identical folds;
-8. populate the implemented player cards with promoted forecasts only after a
-   baseline has valid out-of-time evidence.
+8. retain the implemented, explicitly unvalidated Baseline v0 on player cards
+   while persisting forecast artefacts and gathering enough real folds to
+   promote or replace it through the registered out-of-time rule.
 
 Do not add another standalone governance, universal contract, infrastructure or
 AI-orchestrator project ahead of those slices.
