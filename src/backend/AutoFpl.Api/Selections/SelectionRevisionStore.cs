@@ -6,6 +6,8 @@ using System.Text.Json;
 using AutoFpl.Api.Persistence;
 using AutoFpl.Contracts.Advice;
 using AutoFpl.Contracts.Selections;
+using AutoFpl.Domain.Selections;
+using AutoFpl.Domain.Squads;
 
 using Microsoft.Data.Sqlite;
 
@@ -233,6 +235,158 @@ public sealed class SelectionRevisionStore
         return Materialize(locked, now);
     }
 
+    public async Task<SelectionRevisionDocument?> CreateEditedRevisionAsync(
+        long supersedesSelectionRevisionId,
+        LockedSelectionDocument requestedSelection,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(requestedSelection);
+        if (supersedesSelectionRevisionId <= 0)
+        {
+            return null;
+        }
+
+        DateTimeOffset now = _timeProvider.GetUtcNow();
+        await using SqliteConnection connection =
+            new(_options.ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+        await using SqliteTransaction transaction =
+            connection.BeginTransaction(deferred: false);
+
+        SelectionRevisionRow? superseded = await ReadRowAsync(
+            connection,
+            transaction,
+            supersedesSelectionRevisionId,
+            cancellationToken);
+        if (superseded is null)
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            return null;
+        }
+        if (now >= superseded.DeadlineUtc)
+        {
+            throw new SelectionWorkflowException(
+                "selection.deadline.passed",
+                "selectionRevisionId");
+        }
+
+        SelectionRevisionRow latest = await ReadLatestRowAsync(
+            connection,
+            transaction,
+            superseded.SeasonCode,
+            superseded.Gameweek,
+            cancellationToken)
+            ?? throw new InvalidOperationException(
+                "The selection revision disappeared during editing.");
+        if (latest.SelectionRevisionId != supersedesSelectionRevisionId)
+        {
+            throw new SelectionWorkflowException(
+                "selection.revision.stale",
+                "selectionRevisionId");
+        }
+
+        ForecastSelectionSource source = await ReadForecastSourceAsync(
+            connection,
+            transaction,
+            superseded.ForecastArtifactId,
+            cancellationToken)
+            ?? throw new InvalidOperationException(
+                "The selection revision forecast artifact is unavailable.");
+        if (!StringComparer.Ordinal.Equals(
+                source.ForecastArtifactContentHash,
+                superseded.ForecastArtifactContentHash)
+            || !StringComparer.Ordinal.Equals(
+                source.SeasonCode,
+                superseded.SeasonCode)
+            || source.Gameweek != superseded.Gameweek
+            || source.DeadlineUtc != superseded.DeadlineUtc)
+        {
+            throw new InvalidOperationException(
+                "The selection revision forecast lineage is invalid.");
+        }
+
+        LockedSelectionDocument selection = ValidateSelection(
+            source.Advice,
+            requestedSelection);
+        string selectionJson = JsonSerializer.Serialize(selection, JsonOptions);
+        string selectionHash = Hash(selectionJson);
+        if (StringComparer.Ordinal.Equals(
+            selectionHash,
+            latest.SelectionContentHash))
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            return Materialize(latest, now);
+        }
+
+        await using SqliteCommand insert = connection.CreateCommand();
+        insert.Transaction = transaction;
+        insert.CommandText =
+            """
+            INSERT INTO selection_revisions (
+                schema_version,
+                revision,
+                supersedes_selection_revision_id,
+                season_code,
+                gameweek,
+                deadline_utc,
+                forecast_artifact_id,
+                forecast_artifact_content_sha256,
+                selection_json,
+                selection_content_sha256,
+                created_at_utc,
+                locked_at_utc
+            )
+            VALUES (
+                $schemaVersion,
+                $revision,
+                $supersedesSelectionRevisionId,
+                $seasonCode,
+                $gameweek,
+                $deadlineUtc,
+                $forecastArtifactId,
+                $forecastArtifactContentHash,
+                $selectionJson,
+                $selectionContentHash,
+                $createdAtUtc,
+                NULL
+            );
+            SELECT last_insert_rowid();
+            """;
+        insert.Parameters.AddWithValue("$schemaVersion", SchemaVersion);
+        insert.Parameters.AddWithValue("$revision", latest.Revision + 1);
+        insert.Parameters.AddWithValue(
+            "$supersedesSelectionRevisionId",
+            latest.SelectionRevisionId);
+        insert.Parameters.AddWithValue("$seasonCode", latest.SeasonCode);
+        insert.Parameters.AddWithValue("$gameweek", latest.Gameweek);
+        insert.Parameters.AddWithValue(
+            "$deadlineUtc",
+            latest.DeadlineUtc.ToString("O"));
+        insert.Parameters.AddWithValue(
+            "$forecastArtifactId",
+            latest.ForecastArtifactId);
+        insert.Parameters.AddWithValue(
+            "$forecastArtifactContentHash",
+            latest.ForecastArtifactContentHash);
+        insert.Parameters.AddWithValue("$selectionJson", selectionJson);
+        insert.Parameters.AddWithValue("$selectionContentHash", selectionHash);
+        insert.Parameters.AddWithValue("$createdAtUtc", now.ToString("O"));
+        long selectionRevisionId =
+            (long)(await insert.ExecuteScalarAsync(cancellationToken)
+                ?? throw new InvalidOperationException(
+                    "SQLite did not return an edited selection revision ID."));
+
+        SelectionRevisionRow edited = await ReadRowAsync(
+            connection,
+            transaction,
+            selectionRevisionId,
+            cancellationToken)
+            ?? throw new InvalidOperationException(
+                "The edited selection revision could not be read back.");
+        await transaction.CommitAsync(cancellationToken);
+        return Materialize(edited, now);
+    }
+
     public async Task<SelectionRevisionDocument?> GetAsync(
         long selectionRevisionId,
         CancellationToken cancellationToken = default)
@@ -361,7 +515,8 @@ public sealed class SelectionRevisionStore
             gameweek,
             deadlineUtc,
             selectionJson,
-            Hash(selectionJson));
+            Hash(selectionJson),
+            advice);
     }
 
     private static LockedSelectionDocument ToLockedSelection(
@@ -416,6 +571,38 @@ public sealed class SelectionRevisionStore
             viceCaptains[0].PlayerId,
             replacementGoalkeepers[0].PlayerId,
             [.. outfieldSubstitutes.Select(player => player.PlayerId)]);
+    }
+
+    private static LockedSelectionDocument ValidateSelection(
+        GameweekAdviceDocument advice,
+        LockedSelectionDocument requestedSelection)
+    {
+        // Edits cannot change the forecast squad, so club and price constraints
+        // are invariant. Rebuild only the identity and position shape needed by
+        // the existing lineup and bench validators.
+        SquadPlayer[] players =
+        [
+            .. advice.Selection.Players.Select(
+                (player, index) => SquadPlayer.Create(
+                    player.PlayerId,
+                    index + 1,
+                    player.Position,
+                    priceTenths: 1)),
+        ];
+        Squad squad = Squad.Create(budgetTenths: 1000, players);
+        GameweekSelection selection = GameweekSelection.Create(
+            squad,
+            requestedSelection.StartingPlayerIds,
+            requestedSelection.CaptainPlayerId,
+            requestedSelection.ViceCaptainPlayerId,
+            requestedSelection.ReplacementGoalkeeperPlayerId,
+            requestedSelection.OutfieldSubstitutePlayerIds);
+        return new(
+            selection.Lineup.StartingPlayerIds,
+            selection.Lineup.CaptainPlayerId,
+            selection.Lineup.ViceCaptainPlayerId,
+            selection.ReplacementGoalkeeperPlayerId,
+            selection.OutfieldSubstitutePlayerIds);
     }
 
     private static async Task<SelectionRevisionRow?> ReadLatestRowAsync(
@@ -557,7 +744,8 @@ public sealed class SelectionRevisionStore
         int Gameweek,
         DateTimeOffset DeadlineUtc,
         string SelectionJson,
-        string SelectionContentHash);
+        string SelectionContentHash,
+        GameweekAdviceDocument Advice);
 
     private sealed record SelectionRevisionRow(
         long SelectionRevisionId,

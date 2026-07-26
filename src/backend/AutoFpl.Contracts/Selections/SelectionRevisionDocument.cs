@@ -5,6 +5,16 @@ namespace AutoFpl.Contracts.Selections;
 public sealed record SelectionDraftFromForecastRequest(
     [property: JsonPropertyName("forecastArtifactId")] long? ForecastArtifactId);
 
+public sealed record SelectionRevisionEditRequest(
+    [property: JsonPropertyName("startingPlayerIds")]
+        IReadOnlyList<int?>? StartingPlayerIds,
+    [property: JsonPropertyName("captainPlayerId")] int? CaptainPlayerId,
+    [property: JsonPropertyName("viceCaptainPlayerId")] int? ViceCaptainPlayerId,
+    [property: JsonPropertyName("replacementGoalkeeperPlayerId")]
+        int? ReplacementGoalkeeperPlayerId,
+    [property: JsonPropertyName("outfieldSubstitutePlayerIds")]
+        IReadOnlyList<int?>? OutfieldSubstitutePlayerIds);
+
 public sealed record SelectionRevisionDocument(
     [property: JsonPropertyName("schemaVersion")] string SchemaVersion,
     [property: JsonPropertyName("selectionRevisionId")] long SelectionRevisionId,

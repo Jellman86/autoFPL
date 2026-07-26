@@ -8,6 +8,7 @@ using AutoFpl.Api.Persistence;
 using AutoFpl.Api.Selections;
 using AutoFpl.Contracts.Advice;
 using AutoFpl.Contracts.Selections;
+using AutoFpl.Domain.Lineups;
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -124,6 +125,94 @@ public sealed class SelectionRevisionStoreTests
     }
 
     [Fact]
+    public async Task Editing_latest_selection_creates_an_unlocked_superseding_revision()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = await CreateDatabaseAsync(files.DatabasePath);
+        await SeedForecastAsync(options, artifactId: 10);
+        var store = new SelectionRevisionStore(
+            options,
+            new FixedTimeProvider(BeforeDeadline));
+        SelectionRevisionDocument first =
+            (await store.CreateDraftFromForecastAsync(
+                10,
+                TestContext.Current.CancellationToken))!;
+        await store.LockAsync(
+            first.SelectionRevisionId,
+            TestContext.Current.CancellationToken);
+
+        var editedSelection = new LockedSelectionDocument(
+            [1, 3, 4, 6, 8, 9, 10, 11, 12, 13, 14],
+            8,
+            13,
+            2,
+            [5, 7, 15]);
+        SelectionRevisionDocument edited =
+            (await store.CreateEditedRevisionAsync(
+                first.SelectionRevisionId,
+                editedSelection,
+                TestContext.Current.CancellationToken))!;
+        SelectionRevisionDocument repeated =
+            (await store.CreateEditedRevisionAsync(
+                edited.SelectionRevisionId,
+                editedSelection,
+                TestContext.Current.CancellationToken))!;
+
+        Assert.Equal(2, edited.Revision);
+        Assert.Equal(first.SelectionRevisionId, edited.SupersedesSelectionRevisionId);
+        Assert.Equal(first.ForecastArtifactId, edited.ForecastArtifactId);
+        Assert.Equal("draft", edited.Status);
+        Assert.True(edited.CanLock);
+        Assert.Null(edited.LockedAtUtc);
+        Assert.Equal([5, 7, 15], edited.Selection.OutfieldSubstitutePlayerIds);
+        Assert.Equal(
+            JsonSerializer.Serialize(edited),
+            JsonSerializer.Serialize(repeated));
+
+        SelectionRevisionDocument preserved =
+            (await store.GetAsync(
+                first.SelectionRevisionId,
+                TestContext.Current.CancellationToken))!;
+        Assert.Equal("locked", preserved.Status);
+        SelectionWorkflowException stale =
+            await Assert.ThrowsAsync<SelectionWorkflowException>(
+                () => store.CreateEditedRevisionAsync(
+                    first.SelectionRevisionId,
+                    editedSelection,
+                    TestContext.Current.CancellationToken));
+        Assert.Equal("selection.revision.stale", stale.Code);
+    }
+
+    [Fact]
+    public async Task Editing_rejects_an_infeasible_formation()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = await CreateDatabaseAsync(files.DatabasePath);
+        await SeedForecastAsync(options, artifactId: 10);
+        var store = new SelectionRevisionStore(
+            options,
+            new FixedTimeProvider(BeforeDeadline));
+        SelectionRevisionDocument draft =
+            (await store.CreateDraftFromForecastAsync(
+                10,
+                TestContext.Current.CancellationToken))!;
+
+        var invalid = new LockedSelectionDocument(
+            [1, 4, 5, 8, 9, 10, 11, 12, 13, 14, 15],
+            8,
+            13,
+            2,
+            [3, 6, 7]);
+        LineupValidationException exception =
+            await Assert.ThrowsAsync<LineupValidationException>(
+                () => store.CreateEditedRevisionAsync(
+                    draft.SelectionRevisionId,
+                    invalid,
+                    TestContext.Current.CancellationToken));
+        Assert.Equal("lineup.formation.invalid", exception.Code);
+    }
+
+    [Fact]
     public async Task Deadline_rejects_new_drafts_and_expires_unlocked_revisions()
     {
         using var files = new TemporaryDatabaseFiles();
@@ -211,6 +300,27 @@ public sealed class SelectionRevisionStoreTests
                 TestContext.Current.CancellationToken))!;
         Assert.Equal("locked", locked.Status);
         Assert.NotNull(locked.LockedAtUtc);
+
+        using HttpResponseMessage editedResponse = await client.PostAsJsonAsync(
+            $"/api/v1/selections/{draft.SelectionRevisionId}/revisions",
+            new
+            {
+                startingPlayerIds = new[] { 1, 3, 4, 6, 8, 9, 10, 11, 12, 13, 14 },
+                captainPlayerId = 8,
+                viceCaptainPlayerId = 13,
+                replacementGoalkeeperPlayerId = 2,
+                outfieldSubstitutePlayerIds = new[] { 5, 7, 15 },
+            },
+            TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.Created, editedResponse.StatusCode);
+        SelectionRevisionDocument edited =
+            (await editedResponse.Content.ReadFromJsonAsync<SelectionRevisionDocument>(
+                TestContext.Current.CancellationToken))!;
+        Assert.Equal(2, edited.Revision);
+        Assert.Equal("draft", edited.Status);
+        Assert.Equal(
+            draft.SelectionRevisionId,
+            edited.SupersedesSelectionRevisionId);
     }
 
     [Fact]

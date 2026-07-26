@@ -57,6 +57,13 @@ public sealed class OpenApiContractTests : IClassFixture<WebApplicationFactory<P
             selectionDraftPath.GetProperty("post").GetProperty("operationId").GetString());
         Assert.True(
             paths.TryGetProperty(
+                "/api/v1/selections/{selectionRevisionId}/revisions",
+                out JsonElement selectionRevisionPath));
+        Assert.Equal(
+            "CreateEditedSelectionRevision",
+            selectionRevisionPath.GetProperty("post").GetProperty("operationId").GetString());
+        Assert.True(
+            paths.TryGetProperty(
                 "/api/v1/selections/{selectionRevisionId}/lock",
                 out JsonElement selectionLockPath));
         Assert.Equal(

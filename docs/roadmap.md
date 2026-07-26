@@ -508,10 +508,12 @@ Tracked by [#43](https://github.com/Jellman86/autoFPL/issues/43).
   identity, freshness and material feature evidence.
 - Keep the implemented pitch/dossier URL synchronisation while adding editable
   user alternatives.
-- Implement the recommended → editable draft → explicit user lock lifecycle,
-  immutable superseding pre-deadline revisions and permanent deadline freeze.
-  AI outputs remain unapplied proposals and post-deadline effective changes use
-  only deterministic official substitution/captaincy rules.
+- Extend the implemented recommended → editable draft → explicit user lock
+  lifecycle with transfer-aware squad edits. XI/bench/captaincy edits already
+  create immutable superseding pre-deadline revisions, and the latest lock
+  becomes permanently frozen at the deadline. AI outputs remain unapplied
+  proposals and post-deadline effective changes use only deterministic official
+  substitution/captaincy rules.
 - Continue proving stale-data and provider-failure states; loading,
   missing-photo and missing-history states already have browser-tested
   fallbacks with keyboard and touch interaction.
@@ -526,8 +528,9 @@ Tracked by [#44](https://github.com/Jellman86/autoFPL/issues/44) and
 [#45](https://github.com/Jellman86/autoFPL/issues/45).
 
 **Status:** active — the exact persisted forecast can now become an immutable
-user-owned draft and explicit lock revision; direct draft editing, superseding
-changed revisions, scenario distributions and alternative generation remain.
+user-owned draft, direct XI/bench/captaincy edits create validated superseding
+revisions, and the user explicitly locks the latest choice; transfer-aware squad
+editing, scenario distributions and alternative generation remain.
 
 - Implement reproducible CPU Monte Carlo and the GPU parity/benchmark path.
 - Generate recommended, safer and higher-ceiling legal selections.

@@ -12,7 +12,7 @@
     "receiptTimeOwner": "application-for-persisted-state",
     "replayAvailabilityPolicy": "not-before-receipt",
     "observationTimePolicy": "unknown-unless-separately-recorded",
-    "statement": "Validation and outcome routes remain ephemeral. The decision-snapshot route persists explicit UTC observation, retrieval and availability times and materialises only evidence with availableAtUtc at or before the decision cutoff. The selection-draft route resolves an already-persisted forecast artifact and records the application receipt time for a new immutable user-owned revision."
+    "statement": "Validation and outcome routes remain ephemeral. The decision-snapshot route persists explicit UTC observation, retrieval and availability times and materialises only evidence with availableAtUtc at or before the decision cutoff. Selection draft and edit routes resolve an already-persisted forecast artifact and record the application receipt time for a new immutable user-owned revision."
   },
   "routes": [
     {
@@ -246,6 +246,49 @@
           "temporalRole": "decision-state-at-receipt",
           "replayAvailabilityPolicy": "not-before-receipt",
           "notes": "User instruction to preserve the exact already-persisted forecast selection as an immutable local draft; the server verifies and resolves the artifact at request receipt."
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/selections/{selectionRevisionId:long:min(1)}/revisions",
+      "requestType": "AutoFpl.Contracts.Selections.SelectionRevisionEditRequest",
+      "phase": "decision",
+      "fields": [
+        {
+          "jsonPath": "startingPlayerIds",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-edited starting XI for a new immutable revision, validated against the same persisted forecast squad."
+        },
+        {
+          "jsonPath": "captainPlayerId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-selected captain for the edited starting XI."
+        },
+        {
+          "jsonPath": "viceCaptainPlayerId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-selected vice-captain for the edited starting XI."
+        },
+        {
+          "jsonPath": "replacementGoalkeeperPlayerId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-selected reserve goalkeeper from the same persisted forecast squad."
+        },
+        {
+          "jsonPath": "outfieldSubstitutePlayerIds",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User-selected ordered outfield bench from the same persisted forecast squad."
         }
       ]
     },

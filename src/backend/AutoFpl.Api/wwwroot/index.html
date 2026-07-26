@@ -111,6 +111,13 @@
           </div>
         </dl>
         <div class="selection-buttons">
+          <button
+            class="selection-secondary"
+            id="edit-selection"
+            type="button"
+            disabled>
+            Edit selection
+          </button>
           <button class="selection-secondary" id="create-selection-draft" type="button">
             Use prediction as draft
           </button>
@@ -208,7 +215,7 @@
       <section class="formation-shell" aria-labelledby="formation-title">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">Recommended selection</p>
+            <p class="eyebrow" id="formation-kicker">Recommended selection</p>
             <h2 id="formation-title">Starting XI</h2>
           </div>
           <div class="formation-heading-copy">
@@ -406,6 +413,62 @@
           id="confirm-selection-lock"
           type="button">
           Confirm lock
+        </button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="lock-dialog edit-dialog" id="edit-dialog" aria-labelledby="edit-dialog-title">
+    <form method="dialog">
+      <p class="eyebrow">New immutable revision</p>
+      <h2 id="edit-dialog-title">Edit your selection</h2>
+      <p>
+        Swap players between the XI and bench, set captaincy, and order the
+        outfield substitutes. Saving creates a new unlocked revision.
+      </p>
+
+      <fieldset class="edit-swap">
+        <legend>Swap XI and bench</legend>
+        <label>
+          Starter
+          <select id="edit-swap-out"></select>
+        </label>
+        <label>
+          Bench player
+          <select id="edit-swap-in"></select>
+        </label>
+        <button class="selection-secondary" id="apply-selection-swap" type="button">
+          Apply swap
+        </button>
+      </fieldset>
+
+      <fieldset class="edit-captaincy">
+        <legend>Captaincy</legend>
+        <label>
+          Captain
+          <select id="edit-captain"></select>
+        </label>
+        <label>
+          Vice-captain
+          <select id="edit-vice-captain"></select>
+        </label>
+      </fieldset>
+
+      <fieldset class="edit-bench">
+        <legend>Bench priority</legend>
+        <p class="edit-goalkeeper" id="edit-goalkeeper"></p>
+        <ol id="edit-bench-order"></ol>
+      </fieldset>
+
+      <p class="edit-feedback" id="edit-feedback" aria-live="polite"></p>
+      <div class="lock-dialog-note">
+        This changes only autoFPL. It does not submit or change anything in
+        your Fantasy Premier League account.
+      </div>
+      <div class="lock-dialog-actions">
+        <button class="selection-secondary" value="cancel">Cancel</button>
+        <button class="selection-primary" id="save-selection-revision" type="button">
+          Save new draft
         </button>
       </div>
     </form>

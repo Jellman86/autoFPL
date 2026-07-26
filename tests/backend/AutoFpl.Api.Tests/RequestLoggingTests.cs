@@ -50,7 +50,9 @@ public sealed class RequestLoggingTests
         IReadOnlyDictionary<string, (string Body, string Sentinel, HttpStatusCode ExpectedStatus)>
             requestsByRoute = BuildRequests();
 
-        Assert.Equal(requestsByRoute.Keys.Order(), actualPostRoutes);
+        Assert.Equal(
+            requestsByRoute.Keys.Order(StringComparer.Ordinal),
+            actualPostRoutes);
 
         foreach (KeyValuePair<string, (string Body, string Sentinel, HttpStatusCode ExpectedStatus)>
             request in requestsByRoute)
@@ -152,6 +154,17 @@ public sealed class RequestLoggingTests
         {
             ["/api/v1/selections/drafts"] = (
                 Serialize(new { forecastArtifactId = SentinelPlayerId }),
+                sentinel,
+                HttpStatusCode.NotFound),
+            ["/api/v1/selections/{selectionRevisionId:long:min(1)}/revisions"] = (
+                Serialize(new
+                {
+                    startingPlayerIds,
+                    captainPlayerId = playerIds[7],
+                    viceCaptainPlayerId = playerIds[12],
+                    replacementGoalkeeperPlayerId = playerIds[1],
+                    outfieldSubstitutePlayerIds,
+                }),
                 sentinel,
                 HttpStatusCode.NotFound),
             ["/api/v1/decision-snapshot-metadata/validation"] = (

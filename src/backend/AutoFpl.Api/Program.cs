@@ -481,6 +481,58 @@ app.MapPost(
     .ProducesValidationProblem()
     .Produces(StatusCodes.Status404NotFound)
     .ProducesProblem(StatusCodes.Status409Conflict);
+app.MapPost(
+    "/api/v1/selections/{selectionRevisionId:long:min(1)}/revisions",
+    async (
+        long selectionRevisionId,
+        SelectionRevisionEditRequest request,
+        SelectionRevisionStore store,
+        CancellationToken cancellationToken) =>
+    {
+        if (request.StartingPlayerIds is null
+            || request.CaptainPlayerId is null
+            || request.ViceCaptainPlayerId is null
+            || request.ReplacementGoalkeeperPlayerId is null
+            || request.OutfieldSubstitutePlayerIds is null
+            || request.StartingPlayerIds.Any(playerId => playerId is null)
+            || request.OutfieldSubstitutePlayerIds.Any(playerId => playerId is null))
+        {
+            return Results.BadRequest();
+        }
+
+        var selection = new LockedSelectionDocument(
+            [.. request.StartingPlayerIds.Select(playerId => playerId!.Value)],
+            request.CaptainPlayerId.Value,
+            request.ViceCaptainPlayerId.Value,
+            request.ReplacementGoalkeeperPlayerId.Value,
+            [
+                .. request.OutfieldSubstitutePlayerIds.Select(
+                    playerId => playerId!.Value),
+            ]);
+        SelectionRevisionDocument? revision =
+            await store.CreateEditedRevisionAsync(
+                selectionRevisionId,
+                selection,
+                cancellationToken);
+        return revision is null
+            ? Results.NotFound()
+            : Results.Created(
+                $"/api/v1/selections/{revision.SelectionRevisionId}",
+                revision);
+    })
+    .WithName("CreateEditedSelectionRevision")
+    .WithSummary(
+        "Create an immutable pre-deadline revision of the latest user selection.")
+    .WithDescription(
+        "The starting XI, bench order and captaincy must partition the same forecast "
+        + "squad and satisfy FPL formation rules. Editing a locked choice creates a "
+        + "new unlocked revision; no FPL account action occurs.")
+    .WithTags("Selections")
+    .Produces<SelectionRevisionDocument>(StatusCodes.Status201Created)
+    .ProducesProblem(StatusCodes.Status400BadRequest)
+    .Produces(StatusCodes.Status404NotFound)
+    .ProducesProblem(StatusCodes.Status409Conflict)
+    .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 app.MapPut(
     "/api/v1/selections/{selectionRevisionId:long:min(1)}/lock",
     async (
