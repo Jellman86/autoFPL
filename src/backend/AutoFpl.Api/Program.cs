@@ -51,6 +51,23 @@ if (requestedFplFormForecastEvaluation && !runFplFormForecastEvaluation)
         "Usage: --evaluate-fpl-form-forecast [season-code]");
     return 2;
 }
+bool requestedOfficialExpectedPointsEvaluation =
+    args.Length > 0
+    && StringComparer.Ordinal.Equals(
+        args[0],
+        "--evaluate-official-fpl-expected-points");
+bool runOfficialExpectedPointsEvaluation =
+    requestedOfficialExpectedPointsEvaluation
+    && args.Length is 1 or 2
+    && (args.Length == 1
+        || (!string.IsNullOrWhiteSpace(args[1]) && args[1].Length <= 16));
+if (requestedOfficialExpectedPointsEvaluation
+    && !runOfficialExpectedPointsEvaluation)
+{
+    await Console.Error.WriteLineAsync(
+        "Usage: --evaluate-official-fpl-expected-points [season-code]");
+    return 2;
+}
 bool requestedOfficialFplOutcomeImport =
     args.Length > 0
     && StringComparer.Ordinal.Equals(args[0], "--import-official-fpl-outcome");
@@ -73,6 +90,7 @@ bool runNonWebCommand =
     || runOfficialFplImport
     || runFplFormForecastImport
     || runFplFormForecastEvaluation
+    || runOfficialExpectedPointsEvaluation
     || runOfficialFplOutcomeImport;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(
@@ -119,6 +137,9 @@ builder.Services.AddSingleton(serviceProvider =>
     new FplFormForecastEvaluationStore(
         serviceProvider.GetRequiredService<DatabaseOptions>(),
         serviceProvider.GetRequiredService<FplFormIdentityCoverageStore>()));
+builder.Services.AddSingleton(serviceProvider =>
+    new OfficialFplExpectedPointsEvaluationStore(
+        serviceProvider.GetRequiredService<DatabaseOptions>()));
 builder.Services.AddSingleton(TimeProvider.System);
 FplFormForecastPollingOptions fplFormPollingOptions =
     FplFormForecastPollingOptions.FromConfiguration(builder.Configuration);
@@ -291,6 +312,19 @@ if (runFplFormForecastEvaluation)
     FplFormForecastEvaluationDocument evaluation =
         await app.Services
             .GetRequiredService<FplFormForecastEvaluationStore>()
+            .EvaluateAsync(args.Length == 2 ? args[1] : null);
+    await Console.Out.WriteLineAsync(
+        JsonSerializer.Serialize(
+            evaluation,
+            new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+    return evaluation.Status == "complete" ? 0 : 2;
+}
+
+if (runOfficialExpectedPointsEvaluation)
+{
+    OfficialFplExpectedPointsEvaluationDocument evaluation =
+        await app.Services
+            .GetRequiredService<OfficialFplExpectedPointsEvaluationStore>()
             .EvaluateAsync(args.Length == 2 ? args[1] : null);
     await Console.Out.WriteLineAsync(
         JsonSerializer.Serialize(

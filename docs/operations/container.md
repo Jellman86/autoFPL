@@ -156,9 +156,24 @@ position, zero-minute and missing-probability diagnostics. It exits `2` with an
 `insufficient-data` report until at least one complete pair exists. See the
 [evaluation specification](../research/fpl-form-external-evaluation-v1.md).
 
+Official FPL's retained next-Gameweek expected-points values have a separate
+read-only evaluator:
+
+```text
+dotnet AutoFpl.Api.dll \
+  --evaluate-official-fpl-expected-points [season-code]
+```
+
+It selects the latest official capture available by the target deadline,
+requires that Gameweek to be the capture's recorded next event, refuses partial
+forecast or outcome coverage, and reports overall, position and zero-minute
+MAE/RMSE/bias with deterministic content identities. It exits `2` with
+`insufficient-data` until a captured forecast has a later final outcome. See
+the [evaluation specification](../research/official-fpl-published-expected-points-evaluation-v1.md).
+
 ## SQLite operations
 
-The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies ten explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
+The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies fourteen explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
 
 The root filesystem stays read-only. Production must mount a private, UID
 `1654`-writable persistent directory at `/data`; the CI smoke test uses an
