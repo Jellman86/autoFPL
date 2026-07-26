@@ -1,4 +1,5 @@
 using AutoFpl.Api.Sources;
+using AutoFpl.Api.Intelligence;
 
 using Microsoft.Extensions.Configuration;
 
@@ -67,6 +68,24 @@ public sealed class FplFormForecastPollingTests
 
         OfficialFplPollingOptions options =
             OfficialFplPollingOptions.FromConfiguration(configuration);
+
+        Assert.True(options.Enabled);
+        Assert.Equal(TimeSpan.FromHours(6), options.Interval);
+    }
+
+    [Fact]
+    public void Research_sources_use_the_same_bounded_interval_contract()
+    {
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    ["AutoFpl:Research:ResearchSourcePollIntervalMinutes"] = "360",
+                })
+            .Build();
+
+        ResearchSourcePollingOptions options =
+            ResearchSourcePollingOptions.FromConfiguration(configuration);
 
         Assert.True(options.Enabled);
         Assert.Equal(TimeSpan.FromHours(6), options.Interval);

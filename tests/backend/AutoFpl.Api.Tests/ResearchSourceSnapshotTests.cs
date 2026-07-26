@@ -361,6 +361,24 @@ public sealed class ResearchSourceSnapshotTests
         Assert.Equal(
             "Home complete predicted XI omits: Extra 112",
             omitted.SourceSpan);
+
+        ResearchSourceInventoryDocument inventory =
+            await snapshotStore.GetInventoryAsync(
+                TestContext.Current.CancellationToken);
+        ResearchSourceStartCoverageDocument coverage =
+            Assert.Single(inventory.LatestStartCoverage);
+        Assert.Equal(snapshot.SnapshotId, coverage.SnapshotId);
+        Assert.Equal(12, coverage.PlayerCount);
+        Assert.Equal(12, coverage.ClassifiedPlayerCount);
+        Assert.Equal(11, coverage.PredictedStarterCount);
+        Assert.Equal(1, coverage.PredictedNonStarterCount);
+        Assert.Equal(1, coverage.CompleteTeamCount);
+        Assert.Equal(0, coverage.PartialTeamCount);
+        Assert.Equal(0, coverage.MissingTeamCount);
+        ResearchSourceTeamStartCoverageDocument team =
+            Assert.Single(coverage.Teams);
+        Assert.Equal("HOM", team.TeamShortName);
+        Assert.Equal("complete", team.Status);
     }
 
     [Fact]
@@ -449,6 +467,87 @@ public sealed class ResearchSourceSnapshotTests
     }
 
     [Fact]
+    public async Task Background_refresh_captures_the_portfolio_and_extracts_supported_sources()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = await CreateDatabaseAsync(files.DatabasePath);
+        var snapshotStore = new ResearchSourceSnapshotStore(
+            options,
+            new FixedTimeProvider(RetrievalTime));
+        var handler = new SpiderMcpHandler(
+            """
+            Our Team News page will house predicted line-ups for all 20 Premier League teams.
+            ![Home badge](https://example.test/home.png)##
+            Home
+            * ![Avatar of Test Player](https://resources.premierleague.com/premierleague25/photos/players/110x140/1001.png)Test Player
+            * **Out:**
+            * **Doubts:**
+            * **Banned:**
+            """,
+            acceptRegisteredSources: true,
+            contentByUrl: new Dictionary<string, string>
+            {
+                ["https://www.straightred.ai/"] =
+                    """
+                    strAIghtred - Premier League Predicted Lineups
+                    Built for FPL managers. Powered by multiple prediction sources.
+                    🔵 Home vs Away · 2 sources
+                    Test Player
+                    100%
+                    3-5-2
+                    ### Recently Updated
+                    """,
+            });
+        using var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("http://spider-mcp:8080/mcp"),
+        };
+        var claimStore = new EvidenceClaimStore(
+            options,
+            new FixedTimeProvider(RetrievalTime.AddMinutes(1)));
+        ResearchSourcePollingOptions pollingOptions =
+            ResearchSourcePollingOptions.FromConfiguration(
+                new ConfigurationBuilder()
+                    .AddInMemoryCollection(
+                        new Dictionary<string, string?>
+                        {
+                            ["AutoFpl:Research:ResearchSourcePollIntervalMinutes"] =
+                                "360",
+                        })
+                    .Build());
+        var poller = new ResearchSourcePoller(
+            new ResearchSourceSnapshotImporter(
+                new SpiderMcpClient(httpClient),
+                snapshotStore),
+            new ResearchSourceClaimExtractor(snapshotStore, claimStore),
+            pollingOptions,
+            new FixedTimeProvider(RetrievalTime));
+
+        await poller.RefreshOnceAsync(TestContext.Current.CancellationToken);
+
+        ResearchSourceInventoryDocument inventory =
+            await snapshotStore.GetInventoryAsync(
+                TestContext.Current.CancellationToken);
+        Assert.Equal(3, inventory.LatestSnapshots.Count);
+        Assert.Single(inventory.LatestStartCoverage);
+        EvidenceClaimSetDocument claims = await claimStore.GetForGameweekAsync(
+            "2026-27",
+            1,
+            RetrievalTime.AddMinutes(1),
+            TestContext.Current.CancellationToken);
+        Assert.Contains(
+            claims.Claims,
+            claim => claim.SourceKey
+                == ResearchSourceClaimExtractor.FfScoutSourceKey);
+        Assert.Contains(
+            claims.Claims,
+            claim => claim.SourceKey
+                == ResearchSourceClaimExtractor.StraightredSourceKey);
+        Assert.Equal(3, handler.ScrapeCalls);
+        Assert.Equal(3, handler.DeleteCalls);
+    }
+
+    [Fact]
     public async Task Inventory_api_exposes_diverse_registry_and_metadata_but_not_source_text()
     {
         using var files = new TemporaryDatabaseFiles();
@@ -496,6 +595,7 @@ public sealed class ResearchSourceSnapshotTests
         ResearchSourceSnapshotDocument latest =
             Assert.Single(inventory.LatestSnapshots);
         Assert.Equal("premier-league-injuries", latest.SourceKey);
+        Assert.Empty(inventory.LatestStartCoverage);
         string json = JsonSerializer.Serialize(
             inventory,
             new JsonSerializerOptions(JsonSerializerDefaults.Web));
@@ -795,7 +895,9 @@ public sealed class ResearchSourceSnapshotTests
     private sealed class SpiderMcpHandler(
         string content,
         string serverName = "rmcp",
-        string? finalUrl = null) : HttpMessageHandler
+        string? finalUrl = null,
+        bool acceptRegisteredSources = false,
+        IReadOnlyDictionary<string, string>? contentByUrl = null) : HttpMessageHandler
     {
         public int ScrapeCalls { get; private set; }
 
@@ -846,18 +948,29 @@ public sealed class ResearchSourceSnapshotTests
                 "spider_scrape",
                 parameters.GetProperty("name").GetString());
             JsonElement arguments = parameters.GetProperty("arguments");
-            Assert.Equal(
-                "https://cdn.fantasyfootballscout.co.uk/team-news",
-                arguments.GetProperty("url").GetString());
-            Assert.False(arguments.GetProperty("headless").GetBoolean());
+            string requestedUrl = arguments.GetProperty("url").GetString()!;
+            if (acceptRegisteredSources)
+            {
+                Assert.Contains(
+                    ResearchSourceRegistry.All,
+                    source => source.CanonicalUri.AbsoluteUri == requestedUrl);
+            }
+            else
+            {
+                Assert.Equal(
+                    "https://cdn.fantasyfootballscout.co.uk/team-news",
+                    requestedUrl);
+                Assert.False(arguments.GetProperty("headless").GetBoolean());
+            }
             ScrapeCalls++;
             string scrape = JsonSerializer.Serialize(
                 new
                 {
                     url = finalUrl
-                        ?? "https://cdn.fantasyfootballscout.co.uk/team-news",
+                        ?? requestedUrl,
                     status_code = 200,
-                    content,
+                    content = contentByUrl?.GetValueOrDefault(requestedUrl)
+                        ?? content,
                     links = Array.Empty<string>(),
                     content_trust = "untrusted_remote_content",
                 });

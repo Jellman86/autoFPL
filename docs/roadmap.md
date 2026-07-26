@@ -724,11 +724,12 @@ The next development slices are:
    from the candidate and current official availability always dominates it;
 3. extend the implemented provisional all-player artifact with only the
    appearance/minutes/distribution components that pass those rolling gates;
-4. operate the implemented source-agnostic Spider shadow capture across the
-   fixed official-availability, specialist-lineup and dependent-consensus
-   inventory; then add reproducible quantitative, market/team-strength and
-   attributable named-expert challengers without treating correlated reports
-   as independent votes;
+4. operate the implemented bounded background Spider refresh across the fixed
+   official-availability, specialist-lineup and dependent-consensus inventory,
+   using the decision-room club board to audit FFScout gaps; then add
+   reproducible quantitative, market/team-strength and attributable
+   named-expert challengers without treating correlated reports as independent
+   votes;
 5. operate the implemented deterministic FFScout adapters, which resolve
    predicted-XI photo codes with a unique team-scoped fallback, derive
    non-starter claims only from complete identity-resolved XIs, and retain

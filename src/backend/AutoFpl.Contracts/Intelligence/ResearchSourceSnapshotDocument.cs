@@ -40,7 +40,47 @@ public sealed record ResearchSourceInventoryDocument(
     [property: JsonPropertyName("sources")]
         IReadOnlyList<ResearchSourceDefinitionDocument> Sources,
     [property: JsonPropertyName("latestSnapshots")]
-        IReadOnlyList<ResearchSourceSnapshotDocument> LatestSnapshots);
+        IReadOnlyList<ResearchSourceSnapshotDocument> LatestSnapshots,
+    [property: JsonPropertyName("latestStartCoverage")]
+        IReadOnlyList<ResearchSourceStartCoverageDocument> LatestStartCoverage);
+
+public sealed record ResearchSourceStartCoverageDocument(
+    [property: JsonPropertyName("sourceKey")] string SourceKey,
+    [property: JsonPropertyName("snapshotId")] long SnapshotId,
+    [property: JsonPropertyName("identityCaptureId")] long IdentityCaptureId,
+    [property: JsonPropertyName("seasonCode")] string SeasonCode,
+    [property: JsonPropertyName("gameweek")] int Gameweek,
+    [property: JsonPropertyName("retrievedAtUtc")]
+        DateTimeOffset RetrievedAtUtc,
+    [property: JsonPropertyName("playerCount")] int PlayerCount,
+    [property: JsonPropertyName("classifiedPlayerCount")]
+        int ClassifiedPlayerCount,
+    [property: JsonPropertyName("predictedStarterCount")]
+        int PredictedStarterCount,
+    [property: JsonPropertyName("predictedNonStarterCount")]
+        int PredictedNonStarterCount,
+    [property: JsonPropertyName("availabilityPlayerCount")]
+        int AvailabilityPlayerCount,
+    [property: JsonPropertyName("completeTeamCount")] int CompleteTeamCount,
+    [property: JsonPropertyName("partialTeamCount")] int PartialTeamCount,
+    [property: JsonPropertyName("missingTeamCount")] int MissingTeamCount,
+    [property: JsonPropertyName("teams")]
+        IReadOnlyList<ResearchSourceTeamStartCoverageDocument> Teams);
+
+public sealed record ResearchSourceTeamStartCoverageDocument(
+    [property: JsonPropertyName("teamId")] int TeamId,
+    [property: JsonPropertyName("teamName")] string TeamName,
+    [property: JsonPropertyName("teamShortName")] string TeamShortName,
+    [property: JsonPropertyName("playerCount")] int PlayerCount,
+    [property: JsonPropertyName("classifiedPlayerCount")]
+        int ClassifiedPlayerCount,
+    [property: JsonPropertyName("predictedStarterCount")]
+        int PredictedStarterCount,
+    [property: JsonPropertyName("predictedNonStarterCount")]
+        int PredictedNonStarterCount,
+    [property: JsonPropertyName("availabilityPlayerCount")]
+        int AvailabilityPlayerCount,
+    [property: JsonPropertyName("status")] string Status);
 
 public sealed record ResearchSourceClaimExtractionDocument(
     [property: JsonPropertyName("schemaVersion")] string SchemaVersion,
