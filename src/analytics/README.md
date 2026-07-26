@@ -5,12 +5,12 @@ backtesting and optimisation where the scientific ecosystem is useful. It
 returns versioned candidate artefacts; the backend validates and records any
 artefact promoted into product state.
 
-## Baseline evaluation v3
+## Baseline evaluation v4
 
 The first local command reads the authoritative SQLite database in read-only
 mode and evaluates deterministic total-points and expected-minutes baselines
-plus smoothed probability-of-60-minutes baselines with expanding Gameweek
-origins:
+plus smoothed probability-of-60-minutes and empirical point/minutes
+distribution baselines with expanding Gameweek origins:
 
 ```bash
 PYTHONPATH=src/analytics python3 -m autofpl_analytics \
@@ -27,4 +27,4 @@ cards or influence advice.
 
 The target, temporal split, metrics, baselines and current limitations are
 recorded in the
-[baseline evaluation specification](../../docs/research/baseline-evaluation-v3.md).
+[baseline evaluation specification](../../docs/research/baseline-evaluation-v4.md).

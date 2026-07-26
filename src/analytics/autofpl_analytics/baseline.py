@@ -6,13 +6,14 @@ import json
 import math
 import sqlite3
 import sys
+from bisect import bisect_right
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, DefaultDict, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
-SCHEMA_VERSION = "1.2"
-EVALUATOR_VERSION = "baseline-evaluation-v3"
+SCHEMA_VERSION = "1.3"
+EVALUATOR_VERSION = "baseline-evaluation-v4"
 REQUIRED_DATABASE_VERSION = 5
 BASELINE_NAMES = (
     "zero-points",
@@ -35,8 +36,22 @@ EXPECTED_MINUTES_BASELINE_NAMES = (
     "minutes-player-last",
     "minutes-official-running-mean",
 )
+POINT_DISTRIBUTION_BASELINE_NAMES = (
+    "points-zero-degenerate",
+    "points-global-empirical",
+    "points-position-empirical",
+    "points-player-empirical",
+)
+MINUTES_DISTRIBUTION_BASELINE_NAMES = (
+    "minutes-zero-degenerate",
+    "minutes-global-empirical",
+    "minutes-position-empirical",
+    "minutes-player-empirical",
+)
 CALIBRATION_BIN_COUNT = 5
 LOG_LOSS_EPSILON = 1e-15
+DISTRIBUTION_QUANTILES = (0.1, 0.25, 0.5, 0.75, 0.9)
+CENTRAL_INTERVAL_COVERAGES = (0.5, 0.8, 0.95)
 
 
 class EvaluationError(Exception):
@@ -96,6 +111,33 @@ class ProbabilityPrediction:
     actual: int
 
 
+@dataclass(frozen=True)
+class EmpiricalDistribution:
+    samples: Tuple[int, ...]
+    prefix_sums: Tuple[int, ...]
+    pairwise_half_mean: float
+
+
+@dataclass(frozen=True)
+class DistributionPrediction:
+    model: str
+    season_code: str
+    gameweek: int
+    player_id: int
+    position: str
+    distribution: EmpiricalDistribution
+    actual: int
+
+
+@dataclass
+class FoldPredictions:
+    points: List[Prediction]
+    played_60: List[ProbabilityPrediction]
+    expected_minutes: List[Prediction]
+    point_distributions: List[DistributionPrediction]
+    minutes_distributions: List[DistributionPrediction]
+
+
 def evaluate_database(
     database_path: Path,
     season_code: Optional[str] = None,
@@ -139,11 +181,15 @@ def evaluate_database(
                 models=[],
                 probability_models=[],
                 expected_minutes_models=[],
+                point_distribution_models=[],
+                minutes_distribution_models=[],
             )
 
         predictions: List[Prediction] = []
         probability_predictions: List[ProbabilityPrediction] = []
         expected_minutes_predictions: List[Prediction] = []
+        point_distribution_predictions: List[DistributionPrediction] = []
+        minutes_distribution_predictions: List[DistributionPrediction] = []
         folds: List[Dict[str, Any]] = []
         for target_pair in target_pairs:
             training_pairs = _load_training_pairs(
@@ -160,15 +206,21 @@ def evaluate_database(
                 for pair in training_pairs
             ]
             target_rows = _load_player_rows(connection, target_pair)
-            (
-                fold_predictions,
-                fold_probability_predictions,
-                fold_expected_minutes_predictions,
-            ) = _predict_fold(target_pair, target_rows, training_rows)
-            predictions.extend(fold_predictions)
-            probability_predictions.extend(fold_probability_predictions)
+            fold_predictions = _predict_fold(
+                target_pair,
+                target_rows,
+                training_rows,
+            )
+            predictions.extend(fold_predictions.points)
+            probability_predictions.extend(fold_predictions.played_60)
             expected_minutes_predictions.extend(
-                fold_expected_minutes_predictions
+                fold_predictions.expected_minutes
+            )
+            point_distribution_predictions.extend(
+                fold_predictions.point_distributions
+            )
+            minutes_distribution_predictions.extend(
+                fold_predictions.minutes_distributions
             )
             folds.append(
                 {
@@ -193,6 +245,8 @@ def evaluate_database(
                 models=[],
                 probability_models=[],
                 expected_minutes_models=[],
+                point_distribution_models=[],
+                minutes_distribution_models=[],
             )
 
         models = [
@@ -217,6 +271,32 @@ def evaluate_database(
         expected_minutes_models.sort(
             key=lambda model: (model["metrics"]["mae"], model["name"])
         )
+        point_distribution_models = [
+            _summarise_distribution_model(
+                name,
+                point_distribution_predictions,
+            )
+            for name in POINT_DISTRIBUTION_BASELINE_NAMES
+        ]
+        point_distribution_models.sort(
+            key=lambda model: (
+                model["metrics"]["meanCrps"],
+                model["name"],
+            )
+        )
+        minutes_distribution_models = [
+            _summarise_distribution_model(
+                name,
+                minutes_distribution_predictions,
+            )
+            for name in MINUTES_DISTRIBUTION_BASELINE_NAMES
+        ]
+        minutes_distribution_models.sort(
+            key=lambda model: (
+                model["metrics"]["meanCrps"],
+                model["name"],
+            )
+        )
         return _finish_report(
             base_report,
             status="complete",
@@ -225,6 +305,8 @@ def evaluate_database(
             models=models,
             probability_models=probability_models,
             expected_minutes_models=expected_minutes_models,
+            point_distribution_models=point_distribution_models,
+            minutes_distribution_models=minutes_distribution_models,
         )
     finally:
         connection.close()
@@ -446,11 +528,7 @@ def _predict_fold(
     target_pair: PairedGameweek,
     target_rows: Sequence[PlayerOutcome],
     training: Sequence[Tuple[PairedGameweek, Sequence[PlayerOutcome]]],
-) -> Tuple[
-    List[Prediction],
-    List[ProbabilityPrediction],
-    List[Prediction],
-]:
+) -> FoldPredictions:
     all_training_points: List[int] = []
     position_points: DefaultDict[str, List[int]] = defaultdict(list)
     player_points: DefaultDict[int, List[Tuple[int, int]]] = defaultdict(list)
@@ -483,9 +561,24 @@ def _predict_fold(
     global_mean = _mean(all_training_points)
     global_minutes_mean = _mean(all_training_minutes)
     global_played_60_rate = _smoothed_rate(all_training_played_60)
+    zero_distribution = _empirical_distribution([0])
+    global_points_distribution = _empirical_distribution(all_training_points)
+    global_minutes_distribution = _empirical_distribution(
+        all_training_minutes
+    )
+    position_points_distributions = {
+        position: _empirical_distribution(values)
+        for position, values in position_points.items()
+    }
+    position_minutes_distributions = {
+        position: _empirical_distribution(values)
+        for position, values in position_minutes.items()
+    }
     predictions: List[Prediction] = []
     probability_predictions: List[ProbabilityPrediction] = []
     expected_minutes_predictions: List[Prediction] = []
+    point_distribution_predictions: List[DistributionPrediction] = []
+    minutes_distribution_predictions: List[DistributionPrediction] = []
     for row in target_rows:
         position_mean = _mean(position_points[row.position]) if position_points[
             row.position
@@ -596,10 +689,72 @@ def _predict_fold(
             )
             for name, value in expected_minutes_values.items()
         )
-    return (
-        predictions,
-        probability_predictions,
-        expected_minutes_predictions,
+        position_points_distribution = position_points_distributions.get(
+            row.position,
+            global_points_distribution,
+        )
+        player_points_distribution = (
+            _empirical_distribution(
+                [points for _, points in history]
+            )
+            if history
+            else position_points_distribution
+        )
+        point_distribution_values = {
+            "points-zero-degenerate": zero_distribution,
+            "points-global-empirical": global_points_distribution,
+            "points-position-empirical": position_points_distribution,
+            "points-player-empirical": player_points_distribution,
+        }
+        point_distribution_predictions.extend(
+            DistributionPrediction(
+                model=name,
+                season_code=target_pair.season_code,
+                gameweek=target_pair.gameweek,
+                player_id=row.player_id,
+                position=row.position,
+                distribution=distribution,
+                actual=row.total_points,
+            )
+            for name, distribution in point_distribution_values.items()
+        )
+        position_minutes_distribution = (
+            position_minutes_distributions.get(
+                row.position,
+                global_minutes_distribution,
+            )
+        )
+        player_minutes_distribution = (
+            _empirical_distribution(
+                [minutes for _, minutes in minutes_history]
+            )
+            if minutes_history
+            else position_minutes_distribution
+        )
+        minutes_distribution_values = {
+            "minutes-zero-degenerate": zero_distribution,
+            "minutes-global-empirical": global_minutes_distribution,
+            "minutes-position-empirical": position_minutes_distribution,
+            "minutes-player-empirical": player_minutes_distribution,
+        }
+        minutes_distribution_predictions.extend(
+            DistributionPrediction(
+                model=name,
+                season_code=target_pair.season_code,
+                gameweek=target_pair.gameweek,
+                player_id=row.player_id,
+                position=row.position,
+                distribution=distribution,
+                actual=row.minutes,
+            )
+            for name, distribution in minutes_distribution_values.items()
+        )
+    return FoldPredictions(
+        points=predictions,
+        played_60=probability_predictions,
+        expected_minutes=expected_minutes_predictions,
+        point_distributions=point_distribution_predictions,
+        minutes_distributions=minutes_distribution_predictions,
     )
 
 
@@ -640,6 +795,140 @@ def _metrics(predictions: Sequence[Prediction]) -> Dict[str, Any]:
             math.sqrt(sum(error * error for error in errors) / len(errors))
         ),
         "meanError": _round(sum(errors) / len(errors)),
+    }
+
+
+def _summarise_distribution_model(
+    name: str,
+    predictions: Sequence[DistributionPrediction],
+) -> Dict[str, Any]:
+    selected = [
+        prediction for prediction in predictions if prediction.model == name
+    ]
+    by_position: DefaultDict[str, List[DistributionPrediction]] = defaultdict(
+        list
+    )
+    for prediction in selected:
+        by_position[prediction.position].append(prediction)
+    return {
+        "name": name,
+        "metrics": _distribution_metrics(selected),
+        "slices": {
+            "position": {
+                position: _distribution_metrics(items)
+                for position, items in sorted(by_position.items())
+            }
+        },
+    }
+
+
+def _distribution_metrics(
+    predictions: Sequence[DistributionPrediction],
+) -> Dict[str, Any]:
+    if not predictions:
+        raise EvaluationError(
+            "evaluation.empty-distribution-predictions",
+            "A distribution baseline produced no predictions.",
+        )
+    count = len(predictions)
+    quantile_calibration: List[Dict[str, Any]] = []
+    pinball_losses: List[float] = []
+    for quantile in DISTRIBUTION_QUANTILES:
+        predicted_quantiles = [
+            _empirical_quantile(
+                prediction.distribution,
+                quantile,
+            )
+            for prediction in predictions
+        ]
+        observed_rate = sum(
+            int(prediction.actual <= predicted)
+            for prediction, predicted in zip(
+                predictions,
+                predicted_quantiles,
+            )
+        ) / count
+        quantile_calibration.append(
+            {
+                "quantile": quantile,
+                "observedAtOrBelowRate": _round(observed_rate),
+                "absoluteGap": _round(abs(observed_rate - quantile)),
+            }
+        )
+        pinball_losses.extend(
+            _pinball_loss(prediction.actual, predicted, quantile)
+            for prediction, predicted in zip(
+                predictions,
+                predicted_quantiles,
+            )
+        )
+
+    central_intervals: List[Dict[str, Any]] = []
+    for nominal_coverage in CENTRAL_INTERVAL_COVERAGES:
+        lower_quantile = (1.0 - nominal_coverage) / 2.0
+        upper_quantile = 1.0 - lower_quantile
+        bounds = [
+            (
+                _empirical_quantile(
+                    prediction.distribution,
+                    lower_quantile,
+                ),
+                _empirical_quantile(
+                    prediction.distribution,
+                    upper_quantile,
+                ),
+            )
+            for prediction in predictions
+        ]
+        observed_coverage = sum(
+            int(lower <= prediction.actual <= upper)
+            for prediction, (lower, upper) in zip(predictions, bounds)
+        ) / count
+        central_intervals.append(
+            {
+                "nominalCoverage": nominal_coverage,
+                "observedCoverage": _round(observed_coverage),
+                "meanWidth": _round(
+                    sum(upper - lower for lower, upper in bounds) / count
+                ),
+            }
+        )
+
+    medians = [
+        _empirical_quantile(prediction.distribution, 0.5)
+        for prediction in predictions
+    ]
+    return {
+        "count": count,
+        "meanCrps": _round(
+            sum(
+                _empirical_crps(
+                    prediction.distribution,
+                    prediction.actual,
+                )
+                for prediction in predictions
+            )
+            / count
+        ),
+        "medianMae": _round(
+            sum(
+                abs(prediction.actual - median)
+                for prediction, median in zip(predictions, medians)
+            )
+            / count
+        ),
+        "meanPinballLoss": _round(
+            sum(pinball_losses) / len(pinball_losses)
+        ),
+        "meanDistributionSampleCount": _round(
+            sum(
+                len(prediction.distribution.samples)
+                for prediction in predictions
+            )
+            / count
+        ),
+        "quantileCalibration": quantile_calibration,
+        "centralIntervals": central_intervals,
     }
 
 
@@ -793,6 +1082,12 @@ def _base_report(
                 "official-fpl-played-at-least-60-minutes"
             ),
             "expectedMinutesTarget": "official-fpl-gameweek-total-minutes",
+            "pointDistributionTarget": (
+                "official-fpl-gameweek-total-points-distribution"
+            ),
+            "minutesDistributionTarget": (
+                "official-fpl-gameweek-total-minutes-distribution"
+            ),
             "split": "expanding-window-by-gameweek",
             "minimumTrainingGameweeks": minimum_training_gameweeks,
             "trainingOutcomeAvailabilityRule": (
@@ -803,8 +1098,19 @@ def _base_report(
             "expectedMinutesBaselines": list(
                 EXPECTED_MINUTES_BASELINE_NAMES
             ),
+            "pointDistributionBaselines": list(
+                POINT_DISTRIBUTION_BASELINE_NAMES
+            ),
+            "minutesDistributionBaselines": list(
+                MINUTES_DISTRIBUTION_BASELINE_NAMES
+            ),
             "probabilitySmoothing": "beta-posterior-mean-alpha-1-beta-1",
             "calibrationBinCount": CALIBRATION_BIN_COUNT,
+            "empiricalQuantileMethod": "linear-type-7",
+            "distributionQuantiles": list(DISTRIBUTION_QUANTILES),
+            "centralIntervalCoverages": list(
+                CENTRAL_INTERVAL_COVERAGES
+            ),
         },
         "completePairCount": complete_pair_count,
     }
@@ -818,6 +1124,8 @@ def _finish_report(
     models: Sequence[Mapping[str, Any]],
     probability_models: Sequence[Mapping[str, Any]],
     expected_minutes_models: Sequence[Mapping[str, Any]],
+    point_distribution_models: Sequence[Mapping[str, Any]],
+    minutes_distribution_models: Sequence[Mapping[str, Any]],
 ) -> Dict[str, Any]:
     report["status"] = status
     report["reason"] = reason
@@ -826,6 +1134,10 @@ def _finish_report(
     report["models"] = list(models)
     report["probabilityModels"] = list(probability_models)
     report["expectedMinutesModels"] = list(expected_minutes_models)
+    report["pointDistributionModels"] = list(point_distribution_models)
+    report["minutesDistributionModels"] = list(
+        minutes_distribution_models
+    )
     report["dataIdentitySha256"] = _sha256_json(
         [
             {
@@ -864,6 +1176,69 @@ def _mean(values: Iterable[int]) -> float:
 def _smoothed_rate(values: Iterable[int]) -> float:
     materialised = list(values)
     return (sum(materialised) + 1.0) / (len(materialised) + 2.0)
+
+
+def _empirical_distribution(values: Iterable[int]) -> EmpiricalDistribution:
+    samples = tuple(sorted(values))
+    if not samples:
+        raise EvaluationError(
+            "evaluation.empty-empirical-distribution",
+            "An empirical distribution has no training samples.",
+        )
+    prefix_sums = [0]
+    for sample in samples:
+        prefix_sums.append(prefix_sums[-1] + sample)
+    count = len(samples)
+    pairwise_half_mean = sum(
+        (2 * index - count - 1) * sample
+        for index, sample in enumerate(samples, start=1)
+    ) / float(count * count)
+    return EmpiricalDistribution(
+        samples=samples,
+        prefix_sums=tuple(prefix_sums),
+        pairwise_half_mean=pairwise_half_mean,
+    )
+
+
+def _empirical_crps(
+    distribution: EmpiricalDistribution,
+    actual: int,
+) -> float:
+    samples = distribution.samples
+    count = len(samples)
+    split = bisect_right(samples, actual)
+    left_distance = (
+        actual * split - distribution.prefix_sums[split]
+    )
+    right_distance = (
+        distribution.prefix_sums[count]
+        - distribution.prefix_sums[split]
+        - actual * (count - split)
+    )
+    mean_absolute_distance = (
+        left_distance + right_distance
+    ) / float(count)
+    return mean_absolute_distance - distribution.pairwise_half_mean
+
+
+def _empirical_quantile(
+    distribution: EmpiricalDistribution,
+    quantile: float,
+) -> float:
+    samples = distribution.samples
+    position = (len(samples) - 1) * quantile
+    lower_index = int(math.floor(position))
+    upper_index = int(math.ceil(position))
+    fraction = position - lower_index
+    return (
+        samples[lower_index] * (1.0 - fraction)
+        + samples[upper_index] * fraction
+    )
+
+
+def _pinball_loss(actual: int, predicted: float, quantile: float) -> float:
+    error = actual - predicted
+    return quantile * error if error >= 0 else (quantile - 1.0) * error
 
 
 def _round(value: float) -> float:
@@ -913,8 +1288,8 @@ def _write_report(report: Mapping[str, Any], output_path: Optional[Path]) -> Non
 def main(arguments: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         description=(
-            "Evaluate leakage-safe autoFPL point, expected-minutes, and "
-            "60-minute probability baselines from complete SQLite pairs."
+            "Evaluate leakage-safe autoFPL point, minutes, availability, "
+            "and empirical distribution baselines from complete SQLite pairs."
         )
     )
     parser.add_argument("--database", required=True, type=Path)
