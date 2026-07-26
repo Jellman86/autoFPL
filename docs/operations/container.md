@@ -14,6 +14,7 @@ Routes:
 | `GET` | `/api/v1/data/fpl-form-forecast/latest` | Returns provenance and counts for the latest immutable public FPL Form forecast capture |
 | `GET` | `/api/v1/data/fpl-form-forecast/status` | Distinguishes not checked, provider waiting, collection failure and retained forecast states |
 | `GET` | `/api/v1/data/fpl-form-forecast/{captureId}/identity-coverage` | Reports deterministic cutoff-correct official player/fixture coverage for one immutable forecast capture |
+| `GET` | `/api/v1/data/historical-fpl/{seasonCode}` | Returns provenance and normalized coverage counts for the fixed prior-season archive; raw CSV and player rows remain private |
 | `GET` | `/api/v1/evidence/claims/{seasonCode}/{gameweek}?decisionCutoffUtc=...` | Returns immutable quarantined typed claims available by the requested cutoff; claims do not influence forecasts |
 | `GET` | `/openapi/v1.json` | Returns the generated OpenAPI 3.1 HTTP contract |
 | `GET` | `/healthz` | Liveness response: `{"status":"healthy"}` |
@@ -93,6 +94,27 @@ rejects every capture retrieved after its own recorded Gameweek deadline and
 returns only provenance, counts and the selected immutable capture identity.
 A capture remains reference evidence only until rolling evaluation admits
 specific fields into a forecast.
+
+## Historical FPL season archive
+
+Run the fixed, commit-pinned prior-season import as an operator command:
+
+```text
+dotnet AutoFpl.Api.dll --import-historical-fpl-season
+```
+
+The command accepts no URL, revision or season argument. It downloads only the
+two registered 2025/26 CSV resources, disables redirects, bounds each response
+to 6 MiB, verifies exact SHA-256 and row-count identities, maps season element
+IDs to stable official player codes and writes atomically. Exact raw bytes stay
+compressed in private SQLite. The normalized schema deliberately has no `xP`
+column. Re-running the same pinned revision is idempotent.
+
+This archive did not exist in autoFPL at the original Gameweek deadlines.
+Accordingly, it supplies historical outcomes and an early-season durability
+prior; it is not evidence that archived final status or source `xP` was
+decision-time available. See the
+[source record](../data/sources/vaastav-fpl-historical-v1.md).
 
 After the provider marks a Gameweek final, run:
 
