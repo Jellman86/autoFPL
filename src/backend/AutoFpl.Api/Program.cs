@@ -118,6 +118,9 @@ builder.Services.AddSingleton(TimeProvider.System);
 FplFormForecastPollingOptions fplFormPollingOptions =
     FplFormForecastPollingOptions.FromConfiguration(builder.Configuration);
 builder.Services.AddSingleton(fplFormPollingOptions);
+OfficialFplPollingOptions officialFplPollingOptions =
+    OfficialFplPollingOptions.FromConfiguration(builder.Configuration);
+builder.Services.AddSingleton(officialFplPollingOptions);
 builder.Services
     .AddHttpClient<OfficialFplImporter>(
         client =>
@@ -183,6 +186,10 @@ builder.Services.AddTransient<FplFormForecastImporter>();
 if (fplFormPollingOptions.Enabled)
 {
     builder.Services.AddHostedService<FplFormForecastPoller>();
+}
+if (officialFplPollingOptions.Enabled)
+{
+    builder.Services.AddHostedService<OfficialFplPoller>();
 }
 builder.Services.AddExceptionHandler<DecisionSnapshotPersistenceExceptionHandler>();
 builder.Services.AddExceptionHandler<DecisionSnapshotValidationExceptionHandler>();

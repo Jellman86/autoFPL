@@ -74,6 +74,10 @@ public sealed class OfficialFplImporterTests
             await captureStore.GetLatestAsync(TestContext.Current.CancellationToken);
         Assert.Equal(first, latest);
         Assert.Equal(
+            RetrievedAtUtc,
+            await captureStore.GetLatestCheckTimeAsync(
+                TestContext.Current.CancellationToken));
+        Assert.Equal(
             "101.jpg",
             await ReadPhotoIdentifierAsync(
                 files.DatabasePath,

@@ -377,7 +377,7 @@ public sealed class DecisionSnapshotPersistenceTests
 
         await using SqliteCommand migrationCommand = connection.CreateCommand();
         migrationCommand.CommandText = "SELECT COUNT(*) FROM schema_migrations;";
-        Assert.Equal(11L, await migrationCommand.ExecuteScalarAsync(
+        Assert.Equal(12L, await migrationCommand.ExecuteScalarAsync(
             TestContext.Current.CancellationToken));
 
         await using SqliteCommand journalCommand = connection.CreateCommand();

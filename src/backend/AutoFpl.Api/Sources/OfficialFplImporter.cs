@@ -31,15 +31,45 @@ public sealed class OfficialFplImporter
     public async Task<OfficialFplCaptureDocument> ImportLatestAsync(
         CancellationToken cancellationToken = default)
     {
-        Task<byte[]> bootstrapTask = FetchJsonAsync(BootstrapUri, cancellationToken);
-        Task<byte[]> fixturesTask = FetchJsonAsync(FixturesUri, cancellationToken);
-        await Task.WhenAll(bootstrapTask, fixturesTask);
+        try
+        {
+            Task<byte[]> bootstrapTask = FetchJsonAsync(BootstrapUri, cancellationToken);
+            Task<byte[]> fixturesTask = FetchJsonAsync(FixturesUri, cancellationToken);
+            await Task.WhenAll(bootstrapTask, fixturesTask);
 
-        return await ImportCapturedPayloadAsync(
-            await bootstrapTask,
-            await fixturesTask,
-            _timeProvider.GetUtcNow(),
-            cancellationToken);
+            DateTimeOffset checkedAtUtc = _timeProvider.GetUtcNow();
+            OfficialFplCaptureDocument capture = await ImportCapturedPayloadAsync(
+                await bootstrapTask,
+                await fixturesTask,
+                checkedAtUtc,
+                cancellationToken);
+            await _store.RecordCheckAsync(
+                checkedAtUtc,
+                "captured",
+                null,
+                capture.CaptureId,
+                cancellationToken);
+            return capture;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception) when (
+            exception is OfficialFplPayloadException
+            or HttpRequestException
+            or TaskCanceledException)
+        {
+            await _store.RecordCheckAsync(
+                _timeProvider.GetUtcNow(),
+                "failed",
+                exception is OfficialFplPayloadException
+                    ? "provider-response-invalid"
+                    : "collection-failed",
+                null,
+                cancellationToken);
+            throw;
+        }
     }
 
     public async Task<OfficialFplCaptureDocument> ImportCapturedPayloadAsync(

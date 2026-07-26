@@ -62,6 +62,13 @@ bound and a 20-second request timeout fail closed. Raw JSON remains private in
 SQLite. Identical hash pairs reuse the earliest capture; changed content
 creates a new immutable revision.
 
+Set `AutoFpl__Research__OfficialFplPollIntervalMinutes` to an integer from `60`
+through `1440` to run the same fixed-origin import automatically. Each attempt
+is persisted even when an unchanged payload reuses its earliest immutable
+capture, so restarts wait the remaining configured interval. Bounded provider
+or transport failure leaves the web application and prior captures available.
+Leave the setting absent to retain operator-only collection.
+
 The web process does not expose an import route, accept a source URL or send
 cookies/credentials. The metadata GET route does not return raw provider
 content. The pre-deadline replay route orders candidates by `availableAtUtc`,

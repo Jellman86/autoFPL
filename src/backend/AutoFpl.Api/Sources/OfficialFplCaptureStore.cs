@@ -103,6 +103,70 @@ public sealed class OfficialFplCaptureStore
             : null;
     }
 
+    public async Task<DateTimeOffset?> GetLatestCheckTimeAsync(
+        CancellationToken cancellationToken = default)
+    {
+        await using SqliteConnection connection = new(_options.ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText =
+            """
+            SELECT checked_at_utc
+            FROM official_fpl_checks
+            ORDER BY checked_at_utc DESC, check_id DESC
+            LIMIT 1;
+            """;
+        object? value = await command.ExecuteScalarAsync(cancellationToken);
+        return value is string timestamp
+            ? DateTimeOffset.Parse(
+                timestamp,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.RoundtripKind)
+            : null;
+    }
+
+    internal async Task RecordCheckAsync(
+        DateTimeOffset checkedAtUtc,
+        string status,
+        string? reasonCode,
+        long? captureId,
+        CancellationToken cancellationToken)
+    {
+        await using SqliteConnection connection = new(_options.ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText =
+            """
+            INSERT INTO official_fpl_checks (
+                checked_at_utc,
+                status,
+                reason_code,
+                capture_id,
+                created_at_utc
+            )
+            VALUES (
+                $checkedAtUtc,
+                $status,
+                $reasonCode,
+                $captureId,
+                $createdAtUtc
+            );
+            """;
+        string formatted = checkedAtUtc.ToUniversalTime().ToString(
+            "O",
+            CultureInfo.InvariantCulture);
+        command.Parameters.AddWithValue("$checkedAtUtc", formatted);
+        command.Parameters.AddWithValue("$status", status);
+        command.Parameters.AddWithValue(
+            "$reasonCode",
+            reasonCode is null ? DBNull.Value : reasonCode);
+        command.Parameters.AddWithValue(
+            "$captureId",
+            captureId is null ? DBNull.Value : captureId.Value);
+        command.Parameters.AddWithValue("$createdAtUtc", formatted);
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
     public async Task<OfficialFplCaptureDocument?> GetAsync(
         long captureId,
         CancellationToken cancellationToken = default)

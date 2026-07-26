@@ -55,6 +55,24 @@ public sealed class FplFormForecastPollingTests
     }
 
     [Fact]
+    public void Official_source_uses_the_same_bounded_interval_contract()
+    {
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    ["AutoFpl:Research:OfficialFplPollIntervalMinutes"] = "360",
+                })
+            .Build();
+
+        OfficialFplPollingOptions options =
+            OfficialFplPollingOptions.FromConfiguration(configuration);
+
+        Assert.True(options.Enabled);
+        Assert.Equal(TimeSpan.FromHours(6), options.Interval);
+    }
+
+    [Fact]
     public void Restarts_wait_for_the_remaining_interval()
     {
         var now = new DateTimeOffset(2026, 8, 1, 12, 0, 0, TimeSpan.Zero);
