@@ -50,11 +50,13 @@ yet exist.
 - [Repository synthetic fixtures v1](data/sources/repository-synthetic-fixtures-v1.md) — versioned fictional test/evidence boundary.
 - [Official FPL read-only API v1](data/sources/official-fpl-api-v1.md) — fixed-origin player, Gameweek, team, fixture and outcome capture semantics.
 - [FPL Form public forecast v1](data/sources/fpl-form-public-forecast-v1.md) — fixed-origin conditional predicted-points capture and evaluation boundary.
+- [Public research shadow sources v1](data/sources/public-research-shadow-sources-v1.md) — fixed-registry Spider capture, timing, retention and fail-closed boundary for diverse public evidence.
 
 ## Research and evidence
 
 - [Evidence base](research/evidence-base.md) — durable sources supporting the research approach.
 - [Player and source evidence fusion v1](research/player-source-evidence-fusion-v1.md) — probabilistic player state, typed pundit/news claims, reliability learning, aggregation and multi-Gameweek evaluation plan.
+- [Research source portfolio v1](research/research-source-portfolio-v1.md) — deliberately diverse official, specialist, quantitative, market and named-expert shadow candidates plus prior-season and health-state treatment.
 - [Baseline evaluation v4](research/baseline-evaluation-v4.md) — executable point, expected-minutes, availability and empirical distribution baselines with rolling chronology, proper scores and calibration diagnostics.
 - [FPL Form external evaluation v1](research/fpl-form-external-evaluation-v1.md) — cutoff- and identity-gated scoring of published conditional points and the separately named appearance-adjusted challenger.
 - [Official FPL published expected-points evaluation v1](research/official-fpl-published-expected-points-evaluation-v1.md) — standalone deadline-correct scoring of retained `ep_next` values against later official outcomes.

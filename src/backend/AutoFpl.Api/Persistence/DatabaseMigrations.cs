@@ -4,7 +4,7 @@ internal sealed record DatabaseMigration(int Version, string Name, string Sql);
 
 internal static class DatabaseMigrations
 {
-    public const int CurrentVersion = 17;
+    public const int CurrentVersion = 18;
 
     public static IReadOnlyList<DatabaseMigration> All { get; } =
     [
@@ -1181,6 +1181,69 @@ internal static class DatabaseMigrations
             BEFORE DELETE ON player_gameweek_forecast_artifacts
             BEGIN
                 SELECT RAISE(ABORT, 'player forecast artifacts cannot be deleted');
+            END;
+            """),
+        new(
+            18,
+            "research-source-snapshots",
+            """
+            CREATE TABLE research_source_snapshots (
+                snapshot_id INTEGER PRIMARY KEY,
+                schema_version TEXT NOT NULL CHECK (schema_version = '1.0'),
+                status TEXT NOT NULL CHECK (status = 'shadow-only'),
+                source_key TEXT NOT NULL
+                    CHECK (
+                        source_key IN (
+                            'premier-league-injuries',
+                            'ffscout-predicted-lineups',
+                            'straightred-lineup-consensus'
+                        )
+                    ),
+                source_class TEXT NOT NULL CHECK (length(source_class) BETWEEN 4 AND 100),
+                canonical_url TEXT NOT NULL CHECK (length(canonical_url) BETWEEN 8 AND 2048),
+                final_url TEXT NOT NULL CHECK (length(final_url) BETWEEN 8 AND 2048),
+                dependence_group TEXT NOT NULL
+                    CHECK (length(dependence_group) BETWEEN 4 AND 100),
+                transport_key TEXT NOT NULL CHECK (transport_key = 'spider-mcp'),
+                transport_version TEXT NOT NULL
+                    CHECK (length(transport_version) BETWEEN 4 AND 100),
+                season_code TEXT NOT NULL CHECK (length(season_code) BETWEEN 4 AND 16),
+                gameweek INTEGER NOT NULL CHECK (gameweek BETWEEN 1 AND 38),
+                deadline_utc TEXT NOT NULL,
+                identity_capture_id INTEGER NOT NULL
+                    REFERENCES official_fpl_captures(capture_id)
+                    ON DELETE RESTRICT,
+                retrieved_at_utc TEXT NOT NULL,
+                available_at_utc TEXT NOT NULL,
+                source_revision INTEGER NOT NULL CHECK (source_revision > 0),
+                content_sha256 TEXT NOT NULL CHECK (length(content_sha256) = 64),
+                content_bytes INTEGER NOT NULL
+                    CHECK (content_bytes BETWEEN 1 AND 131072),
+                content_brotli BLOB NOT NULL
+                    CHECK (length(content_brotli) BETWEEN 1 AND 196608),
+                created_at_utc TEXT NOT NULL,
+                UNIQUE (source_key, source_revision),
+                UNIQUE (source_key, identity_capture_id, content_sha256)
+            );
+
+            CREATE INDEX research_source_snapshots_target_idx
+                ON research_source_snapshots (
+                    season_code,
+                    gameweek,
+                    available_at_utc,
+                    source_key
+                );
+
+            CREATE TRIGGER research_source_snapshots_immutable
+            BEFORE UPDATE ON research_source_snapshots
+            BEGIN
+                SELECT RAISE(ABORT, 'research source snapshots are immutable');
+            END;
+
+            CREATE TRIGGER research_source_snapshots_no_delete
+            BEFORE DELETE ON research_source_snapshots
+            BEGIN
+                SELECT RAISE(ABORT, 'research source snapshots cannot be deleted');
             END;
             """),
     ];

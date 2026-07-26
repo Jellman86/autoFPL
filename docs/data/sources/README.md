@@ -21,6 +21,7 @@ A live connector requires tests and a source record, but not a separate vendor-s
 | [`repository-synthetic-fixtures/v1`](repository-synthetic-fixtures-v1.md) | Admitted | Fictional deterministic fixtures authored for tests and examples |
 | [`official-fpl-api/v1`](official-fpl-api-v1.md) | Admitted | Fixed-origin public player, Gameweek, team, fixture and outcome captures for private point-in-time research |
 | [`fpl-form-public-forecast/v1`](fpl-form-public-forecast-v1.md) | Admitted | Fixed-origin public conditional predicted-points captures for private external-baseline evaluation |
+| [`public-research-shadow-sources/v1`](public-research-shadow-sources-v1.md) | Admitted for shadow capture | Fixed-registry official availability, specialist lineup and dependent-consensus page snapshots for private source evaluation |
 
 ## Baseline boundaries
 

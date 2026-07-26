@@ -684,34 +684,42 @@ v1.0 hardens the proven product rather than introducing its first UI:
 
 The next development slices are:
 
-1. extend the implemented provisional all-player artifact with fitted
+1. build a cross-season player-state dataset so prior-season match performance,
+   minutes, starts, underlying events, team/manager changes and health or
+   return-to-play chronology inform early-season predictions with fitted
+   temporal decay and honest missingness;
+2. extend the implemented provisional all-player artifact with fitted
    appearance/start/minutes and point-distribution components only as real
    rolling folds justify them;
-2. inventory the smallest useful official club/manager, predicted-lineup,
-   quantitative and named-expert sources, then populate the implemented
-   quarantined claim ledger through typed adapters over Quark's existing
-   Spider/Playwright/research services;
-3. run the final-outcome command after the first completed, data-checked
+3. operate the implemented source-agnostic Spider shadow capture across the
+   fixed official-availability, specialist-lineup and dependent-consensus
+   inventory; then add reproducible quantitative, market/team-strength and
+   attributable named-expert challengers without treating correlated reports
+   as independent votes;
+4. extract identity-checked typed claims from retained source snapshots, score
+   them by target and lead time, and populate the quarantined claim ledger only
+   after deterministic validation;
+5. run the final-outcome command after the first completed, data-checked
    Gameweek and verify the resulting real replay/outcome pair;
-4. run the baseline command as complete pairs accumulate and retain the
+6. run the baseline command as complete pairs accumulate and retain the
    machine-readable reports;
-5. retain the point, probability-of-60-minutes, expected-minutes and empirical
+7. retain the point, probability-of-60-minutes, expected-minutes and empirical
    distribution reports as real folds accumulate;
-6. operate the Playwright-MCP-backed bounded FPL Form public predicted-points
+8. operate the Playwright-MCP-backed bounded FPL Form public predicted-points
    adapter once its 2026/27 active forecast is available, preserve retrieval,
    availability, transport and extraction identities, run the implemented
    fail-closed player/fixture identity coverage report, and run the implemented
    external evaluator over its conditional published values and separately
    named probability-adjusted challenger before using any value as a feature;
-7. keep exercising the implemented official-photo decision room and
+9. keep exercising the implemented official-photo decision room and
    cutoff-aware dossiers against live captures as prior outcomes accumulate;
-8. run the implemented fold-local ridge and fixed histogram-tree challengers
+10. run the implemented fold-local ridge and fixed histogram-tree challengers
    as real folds accumulate, then run the implemented identical-fold official
    underlying-feature ablation before changing the incumbent feature contract;
-9. run the implemented exact-cutoff, source-complete FPL Form feature ablation
+11. run the implemented exact-cutoff, source-complete FPL Form feature ablation
    comparing official-only, conditional-points and appearance-adjusted variants
    on identical folds;
-10. retain the implemented, persisted and explicitly unvalidated Baseline v0 on
+12. retain the implemented, persisted and explicitly unvalidated Baseline v0 on
    player cards while gathering enough real folds to promote or replace it
    through the registered out-of-time rule.
 

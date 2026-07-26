@@ -206,9 +206,44 @@ than that instant. Later source admission, outcome scoring and same-fold
 ablation determine whether a derived feature ever becomes a model challenger.
 See the [evidence-fusion programme](../research/player-source-evidence-fusion-v1.md).
 
+## Research source shadow capture
+
+The fixed source inventory and latest private capture metadata are available at:
+
+```text
+GET /api/v1/research/sources
+```
+
+Capture one allowlisted source explicitly:
+
+```text
+dotnet AutoFpl.Api.dll \
+  --capture-research-source premier-league-injuries
+dotnet AutoFpl.Api.dll \
+  --capture-research-source ffscout-predicted-lineups
+dotnet AutoFpl.Api.dll \
+  --capture-research-source straightred-lineup-consensus
+```
+
+The command uses Quark's hardened Spider MCP endpoint, defaulting to
+`http://spider-mcp:8080/mcp`. Set
+`AutoFpl__Research__SpiderMcpUrl` only when the internal endpoint differs. The
+application must share only the dedicated Spider MCP Docker network required
+to reach that private service; Spider retains its separate Chromium and
+research-egress trust domains.
+
+Each successful capture is tied to the latest official capture available at
+retrieval and that capture's recorded next Gameweek/deadline. Source text is
+compressed in private SQLite storage for later deterministic extraction and
+replay; the API returns only source class, dependence group, timing, revision,
+size and hash metadata. Repeated identical content is idempotent. Every source
+remains `shadow-only` and cannot alter claims, predictions or selections.
+
+See the [source portfolio](../research/research-source-portfolio-v1.md).
+
 ## SQLite operations
 
-The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies seventeen explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
+The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies eighteen explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
 
 The root filesystem stays read-only. Production must mount a private, UID
 `1654`-writable persistent directory at `/data`; the CI smoke test uses an
