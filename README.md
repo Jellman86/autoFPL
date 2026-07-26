@@ -12,8 +12,10 @@ A rigorous private home-research platform for **high-quality, human-approved Fan
 A locked-holdout historical preseason evaluation has separately shown that the
 fixed histogram-tree challenger improves next-Gameweek point MAE over its
 pre-selected rolling-three baseline on the pinned 2025/26 archive. That result
-supports building a visibly provisional GW1 bridge; it does not promote the
-model or silently replace Baseline v0.
+now feeds a deterministic GW1 player-artifact generator tied to the exact
+evaluated archive and current official capture. The fitted means are comparison
+evidence only: current availability is explicit, no distribution is invented,
+and the model does not silently replace Baseline v0.
 
 The [delivery roadmap](docs/roadmap.md) defines the dependency-ordered route from the current foundation through v0.1 single-Gameweek advice, transfer and chip planning, and the v1.0 human-approved advisor. See the [documentation index](docs/index.md) and [changelog](CHANGELOG.md) for maintained guidance and implemented changes.
 

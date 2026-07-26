@@ -36,6 +36,32 @@ challenger; it cannot promote or silently replace Baseline v0.
 The design, limitations and first retained result are recorded in the
 [historical preseason specification](../../docs/research/historical-preseason-evaluation-v1.md).
 
+## Provisional preseason player forecast v1
+
+After the locked holdout supports the fixed candidate, the current-player
+generator fits that unchanged histogram-tree configuration to every archived
+2025/26 player-Gameweek sample and compares its GW1 point means with the exact
+Baseline v0 player artifact:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.preseason_player_forecast \
+  --database /path/to/autofpl.db \
+  --season 2026-27 \
+  --gameweek 1 \
+  --output /path/to/gw1-preseason-challenger.json
+```
+
+The command requires the exact source revision and content hashes that passed
+the retained evaluation. Current players join prior history only by stable
+official code; missing identities remain explicit. Current official
+availability accompanies every prediction but does not silently alter the
+fitted point mean. The artifact is deterministic, refuses overwrite and cannot
+influence served advice.
+
+See the
+[provisional preseason forecast specification](../../docs/research/preseason-player-forecast-v1.md).
+
 ## Baseline evaluation v4
 
 The first local command reads the authoritative SQLite database in read-only

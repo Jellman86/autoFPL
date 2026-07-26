@@ -429,6 +429,13 @@ eight folds without a position-level regression. This supports building an
 explicitly provisional preseason challenger for 2026/27 Gameweek 1; it does
 not promote the model or replace Baseline v0.
 
+The corresponding read-only generator now requires that exact evaluated
+archive identity, fits the unchanged selected model to all historical
+player-Gameweeks and emits fitted GW1 means beside exact-capture Baseline v0
+values. Current availability and missing stable-code history stay explicit.
+The generated challenger is not yet backend-persisted, shown in the decision
+room or allowed to influence advice.
+
 The SQLite persistence vertical slice is deployed and survives a managed
 container recreate. Operator-triggered fixed-origin official FPL collectors
 store exact raw hashes, retrieval-time availability and normalised
@@ -704,11 +711,10 @@ v1.0 hardens the proven product rather than introducing its first UI:
 
 The next development slices are:
 
-1. fit the fixed, holdout-supported historical histogram-tree specification on
-   all eligible 2025/26 rows and emit a separately labelled, immutable
-   provisional 2026/27 Gameweek 1 challenger artifact; keep Baseline v0 visible
-   and unchanged, expose the comparison and uncertainty honestly, and replace
-   the bridge as soon as current-season rolling folds justify a successor;
+1. validate and persist the generated, holdout-supported GW1 challenger through
+   a strict backend import boundary, expose its point-mean comparison beside
+   unchanged Baseline v0 and keep it visibly distribution-free and unable to
+   drive advice until current availability/appearance handling is evaluated;
 2. run the implemented identical-fold cross-season feature ablation as real
    current-season folds accumulate, then promote only stable out-of-time gains
    from prior-season match performance, minutes, starts, underlying events and
