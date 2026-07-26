@@ -13,6 +13,29 @@ python3 -m pip install --require-hashes \
   --requirement requirements-analytics.txt
 ```
 
+## Historical preseason evaluation v1
+
+The preseason bridge evaluates fixed ridge and histogram-tree point
+challengers against simple baselines on the pinned historical archive:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.historical_preseason_evaluation \
+  --database /path/to/autofpl.db \
+  --season 2025-26 \
+  --output /path/to/historical-preseason-report.json
+```
+
+Model selection uses expanding-origin development folds through Gameweek 30.
+The locked Gameweek 31–38 holdout runs only the selected challenger alongside
+the simple baselines, while the gate remains tied to the baseline selected on
+development data. The report is deterministic, read-only and refuses output
+overwrite. A passing result supports a separately labelled preseason
+challenger; it cannot promote or silently replace Baseline v0.
+
+The design, limitations and first retained result are recorded in the
+[historical preseason specification](../../docs/research/historical-preseason-evaluation-v1.md).
+
 ## Baseline evaluation v4
 
 The first local command reads the authoritative SQLite database in read-only

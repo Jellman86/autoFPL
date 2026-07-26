@@ -421,6 +421,14 @@ labelled as limited preseason evidence and is not a fitted, out-of-time
 validated or promoted model. The synthetic fixture remains only as the
 fail-closed acceptance fallback when qualifying official evidence is absent.
 
+The pinned 2025/26 archive now has a separately retained preseason evaluation.
+The fixed histogram-tree challenger was selected on expanding-origin
+development folds and improved MAE by 8.87% against the pre-selected
+rolling-three baseline on the untouched Gameweek 31–38 holdout, winning all
+eight folds without a position-level regression. This supports building an
+explicitly provisional preseason challenger for 2026/27 Gameweek 1; it does
+not promote the model or replace Baseline v0.
+
 The SQLite persistence vertical slice is deployed and survives a managed
 container recreate. Operator-triggered fixed-origin official FPL collectors
 store exact raw hashes, retrieval-time availability and normalised
@@ -430,9 +438,10 @@ can retain official per-player outcomes only after the event is finished and
 data-checked, every fixture is finished and player coverage exactly matches the
 post-event reference capture. The API and decision room can pair that final
 outcome with a cutoff-safe replay. No 2026/27 Gameweek has completed yet, so a
-real pair and baseline evaluation dataset do not exist. There is still no
-promoted model, scenario engine, optimiser, MCP server, live AI provider or
-product release.
+real pair and current-season baseline evaluation dataset do not exist. There is
+still no promoted model, scenario engine, optimiser, live AI provider or
+product release. A public read-only MCP player-dossier tool is deployed; owner
+selection data remains outside that anonymous boundary.
 
 ## v0.1 — Evidence-grounded single-Gameweek advisor
 
@@ -695,20 +704,25 @@ v1.0 hardens the proven product rather than introducing its first UI:
 
 The next development slices are:
 
-1. run the implemented identical-fold cross-season feature ablation as real
+1. fit the fixed, holdout-supported historical histogram-tree specification on
+   all eligible 2025/26 rows and emit a separately labelled, immutable
+   provisional 2026/27 Gameweek 1 challenger artifact; keep Baseline v0 visible
+   and unchanged, expose the comparison and uncertainty honestly, and replace
+   the bridge as soon as current-season rolling folds justify a successor;
+2. run the implemented identical-fold cross-season feature ablation as real
    current-season folds accumulate, then promote only stable out-of-time gains
    from prior-season match performance, minutes, starts, underlying events and
    participation-derived durability; archived final health remains excluded
    from the candidate and current official availability always dominates it;
-2. extend the implemented provisional all-player artifact with fitted
+3. extend the implemented provisional all-player artifact with fitted
    appearance/start/minutes and point-distribution components only as real
    rolling folds justify them;
-3. operate the implemented source-agnostic Spider shadow capture across the
+4. operate the implemented source-agnostic Spider shadow capture across the
    fixed official-availability, specialist-lineup and dependent-consensus
    inventory; then add reproducible quantitative, market/team-strength and
    attributable named-expert challengers without treating correlated reports
    as independent votes;
-4. operate the implemented deterministic FFScout adapters, which resolve
+5. operate the implemented deterministic FFScout adapters, which resolve
    predicted-XI photo codes plus unique team-scoped `Out` and
    percentage-bearing `Doubts` into separately versioned quarantined start and
    availability claims; operate the implemented dependent strAIghtred consensus
@@ -716,27 +730,27 @@ The next development slices are:
    read-only start-claim evaluator by source and lead time; then add a
    fail-closed official-injury adapter plus defensible availability truth
    before any feature use;
-5. run the final-outcome command after the first completed, data-checked
+6. run the final-outcome command after the first completed, data-checked
    Gameweek and verify the resulting real replay/outcome pair;
-6. run the baseline command as complete pairs accumulate and retain the
+7. run the baseline command as complete pairs accumulate and retain the
    machine-readable reports;
-7. retain the point, probability-of-60-minutes, expected-minutes and empirical
+8. retain the point, probability-of-60-minutes, expected-minutes and empirical
    distribution reports as real folds accumulate;
-8. operate the Playwright-MCP-backed bounded FPL Form public predicted-points
+9. operate the Playwright-MCP-backed bounded FPL Form public predicted-points
    adapter once its 2026/27 active forecast is available, preserve retrieval,
    availability, transport and extraction identities, run the implemented
    fail-closed player/fixture identity coverage report, and run the implemented
    external evaluator over its conditional published values and separately
    named probability-adjusted challenger before using any value as a feature;
-9. keep exercising the implemented official-photo decision room and
+10. keep exercising the implemented official-photo decision room and
    cutoff-aware dossiers against live captures as prior outcomes accumulate;
-10. run the implemented fold-local ridge and fixed histogram-tree challengers
+11. run the implemented fold-local ridge and fixed histogram-tree challengers
    as real folds accumulate, then run the implemented identical-fold official
    underlying-feature ablation before changing the incumbent feature contract;
-11. run the implemented exact-cutoff, source-complete FPL Form feature ablation
+12. run the implemented exact-cutoff, source-complete FPL Form feature ablation
    comparing official-only, conditional-points and appearance-adjusted variants
    on identical folds;
-12. retain the implemented, persisted and explicitly unvalidated Baseline v0 on
+13. retain the implemented, persisted and explicitly unvalidated Baseline v0 on
    player cards while gathering enough real folds to promote or replace it
    through the registered out-of-time rule.
 
