@@ -42,7 +42,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -52,6 +53,7 @@ button {
 
 button:focus-visible,
 input:focus-visible,
+select:focus-visible,
 a:focus-visible,
 [tabindex]:focus-visible {
   outline: 3px solid var(--amber);
@@ -527,6 +529,111 @@ h3 {
 
 .lock-dialog-actions {
   justify-content: flex-end;
+}
+
+.edit-dialog {
+  width: min(48rem, calc(100% - 2rem));
+}
+
+.edit-dialog fieldset {
+  margin: 1rem 0 0;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.4rem;
+}
+
+.edit-dialog legend {
+  padding: 0 0.4rem;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.edit-swap,
+.edit-captaincy {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.edit-captaincy {
+  grid-template-columns: 1fr 1fr;
+}
+
+.edit-dialog label {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--ink-700);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.edit-dialog select {
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: 0.55rem;
+  border: 1px solid var(--ink-700);
+  border-radius: 0.35rem;
+  color: var(--ink-950);
+  background: var(--white);
+}
+
+.edit-goalkeeper {
+  margin-bottom: 0.65rem !important;
+  font-size: 0.76rem;
+}
+
+.edit-bench ol {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.edit-bench li {
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 0.35rem;
+  font-size: 0.76rem;
+}
+
+.edit-order-actions {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.edit-order-actions button {
+  width: 2.25rem;
+  height: 2.25rem;
+  cursor: pointer;
+  border: 1px solid var(--ink-700);
+  border-radius: 0.3rem;
+  background: var(--white);
+}
+
+.edit-order-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.edit-feedback {
+  min-height: 1.25rem;
+  margin: 0.85rem 0 0 !important;
+  color: var(--pitch-dark) !important;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.edit-feedback[data-error="true"] {
+  color: #9f2f20 !important;
 }
 
 .source-tape {
@@ -1833,6 +1940,11 @@ footer {
   .selection-buttons button,
   .lock-dialog-actions button {
     width: 100%;
+  }
+
+  .edit-swap,
+  .edit-captaincy {
+    grid-template-columns: 1fr;
   }
 
   .selection-revision-meta dd {

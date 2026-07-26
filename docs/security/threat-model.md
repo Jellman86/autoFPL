@@ -87,7 +87,7 @@ Update this model when a PR materially changes a trust boundary: identity, MCP/e
 
 ## Residual foundation risks
 
-The private application has an unauthenticated decision-snapshot write route intended only for its trusted internal network. It must not receive a public route before identity and authorisation are implemented. SQLite state is authoritative and therefore requires a persistent volume, protected file access, consistent backups before destructive migration or rollback, and retention/deletion work before storing real personal history.
+The private application has unauthenticated decision-state write routes for snapshots and selection draft/edit/lock actions, intended only for its trusted internal network. It must not receive a public route before identity and authorisation are implemented. SQLite state is authoritative and therefore requires a persistent volume, protected file access, consistent backups before destructive migration or rollback, and retention/deletion work before storing real personal history.
 
 The operator-triggered official FPL importer adds outbound public HTTPS and
 untrusted provider JSON. Its origins are compile-time constants; redirects,

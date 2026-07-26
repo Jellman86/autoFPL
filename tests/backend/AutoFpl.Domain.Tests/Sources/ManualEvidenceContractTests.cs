@@ -94,6 +94,15 @@ public sealed class ManualEvidenceContractTests
                 (PersistedSnapshotFields, new("schema-validated", "schema-validated"))),
             ["/api/v1/selections/drafts"] = CreateSemantics(
                 (["forecastArtifactId"], DecisionState)),
+            ["/api/v1/selections/{selectionRevisionId:long:min(1)}/revisions"] =
+                CreateSemantics(
+                    ([
+                        "startingPlayerIds",
+                        "captainPlayerId",
+                        "viceCaptainPlayerId",
+                        "replacementGoalkeeperPlayerId",
+                        "outfieldSubstitutePlayerIds",
+                    ], DecisionState)),
             ["/api/v1/squads/validation"] = CreateSemantics(
                 (SquadDecisionFields, DecisionState)),
             ["/api/v1/lineups/validation"] = CreateSemantics(

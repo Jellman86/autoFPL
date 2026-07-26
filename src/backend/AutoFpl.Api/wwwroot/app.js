@@ -4,6 +4,8 @@ const mobileDossierQuery = window.matchMedia("(max-width: 980px)");
 let selectedPlayerId = null;
 let advice = null;
 let selectionRevision = null;
+let displayedPlayers = [];
+let selectionEditDraft = null;
 let lastSelectedCard = null;
 let dossierRequest = 0;
 
@@ -192,7 +194,7 @@ function updatePlayerUrl(playerId) {
 
 function selectPlayer(playerId, options = {}) {
   selectedPlayerId = playerId;
-  const player = advice?.selection.players.find(
+  const player = displayedPlayers.find(
     (candidate) => candidate.playerId === playerId,
   );
   if (!player) return;
@@ -429,8 +431,60 @@ async function loadPlayerDossier(player) {
   }
 }
 
+function playersForSelection(selection) {
+  const starting = new Set(selection.startingPlayerIds);
+  const benchOrder = new Map([
+    [selection.replacementGoalkeeperPlayerId, 1],
+    ...selection.outfieldSubstitutePlayerIds.map((playerId, index) => [
+      playerId,
+      index + 2,
+    ]),
+  ]);
+  return advice.selection.players.map((player) => ({
+    ...player,
+    lineupPlace: starting.has(player.playerId) ? "starting" : "bench",
+    benchOrder: benchOrder.get(player.playerId) ?? null,
+    captaincy:
+      player.playerId === selection.captainPlayerId
+        ? "captain"
+        : player.playerId === selection.viceCaptainPlayerId
+          ? "vice-captain"
+          : null,
+  }));
+}
+
+function renderSquadPlayers(players, isOwnerSelection = false) {
+  displayedPlayers = players;
+  document.querySelector("#formation-kicker").textContent = isOwnerSelection
+    ? "Your current revision"
+    : "Recommended selection";
+  const starters = players.filter((player) => player.lineupPlace === "starting");
+  const formation = document.querySelector("#formation");
+  formation.replaceChildren();
+  positionOrder.forEach((position) => {
+    const row = document.createElement("div");
+    row.className = "formation-row";
+    row.dataset.position = position;
+    starters
+      .filter((player) => player.position === position)
+      .forEach((player) => row.append(createPlayerCard(player)));
+    formation.append(row);
+  });
+
+  const bench = document.querySelector("#bench");
+  bench.replaceChildren();
+  players
+    .filter((player) => player.lineupPlace === "bench")
+    .sort((left, right) => left.benchOrder - right.benchOrder)
+    .forEach((player) => bench.append(createPlayerCard(player)));
+  if (selectedPlayerId && players.some((player) => player.playerId === selectedPlayerId)) {
+    selectPlayer(selectedPlayerId, { updateHistory: false, focusDossier: false });
+  }
+}
+
 function renderAdvice(adviceDocument) {
   advice = adviceDocument;
+  displayedPlayers = adviceDocument.selection.players;
   document.querySelector("#evidence-status").textContent =
     adviceDocument.evidenceStatus.replaceAll("-", " ");
   document.querySelector("#gameweek-label").textContent =
@@ -478,27 +532,7 @@ function renderAdvice(adviceDocument) {
       ? "Official identity and history; synthetic estimates until evidence is available."
       : "Real official inputs and a transparent market baseline; not yet out-of-time validated.";
 
-  const starters = adviceDocument.selection.players.filter(
-    (player) => player.lineupPlace === "starting",
-  );
-  const formation = document.querySelector("#formation");
-  formation.replaceChildren();
-  positionOrder.forEach((position) => {
-    const row = document.createElement("div");
-    row.className = "formation-row";
-    row.dataset.position = position;
-    starters
-      .filter((player) => player.position === position)
-      .forEach((player) => row.append(createPlayerCard(player)));
-    formation.append(row);
-  });
-
-  const bench = document.querySelector("#bench");
-  bench.replaceChildren();
-  adviceDocument.selection.players
-    .filter((player) => player.lineupPlace === "bench")
-    .sort((left, right) => left.benchOrder - right.benchOrder)
-    .forEach((player) => bench.append(createPlayerCard(player)));
+  renderSquadPlayers(adviceDocument.selection.players);
 
   const alternatives = document.querySelector("#alternative-list");
   alternatives.replaceChildren();
@@ -518,7 +552,10 @@ function renderAdvice(adviceDocument) {
   });
 
   const requestedPlayerId = Number(new URL(window.location.href).searchParams.get("player"));
-  const initialPlayer = adviceDocument.selection.players.find(
+  const starters = displayedPlayers.filter(
+    (player) => player.lineupPlace === "starting",
+  );
+  const initialPlayer = displayedPlayers.find(
     (player) => player.playerId === requestedPlayerId,
   ) ?? starters.find((player) => player.captaincy === "captain") ?? starters[0];
   selectPlayer(initialPlayer.playerId, {
@@ -551,14 +588,23 @@ function renderSelectionState(revision, feedback = "") {
   const state = document.querySelector("#selection-state");
   const summary = document.querySelector("#selection-workflow-summary");
   const create = document.querySelector("#create-selection-draft");
+  const edit = document.querySelector("#edit-selection");
   const lock = document.querySelector("#lock-selection");
   const revisionLabel = document.querySelector("#selection-revision");
   const forecast = document.querySelector("#selection-forecast");
   const lockedAt = document.querySelector("#selection-locked-at");
 
   create.disabled = true;
+  edit.disabled = true;
   lock.disabled = true;
   if (!revision) {
+    if (
+      advice
+      && document.querySelector("#formation-kicker").textContent
+        !== "Recommended selection"
+    ) {
+      renderSquadPlayers(advice.selection.players);
+    }
     const hasForecast = Boolean(advice?.forecastArtifactId);
     const deadlinePassed = advice
       ? new Date(advice.deadlineUtc).getTime() <= Date.now()
@@ -587,6 +633,7 @@ function renderSelectionState(revision, feedback = "") {
   }
 
   panel.dataset.state = revision.status;
+  renderSquadPlayers(playersForSelection(revision.selection), true);
   state.textContent = revision.status;
   revisionLabel.textContent = `r${revision.revision} · #${revision.selectionRevisionId}`;
   forecast.textContent =
@@ -599,12 +646,14 @@ function renderSelectionState(revision, feedback = "") {
   if (revision.status === "draft") {
     title.textContent = `Draft revision ${revision.revision} is ready to lock.`;
     summary.textContent =
-      "This immutable draft matches the persisted forecast. Locking needs a separate confirmation and does not submit anything to FPL.";
+      "Review or edit this immutable revision. Locking needs a separate confirmation and does not submit anything to FPL.";
+    edit.disabled = false;
     lock.disabled = !revision.canLock;
   } else if (revision.status === "locked") {
     title.textContent = `Your Gameweek ${revision.gameweek} selection is locked.`;
     summary.textContent =
       "This is the current owner-approved choice. Any later pre-deadline change must become and lock a newer revision.";
+    edit.disabled = false;
   } else if (revision.status === "frozen") {
     title.textContent = "Your deadline selection is frozen.";
     summary.textContent =
@@ -615,6 +664,203 @@ function renderSelectionState(revision, feedback = "") {
       "autoFPL preserves the draft as history but will not treat it as your approved Gameweek selection.";
   }
   setSelectionFeedback(feedback, revision.status);
+}
+
+function playerForEdit(playerId) {
+  return advice.selection.players.find((player) => player.playerId === playerId);
+}
+
+function editPlayerLabel(playerId) {
+  const player = playerForEdit(playerId);
+  return `${player.name} · ${player.clubShortName} · ${player.position.slice(0, 3).toUpperCase()}`;
+}
+
+function fillPlayerSelect(select, playerIds, selectedPlayerId) {
+  select.replaceChildren(
+    ...playerIds.map((playerId) => {
+      const option = document.createElement("option");
+      option.value = String(playerId);
+      option.textContent = editPlayerLabel(playerId);
+      option.selected = playerId === selectedPlayerId;
+      return option;
+    }),
+  );
+}
+
+function renderSelectionEditor() {
+  fillPlayerSelect(
+    document.querySelector("#edit-swap-out"),
+    selectionEditDraft.startingPlayerIds,
+    selectionEditDraft.startingPlayerIds[0],
+  );
+  const benchIds = [
+    selectionEditDraft.replacementGoalkeeperPlayerId,
+    ...selectionEditDraft.outfieldSubstitutePlayerIds,
+  ];
+  fillPlayerSelect(
+    document.querySelector("#edit-swap-in"),
+    benchIds,
+    benchIds[0],
+  );
+  fillPlayerSelect(
+    document.querySelector("#edit-captain"),
+    selectionEditDraft.startingPlayerIds,
+    selectionEditDraft.captainPlayerId,
+  );
+  fillPlayerSelect(
+    document.querySelector("#edit-vice-captain"),
+    selectionEditDraft.startingPlayerIds,
+    selectionEditDraft.viceCaptainPlayerId,
+  );
+  document.querySelector("#edit-goalkeeper").textContent =
+    `Goalkeeper reserve · ${editPlayerLabel(selectionEditDraft.replacementGoalkeeperPlayerId)}`;
+
+  const bench = document.querySelector("#edit-bench-order");
+  bench.replaceChildren(
+    ...selectionEditDraft.outfieldSubstitutePlayerIds.map((playerId, index) => {
+      const item = document.createElement("li");
+      const label = document.createElement("span");
+      label.textContent = `${index + 1}. ${editPlayerLabel(playerId)}`;
+      const actions = document.createElement("span");
+      actions.className = "edit-order-actions";
+      const up = document.createElement("button");
+      up.type = "button";
+      up.textContent = "↑";
+      up.disabled = index === 0;
+      up.setAttribute("aria-label", `Move ${playerForEdit(playerId).name} earlier`);
+      up.addEventListener("click", () => moveBenchPlayer(index, -1));
+      const down = document.createElement("button");
+      down.type = "button";
+      down.textContent = "↓";
+      down.disabled =
+        index === selectionEditDraft.outfieldSubstitutePlayerIds.length - 1;
+      down.setAttribute("aria-label", `Move ${playerForEdit(playerId).name} later`);
+      down.addEventListener("click", () => moveBenchPlayer(index, 1));
+      actions.append(up, down);
+      item.append(label, actions);
+      return item;
+    }),
+  );
+}
+
+function setEditFeedback(message, isError = false) {
+  const feedback = document.querySelector("#edit-feedback");
+  feedback.textContent = message;
+  feedback.dataset.error = String(isError);
+}
+
+function moveBenchPlayer(index, direction) {
+  const target = index + direction;
+  const order = selectionEditDraft.outfieldSubstitutePlayerIds;
+  [order[index], order[target]] = [order[target], order[index]];
+  renderSelectionEditor();
+  setEditFeedback("Bench priority updated. Save to create the revision.");
+}
+
+function applySelectionSwap() {
+  const outgoing = Number(document.querySelector("#edit-swap-out").value);
+  const incoming = Number(document.querySelector("#edit-swap-in").value);
+  const outgoingPlayer = playerForEdit(outgoing);
+  const incomingPlayer = playerForEdit(incoming);
+  const outgoingIsGoalkeeper = outgoingPlayer.position === "goalkeeper";
+  const incomingIsGoalkeeper = incomingPlayer.position === "goalkeeper";
+  if (outgoingIsGoalkeeper !== incomingIsGoalkeeper) {
+    setEditFeedback(
+      "A goalkeeper can only swap with the reserve goalkeeper.",
+      true,
+    );
+    return;
+  }
+
+  const starterIndex = selectionEditDraft.startingPlayerIds.indexOf(outgoing);
+  selectionEditDraft.startingPlayerIds[starterIndex] = incoming;
+  if (incomingIsGoalkeeper) {
+    selectionEditDraft.replacementGoalkeeperPlayerId = outgoing;
+  } else {
+    const benchIndex =
+      selectionEditDraft.outfieldSubstitutePlayerIds.indexOf(incoming);
+    selectionEditDraft.outfieldSubstitutePlayerIds[benchIndex] = outgoing;
+  }
+  if (selectionEditDraft.captainPlayerId === outgoing) {
+    selectionEditDraft.captainPlayerId = incoming;
+  }
+  if (selectionEditDraft.viceCaptainPlayerId === outgoing) {
+    selectionEditDraft.viceCaptainPlayerId = incoming;
+  }
+  renderSelectionEditor();
+  setEditFeedback(
+    `${outgoingPlayer.name} and ${incomingPlayer.name} swapped. Save to validate the formation.`,
+  );
+}
+
+function openSelectionEditDialog() {
+  if (!selectionRevision || !["draft", "locked"].includes(selectionRevision.status)) {
+    return;
+  }
+  selectionEditDraft = {
+    startingPlayerIds: [...selectionRevision.selection.startingPlayerIds],
+    captainPlayerId: selectionRevision.selection.captainPlayerId,
+    viceCaptainPlayerId: selectionRevision.selection.viceCaptainPlayerId,
+    replacementGoalkeeperPlayerId:
+      selectionRevision.selection.replacementGoalkeeperPlayerId,
+    outfieldSubstitutePlayerIds: [
+      ...selectionRevision.selection.outfieldSubstitutePlayerIds,
+    ],
+  };
+  renderSelectionEditor();
+  setEditFeedback("No changes saved yet.");
+  document.querySelector("#edit-dialog").showModal();
+}
+
+async function saveSelectionRevision() {
+  selectionEditDraft.captainPlayerId =
+    Number(document.querySelector("#edit-captain").value);
+  selectionEditDraft.viceCaptainPlayerId =
+    Number(document.querySelector("#edit-vice-captain").value);
+  if (selectionEditDraft.captainPlayerId === selectionEditDraft.viceCaptainPlayerId) {
+    setEditFeedback("Captain and vice-captain must be different.", true);
+    return;
+  }
+  const save = document.querySelector("#save-selection-revision");
+  save.disabled = true;
+  save.textContent = "Saving…";
+  try {
+    const response = await fetch(
+      `/api/v1/selections/${selectionRevision.selectionRevisionId}/revisions`,
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(selectionEditDraft),
+      },
+    );
+    if (!response.ok) {
+      const problem = await response.json().catch(() => null);
+      throw new Error(problem?.code ?? `revision request failed with ${response.status}`);
+    }
+    const previousRevisionId = selectionRevision.selectionRevisionId;
+    const revised = await response.json();
+    renderSelectionState(
+      revised,
+      revised.selectionRevisionId === previousRevisionId
+        ? "No changes detected. The current revision remains unchanged."
+        : "New draft saved. Review it, then lock this revision explicitly.",
+    );
+    document.querySelector("#edit-dialog").close();
+  } catch (error) {
+    setEditFeedback(
+      error.message === "lineup.formation.invalid"
+        ? "That swap creates an invalid FPL formation. Keep at least three defenders and one forward."
+        : "The revision was not saved. Reload the current selection before retrying.",
+      true,
+    );
+    console.error(error);
+  } finally {
+    save.disabled = false;
+    save.textContent = "Save new draft";
+  }
 }
 
 async function loadSelectionState() {
@@ -1015,7 +1261,7 @@ mobileDossierQuery.addEventListener("change", (event) => {
 window.addEventListener("popstate", () => {
   if (!advice) return;
   const playerId = Number(new URL(window.location.href).searchParams.get("player"));
-  if (advice.selection.players.some((player) => player.playerId === playerId)) {
+  if (displayedPlayers.some((player) => player.playerId === playerId)) {
     selectPlayer(playerId, { updateHistory: false, focusDossier: false });
   }
 });
@@ -1024,6 +1270,28 @@ document.querySelector("#refresh-prediction").addEventListener("click", loadAdvi
 document.querySelector("#create-selection-draft").addEventListener(
   "click",
   createSelectionDraft,
+);
+document.querySelector("#edit-selection").addEventListener(
+  "click",
+  openSelectionEditDialog,
+);
+document.querySelector("#apply-selection-swap").addEventListener(
+  "click",
+  applySelectionSwap,
+);
+document.querySelector("#edit-captain").addEventListener("change", (event) => {
+  if (selectionEditDraft) {
+    selectionEditDraft.captainPlayerId = Number(event.target.value);
+  }
+});
+document.querySelector("#edit-vice-captain").addEventListener("change", (event) => {
+  if (selectionEditDraft) {
+    selectionEditDraft.viceCaptainPlayerId = Number(event.target.value);
+  }
+});
+document.querySelector("#save-selection-revision").addEventListener(
+  "click",
+  saveSelectionRevision,
 );
 document.querySelector("#lock-selection").addEventListener(
   "click",
