@@ -59,8 +59,11 @@ duplicate player/fixture identity, invalid range or oversized response fails
 without writing a partial capture.
 
 The read-only API exposes capture provenance and counts at
-`GET /api/v1/data/fpl-form-forecast/latest`. It does not trigger collection or
-expose provider HTML or prediction rows.
+`GET /api/v1/data/fpl-form-forecast/latest`. It also exposes a derived,
+non-provider-mirroring identity report at
+`GET /api/v1/data/fpl-form-forecast/{captureId}/identity-coverage`. Neither
+route triggers collection or exposes provider HTML, predicted values or raw
+prediction rows.
 
 ## Timing, identity and correction semantics
 
@@ -80,9 +83,15 @@ capture. Historical predictions visible in a page retrieved after their
 deadlines are not backdated or treated as point-in-time evidence.
 
 FPL Form player and fixture identifiers are source identities. They are not
-silently assumed to equal official FPL identifiers. A later evaluation join
-must prove identity against the cutoff-correct official catalogue and report
-unmatched rows.
+silently assumed to equal official FPL identifiers. The implemented coverage
+join chooses only the newest official catalogue available no later than the
+forecast retrieval and deadline. When a source ID exists, its normalized
+player/fixture attributes must agree; it is never repaired by a name fallback.
+When the ID is absent from the official catalogue, only a unique normalized
+name/team/position or player-team/kickoff match is accepted. Ambiguity,
+inconsistent IDs, invalid or ambiguous London-local kickoff times, missing
+catalogues and post-deadline forecasts fail closed and are reported with
+bounded issue records.
 
 ## Persisted fields
 
@@ -97,8 +106,11 @@ The private SQLite database retains:
 - fixture-level conditional predicted points; and
 - optional fixture-level probability of appearing.
 
-The local kickoff string is provenance, not an authoritative UTC instant.
-Fixture time and deadline joins use the official FPL capture.
+The local kickoff string is provenance, not an authoritative UTC instant. The
+coverage report parses its exact documented shape in `Europe/London`, rejects
+DST gaps and overlaps, and requires the resulting UTC instant to equal the
+official fixture kickoff. Fixture and deadline authority remains the selected
+official FPL capture.
 
 ## Scientific interpretation
 

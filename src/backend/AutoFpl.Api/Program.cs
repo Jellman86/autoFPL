@@ -92,6 +92,9 @@ builder.Services.AddSingleton(serviceProvider =>
 builder.Services.AddSingleton(serviceProvider =>
     new FplFormForecastStore(
         serviceProvider.GetRequiredService<DatabaseOptions>()));
+builder.Services.AddSingleton(serviceProvider =>
+    new FplFormIdentityCoverageStore(
+        serviceProvider.GetRequiredService<DatabaseOptions>()));
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services
     .AddHttpClient<OfficialFplImporter>(
@@ -342,6 +345,27 @@ app.MapGet(
         + "time is unknown; availableAtUtc is the completed retrieval time.")
     .WithTags("Data")
     .Produces<FplFormForecastCaptureDocument>()
+    .Produces(StatusCodes.Status404NotFound);
+app.MapGet(
+    "/api/v1/data/fpl-form-forecast/{captureId:long:min(1)}/identity-coverage",
+    async (
+        long captureId,
+        FplFormIdentityCoverageStore store,
+        CancellationToken cancellationToken) =>
+    {
+        FplFormIdentityCoverageDocument? coverage =
+            await store.GetAsync(captureId, cancellationToken);
+        return coverage is null ? Results.NotFound() : Results.Ok(coverage);
+    })
+    .WithName("GetFplFormIdentityCoverage")
+    .WithSummary(
+        "Prove one FPL Form capture's player and fixture identities against official FPL.")
+    .WithDescription(
+        "Uses only an official catalogue available no later than the forecast capture and "
+        + "Gameweek deadline. Source IDs must agree with attributes; absent IDs may use only "
+        + "a unique normalized player or team-and-kickoff match. Ambiguity fails closed.")
+    .WithTags("Data")
+    .Produces<FplFormIdentityCoverageDocument>()
     .Produces(StatusCodes.Status404NotFound);
 app.MapGet(
     "/api/v1/data/official-fpl/replays/{seasonCode}/{gameweek:int:min(1):max(38)}/pre-deadline",
