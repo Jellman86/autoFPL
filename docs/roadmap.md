@@ -26,6 +26,35 @@ The product is not an autonomous FPL account bot. It does not collect FPL
 credentials or session material and does not submit transfers, activate chips
 or change a lineup.
 
+## Selection ownership and locking
+
+Forecast evidence and the user's FPL decision are separate records. A new
+forecast may propose a different squad or selection, and AI may explain or
+propose an edit, but neither is allowed to silently change the user's draft.
+
+The decision-room lifecycle is:
+
+1. an immutable forecast artefact produces a recommended squad, XI, bench,
+   captain and vice-captain;
+2. the user copies that recommendation into an editable draft, can modify it
+   directly or ask AI for a proposed change, and must explicitly apply any AI
+   proposal;
+3. **Lock selection** validates the complete legal selection and creates an
+   immutable, user-owned decision revision tied to the exact forecast and
+   evidence identities;
+4. before the official deadline, a user may unlock into a new draft and lock a
+   superseding revision without rewriting the earlier decision; and
+5. at the deadline, the latest locked revision becomes permanently frozen.
+   Subsequent effective-player and captain changes are calculated only from
+   official FPL automatic-substitution and captain-fallback rules against
+   observed outcomes.
+
+The UI must always distinguish recommended, draft, locked and deadline-frozen
+state. Locking improves auditability and protects intent; it is not a claim that
+the underlying forecast is accurate. autoFPL does not currently submit the
+locked selection to the user's FPL account, so the UI must retain a clear manual
+submission reminder.
+
 ## Product shape
 
 ```text
@@ -229,11 +258,24 @@ fixture-level collection and cross-season player identity are reliable.
 Build in this order:
 
 1. naive historical and market/availability baselines;
-2. regularised and tree-based tabular baselines;
-3. hierarchical count, minutes and team/opponent-strength models;
-4. calibrated ensembles;
-5. richer news, role, tactical and text-derived features;
-6. neural or agentic methods only where rolling evidence justifies them.
+2. point-in-time published forecasts as separately scored challengers,
+   beginning with official FPL `ep_next` and the existing bounded FPL Form
+   collector;
+3. regularised and tree-based tabular baselines;
+4. hierarchical count, minutes and team/opponent-strength models;
+5. calibrated ensembles;
+6. richer public component forecasts, news, role, tactical and text-derived
+   features only after source admission and same-fold ablation; and
+7. neural or agentic methods only where rolling evidence justifies them.
+
+Published forecasts never enter the incumbent merely because they look
+plausible. Each is captured before its target deadline, retains content and
+player identity, is scored alone against later official outcomes, and is then
+tested as a model feature on the same temporal folds. Opta's public player-stat
+projections are a promising later component source, but require a bounded
+Quark collector and a reviewed availability/retention boundary before
+implementation. Paid or credential-gated predictions are not scraped around
+their access controls.
 
 Promoted models are judged with rolling-origin evaluation, proper scoring rules
 such as log score or CRPS where applicable, Brier scores for discrete events,
@@ -285,17 +327,21 @@ The deterministic foundation on `dev` validates manual squads and complete
 Gameweek selections, resolves substitutions and captaincy, and scores a supplied
 effective outcome.
 
-The first decision-room slice adds:
+The decision room now includes:
 
 - a responsive formation and bench;
 - interactive player evidence cards;
-- synthetic expected-points, minutes and uncertainty fields;
+- official player portraits and cutoff-aware player dossiers;
+- an immutable, capture-linked Baseline v0 expected-points artefact;
 - deterministic explanation and risk sections;
 - alternative-strategy summaries; and
 - an explicit, unavailable-until-grounded AI composer.
 
-Its data is deliberately synthetic. It establishes the product contract but
-does not constitute a forecast.
+Baseline v0 is a legal initial prediction built from official price, ownership,
+availability, capture-reported aggregate and fixture inputs. It is deliberately
+labelled as limited preseason evidence and is not a fitted, out-of-time
+validated or promoted model. The synthetic fixture remains only as the
+fail-closed acceptance fallback when qualifying official evidence is absent.
 
 The SQLite persistence vertical slice is deployed and survives a managed
 container recreate. Operator-triggered fixed-origin official FPL collectors
@@ -373,6 +419,10 @@ implemented. The first real pair awaits a completed 2026/27 Gameweek.
 - After the core minutes and points incumbents exist, ingest one bounded public
   predicted-points/minutes source as a timestamped external baseline. Score its
   published forecast alone before testing it as a model feature.
+- Retain official FPL's published next-Gameweek expected-points value from the
+  same immutable bootstrap capture as the first no-extra-transport challenger.
+  Expose it as a comparison, never as the incumbent, until its standalone
+  out-of-time evaluation is complete.
 - Keep richer news, scout, browser and Byparr sources optional until an ablation
   shows predictive value.
 
@@ -419,6 +469,10 @@ Tracked by [#43](https://github.com/Jellman86/autoFPL/issues/43).
   identity, freshness and material feature evidence.
 - Keep the implemented pitch/dossier URL synchronisation while adding editable
   user alternatives.
+- Implement the recommended → editable draft → explicit user lock lifecycle,
+  immutable superseding pre-deadline revisions and permanent deadline freeze.
+  AI outputs remain unapplied proposals and post-deadline effective changes use
+  only deterministic official substitution/captaincy rules.
 - Continue proving stale-data and provider-failure states; loading,
   missing-photo and missing-history states already have browser-tested
   fallbacks with keyboard and touch interaction.

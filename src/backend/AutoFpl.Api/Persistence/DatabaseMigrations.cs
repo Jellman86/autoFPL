@@ -4,7 +4,7 @@ internal sealed record DatabaseMigration(int Version, string Name, string Sql);
 
 internal static class DatabaseMigrations
 {
-    public const int CurrentVersion = 13;
+    public const int CurrentVersion = 14;
 
     public static IReadOnlyList<DatabaseMigration> All { get; } =
     [
@@ -905,6 +905,21 @@ internal static class DatabaseMigrations
                     capture_id DESC,
                     artifact_id DESC
                 );
+            """),
+        new(
+            14,
+            "official-fpl-published-expected-points",
+            """
+            ALTER TABLE official_fpl_players
+                ADD COLUMN expected_points_next TEXT
+                    CHECK (
+                        expected_points_next IS NULL
+                        OR (
+                            length(expected_points_next) BETWEEN 1 AND 16
+                            AND CAST(expected_points_next AS REAL)
+                                BETWEEN -20.0 AND 100.0
+                        )
+                    );
             """),
     ];
 }

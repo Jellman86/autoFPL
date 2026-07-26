@@ -1038,6 +1038,41 @@ h3 {
   letter-spacing: -0.04em;
 }
 
+.challenger-comparison {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.8rem;
+  align-items: center;
+  margin-top: 0.65rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px dashed rgba(183, 239, 73, 0.42);
+  background: rgba(183, 239, 73, 0.06);
+}
+
+.challenger-comparison[hidden] {
+  display: none;
+}
+
+.challenger-comparison span {
+  display: block;
+  color: #9eb5b8;
+  font-size: 0.55rem;
+}
+
+.challenger-comparison strong {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--white);
+  font-size: 1rem;
+}
+
+.challenger-comparison p {
+  margin: 0;
+  color: #8fa7aa;
+  font-size: 0.58rem;
+  line-height: 1.45;
+}
+
 .recent-form {
   display: grid;
   gap: 0.55rem;

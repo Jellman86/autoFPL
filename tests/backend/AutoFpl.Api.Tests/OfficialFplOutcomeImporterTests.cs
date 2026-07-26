@@ -217,7 +217,7 @@ public sealed class OfficialFplOutcomeImporterTests
             TestContext.Current.CancellationToken);
 
         Assert.NotNull(dossier);
-        Assert.Equal("1.0", dossier.SchemaVersion);
+        Assert.Equal("1.1", dossier.SchemaVersion);
         Assert.Equal("2026-27", dossier.SeasonCode);
         Assert.Equal(2, dossier.TargetGameweek);
         Assert.Equal(
@@ -233,6 +233,15 @@ public sealed class OfficialFplOutcomeImporterTests
         Assert.Equal(
             $"{OfficialFplPlayerDossierStore.PhotoBaseUrl}p101.png",
             dossier.Player.PhotoUrl);
+        Assert.NotNull(dossier.PublishedExpectedPoints);
+        Assert.Equal(
+            OfficialFplImporter.SourceKey,
+            dossier.PublishedExpectedPoints.SourceKey);
+        Assert.Equal(2, dossier.PublishedExpectedPoints.TargetGameweek);
+        Assert.Equal(4.2m, dossier.PublishedExpectedPoints.ExpectedPoints);
+        Assert.Equal(
+            "published-challenger-not-promoted",
+            dossier.PublishedExpectedPoints.EvidenceStatus);
 
         OfficialFplPlayerOutcomeDocument outcome = Assert.Single(dossier.RecentOutcomes);
         Assert.Equal(1, outcome.Gameweek);
@@ -446,6 +455,7 @@ public sealed class OfficialFplOutcomeImporterTests
             news_added = (string?)null,
             chance_of_playing_next_round = (int?)null,
             selected_by_percent = "10.5",
+            ep_next = "4.2",
             total_points = 0,
             minutes = 0,
             starts = 0,

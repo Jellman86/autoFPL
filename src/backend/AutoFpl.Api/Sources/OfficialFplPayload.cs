@@ -44,6 +44,7 @@ internal sealed record OfficialFplPlayer(
     DateTimeOffset? NewsAddedUtc,
     int? ChanceNextRound,
     decimal SelectedByPercent,
+    decimal? ExpectedPointsNext,
     int TotalPoints,
     int Minutes,
     int Starts);

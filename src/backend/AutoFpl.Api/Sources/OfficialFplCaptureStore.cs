@@ -42,6 +42,12 @@ public sealed class OfficialFplCaptureStore
                 existingId.Value,
                 payload.Players,
                 cancellationToken);
+            await PopulateMissingExpectedPointsNextAsync(
+                connection,
+                transaction,
+                existingId.Value,
+                payload.Players,
+                cancellationToken);
             await transaction.CommitAsync(cancellationToken);
             return (await GetAsync(existingId.Value, cancellationToken))!;
         }
@@ -554,6 +560,7 @@ public sealed class OfficialFplCaptureStore
                     news_added_utc,
                     chance_next_round,
                     selected_by_percent,
+                    expected_points_next,
                     total_points,
                     minutes,
                     starts
@@ -574,6 +581,7 @@ public sealed class OfficialFplCaptureStore
                     $newsAddedUtc,
                     $chanceNextRound,
                     $selectedByPercent,
+                    $expectedPointsNext,
                     $totalPoints,
                     $minutes,
                     $starts
@@ -602,6 +610,12 @@ public sealed class OfficialFplCaptureStore
             command.Parameters.AddWithValue(
                 "$selectedByPercent",
                 item.SelectedByPercent.ToString(CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue(
+                "$expectedPointsNext",
+                item.ExpectedPointsNext is null
+                    ? DBNull.Value
+                    : item.ExpectedPointsNext.Value.ToString(
+                        CultureInfo.InvariantCulture));
             command.Parameters.AddWithValue("$totalPoints", item.TotalPoints);
             command.Parameters.AddWithValue("$minutes", item.Minutes);
             command.Parameters.AddWithValue("$starts", item.Starts);
@@ -631,6 +645,36 @@ public sealed class OfficialFplCaptureStore
             command.Parameters.AddWithValue("$captureId", captureId);
             command.Parameters.AddWithValue("$playerId", item.Id);
             command.Parameters.AddWithValue("$photoIdentifier", item.PhotoIdentifier);
+            await command.ExecuteNonQueryAsync(cancellationToken);
+        }
+    }
+
+    private static async Task PopulateMissingExpectedPointsNextAsync(
+        SqliteConnection connection,
+        SqliteTransaction transaction,
+        long captureId,
+        IReadOnlyList<OfficialFplPlayer> players,
+        CancellationToken cancellationToken)
+    {
+        foreach (OfficialFplPlayer item in players.Where(
+                     player => player.ExpectedPointsNext is not null))
+        {
+            await using SqliteCommand command = connection.CreateCommand();
+            command.Transaction = transaction;
+            command.CommandText =
+                """
+                UPDATE official_fpl_players
+                SET expected_points_next = $expectedPointsNext
+                WHERE capture_id = $captureId
+                  AND player_id = $playerId
+                  AND expected_points_next IS NULL;
+                """;
+            command.Parameters.AddWithValue("$captureId", captureId);
+            command.Parameters.AddWithValue("$playerId", item.Id);
+            command.Parameters.AddWithValue(
+                "$expectedPointsNext",
+                item.ExpectedPointsNext!.Value.ToString(
+                    CultureInfo.InvariantCulture));
             await command.ExecuteNonQueryAsync(cancellationToken);
         }
     }

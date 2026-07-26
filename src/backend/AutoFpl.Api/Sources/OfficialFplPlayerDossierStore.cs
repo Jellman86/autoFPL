@@ -118,7 +118,7 @@ public sealed class OfficialFplPlayerDossierStore
                 cancellationToken);
 
         return new(
-            "1.0",
+            "1.1",
             seasonCode,
             targetGameweek,
             replay.DeadlineUtc,
@@ -138,6 +138,13 @@ public sealed class OfficialFplPlayerDossierStore
                 identity.News,
                 identity.PhotoIdentifier,
                 CreatePhotoUrl(identity.PhotoIdentifier)),
+            identity.ExpectedPointsNext is decimal expectedPointsNext
+                ? new(
+                    OfficialFplImporter.SourceKey,
+                    targetGameweek,
+                    expectedPointsNext,
+                    "published-challenger-not-promoted")
+                : null,
             outcomes,
             upcoming);
     }
@@ -164,7 +171,8 @@ public sealed class OfficialFplPlayerDossierStore
                 player.price_tenths,
                 player.status,
                 player.news,
-                player.photo_identifier
+                player.photo_identifier,
+                player.expected_points_next
             FROM official_fpl_players AS player
             INNER JOIN official_fpl_teams AS team
                 ON team.capture_id = player.capture_id
@@ -189,7 +197,12 @@ public sealed class OfficialFplPlayerDossierStore
                 reader.GetInt32(9),
                 reader.GetString(10),
                 reader.GetString(11),
-                reader.IsDBNull(12) ? null : reader.GetString(12))
+                reader.IsDBNull(12) ? null : reader.GetString(12),
+                reader.IsDBNull(13)
+                    ? null
+                    : decimal.Parse(
+                        reader.GetString(13),
+                        CultureInfo.InvariantCulture))
             : null;
     }
 
@@ -463,7 +476,8 @@ public sealed class OfficialFplPlayerDossierStore
         int PriceTenths,
         string Status,
         string News,
-        string? PhotoIdentifier);
+        string? PhotoIdentifier,
+        decimal? ExpectedPointsNext);
 
     private sealed record OutcomeRow(
         long OutcomeCaptureId,
