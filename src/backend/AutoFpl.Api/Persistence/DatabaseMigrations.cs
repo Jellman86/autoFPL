@@ -4,7 +4,7 @@ internal sealed record DatabaseMigration(int Version, string Name, string Sql);
 
 internal static class DatabaseMigrations
 {
-    public const int CurrentVersion = 19;
+    public const int CurrentVersion = 20;
 
     public static IReadOnlyList<DatabaseMigration> All { get; } =
     [
@@ -1399,6 +1399,67 @@ internal static class DatabaseMigrations
             BEFORE DELETE ON historical_fpl_player_gameweeks
             BEGIN
                 SELECT RAISE(ABORT, 'historical FPL player Gameweeks cannot be deleted');
+            END;
+            """),
+        new(
+            20,
+            "preseason-player-forecast-artifact",
+            """
+            CREATE TABLE preseason_player_forecast_artifacts (
+                forecast_artifact_id INTEGER PRIMARY KEY,
+                schema_version TEXT NOT NULL CHECK (schema_version = '1.0'),
+                artifact_type TEXT NOT NULL
+                    CHECK (
+                        artifact_type =
+                            'historical-preseason-player-gameweek-forecast'
+                    ),
+                status TEXT NOT NULL
+                    CHECK (status = 'provisional-preseason-challenger'),
+                model_key TEXT NOT NULL
+                    CHECK (model_key = 'historical-preseason-histogram-tree-v1'),
+                official_capture_id INTEGER NOT NULL
+                    REFERENCES official_fpl_captures(capture_id)
+                    ON DELETE RESTRICT,
+                historical_capture_id INTEGER NOT NULL
+                    REFERENCES historical_fpl_season_captures(capture_id)
+                    ON DELETE RESTRICT,
+                season_code TEXT NOT NULL CHECK (season_code = '2026-27'),
+                gameweek INTEGER NOT NULL CHECK (gameweek = 1),
+                decision_cutoff_utc TEXT NOT NULL,
+                producer_run_identity_sha256 TEXT NOT NULL
+                    CHECK (length(producer_run_identity_sha256) = 64),
+                document_json TEXT NOT NULL
+                    CHECK (length(document_json) BETWEEN 2 AND 2097152),
+                content_sha256 TEXT NOT NULL UNIQUE
+                    CHECK (length(content_sha256) = 64),
+                created_at_utc TEXT NOT NULL,
+                UNIQUE (official_capture_id, model_key)
+            );
+
+            CREATE INDEX preseason_player_forecast_artifacts_latest_idx
+                ON preseason_player_forecast_artifacts (
+                    season_code,
+                    gameweek,
+                    decision_cutoff_utc DESC,
+                    forecast_artifact_id DESC
+                );
+
+            CREATE TRIGGER preseason_player_forecast_artifacts_immutable
+            BEFORE UPDATE ON preseason_player_forecast_artifacts
+            BEGIN
+                SELECT RAISE(
+                    ABORT,
+                    'preseason player forecast artifacts are immutable'
+                );
+            END;
+
+            CREATE TRIGGER preseason_player_forecast_artifacts_no_delete
+            BEFORE DELETE ON preseason_player_forecast_artifacts
+            BEGIN
+                SELECT RAISE(
+                    ABORT,
+                    'preseason player forecast artifacts cannot be deleted'
+                );
             END;
             """),
     ];

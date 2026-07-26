@@ -433,8 +433,11 @@ The corresponding read-only generator now requires that exact evaluated
 archive identity, fits the unchanged selected model to all historical
 player-Gameweeks and emits fitted GW1 means beside exact-capture Baseline v0
 values. Current availability and missing stable-code history stay explicit.
-The generated challenger is not yet backend-persisted, shown in the decision
-room or allowed to influence advice.
+Migration 20 and a strict operator import now validate the fixed model,
+evaluation, archive, official capture, Baseline cohort and every eligible
+player before immutable persistence. A read-only route exposes the artifact
+and the player dossier shows its raw point mean, Baseline delta, holdout result
+and availability/identity warnings. It remains unable to influence advice.
 
 The SQLite persistence vertical slice is deployed and survives a managed
 container recreate. Operator-triggered fixed-origin official FPL collectors
@@ -711,18 +714,16 @@ v1.0 hardens the proven product rather than introducing its first UI:
 
 The next development slices are:
 
-1. validate and persist the generated, holdout-supported GW1 challenger through
-   a strict backend import boundary, expose its point-mean comparison beside
-   unchanged Baseline v0 and keep it visibly distribution-free and unable to
-   drive advice until current availability/appearance handling is evaluated;
+1. build the fitted appearance/start/minutes and empirical point-distribution
+   loop, then evaluate it on identical temporal folds before any raw preseason
+   point mean may influence advice;
 2. run the implemented identical-fold cross-season feature ablation as real
    current-season folds accumulate, then promote only stable out-of-time gains
    from prior-season match performance, minutes, starts, underlying events and
    participation-derived durability; archived final health remains excluded
    from the candidate and current official availability always dominates it;
-3. extend the implemented provisional all-player artifact with fitted
-   appearance/start/minutes and point-distribution components only as real
-   rolling folds justify them;
+3. extend the implemented provisional all-player artifact with only the
+   appearance/minutes/distribution components that pass those rolling gates;
 4. operate the implemented source-agnostic Spider shadow capture across the
    fixed official-availability, specialist-lineup and dependent-consensus
    inventory; then add reproducible quantitative, market/team-strength and

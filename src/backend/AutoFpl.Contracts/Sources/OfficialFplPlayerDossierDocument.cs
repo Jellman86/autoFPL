@@ -12,6 +12,8 @@ public sealed record OfficialFplPlayerDossierDocument(
     [property: JsonPropertyName("player")] OfficialFplPlayerIdentityDocument Player,
     [property: JsonPropertyName("publishedExpectedPoints")]
         OfficialFplPublishedExpectedPointsDocument? PublishedExpectedPoints,
+    [property: JsonPropertyName("preseasonChallenger")]
+        OfficialFplPreseasonChallengerDocument? PreseasonChallenger,
     [property: JsonPropertyName("recentOutcomes")]
         IReadOnlyList<OfficialFplPlayerOutcomeDocument> RecentOutcomes,
     [property: JsonPropertyName("upcomingFixtures")]
@@ -39,6 +41,24 @@ public sealed record OfficialFplPublishedExpectedPointsDocument(
     [property: JsonPropertyName("targetGameweek")] int TargetGameweek,
     [property: JsonPropertyName("expectedPoints")] decimal ExpectedPoints,
     [property: JsonPropertyName("evidenceStatus")] string EvidenceStatus);
+
+public sealed record OfficialFplPreseasonChallengerDocument(
+    [property: JsonPropertyName("modelKey")] string ModelKey,
+    [property: JsonPropertyName("expectedPoints")] decimal ExpectedPoints,
+    [property: JsonPropertyName("baselineV0ExpectedPoints")]
+        decimal BaselineV0ExpectedPoints,
+    [property: JsonPropertyName("differenceFromBaselineV0")]
+        decimal DifferenceFromBaselineV0,
+    [property: JsonPropertyName("availabilityStatus")] string AvailabilityStatus,
+    [property: JsonPropertyName("priorSeasonIdentityStatus")]
+        string PriorSeasonIdentityStatus,
+    [property: JsonPropertyName("distributionStatus")] string DistributionStatus,
+    [property: JsonPropertyName("lockedHoldoutMaeImprovementFraction")]
+        decimal LockedHoldoutMaeImprovementFraction,
+    [property: JsonPropertyName("influencesAdvice")] bool InfluencesAdvice,
+    [property: JsonPropertyName("forecastArtifactId")] long ForecastArtifactId,
+    [property: JsonPropertyName("forecastArtifactContentSha256")]
+        string ForecastArtifactContentSha256);
 
 public sealed record OfficialFplPlayerOutcomeDocument(
     [property: JsonPropertyName("gameweek")] int Gameweek,

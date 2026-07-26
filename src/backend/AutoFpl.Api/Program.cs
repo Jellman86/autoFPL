@@ -156,6 +156,22 @@ if (requestedOfficialFplOutcomeImport && !runOfficialFplOutcomeImport)
         "Usage: --import-official-fpl-outcome <gameweek 1-38>");
     return 2;
 }
+bool requestedPreseasonPlayerForecastImport =
+    args.Length > 0
+    && StringComparer.Ordinal.Equals(
+        args[0],
+        "--import-preseason-player-forecast");
+bool runPreseasonPlayerForecastImport =
+    requestedPreseasonPlayerForecastImport
+    && args.Length == 2
+    && !string.IsNullOrWhiteSpace(args[1]);
+if (requestedPreseasonPlayerForecastImport
+    && !runPreseasonPlayerForecastImport)
+{
+    await Console.Error.WriteLineAsync(
+        "Usage: --import-preseason-player-forecast <json-file>");
+    return 2;
+}
 
 bool runNonWebCommand =
     runIntegrityCheck
@@ -169,7 +185,8 @@ bool runNonWebCommand =
     || runEvidenceClaimEvaluation
     || runFplFormForecastEvaluation
     || runOfficialExpectedPointsEvaluation
-    || runOfficialFplOutcomeImport;
+    || runOfficialFplOutcomeImport
+    || runPreseasonPlayerForecastImport;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(
     runNonWebCommand ? [] : args);
@@ -230,6 +247,11 @@ builder.Services.AddSingleton(serviceProvider =>
         serviceProvider.GetRequiredService<DatabaseOptions>(),
         serviceProvider.GetRequiredService<OfficialDecisionRoomPreviewStore>(),
         serviceProvider.GetRequiredService<TimeProvider>()));
+builder.Services.AddSingleton(serviceProvider =>
+    new PreseasonPlayerForecastStore(
+        serviceProvider.GetRequiredService<DatabaseOptions>(),
+        serviceProvider.GetRequiredService<TimeProvider>()));
+builder.Services.AddSingleton<PreseasonPlayerForecastImporter>();
 builder.Services.AddSingleton(serviceProvider =>
     new SelectionRevisionStore(
         serviceProvider.GetRequiredService<DatabaseOptions>(),
@@ -525,6 +547,31 @@ if (runEvidenceClaimImport)
     }
 }
 
+if (runPreseasonPlayerForecastImport)
+{
+    try
+    {
+        PreseasonPlayerForecastDocument forecast =
+            await app.Services
+                .GetRequiredService<PreseasonPlayerForecastImporter>()
+                .ImportFileAsync(args[1]);
+        await Console.Out.WriteLineAsync(
+            JsonSerializer.Serialize(
+                forecast,
+                new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+        return 0;
+    }
+    catch (Exception exception)
+        when (exception is PreseasonPlayerForecastValidationException
+            or FileNotFoundException
+            or InvalidDataException
+            or JsonException)
+    {
+        await Console.Error.WriteLineAsync(exception.Message);
+        return 2;
+    }
+}
+
 if (runResearchSourceCapture)
 {
     try
@@ -696,6 +743,26 @@ app.MapGet(
         + "minutes proxy. Missing fitted start and 60-minute probabilities remain null.")
     .WithTags("Forecasts")
     .Produces<PlayerGameweekForecastDocument>()
+    .Produces(StatusCodes.Status404NotFound);
+app.MapGet(
+    "/api/v1/forecasts/preseason-challenger/latest",
+    async (
+        PreseasonPlayerForecastStore store,
+        CancellationToken cancellationToken) =>
+    {
+        PreseasonPlayerForecastDocument? forecast =
+            await store.GetLatestAsync(cancellationToken);
+        return forecast is null ? Results.NotFound() : Results.Ok(forecast);
+    })
+    .WithName("GetLatestPreseasonPlayerForecast")
+    .WithSummary(
+        "Read the latest immutable provisional preseason player challenger.")
+    .WithDescription(
+        "The fixed archive-trained point means are comparison evidence only. "
+        + "Baseline v0 still drives advice, and no calibrated distribution, "
+        + "appearance probability or expected-minutes model is implied.")
+    .WithTags("Forecasts")
+    .Produces<PreseasonPlayerForecastDocument>()
     .Produces(StatusCodes.Status404NotFound);
 app.MapGet(
     "/api/v1/selections/current",
