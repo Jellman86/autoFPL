@@ -1,4 +1,4 @@
-# Baseline evaluation v1
+# Baseline evaluation v2
 
 ## Status
 
@@ -7,15 +7,23 @@ or a performance claim. Deterministic fixtures test chronology and mathematics;
 they are not research evidence. Real results remain unavailable until autoFPL
 has multiple complete official replay/outcome pairs.
 
-## Question and target
+## Questions and targets
 
 For each player present in the latest official capture available before a
-Gameweek deadline, predict the player's final official integer FPL points for
-that Gameweek.
+Gameweek deadline:
+
+1. predict the player's final official integer FPL points for that Gameweek;
+2. predict the probability that the player's final official Gameweek minutes
+   are at least 60.
 
 The population contains only players whose pre-deadline replay identity matches
 an official final outcome. Added post-deadline players may exist in the outcome
 capture but do not enter that earlier prediction population.
+
+The binary target uses the official Gameweek-total minutes field. In a double
+Gameweek, reaching 60 minutes across either or both fixtures is therefore a
+positive outcome; this baseline does not yet model individual fixture
+appearances.
 
 ## Point-in-time split
 
@@ -39,9 +47,9 @@ Player IDs are used only within one season. Cross-season evaluation remains
 disabled until explicit provider-code identity matching is implemented and
 tested.
 
-## Baselines
+## Point baselines
 
-All baselines produce one deterministic point prediction per eligible player:
+The point baselines produce one deterministic prediction per eligible player:
 
 - `zero-points` — always predicts zero;
 - `position-expanding-mean` — mean prior points for the player's position,
@@ -57,6 +65,25 @@ These are deliberately simple. They establish leakage-safe incumbents for
 later minutes, team/opponent-strength, market, tree, hierarchical and ensemble
 challengers.
 
+## Probability baselines
+
+The probability baselines predict `P(official Gameweek minutes >= 60)`:
+
+- `global-played60-rate` — add-one-smoothed rate over all eligible prior
+  player/Gameweek outcomes;
+- `position-played60-rate` — add-one-smoothed prior rate for the player's
+  position, falling back to the global rate;
+- `player-played60-rate` — add-one-smoothed prior rate for the player, falling
+  back to the position rate; and
+- `official-start-rate` — add-one-smoothed cumulative official starts visible
+  before the deadline divided by elapsed prior Gameweeks, capped at one for
+  double-Gameweek histories.
+
+Add-one smoothing is the posterior mean under a uniform Beta(1,1) prior. It
+keeps small-sample forecasts away from unjustified zero and one probabilities.
+These are audit-friendly incumbents, not claims that starting and reaching 60
+minutes are equivalent.
+
 ## Metrics and slices
 
 The command reports mean absolute error, root mean squared error and signed mean
@@ -64,10 +91,18 @@ error over all eligible player/Gameweek predictions, plus the same metrics by
 position. Lower MAE/RMSE is better; signed mean error exposes systematic over-
 or under-prediction.
 
-The v1 point baselines do not produce a predictive distribution, so CRPS,
-interval coverage and calibration are not reported. The first probabilistic
-candidate must add proper scores and calibration without removing these point
-baseline comparisons.
+For the binary probability target it reports:
+
+- Brier score and natural-log loss, both proper scores where lower is better;
+- observed event rate and mean predicted probability;
+- expected calibration error using fixed-width descriptive bins;
+- non-empty calibration bins with count, mean forecast, observed rate and
+  absolute gap; and
+- the same aggregate probability metrics by position.
+
+Calibration bins are descriptive, especially in the tiny early sample. They
+must not be read as proof of calibration. The point models still do not produce
+a full points distribution, so CRPS and interval coverage remain future work.
 
 ## Reproducibility and output
 
@@ -87,7 +122,7 @@ The SQLite connection is query-only. The report records:
 - replay/outcome IDs, timestamps and source hashes for every target and
   training fold;
 - a canonical data-identity hash;
-- metrics and position slices; and
+- point and probability metrics, calibration bins and position slices; and
 - a canonical run-identity hash.
 
 The command refuses to overwrite an existing report. With no complete pair or
@@ -99,5 +134,6 @@ Schema mismatch, incomplete coverage and invalid configuration fail closed.
 No final holdout or promotion threshold is registered yet because the live
 2026/27 sample contains no completed Gameweeks. Before any challenger influences
 advice, register the training window, final holdout, minimum sample, tuning
-budget, proper probabilistic metrics, decision-utility evaluation and promotion
-rule. Player-card forecasts remain synthetic until that later gate passes.
+budget, decision-utility evaluation and promotion rule. Add a calibrated points
+distribution and minutes expectation before scenario simulation depends on
+them. Player-card forecasts remain synthetic until that later gate passes.

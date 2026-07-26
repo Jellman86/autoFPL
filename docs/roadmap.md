@@ -270,10 +270,12 @@ later outcome without manual catalogue entry.
 
 Tracked by [#42](https://github.com/Jellman86/autoFPL/issues/42).
 
-**Status:** active — the read-only deterministic baseline command, expanding
-origin selection, correction-time leakage checks, point metrics, position
-slices and reproducibility identities are implemented against test fixtures.
-Real evaluation remains unavailable until completed replay/outcome pairs exist.
+**Status:** active — the read-only baseline command, expanding-origin
+selection, correction-time leakage checks, deterministic point baselines,
+smoothed probability-of-60-minutes baselines, proper binary scores,
+calibration diagnostics, position slices and reproducibility identities are
+implemented against test fixtures. Real evaluation remains unavailable until
+completed replay/outcome pairs exist.
 
 - Implement a local Python evaluation command using SQLite snapshots.
 - Reproduce naive and credible strong baselines with rolling origins.
@@ -391,9 +393,11 @@ The next development slices are:
    Gameweek and verify the resulting real replay/outcome pair;
 2. run the baseline command as complete pairs accumulate and retain the
    machine-readable reports;
-3. add the first probabilistic minutes/points baseline with proper scores and
-   calibration once the sample supports an honest fold;
-4. populate real player cards only after a baseline has valid out-of-time evidence.
+3. retain the probability-of-60-minutes baseline reports, then add expected
+   minutes and a calibrated points distribution as real folds accumulate;
+4. compare regularised/tabular challengers only when they can be evaluated
+   against those retained incumbents;
+5. populate real player cards only after a baseline has valid out-of-time evidence.
 
 Do not add another standalone governance, universal contract, infrastructure or
 AI-orchestrator project ahead of those slices.
