@@ -112,6 +112,14 @@ expected minutes or an autoFPL-promoted forecast. Set
 from the container default `http://playwright-mcp:8931/mcp`. See the
 [source record](../data/sources/fpl-form-public-forecast-v1.md).
 
+Set `AutoFpl__Research__FplFormPollIntervalMinutes` to an integer from `60`
+through `1440` to enable conservative in-process collection. The web process
+checks immediately only when no recent check exists, then waits the configured
+interval from the persisted last check. Restarts therefore do not create an
+extra provider request. Waiting and bounded collection failures remain visible
+through the status route and do not stop the core application. Leave the
+setting absent to retain operator-only collection.
+
 Before evaluation, request the capture-specific identity-coverage route. A
 report is complete only when the forecast was available by the deadline and
 every source player and fixture has one deterministic official match from a

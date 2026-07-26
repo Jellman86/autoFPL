@@ -115,6 +115,9 @@ builder.Services.AddSingleton(serviceProvider =>
         serviceProvider.GetRequiredService<DatabaseOptions>(),
         serviceProvider.GetRequiredService<FplFormIdentityCoverageStore>()));
 builder.Services.AddSingleton(TimeProvider.System);
+FplFormForecastPollingOptions fplFormPollingOptions =
+    FplFormForecastPollingOptions.FromConfiguration(builder.Configuration);
+builder.Services.AddSingleton(fplFormPollingOptions);
 builder.Services
     .AddHttpClient<OfficialFplImporter>(
         client =>
@@ -177,6 +180,10 @@ builder.Services
             PooledConnectionLifetime = TimeSpan.FromMinutes(10),
         });
 builder.Services.AddTransient<FplFormForecastImporter>();
+if (fplFormPollingOptions.Enabled)
+{
+    builder.Services.AddHostedService<FplFormForecastPoller>();
+}
 builder.Services.AddExceptionHandler<DecisionSnapshotPersistenceExceptionHandler>();
 builder.Services.AddExceptionHandler<DecisionSnapshotValidationExceptionHandler>();
 builder.Services.AddExceptionHandler<SquadValidationExceptionHandler>();

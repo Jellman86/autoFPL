@@ -55,6 +55,13 @@ Run one capture with:
 dotnet AutoFpl.Api.dll --import-fpl-form-forecast
 ```
 
+An instance may instead set
+`AutoFpl__Research__FplFormPollIntervalMinutes=360` (or another bounded value
+from 60 through 1440 minutes). The single application process reuses the same
+fixed importer and persisted last-check time, so a restart waits out the
+remaining interval rather than generating an extra request. There is no
+caller-controlled schedule, URL or browser code.
+
 The importer accepts only an active `data-nw` Gameweek from 1 through 38 and
 normalises fixture predictions from the latest season in the page's embedded
 `data-players` JSON. An off-season sentinel, unexpected final URL, wrong MCP

@@ -270,6 +270,10 @@ public sealed class PlaywrightMcpFplFormCollector
         {
             throw;
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
         catch (Exception exception) when (
             exception is HttpRequestException
             or TaskCanceledException
