@@ -714,9 +714,10 @@ v1.0 hardens the proven product rather than introducing its first UI:
 
 The next development slices are:
 
-1. build the fitted appearance/start/minutes and empirical point-distribution
-   loop, then evaluate it on identical temporal folds before any raw preseason
-   point mean may influence advice;
+1. run the implemented fixed appearance/start/60-minute/minutes evaluator on
+   the pinned archive, retain its locked-holdout result, then fit only supported
+   targets to current players and add the empirical point-distribution loop
+   before any raw preseason point mean may influence advice;
 2. run the implemented identical-fold cross-season feature ablation as real
    current-season folds accumulate, then promote only stable out-of-time gains
    from prior-season match performance, minutes, starts, underlying events and

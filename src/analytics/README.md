@@ -36,6 +36,25 @@ challenger; it cannot promote or silently replace Baseline v0.
 The design, limitations and first retained result are recorded in the
 [historical preseason specification](../../docs/research/historical-preseason-evaluation-v1.md).
 
+## Historical participation evaluation v1
+
+The companion evaluator tests fixed appearance, start, 60-minute and uncapped
+total-minutes challengers on the same pinned archive and locked temporal split:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.historical_participation_evaluation \
+  --database /path/to/autofpl.db \
+  --season 2025-26 \
+  --output /path/to/historical-participation-report.json
+```
+
+Binary targets use Brier score, log loss and calibration error; minutes uses
+MAE and RMSE. Comparator selection occurs only on expanding-origin development
+folds before the Gameweek 31–38 holdout opens. The report is deterministic,
+read-only and cannot alter the preseason artifact or served advice. See the
+[historical participation specification](../../docs/research/historical-participation-evaluation-v1.md).
+
 ## Provisional preseason player forecast v1
 
 After the locked holdout supports the fixed candidate, the current-player

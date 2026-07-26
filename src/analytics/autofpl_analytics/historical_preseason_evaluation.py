@@ -350,7 +350,19 @@ def _load_capture(
 def _build_samples(
     connection: sqlite3.Connection,
     capture: HistoricalCapture,
+    target_name: str = "total-points",
 ) -> Dict[int, List[Sample]]:
+    if target_name not in {
+        "total-points",
+        "appearance",
+        "start",
+        "played-60",
+        "minutes",
+    }:
+        raise TemporalRidgeError(
+            "configuration.historical-target",
+            f"Unsupported historical target: {target_name}",
+        )
     player_rows = connection.execute(
         """
         SELECT player_code, position
@@ -457,13 +469,27 @@ def _build_samples(
                     player_id=player_code,
                     position=positions[player_code],
                     features=_features(target, prior),
-                    actual=target.total_points,
+                    actual=_target_value(target_name, target),
                 )
             )
     return {
         gameweek: sorted(items, key=lambda item: item.player_id)
         for gameweek, items in sorted(samples.items())
     }
+
+
+def _target_value(target_name: str, row: HistoricalGameweek) -> int:
+    if target_name == "total-points":
+        return row.total_points
+    if target_name == "appearance":
+        return int(row.minutes > 0)
+    if target_name == "start":
+        return int(row.starts > 0)
+    if target_name == "played-60":
+        return int(row.minutes >= 60)
+    if target_name == "minutes":
+        return row.minutes
+    raise AssertionError(f"Unexpected historical target: {target_name}")
 
 
 def _features(
