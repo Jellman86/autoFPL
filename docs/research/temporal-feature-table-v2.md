@@ -1,8 +1,8 @@
-# Temporal feature table v1
+# Temporal feature table v2
 
 ## Status
 
-`official-temporal-v1` is an executable exploratory feature artefact. It is not
+`official-temporal-v2` is an executable exploratory feature artefact. It is not
 a fitted model, promoted forecast or performance claim. Its purpose is to make
 the information leading into a prediction explicit, reproducible and safe to
 use in later rolling-origin comparisons.
@@ -53,6 +53,11 @@ Every player in the target replay receives:
 - the latest eligible prior Gameweek outcome;
 - rolling 1/3/5-Gameweek means for points, minutes, starts, goals, assists,
   clean sheets, goals conceded, saves, bonus and cards;
+- rolling 1/3/5-Gameweek means for the retained official expected-goal,
+  expected-assist, expected-goal-involvement/conceded, ICT/BPS, influence,
+  creativity, threat, defensive-action and penalty outcomes;
+- a separate observed sample count for every nullable underlying metric, so a
+  legacy missing value is never treated as a zero;
 - rolling appearance and 60-minute rates; and
 - an exponentially weighted version of the same history using the declared
   alpha.
@@ -66,6 +71,12 @@ null`, null rolling values and a null exponentially weighted block. The
 generator does not substitute a league, position or zero value for missing
 personal history; model-specific fallback and missingness treatment belong
 inside each training fold.
+
+Outcome rows created before database migration 10 retain null underlying
+values. A window can therefore contain more historical Gameweeks than observed
+underlying-stat samples. Each `{metric}SampleCount` records that distinction,
+and an underlying mean stays null until at least one eligible observation is
+available.
 
 ## Team and opponent context
 
@@ -96,6 +107,10 @@ byte-equivalent values after canonical JSON serialization.
 
 - No cross-season player history is admitted.
 - Player outcomes are Gameweek aggregates; team form is fixture-specific.
+- Underlying official values are provider observations, not an independent
+  event-data feed, and are not yet model inputs. Their incremental value must
+  be measured against the unchanged official feature baseline on identical
+  expanding-origin folds.
 - Rest-day features use scheduled kickoff gaps and do not infer travel or
   recovery burden.
 - Status and chance fields are current to the selected capture but no richer

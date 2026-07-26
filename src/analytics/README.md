@@ -37,7 +37,7 @@ The target, temporal split, metrics, baselines and current limitations are
 recorded in the
 [baseline evaluation specification](../../docs/research/baseline-evaluation-v4.md).
 
-## Temporal feature table v1
+## Temporal feature table v2
 
 The read-only feature command materialises player and team information that was
 actually available with one selected official pre-deadline capture:
@@ -52,13 +52,15 @@ PYTHONPATH=src/analytics python3 -m autofpl_analytics.feature_table \
 
 It includes player outcome lags, rolling 1/3/5-Gameweek statistics,
 exponentially weighted form, explicit missingness, target fixtures and rest
-gaps, plus rolling team attack/defence/result form split by venue. Earlier
-outcome corrections are admitted only when they were available by the selected
-replay's actual capture time. Output is deterministic, hash-identified,
-exploratory and never overwrites an existing file.
+gaps, plus rolling team attack/defence/result form split by venue. Official
+xG/xA/xGC, ICT/BPS and defensive outcomes retain null legacy values and expose
+per-metric sample counts instead of inventing zeroes. Earlier outcome
+corrections are admitted only when they were available by the selected replay's
+actual capture time. Output is deterministic, hash-identified, exploratory and
+never overwrites an existing file.
 
 The exact boundary and limitations are recorded in the
-[temporal feature table specification](../../docs/research/temporal-feature-table-v1.md).
+[temporal feature table specification](../../docs/research/temporal-feature-table-v2.md).
 
 ## Temporal ridge challenger v1
 

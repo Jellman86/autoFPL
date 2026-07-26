@@ -206,6 +206,9 @@ its deadline. The first richer feature table should add:
 
 - player lags and rolling 1/3/5-Gameweek rates for minutes, starts, points and
   scoring components;
+- nullable official xG/xA/xGC, ICT/BPS and defensive-action lags with explicit
+  observed sample counts, followed by a same-fold feature ablation before they
+  enter an incumbent model;
 - exponentially weighted player form, retaining the raw missingness and sample
   count;
 - team and opponent attacking/defensive form split by home and away;
@@ -529,10 +532,12 @@ The next development slices are:
 5. keep exercising the implemented official-photo decision room and
    cutoff-aware dossiers against live captures as prior outcomes accumulate;
 6. run the implemented fold-local ridge and fixed histogram-tree challengers
-   as real folds accumulate, then run the implemented exact-cutoff,
-   source-complete FPL Form feature ablation comparing official-only,
-   conditional-points and appearance-adjusted variants on identical folds;
-7. populate the implemented player cards with promoted forecasts only after a
+   as real folds accumulate, then compare the retained official underlying-stat
+   temporal features with the unchanged official baseline on identical folds;
+7. run the implemented exact-cutoff, source-complete FPL Form feature ablation
+   comparing official-only, conditional-points and appearance-adjusted variants
+   on identical folds;
+8. populate the implemented player cards with promoted forecasts only after a
    baseline has valid out-of-time evidence.
 
 Do not add another standalone governance, universal contract, infrastructure or

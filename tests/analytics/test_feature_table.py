@@ -57,6 +57,16 @@ class FeatureTableTests(unittest.TestCase):
                 ]
             ],
         )
+        self.assertEqual(
+            0.4,
+            gw3_player["history"]["rolling"]["3"]["expectedGoalsMean"],
+        )
+        self.assertEqual(
+            1,
+            gw3_player["history"]["rolling"]["3"][
+                "expectedGoalsSampleCount"
+            ],
+        )
 
         gw4_player = self._player(gameweek_four, 1)
         self.assertEqual([1, 2, 3], gw4_player["history"]["gameweeks"])
@@ -81,6 +91,26 @@ class FeatureTableTests(unittest.TestCase):
         self.assertNotEqual(
             99,
             gw4_player["history"]["rolling"]["5"]["totalPointsMean"],
+        )
+        self.assertEqual(
+            0.6,
+            gw4_player["history"]["rolling"]["3"]["expectedGoalsMean"],
+        )
+        self.assertEqual(
+            3,
+            gw4_player["history"]["rolling"]["3"][
+                "expectedGoalsSampleCount"
+            ],
+        )
+        self.assertEqual(
+            0.65,
+            gw4_player["history"]["exponentiallyWeighted"][
+                "expectedGoalsMean"
+            ],
+        )
+        self.assertNotEqual(
+            9.9,
+            gw4_player["history"]["rolling"]["5"]["expectedGoalsMean"],
         )
 
     def test_rows_expose_match_leading_context_and_honest_missingness(
@@ -141,6 +171,20 @@ class FeatureTableTests(unittest.TestCase):
         self.assertIsNone(new_player["history"]["exponentiallyWeighted"])
         self.assertIsNone(
             new_player["history"]["rolling"]["5"]["totalPointsMean"]
+        )
+        self.assertIsNone(
+            new_player["history"]["rolling"]["5"]["expectedGoalsMean"]
+        )
+        self.assertEqual(
+            0,
+            new_player["history"]["rolling"]["5"][
+                "expectedGoalsSampleCount"
+            ],
+        )
+        self.assertEqual("official-temporal-v2", table["featureSet"])
+        self.assertEqual(
+            "null-preserved-with-per-metric-sample-count",
+            table["configuration"]["underlyingMetricMissingness"],
         )
         self.assertEqual(
             "replay.availableAtUtc <= target.deadlineUtc; "
@@ -215,14 +259,23 @@ class FeatureTableTests(unittest.TestCase):
     def test_additive_newer_database_schema_is_supported(self) -> None:
         with self._database() as database_path:
             with sqlite3.connect(database_path) as connection:
-                connection.executemany(
-                    "INSERT INTO schema_migrations (version) VALUES (?);",
-                    [(8,), (9,)],
+                connection.execute(
+                    "INSERT INTO schema_migrations (version) VALUES (11);"
                 )
 
             table = build_feature_table(database_path, "2026-27", 4)
 
         self.assertEqual(4, table["gameweek"])
+
+    def test_pre_underlying_database_schema_is_rejected(self) -> None:
+        with self._database() as database_path:
+            with sqlite3.connect(database_path) as connection:
+                connection.execute(
+                    "UPDATE schema_migrations SET version = 9;"
+                )
+            with self.assertRaises(FeatureTableError) as raised:
+                build_feature_table(database_path, "2026-27", 4)
+        self.assertEqual("database.schema-version", raised.exception.code)
 
     def test_incomplete_history_capture_fails_closed(self) -> None:
         with self._database() as database_path:
@@ -277,7 +330,7 @@ class FeatureTableTests(unittest.TestCase):
             connection.executescript(
                 """
                 CREATE TABLE schema_migrations (version INTEGER PRIMARY KEY);
-                INSERT INTO schema_migrations (version) VALUES (7);
+                INSERT INTO schema_migrations (version) VALUES (10);
 
                 CREATE TABLE official_fpl_captures (
                     capture_id INTEGER PRIMARY KEY,
@@ -350,6 +403,22 @@ class FeatureTableTests(unittest.TestCase):
                     bonus INTEGER NOT NULL,
                     yellow_cards INTEGER NOT NULL,
                     red_cards INTEGER NOT NULL,
+                    own_goals INTEGER,
+                    penalties_saved INTEGER,
+                    penalties_missed INTEGER,
+                    bps INTEGER,
+                    influence REAL,
+                    creativity REAL,
+                    threat REAL,
+                    ict_index REAL,
+                    clearances_blocks_interceptions INTEGER,
+                    recoveries INTEGER,
+                    tackles INTEGER,
+                    defensive_contribution INTEGER,
+                    expected_goals REAL,
+                    expected_assists REAL,
+                    expected_goal_involvements REAL,
+                    expected_goals_conceded REAL,
                     PRIMARY KEY (outcome_capture_id, player_id)
                 );
                 """
@@ -556,13 +625,20 @@ class FeatureTableTests(unittest.TestCase):
                 ],
             )
             captures_and_values = [
-                (10, 1, "2026-08-23T12:00:00+00:00", 2, 90),
-                (11, 1, "2026-09-10T12:00:00+00:00", 6, 90),
-                (12, 1, "2026-09-20T12:00:00+00:00", 99, 90),
-                (20, 2, "2026-08-30T12:00:00+00:00", 4, 45),
-                (30, 3, "2026-09-08T12:00:00+00:00", 8, 0),
+                (10, 1, "2026-08-23T12:00:00+00:00", 2, 90, None),
+                (11, 1, "2026-09-10T12:00:00+00:00", 6, 90, 0.6),
+                (12, 1, "2026-09-20T12:00:00+00:00", 99, 90, 9.9),
+                (20, 2, "2026-08-30T12:00:00+00:00", 4, 45, 0.4),
+                (30, 3, "2026-09-08T12:00:00+00:00", 8, 0, 0.8),
             ]
-            for outcome_id, gameweek, available_at, points, minutes in (
+            for (
+                outcome_id,
+                gameweek,
+                available_at,
+                points,
+                minutes,
+                expected_goals,
+            ) in (
                 captures_and_values
             ):
                 connection.execute(
@@ -598,8 +674,18 @@ class FeatureTableTests(unittest.TestCase):
                         saves,
                         bonus,
                         yellow_cards,
-                        red_cards
-                    ) VALUES (?, 1, ?, ?, ?, ?, ?, ?, ?, 0, ?, 0, 0);
+                        red_cards,
+                        bps,
+                        ict_index,
+                        defensive_contribution,
+                        expected_goals,
+                        expected_assists,
+                        expected_goal_involvements,
+                        expected_goals_conceded
+                    ) VALUES (
+                        ?, 1, ?, ?, ?, ?, ?, ?, ?, 0, ?, 0, 0,
+                        ?, ?, ?, ?, ?, ?, ?
+                    );
                     """,
                     (
                         outcome_id,
@@ -611,6 +697,25 @@ class FeatureTableTests(unittest.TestCase):
                         int(minutes >= 60),
                         int(minutes > 0),
                         max(0, points - 5),
+                        None if expected_goals is None else points + 20,
+                        None if expected_goals is None else points / 2,
+                        None if expected_goals is None else points + 5,
+                        expected_goals,
+                        (
+                            None
+                            if expected_goals is None
+                            else expected_goals / 2
+                        ),
+                        (
+                            None
+                            if expected_goals is None
+                            else expected_goals * 1.5
+                        ),
+                        (
+                            None
+                            if expected_goals is None
+                            else expected_goals + 0.2
+                        ),
                     ),
                 )
             connection.commit()
