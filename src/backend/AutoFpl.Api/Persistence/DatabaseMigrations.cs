@@ -4,7 +4,7 @@ internal sealed record DatabaseMigration(int Version, string Name, string Sql);
 
 internal static class DatabaseMigrations
 {
-    public const int CurrentVersion = 6;
+    public const int CurrentVersion = 7;
 
     public static IReadOnlyList<DatabaseMigration> All { get; } =
     [
@@ -384,6 +384,26 @@ internal static class DatabaseMigrations
                         gameweek
                     ) ON DELETE RESTRICT
             );
+            """),
+        new(
+            7,
+            "official-fpl-player-photo",
+            """
+            ALTER TABLE official_fpl_players
+                ADD COLUMN photo_identifier TEXT
+                    CHECK (
+                        photo_identifier IS NULL
+                        OR (
+                            length(photo_identifier) BETWEEN 5 AND 100
+                            AND (
+                                photo_identifier GLOB '[0-9]*.jpg'
+                                OR photo_identifier GLOB '[0-9]*.png'
+                            )
+                        )
+                    );
+
+            CREATE INDEX official_fpl_players_code_idx
+                ON official_fpl_players (capture_id, code);
             """),
     ];
 }

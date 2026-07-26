@@ -196,6 +196,7 @@ internal static class OfficialFplPayloadParser
                     RequireText(value, "first_name", maximumLength: 100),
                     RequireText(value, "second_name", maximumLength: 100),
                     RequireText(value, "web_name", maximumLength: 100),
+                    RequirePhotoIdentifier(value),
                     RequireInt32(value, "now_cost", minimum: 1, maximum: 2_000),
                     RequireText(value, "status", maximumLength: 8),
                     RequireText(value, "news", maximumLength: 4_000, allowEmpty: true),
@@ -208,6 +209,26 @@ internal static class OfficialFplPayloadParser
         }
 
         return results.OrderBy(item => item.Id).ToArray();
+    }
+
+    private static string RequirePhotoIdentifier(JsonElement value)
+    {
+        string result = RequireText(value, "photo", maximumLength: 100);
+        int extensionIndex = result.LastIndexOf('.');
+        if (extensionIndex <= 0
+            || !int.TryParse(
+                result.AsSpan(0, extensionIndex),
+                NumberStyles.None,
+                CultureInfo.InvariantCulture,
+                out int code)
+            || code <= 0
+            || (!result.EndsWith(".jpg", StringComparison.Ordinal)
+                && !result.EndsWith(".png", StringComparison.Ordinal)))
+        {
+            throw Invalid("photo must be a supported official asset identifier.");
+        }
+
+        return result;
     }
 
     private static IReadOnlyList<OfficialFplFixture> ParseFixtures(

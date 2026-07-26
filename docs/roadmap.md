@@ -483,8 +483,8 @@ The next development slices are:
    times, prove player/fixture identity coverage and score its conditional
    published values as an external incumbent before using any value as a
    feature;
-5. add the official photo identifier, cutoff-aware player-dossier API and
-   previous-Gameweek/fixture read model;
+5. exercise the implemented official photo identifier and cutoff-aware
+   player-dossier API against live captures as prior outcomes accumulate;
 6. implement the decision-room visual overhaul and clickable responsive player
    dossier against honest synthetic and recorded states;
 7. build the point-in-time temporal feature table and compare

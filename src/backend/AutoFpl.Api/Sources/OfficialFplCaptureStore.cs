@@ -36,7 +36,13 @@ public sealed class OfficialFplCaptureStore
             cancellationToken);
         if (existingId is not null)
         {
-            await transaction.RollbackAsync(cancellationToken);
+            await PopulateMissingPhotoIdentifiersAsync(
+                connection,
+                transaction,
+                existingId.Value,
+                payload.Players,
+                cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
             return (await GetAsync(existingId.Value, cancellationToken))!;
         }
 
@@ -477,6 +483,7 @@ public sealed class OfficialFplCaptureStore
                     first_name,
                     second_name,
                     web_name,
+                    photo_identifier,
                     price_tenths,
                     status,
                     news,
@@ -496,6 +503,7 @@ public sealed class OfficialFplCaptureStore
                     $firstName,
                     $secondName,
                     $webName,
+                    $photoIdentifier,
                     $priceTenths,
                     $status,
                     $news,
@@ -515,6 +523,7 @@ public sealed class OfficialFplCaptureStore
             command.Parameters.AddWithValue("$firstName", item.FirstName);
             command.Parameters.AddWithValue("$secondName", item.SecondName);
             command.Parameters.AddWithValue("$webName", item.WebName);
+            command.Parameters.AddWithValue("$photoIdentifier", item.PhotoIdentifier);
             command.Parameters.AddWithValue("$priceTenths", item.PriceTenths);
             command.Parameters.AddWithValue("$status", item.Status);
             command.Parameters.AddWithValue("$news", item.News);
@@ -532,6 +541,32 @@ public sealed class OfficialFplCaptureStore
             command.Parameters.AddWithValue("$totalPoints", item.TotalPoints);
             command.Parameters.AddWithValue("$minutes", item.Minutes);
             command.Parameters.AddWithValue("$starts", item.Starts);
+            await command.ExecuteNonQueryAsync(cancellationToken);
+        }
+    }
+
+    private static async Task PopulateMissingPhotoIdentifiersAsync(
+        SqliteConnection connection,
+        SqliteTransaction transaction,
+        long captureId,
+        IReadOnlyList<OfficialFplPlayer> players,
+        CancellationToken cancellationToken)
+    {
+        foreach (OfficialFplPlayer item in players)
+        {
+            await using SqliteCommand command = connection.CreateCommand();
+            command.Transaction = transaction;
+            command.CommandText =
+                """
+                UPDATE official_fpl_players
+                SET photo_identifier = $photoIdentifier
+                WHERE capture_id = $captureId
+                  AND player_id = $playerId
+                  AND photo_identifier IS NULL;
+                """;
+            command.Parameters.AddWithValue("$captureId", captureId);
+            command.Parameters.AddWithValue("$playerId", item.Id);
+            command.Parameters.AddWithValue("$photoIdentifier", item.PhotoIdentifier);
             await command.ExecuteNonQueryAsync(cancellationToken);
         }
     }

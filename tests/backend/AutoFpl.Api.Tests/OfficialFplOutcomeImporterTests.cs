@@ -172,6 +172,102 @@ public sealed class OfficialFplOutcomeImporterTests
     }
 
     [Fact]
+    public async Task Player_dossier_uses_official_photo_prior_outcome_and_cutoff_safe_fixtures()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = await MigrateAsync(files.DatabasePath);
+        var captureStore = new OfficialFplCaptureStore(options);
+        var outcomeStore = new OfficialFplOutcomeStore(options);
+        using var client = new HttpClient(new RejectingHandler());
+        var referenceImporter = new OfficialFplImporter(
+            client,
+            captureStore,
+            new FixedTimeProvider(FinalRetrievalUtc));
+        OfficialFplCaptureDocument reference =
+            await referenceImporter.ImportCapturedPayloadAsync(
+                CreateBootstrap(isFinal: true),
+                CreateFixtures(isFinal: true),
+                FinalRetrievalUtc,
+                TestContext.Current.CancellationToken);
+        var outcomeImporter = new OfficialFplOutcomeImporter(
+            client,
+            referenceImporter,
+            captureStore,
+            outcomeStore,
+            new FixedTimeProvider(FinalRetrievalUtc));
+        OfficialFplOutcomeCaptureDocument inTime =
+            await outcomeImporter.ImportCapturedPayloadAsync(
+                reference,
+                1,
+                CreateLivePayload(),
+                FinalRetrievalUtc,
+                TestContext.Current.CancellationToken);
+        await outcomeImporter.ImportCapturedPayloadAsync(
+            reference,
+            1,
+            CreateLivePayload(firstPlayerPoints: 11),
+            new DateTimeOffset(2026, 8, 30, 9, 0, 0, TimeSpan.Zero),
+            TestContext.Current.CancellationToken);
+
+        var store = new OfficialFplPlayerDossierStore(options, captureStore);
+        OfficialFplPlayerDossierDocument? dossier = await store.GetAsync(
+            "2026-27",
+            2,
+            1,
+            TestContext.Current.CancellationToken);
+
+        Assert.NotNull(dossier);
+        Assert.Equal("1.0", dossier.SchemaVersion);
+        Assert.Equal("2026-27", dossier.SeasonCode);
+        Assert.Equal(2, dossier.TargetGameweek);
+        Assert.Equal(
+            new DateTimeOffset(2026, 8, 29, 14, 0, 0, TimeSpan.Zero),
+            dossier.DecisionCutoffUtc);
+        Assert.Equal(reference.CaptureId, dossier.SelectedCaptureId);
+        Assert.Equal(1, dossier.Player.PlayerId);
+        Assert.Equal(101, dossier.Player.PlayerCode);
+        Assert.Equal("Ada Keeper", dossier.Player.FullName);
+        Assert.Equal("North Town", dossier.Player.TeamName);
+        Assert.Equal("goalkeeper", dossier.Player.Position);
+        Assert.Equal("101.jpg", dossier.Player.PhotoIdentifier);
+        Assert.Equal(
+            $"{OfficialFplPlayerDossierStore.PhotoBaseUrl}p101.png",
+            dossier.Player.PhotoUrl);
+
+        OfficialFplPlayerOutcomeDocument outcome = Assert.Single(dossier.RecentOutcomes);
+        Assert.Equal(1, outcome.Gameweek);
+        Assert.Equal(inTime.OutcomeCaptureId, outcome.OutcomeCaptureId);
+        Assert.Equal(6, outcome.TotalPoints);
+        Assert.Equal(90, outcome.Minutes);
+        Assert.Equal(4, outcome.Saves);
+        Assert.Equal(2, outcome.Bonus);
+        Assert.False(outcome.IsGameweekAggregate);
+        OfficialFplPlayerFixtureDocument priorFixture = Assert.Single(outcome.Fixtures);
+        Assert.Equal(1, priorFixture.FixtureId);
+        Assert.Equal("South City", priorFixture.OpponentName);
+        Assert.True(priorFixture.IsHome);
+
+        OfficialFplPlayerFixtureDocument upcoming =
+            Assert.Single(dossier.UpcomingFixtures);
+        Assert.Equal(2, upcoming.FixtureId);
+        Assert.Equal(2, upcoming.Gameweek);
+        Assert.Equal("South City", upcoming.OpponentName);
+        Assert.False(upcoming.IsHome);
+        Assert.False(upcoming.Started);
+
+        await using WebApplicationFactory<Program> factory =
+            CreateFactory(files.DatabasePath);
+        using HttpClient api = factory.CreateClient();
+        OfficialFplPlayerDossierDocument? served =
+            await api.GetFromJsonAsync<OfficialFplPlayerDossierDocument>(
+                "/api/v1/data/official-fpl/replays/2026-27/2/players/1",
+                TestContext.Current.CancellationToken);
+        Assert.Equal(
+            JsonSerializer.Serialize(dossier),
+            JsonSerializer.Serialize(served));
+    }
+
+    [Fact]
     public async Task Incomplete_event_is_rejected_before_live_fetch()
     {
         using var files = new TemporaryDatabaseFiles();
@@ -325,6 +421,7 @@ public sealed class OfficialFplOutcomeImporterTests
             first_name = firstName,
             second_name = webName,
             web_name = webName,
+            photo = $"{code}.jpg",
             now_cost = 50,
             status = "a",
             news = string.Empty,
@@ -352,6 +449,19 @@ public sealed class OfficialFplOutcomeImporterTests
                     finished_provisional = isFinal,
                     team_h_score = isFinal ? 2 : (int?)null,
                     team_a_score = isFinal ? 1 : (int?)null,
+                },
+                new
+                {
+                    id = 2,
+                    @event = 2,
+                    team_h = 2,
+                    team_a = 1,
+                    kickoff_time = "2026-08-29T15:00:00Z",
+                    started = false,
+                    finished = false,
+                    finished_provisional = false,
+                    team_h_score = (int?)null,
+                    team_a_score = (int?)null,
                 },
             });
 
