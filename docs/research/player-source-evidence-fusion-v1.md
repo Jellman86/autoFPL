@@ -111,11 +111,13 @@ season.
    remain.
 4. **Implemented for three diverse public pages:** inventory and shadow-capture
    official availability, specialist predicted-lineup and dependent-consensus
-   sources through Quark's existing Spider service. A deterministic first
-   adapters now resolve FFScout predicted-XI entries by embedded official photo
-   code and `Out`/percentage-bearing `Doubts` by unique team-scoped official
-   names, writing separately versioned quarantined start and availability
-   claims. Bans remain excluded. A separate deterministic adapter retains the
+   sources through Quark's existing Spider service. Deterministic adapters now
+   resolve FFScout predicted-XI entries by embedded official photo
+   code with a unique team-scoped fallback for stale identities, derive
+   non-starter claims only from complete identity-resolved XIs, and retain
+   `Out`/percentage-bearing `Doubts` by unique team-scoped official names.
+   Separately versioned start and availability claims remain quarantined. Bans
+   remain excluded. A separate deterministic adapter retains the
    strAIghtred consensus percentages under the same player/target duplicate
    clusters as FFScout, making dependence explicit. Official-injury extraction,
    quantitative reproduction and named experts remain.

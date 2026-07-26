@@ -76,7 +76,10 @@ and tied to the latest cutoff-eligible official target. The read API exposes
 metadata and limitations, never retained source text.
 
 Deterministic extraction now populates only quarantined FFScout start and
-availability claims plus dependent strAIghtred start-probability claims. The
-two start sources share player/target duplicate clusters so consensus is never
-counted as an extra independent vote. Premier League injury extraction, outcome
-scoring, source reliability and any forecast influence remain future slices.
+availability claims plus dependent strAIghtred start-probability claims.
+FFScout non-starter complements are derived only when a complete eleven-player
+lineup resolves to one official team; partial or unresolved team blocks remain
+unknown. The two start sources share player/target duplicate clusters so
+consensus is never counted as an extra independent vote. Premier League injury
+extraction, source reliability and any forecast influence remain future
+slices.

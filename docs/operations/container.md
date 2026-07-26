@@ -301,16 +301,20 @@ dotnet AutoFpl.Api.dll \
   --extract-research-source-claims <snapshot-id>
 ```
 
-The deterministic operator v2 reads only the private compressed snapshot. The
-unchanged lineup v1 adapter resolves predicted-XI players through the official
-Premier League photo code embedded in each retained card. Availability v1
-separately parses only `Out` and percentage-bearing `Doubts`, maps known source
-team labels to the exact official team, normalizes diacritics and requires one
-unique official name match. It retains a supplied doubt percentage as the
-claim probability, excludes the distinct `Banned` section, and reports
-unmatched or ambiguous identities without writing claims for them. Repeating
-the command is idempotent. Imported claims remain `quarantined`; extraction
-confidence records parser and identity certainty, not football truth.
+The deterministic operator v3 reads only the private compressed snapshot. The
+lineup adapter resolves predicted-XI players through the official Premier
+League photo code embedded in each retained card, with a lower-confidence
+unique team-scoped name fallback for stale photo identities. A team block
+produces `does-not-start` complement claims for its other registered players
+only when exactly eleven distinct starters resolve to one official team;
+partial or unresolved lineups remain unknown. Availability v1 separately
+parses only `Out` and percentage-bearing `Doubts`, maps known source team labels
+to the exact official team, normalizes diacritics and requires one unique
+official name match. It retains a supplied doubt percentage as the claim
+probability, excludes the distinct `Banned` section, and reports unmatched or
+ambiguous identities without writing claims for them. Repeating the command is
+idempotent. Imported claims remain `quarantined`; extraction confidence records
+parser and identity certainty, not football truth.
 
 strAIghtred consensus v1 accepts one bounded fixture block containing one to
 eleven player/percentage pairs. It retains the displayed upstream-source count

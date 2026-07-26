@@ -431,11 +431,14 @@ function renderResearchEvidence(evidence) {
   if (!evidence || !evidence.claims.length) {
     setResearchSummary(
       "0 admitted claims",
-      "No source claim was available for this player before the deadline.",
+      "No named source claim was available for this player before the deadline. "
+        + "This is missing coverage, not a prediction that the player will be benched.",
     );
     renderEmpty(
       container,
-      "No admitted research claim was available for this player before the deadline.",
+      "No admitted research claim was available. Predicted-lineup sources can be "
+        + "incomplete; absence is kept as unknown unless a complete XI supports a "
+        + "does-not-start inference.",
     );
     return;
   }
