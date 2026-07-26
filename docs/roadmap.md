@@ -116,7 +116,10 @@ wide screens and a full-screen sheet on mobile. Its sections are:
    cards;
 3. **Fixtures** — the upcoming fixture sequence, rest days, congestion and
    home/away context; and
-4. **Evidence** — observed facts, source timestamps, assumptions, risks and the
+4. **Research tape** — admitted pre-deadline source claims, timestamps,
+   agreement, contradictions and linked/dependent reports, visibly quarantined
+   from the forecast; and
+5. **Decision rationale** — the incumbent model's reasons, risks and the
    specific evidence that materially moved the forecast.
 
 Recent form initially uses the existing immutable Gameweek outcome captures.
@@ -494,7 +497,9 @@ replay/outcome pair awaits a completed 2026/27 Gameweek.
   and identity. Construct image references only from an allowlisted official
   Premier League asset origin; never accept an arbitrary image URL.
 - Expose a cutoff-aware player dossier read model joining identity, prior
-  outcomes and fixtures without exposing retained raw provider JSON.
+  outcomes, fixtures and quarantined research claims without exposing retained
+  raw provider JSON. Keep claim dependence, contradictions and the
+  non-influence boundary visible in the dossier.
 - After the core minutes and points incumbents exist, ingest one bounded public
   predicted-points/minutes source as a timestamped external baseline. Score its
   published forecast alone before testing it as a model feature.

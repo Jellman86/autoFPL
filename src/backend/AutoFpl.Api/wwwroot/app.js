@@ -361,10 +361,175 @@ function renderUpcomingFixtures(fixtures) {
   container.replaceChildren(...cards);
 }
 
+function sourceDisplayName(sourceKey) {
+  const knownSources = {
+    ffs: "Fantasy Football Scout",
+    ffscout: "Fantasy Football Scout",
+    "fantasy-football-scout": "Fantasy Football Scout",
+    "ffscout-predicted-lineups": "Fantasy Football Scout",
+    "ffscout-editorial-lineup": "Fantasy Football Scout",
+    strAIghtred: "strAIghtred consensus",
+    "straightred-lineup-consensus": "strAIghtred consensus",
+  };
+  return knownSources[sourceKey] ?? sourceKey;
+}
+
+function researchClaimHeadline(claim) {
+  if (claim.claimType === "availability") {
+    const labels = {
+      available: "Reported available",
+      doubtful: "Reported doubtful",
+      unavailable: "Reported unavailable",
+      "expected-return": "Return expected",
+    };
+    return labels[claim.availabilityStatus] ?? "Availability report";
+  }
+  if (claim.claimType === "start") {
+    const labels = {
+      starts: "Predicted to start",
+      "does-not-start": "Predicted not to start",
+      uncertain: "Start uncertain",
+    };
+    return labels[claim.startStatus] ?? "Starting-status prediction";
+  }
+  if (claim.claimType === "minutes") {
+    return `${claim.expectedMinutes} expected minutes`;
+  }
+  if (claim.claimType === "role") {
+    return `Role: ${claim.role}`;
+  }
+  return "Research claim";
+}
+
+function researchClaimMetric(claim) {
+  if (claim.forecastProbability === null) return null;
+  const percentage = `${Math.round(Number(claim.forecastProbability) * 100)}%`;
+  return ["strAIghtred", "straightred-lineup-consensus"].includes(claim.sourceKey)
+    ? `Source agreement ${percentage}`
+    : `Reported probability ${percentage}`;
+}
+
+function safeExternalUrl(value) {
+  try {
+    const url = new URL(value);
+    return ["http:", "https:"].includes(url.protocol) ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
+function setResearchSummary(tally, signal, state = "neutral") {
+  document.querySelector("#research-tally").textContent = tally;
+  const signalElement = document.querySelector("#research-signal");
+  signalElement.textContent = signal;
+  signalElement.dataset.state = state;
+}
+
+function renderResearchEvidence(evidence) {
+  const container = document.querySelector("#research-evidence");
+  if (!evidence || !evidence.claims.length) {
+    setResearchSummary(
+      "0 admitted claims",
+      "No source claim was available for this player before the deadline.",
+    );
+    renderEmpty(
+      container,
+      "No admitted research claim was available for this player before the deadline.",
+    );
+    return;
+  }
+
+  const claimLabel = evidence.claimCount === 1 ? "claim" : "claims";
+  const sourceLabel = evidence.sourceCount === 1 ? "source" : "sources";
+  let signal = evidence.sourceCount > 1
+    ? "Multi-source view. Treat agreement as corroboration, not independence."
+    : "Single-source view. Corroboration is not available yet.";
+  let signalState = "neutral";
+  if (evidence.hasContradictions) {
+    signal = "Conflicting categorical claims are present. Uncertainty remains unresolved.";
+    signalState = "warning";
+  } else if (evidence.dependentClusterCount > 0) {
+    signal =
+      `${evidence.dependentClusterCount} linked evidence ` +
+      `${evidence.dependentClusterCount === 1 ? "cluster" : "clusters"} detected; ` +
+      "linked claims are not independent votes.";
+    signalState = "linked";
+  }
+  setResearchSummary(
+    `${evidence.claimCount} ${claimLabel} · ${evidence.sourceCount} ${sourceLabel}`,
+    signal,
+    signalState,
+  );
+
+  const cards = evidence.claims.map((claim) => {
+    const card = document.createElement("article");
+    card.className = "research-claim";
+    if (claim.isDependent) card.dataset.dependent = "true";
+
+    const sourceLine = document.createElement("div");
+    sourceLine.className = "research-source-line";
+    const source = document.createElement("strong");
+    source.textContent = sourceDisplayName(claim.sourceKey);
+    const type = document.createElement("span");
+    type.textContent = claim.claimType;
+    sourceLine.append(source, type);
+    if (claim.isDependent) {
+      const dependent = document.createElement("span");
+      dependent.className = "dependent-chip";
+      dependent.textContent = "Linked evidence";
+      sourceLine.append(dependent);
+    }
+
+    const headline = document.createElement("h4");
+    headline.textContent = researchClaimHeadline(claim);
+    const metricValue = researchClaimMetric(claim);
+    if (metricValue) {
+      const metric = document.createElement("span");
+      metric.className = "research-metric";
+      metric.textContent = metricValue;
+      headline.append(metric);
+    }
+
+    const sourceSpan = document.createElement("blockquote");
+    sourceSpan.textContent = claim.sourceSpan;
+
+    const metadata = document.createElement("div");
+    metadata.className = "research-meta";
+    const available = document.createElement("time");
+    available.dateTime = claim.availableAtUtc;
+    available.textContent =
+      `${formatCompactInstant(claim.availableAtUtc)} · ${formatLeadTime(claim.leadTimeSeconds)}`;
+    const directness = document.createElement("span");
+    directness.textContent = claim.directness.replaceAll("-", " ");
+    metadata.append(available, directness);
+    if (claim.author) {
+      const author = document.createElement("span");
+      author.textContent = `by ${claim.author}`;
+      metadata.append(author);
+    }
+
+    const sourceUrl = safeExternalUrl(claim.canonicalUrl);
+    if (sourceUrl) {
+      const link = document.createElement("a");
+      link.href = sourceUrl;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = "Open source";
+      metadata.append(link);
+    }
+
+    card.append(sourceLine, headline, sourceSpan, metadata);
+    return card;
+  });
+  container.replaceChildren(...cards);
+}
+
 async function loadPlayerDossier(player) {
   const request = ++dossierRequest;
   renderEmpty(document.querySelector("#recent-form"), "Loading previous Gameweeks…");
   renderEmpty(document.querySelector("#upcoming-fixtures"), "Loading upcoming fixtures…");
+  setResearchSummary("Loading claims…", "Checking the same pre-deadline evidence boundary.");
+  renderEmpty(document.querySelector("#research-evidence"), "Loading admitted research…");
 
   if (!player.dossierPath) {
     setDossierState(
@@ -379,10 +544,21 @@ async function loadPlayerDossier(player) {
       document.querySelector("#upcoming-fixtures"),
       "This fallback preview has no official fixture join.",
     );
+    setResearchSummary(
+      "Unavailable for preview",
+      "Synthetic identities cannot be joined safely to admitted source claims.",
+    );
+    renderEmpty(
+      document.querySelector("#research-evidence"),
+      "Research evidence requires a stable official player identity.",
+    );
     return;
   }
 
-  setDossierState("loading", "Loading cutoff-correct official identity, form and fixtures…");
+  setDossierState(
+    "loading",
+    "Loading cutoff-correct official identity, form, fixtures and research…",
+  );
   try {
     const response = await fetch(player.dossierPath, {
       headers: { Accept: "application/json" },
@@ -395,6 +571,11 @@ async function loadPlayerDossier(player) {
       );
       renderEmpty(document.querySelector("#recent-form"), "No prior outcome is available.");
       renderEmpty(document.querySelector("#upcoming-fixtures"), "No fixture data is available.");
+      setResearchSummary("No dossier", "Research could not be joined to this player.");
+      renderEmpty(
+        document.querySelector("#research-evidence"),
+        "No cutoff-correct research dossier is available.",
+      );
       return;
     }
     if (!response.ok) throw new Error(`Dossier request failed with ${response.status}`);
@@ -419,6 +600,7 @@ async function loadPlayerDossier(player) {
     }
     renderRecentForm(dossier.recentOutcomes);
     renderUpcomingFixtures(dossier.upcomingFixtures);
+    renderResearchEvidence(dossier.researchEvidence);
   } catch (error) {
     if (request !== dossierRequest) return;
     setDossierState(
@@ -427,6 +609,15 @@ async function loadPlayerDossier(player) {
     );
     renderEmpty(document.querySelector("#recent-form"), "Player history is temporarily unavailable.");
     renderEmpty(document.querySelector("#upcoming-fixtures"), "Fixtures are temporarily unavailable.");
+    setResearchSummary(
+      "Research unavailable",
+      "Forecast and official data remain available.",
+      "warning",
+    );
+    renderEmpty(
+      document.querySelector("#research-evidence"),
+      "Research evidence could not be loaded. Forecast and official data remain available.",
+    );
     console.error(error);
   }
 }

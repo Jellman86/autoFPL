@@ -1015,11 +1015,12 @@ app.MapGet(
     })
     .WithName("GetOfficialFplPlayerDossier")
     .WithSummary(
-        "Read one cutoff-correct player identity, recent outcomes and upcoming fixtures.")
+        "Read one cutoff-correct player identity, outcomes, fixtures and research evidence.")
     .WithDescription(
         "Selects the same latest official capture available before the target Gameweek "
-        + "deadline, excludes later outcome corrections and derives photo URLs only from "
-        + "validated official bootstrap identifiers.")
+        + "deadline, excludes later outcome corrections, derives photo URLs only from "
+        + "validated official bootstrap identifiers and exposes admitted research claims "
+        + "as quarantined evidence that does not influence the forecast.")
     .WithTags("Data")
     .Produces<OfficialFplPlayerDossierDocument>()
     .Produces(StatusCodes.Status404NotFound);

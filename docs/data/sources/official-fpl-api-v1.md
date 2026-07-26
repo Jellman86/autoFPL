@@ -154,11 +154,15 @@ The player dossier route at
 `GET /api/v1/data/official-fpl/replays/{seasonCode}/{gameweek}/players/{playerId}`
 selects the same pre-deadline reference capture, then returns identity, the
 latest five prior official outcomes whose corrections were available by that
-deadline and fixtures from the selected capture. Retained underlying statistics
-are exposed for new outcome captures and remain explicitly null for legacy rows
-that predate their normalisation. A single-fixture outcome is match-specific;
-double-Gameweek statistics remain visibly aggregated while the individual
-opponents are listed.
+deadline, fixtures from the selected capture and admitted player claims that
+were available by the same cutoff. Research claims are joined through the
+stable official player code, report source counts, categorical contradictions
+and repeated-report dependence, and remain explicitly
+`quarantined-not-used`. They do not change Baseline v0. Retained underlying
+statistics are exposed for new outcome captures and remain explicitly null for
+legacy rows that predate their normalisation. A single-fixture outcome is
+match-specific; double-Gameweek statistics remain visibly aggregated while the
+individual opponents are listed.
 
 The read-only operator command
 `--evaluate-official-fpl-expected-points [season-code]` scores complete
