@@ -12,93 +12,99 @@ public sealed class PlaywrightMcpFplFormCollector
     private const string EvaluationPrefix = "AUTOFPL_FPL_FORM_V1:";
     private const int MaximumMcpResponseBytes = 6 * 1024 * 1024;
 
-    private const string ExtractionFunction =
+    private const string CollectionCode =
         """
-        async () => {
-          const prefix = "AUTOFPL_FPL_FORM_V1:";
-          const node = document.querySelector("#php-data");
-          if (!node) {
-            throw new Error("FPL Form page is missing #php-data");
-          }
+        async (page) => {
+          await page.goto(
+            "https://fplform.com/fpl-predicted-points",
+            { waitUntil: "domcontentloaded", timeout: 30000 });
+          return await page.evaluate(async () => {
+            const prefix = "AUTOFPL_FPL_FORM_V1:";
+            const node = document.querySelector("#php-data");
+            if (!node) {
+              throw new Error("FPL Form page is missing #php-data");
+            }
 
-          const parsedGameweek = Number(node.getAttribute("data-nw"));
-          const gameweek = Number.isInteger(parsedGameweek) ? parsedGameweek : 99;
-          if (gameweek < 1 || gameweek > 38) {
+            const parsedGameweek = Number(node.getAttribute("data-nw"));
+            const gameweek = Number.isInteger(parsedGameweek) ? parsedGameweek : 99;
+            if (gameweek < 1 || gameweek > 38) {
+              return prefix + JSON.stringify({
+                schemaVersion: "fpl-form-dom/v1",
+                sourceUrl: location.href,
+                season: 20,
+                gameweek,
+                providerPayloadSha256: null,
+                predictions: []
+              });
+            }
+
+            const rawPlayers = node.getAttribute("data-players");
+            if (!rawPlayers) {
+              throw new Error("FPL Form page is missing data-players");
+            }
+
+            const players = JSON.parse(rawPlayers);
+            let season = 0;
+            for (const player of Object.values(players)) {
+              for (const candidate of Object.keys(player.fixtures ?? {})) {
+                const parsed = Number(candidate);
+                if (Number.isInteger(parsed) && parsed >= 20 && parsed <= 99) {
+                  season = Math.max(season, parsed);
+                }
+              }
+            }
+
+            const predictions = [];
+            for (const [sourcePlayerId, player] of Object.entries(players)) {
+              const fixtures =
+                player.fixtures?.[String(season)]?.[String(gameweek)] ?? {};
+              for (const [kickoffIdentity, prediction] of Object.entries(fixtures)) {
+                if (prediction.predicted_points === null
+                    || prediction.predicted_points === undefined) {
+                  continue;
+                }
+
+                if (Number(prediction.season) !== season
+                    || Number(prediction.event) !== gameweek
+                    || String(prediction.kickoff) !== kickoffIdentity) {
+                  throw new Error("FPL Form prediction identity is inconsistent");
+                }
+
+                predictions.push({
+                  sourcePlayerId: Number(sourcePlayerId),
+                  fixtureId: Number(prediction.fixture),
+                  playerName: player.name,
+                  teamName: player.team_name,
+                  position: player.position,
+                  kickoffLocal: prediction.kickoff,
+                  predictedPoints: String(prediction.predicted_points),
+                  appearanceProbability:
+                    prediction.probability_of_playing === null
+                    || prediction.probability_of_playing === undefined
+                      ? null
+                      : String(prediction.probability_of_playing)
+                });
+              }
+            }
+
+            predictions.sort(
+              (left, right) =>
+                left.sourcePlayerId - right.sourcePlayerId
+                || left.fixtureId - right.fixtureId);
+            const digest = await crypto.subtle.digest(
+              "SHA-256",
+              new TextEncoder().encode(rawPlayers));
+            const providerPayloadSha256 = Array.from(new Uint8Array(digest))
+              .map(value => value.toString(16).padStart(2, "0"))
+              .join("");
             return prefix + JSON.stringify({
               schemaVersion: "fpl-form-dom/v1",
               sourceUrl: location.href,
-              season: 20,
+              season,
               gameweek,
-              providerPayloadSha256: null,
-              predictions: []
+              providerPayloadSha256,
+              predictions
             });
-          }
-
-          const rawPlayers = node.getAttribute("data-players");
-          if (!rawPlayers) {
-            throw new Error("FPL Form page is missing data-players");
-          }
-
-          const players = JSON.parse(rawPlayers);
-          let season = 0;
-          for (const player of Object.values(players)) {
-            for (const candidate of Object.keys(player.fixtures ?? {})) {
-              const parsed = Number(candidate);
-              if (Number.isInteger(parsed) && parsed >= 20 && parsed <= 99) {
-                season = Math.max(season, parsed);
-              }
-            }
-          }
-
-          const predictions = [];
-          for (const [sourcePlayerId, player] of Object.entries(players)) {
-            const fixtures = player.fixtures?.[String(season)]?.[String(gameweek)] ?? {};
-            for (const [kickoffIdentity, prediction] of Object.entries(fixtures)) {
-              if (prediction.predicted_points === null
-                  || prediction.predicted_points === undefined) {
-                continue;
-              }
-
-              if (Number(prediction.season) !== season
-                  || Number(prediction.event) !== gameweek
-                  || String(prediction.kickoff) !== kickoffIdentity) {
-                throw new Error("FPL Form prediction identity is inconsistent");
-              }
-
-              predictions.push({
-                sourcePlayerId: Number(sourcePlayerId),
-                fixtureId: Number(prediction.fixture),
-                playerName: player.name,
-                teamName: player.team_name,
-                position: player.position,
-                kickoffLocal: prediction.kickoff,
-                predictedPoints: String(prediction.predicted_points),
-                appearanceProbability:
-                  prediction.probability_of_playing === null
-                  || prediction.probability_of_playing === undefined
-                    ? null
-                    : String(prediction.probability_of_playing)
-              });
-            }
-          }
-
-          predictions.sort(
-            (left, right) =>
-              left.sourcePlayerId - right.sourcePlayerId
-              || left.fixtureId - right.fixtureId);
-          const digest = await crypto.subtle.digest(
-            "SHA-256",
-            new TextEncoder().encode(rawPlayers));
-          const providerPayloadSha256 = Array.from(new Uint8Array(digest))
-            .map(value => value.toString(16).padStart(2, "0"))
-            .join("");
-          return prefix + JSON.stringify({
-            schemaVersion: "fpl-form-dom/v1",
-            sourceUrl: location.href,
-            season,
-            gameweek,
-            providerPayloadSha256,
-            predictions
           });
         }
         """;
@@ -124,17 +130,11 @@ public sealed class PlaywrightMcpFplFormCollector
         {
             sessionId = await InitializeAsync(cancellationToken);
             await SendInitializedAsync(sessionId, cancellationToken);
-            await CallToolAsync(
-                sessionId,
-                requestId: 2,
-                "browser_navigate",
-                new { url = FplFormForecastImporter.ForecastUri.AbsoluteUri },
-                cancellationToken);
             string evaluated = await CallToolAsync(
                 sessionId,
-                requestId: 3,
-                "browser_evaluate",
-                new { function = ExtractionFunction },
+                requestId: 2,
+                "browser_run_code_unsafe",
+                new { code = CollectionCode },
                 cancellationToken);
             return ParseEvaluation(evaluated);
         }
@@ -431,7 +431,7 @@ public sealed class PlaywrightMcpFplFormCollector
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
             await CallToolAsync(
                 sessionId,
-                requestId: 4,
+                requestId: 3,
                 "browser_close",
                 new { },
                 timeout.Token);

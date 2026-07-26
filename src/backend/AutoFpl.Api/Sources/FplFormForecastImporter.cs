@@ -8,7 +8,7 @@ public sealed class FplFormForecastImporter
     public const int MaximumResponseBytes = 128 * 1024 * 1024;
 
     public static readonly Uri ForecastUri =
-        new("https://www.fplform.com/fpl-predicted-points.php");
+        new("https://fplform.com/fpl-predicted-points");
 
     private readonly PlaywrightMcpFplFormCollector _collector;
     private readonly FplFormForecastStore _store;

@@ -25,15 +25,17 @@ Provider references:
 The operator importer asks Quark's existing isolated Playwright MCP service to
 navigate once to:
 
-- `https://www.fplform.com/fpl-predicted-points.php`
+- `https://fplform.com/fpl-predicted-points`
 
 autoFPL does not own a browser, proxy, crawler or general-purpose scraping
 endpoint. The deployed Playwright MCP already runs an isolated browser behind
 the hardened Quark research-egress policy. The caller cannot provide a URL,
 script, proxy, header, cookie or credential. autoFPL verifies the MCP protocol
 and Playwright server identity, opens one isolated session, invokes only
-`browser_navigate` and one versioned hard-coded `browser_evaluate`, then closes
-the page and deletes the session.
+one versioned hard-coded `browser_run_code_unsafe` call, then closes the page
+and deletes the session. Navigation and extraction happen in that single call
+so Playwright MCP does not attempt to create a huge accessibility snapshot of
+the provider page.
 
 The page currently embeds roughly 105 MB of multi-season data. The extraction
 function parses that data inside the existing browser process and returns only

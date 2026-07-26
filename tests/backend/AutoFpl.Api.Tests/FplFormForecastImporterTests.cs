@@ -54,7 +54,7 @@ public sealed class FplFormForecastImporterTests
         Assert.Equal("1.1", first.SchemaVersion);
         Assert.Equal("fpl-form-public-forecast/v1", first.SourceKey);
         Assert.Equal(
-            "https://www.fplform.com/fpl-predicted-points.php",
+            "https://fplform.com/fpl-predicted-points",
             first.SourceUrl);
         Assert.Equal("2026-27", first.SeasonCode);
         Assert.Equal(1, first.Gameweek);
@@ -69,8 +69,8 @@ public sealed class FplFormForecastImporterTests
         Assert.Equal(2, first.FixturePredictionCount);
         Assert.Equal(1, first.AppearanceProbabilityCount);
         Assert.Equal(
-            ["initialize", "notifications/initialized", "browser_navigate",
-                "browser_evaluate", "browser_close", "DELETE"],
+            ["initialize", "notifications/initialized", "browser_run_code_unsafe",
+                "browser_close", "DELETE"],
             handler.Operations);
         Assert.Equal(
             first,
@@ -220,7 +220,7 @@ public sealed class FplFormForecastImporterTests
         Assert.True(reader.IsDBNull(3));
         Assert.Equal(2, reader.GetInt32(4));
         Assert.Equal(1, reader.GetInt64(5));
-        Assert.Equal(8, reader.GetInt64(6));
+        Assert.Equal(9, reader.GetInt64(6));
     }
 
     private static DatabaseOptions CreateOptions(string databasePath)
@@ -582,41 +582,26 @@ public sealed class FplFormForecastImporterTests
             JsonElement parameters = document.RootElement.GetProperty("params");
             string tool = parameters.GetProperty("name").GetString()!;
             Operations.Add(tool);
-            if (StringComparer.Ordinal.Equals(tool, "browser_navigate"))
+            if (StringComparer.Ordinal.Equals(tool, "browser_run_code_unsafe"))
             {
-                Assert.Equal(
-                    FplFormForecastImporter.ForecastUri.AbsoluteUri,
-                    parameters.GetProperty("arguments").GetProperty("url").GetString());
-                return EventResponse(
-                    2,
-                    new
-                    {
-                        content = new[]
-                        {
-                            new
-                            {
-                                type = "text",
-                                text = "### Page\nFPL Form",
-                            },
-                        },
-                    });
-            }
-
-            if (StringComparer.Ordinal.Equals(tool, "browser_evaluate"))
-            {
-                string function = parameters
+                string code = parameters
                     .GetProperty("arguments")
-                    .GetProperty("function")
+                    .GetProperty("code")
                     .GetString()!;
-                Assert.Contains("#php-data", function, StringComparison.Ordinal);
-                Assert.Contains("crypto.subtle.digest", function, StringComparison.Ordinal);
-                Assert.Contains("prediction.season", function, StringComparison.Ordinal);
-                Assert.Contains("kickoffIdentity", function, StringComparison.Ordinal);
+                Assert.Contains(
+                    FplFormForecastImporter.ForecastUri.AbsoluteUri,
+                    code,
+                    StringComparison.Ordinal);
+                Assert.Contains("page.goto", code, StringComparison.Ordinal);
+                Assert.Contains("#php-data", code, StringComparison.Ordinal);
+                Assert.Contains("crypto.subtle.digest", code, StringComparison.Ordinal);
+                Assert.Contains("prediction.season", code, StringComparison.Ordinal);
+                Assert.Contains("kickoffIdentity", code, StringComparison.Ordinal);
                 string extracted = Encoding.UTF8.GetString(evidence);
                 string literal = JsonSerializer.Serialize(
                     $"AUTOFPL_FPL_FORM_V1:{extracted}");
                 return EventResponse(
-                    3,
+                    2,
                     new
                     {
                         content = new[]
@@ -635,7 +620,7 @@ public sealed class FplFormForecastImporterTests
 
             Assert.Equal("browser_close", tool);
             return EventResponse(
-                4,
+                3,
                 new
                 {
                     content = new[]
