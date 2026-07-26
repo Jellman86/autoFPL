@@ -140,8 +140,10 @@ The current UI renders capture provenance and replay readiness alongside an
 explicitly unvalidated Baseline v0 when a qualifying capture exists. That
 baseline uses price, ownership, availability, capture-reported aggregates and
 fixture context to produce an initial legal selection; it is not a fitted or
-promoted model. Without qualifying evidence, the UI retains its explicitly
-synthetic acceptance fixture. Neither path submits an FPL action.
+promoted model. One immutable Baseline v0 document and content hash is persisted
+against the exact official capture, so UI reloads do not silently recompute or
+change the prediction. Without qualifying evidence, the UI retains its
+explicitly synthetic acceptance fixture. Neither path submits an FPL action.
 
 The player dossier route at
 `GET /api/v1/data/official-fpl/replays/{seasonCode}/{gameweek}/players/{playerId}`

@@ -105,6 +105,11 @@ builder.Services.AddSingleton(serviceProvider =>
         serviceProvider.GetRequiredService<DatabaseOptions>(),
         serviceProvider.GetRequiredService<OfficialFplCaptureStore>()));
 builder.Services.AddSingleton(serviceProvider =>
+    new BaselineForecastArtifactStore(
+        serviceProvider.GetRequiredService<DatabaseOptions>(),
+        serviceProvider.GetRequiredService<OfficialDecisionRoomPreviewStore>(),
+        serviceProvider.GetRequiredService<TimeProvider>()));
+builder.Services.AddSingleton(serviceProvider =>
     new FplFormForecastStore(
         serviceProvider.GetRequiredService<DatabaseOptions>()));
 builder.Services.AddSingleton(serviceProvider =>
@@ -250,6 +255,9 @@ if (runOfficialFplImport)
         await app.Services
             .GetRequiredService<OfficialFplImporter>()
             .ImportLatestAsync();
+    await app.Services
+        .GetRequiredService<BaselineForecastArtifactStore>()
+        .RefreshLatestAsync();
     await Console.Out.WriteLineAsync(
         JsonSerializer.Serialize(
             capture,
@@ -310,6 +318,9 @@ if (!StringComparer.OrdinalIgnoreCase.Equals(
 {
     await SyntheticDecisionSnapshotSeeder.EnsureSeededAsync(snapshotStore);
 }
+await app.Services
+    .GetRequiredService<BaselineForecastArtifactStore>()
+    .RefreshLatestAsync();
 
 app.UseExceptionHandler();
 app.UseDefaultFiles();
@@ -336,22 +347,23 @@ app.MapGet(
     "/api/v1/advice/demo",
     async (
         DecisionSnapshotStore store,
-        OfficialDecisionRoomPreviewStore previewStore,
+        BaselineForecastArtifactStore forecastStore,
         CancellationToken cancellationToken) =>
     {
         DecisionSnapshotDocument? snapshot = await store.GetLatestSnapshotAsync(
             SyntheticDecisionSnapshotSeeder.SeasonCode,
             SyntheticDecisionSnapshotSeeder.Gameweek,
             cancellationToken);
-        OfficialDecisionRoomPreview? officialPreview =
-            await previewStore.GetLatestAsync(cancellationToken);
-        GameweekAdviceDocument advice = officialPreview is null
+        GameweekAdviceDocument? officialAdvice =
+            await forecastStore.GetLatestAsync(cancellationToken);
+        GameweekAdviceDocument advice = officialAdvice is null
             ? DemoGameweekAdvice.Create(snapshot)
-            : DemoGameweekAdvice.Create(officialPreview: officialPreview);
+            : officialAdvice;
         return Results.Ok(advice);
     })
     .WithName("GetDemoGameweekAdvice")
-    .WithSummary("Return the synthetic Gameweek advice fixture used by the decision-room preview.")
+    .WithSummary(
+        "Return the latest persisted Baseline v0 forecast or the synthetic acceptance fixture.")
     .WithTags("Advice")
     .Produces<GameweekAdviceDocument>();
 app.MapGet(

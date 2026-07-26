@@ -1,3 +1,5 @@
+using AutoFpl.Api.Advice;
+
 namespace AutoFpl.Api.Sources;
 
 public sealed class OfficialFplPoller : BackgroundService
@@ -6,17 +8,21 @@ public sealed class OfficialFplPoller : BackgroundService
     private readonly OfficialFplCaptureStore _store;
     private readonly OfficialFplPollingOptions _options;
     private readonly TimeProvider _timeProvider;
+    private readonly BaselineForecastArtifactStore _forecastStore;
 
     public OfficialFplPoller(
         OfficialFplImporter importer,
         OfficialFplCaptureStore store,
         OfficialFplPollingOptions options,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        BaselineForecastArtifactStore forecastStore)
     {
         _importer = importer ?? throw new ArgumentNullException(nameof(importer));
         _store = store ?? throw new ArgumentNullException(nameof(store));
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
+        _forecastStore =
+            forecastStore ?? throw new ArgumentNullException(nameof(forecastStore));
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -42,6 +48,7 @@ public sealed class OfficialFplPoller : BackgroundService
             try
             {
                 await _importer.ImportLatestAsync(stoppingToken);
+                await _forecastStore.RefreshLatestAsync(stoppingToken);
             }
             catch (Exception exception) when (
                 exception is OfficialFplPayloadException
