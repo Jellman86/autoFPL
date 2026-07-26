@@ -11,6 +11,7 @@ Routes:
 | `GET` | `/` | Renders the responsive Gameweek decision room |
 | `GET` | `/api/v1/advice/demo` | Returns the typed synthetic forecast fixture joined to persisted snapshot metadata/state |
 | `GET` | `/api/v1/data/fpl-form-forecast/latest` | Returns provenance and counts for the latest immutable public FPL Form forecast capture |
+| `GET` | `/api/v1/data/fpl-form-forecast/{captureId}/identity-coverage` | Reports deterministic cutoff-correct official player/fixture coverage for one immutable forecast capture |
 | `GET` | `/openapi/v1.json` | Returns the generated OpenAPI 3.1 HTTP contract |
 | `GET` | `/healthz` | Liveness response: `{"status":"healthy"}` |
 | `GET` | `/readyz` | Returns ready only when the current SQLite migration is present |
@@ -103,6 +104,13 @@ expected minutes or an autoFPL-promoted forecast. Set
 `AutoFpl__Research__PlaywrightMcpUrl` only when the internal MCP endpoint differs
 from the container default `http://playwright-mcp:8931/mcp`. See the
 [source record](../data/sources/fpl-form-public-forecast-v1.md).
+
+Before evaluation, request the capture-specific identity-coverage route. A
+report is complete only when the forecast was available by the deadline and
+every source player and fixture has one deterministic official match from a
+catalogue available at that time. The route returns hashes, timing, aggregate
+match methods and bounded unresolved issue metadata; it never returns the
+provider's predicted values.
 
 ## SQLite operations
 
