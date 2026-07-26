@@ -33,6 +33,7 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
         Assert.Contains("Preview data", body, StringComparison.Ordinal);
         Assert.Contains("Official data footing", body, StringComparison.Ordinal);
         Assert.Contains("Capture to deadline provenance", body, StringComparison.Ordinal);
+        Assert.Contains("<dt>Outcome</dt>", body, StringComparison.Ordinal);
         Assert.Contains("<dt>Snapshot</dt>", body, StringComparison.Ordinal);
     }
 

@@ -34,7 +34,27 @@ bool runBackup =
 bool runOfficialFplImport =
     args.Length == 1
     && StringComparer.Ordinal.Equals(args[0], "--import-official-fpl");
-bool runNonWebCommand = runIntegrityCheck || runBackup || runOfficialFplImport;
+bool requestedOfficialFplOutcomeImport =
+    args.Length > 0
+    && StringComparer.Ordinal.Equals(args[0], "--import-official-fpl-outcome");
+int outcomeGameweek = 0;
+bool runOfficialFplOutcomeImport =
+    requestedOfficialFplOutcomeImport
+    && args.Length == 2
+    && int.TryParse(args[1], out outcomeGameweek)
+    && outcomeGameweek is >= 1 and <= 38;
+if (requestedOfficialFplOutcomeImport && !runOfficialFplOutcomeImport)
+{
+    await Console.Error.WriteLineAsync(
+        "Usage: --import-official-fpl-outcome <gameweek 1-38>");
+    return 2;
+}
+
+bool runNonWebCommand =
+    runIntegrityCheck
+    || runBackup
+    || runOfficialFplImport
+    || runOfficialFplOutcomeImport;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(
     runNonWebCommand ? [] : args);
@@ -54,9 +74,29 @@ builder.Services.AddSingleton(serviceProvider =>
 builder.Services.AddSingleton(serviceProvider =>
     new OfficialFplCaptureStore(
         serviceProvider.GetRequiredService<DatabaseOptions>()));
+builder.Services.AddSingleton(serviceProvider =>
+    new OfficialFplOutcomeStore(
+        serviceProvider.GetRequiredService<DatabaseOptions>()));
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services
     .AddHttpClient<OfficialFplImporter>(
+        client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(20);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd(
+                "autoFPL-private-research/0.1");
+        })
+    .ConfigurePrimaryHttpMessageHandler(
+        () => new SocketsHttpHandler
+        {
+            AllowAutoRedirect = false,
+            AutomaticDecompression = DecompressionMethods.None,
+            ConnectTimeout = TimeSpan.FromSeconds(5),
+            MaxConnectionsPerServer = 2,
+            PooledConnectionLifetime = TimeSpan.FromMinutes(10),
+        });
+builder.Services
+    .AddHttpClient<OfficialFplOutcomeImporter>(
         client =>
         {
             client.Timeout = TimeSpan.FromSeconds(20);
@@ -134,6 +174,19 @@ if (runOfficialFplImport)
     await Console.Out.WriteLineAsync(
         JsonSerializer.Serialize(
             capture,
+            new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+    return 0;
+}
+
+if (runOfficialFplOutcomeImport)
+{
+    OfficialFplOutcomeCaptureDocument outcome =
+        await app.Services
+            .GetRequiredService<OfficialFplOutcomeImporter>()
+            .ImportLatestAsync(outcomeGameweek);
+    await Console.Out.WriteLineAsync(
+        JsonSerializer.Serialize(
+            outcome,
             new JsonSerializerOptions(JsonSerializerDefaults.Web)));
     return 0;
 }
@@ -222,6 +275,51 @@ app.MapGet(
         + "available no later than the deadline recorded in that same capture.")
     .WithTags("Data")
     .Produces<OfficialFplReplayDocument>()
+    .Produces(StatusCodes.Status404NotFound);
+app.MapGet(
+    "/api/v1/data/official-fpl/outcomes/{seasonCode}/{gameweek:int:min(1):max(38)}/latest",
+    async (
+        string seasonCode,
+        int gameweek,
+        OfficialFplOutcomeStore store,
+        CancellationToken cancellationToken) =>
+    {
+        OfficialFplOutcomeCaptureDocument? outcome =
+            await store.GetLatestAsync(seasonCode, gameweek, cancellationToken);
+        return outcome is null ? Results.NotFound() : Results.Ok(outcome);
+    })
+    .WithName("GetLatestOfficialFplOutcome")
+    .WithSummary("Read the latest immutable official per-player Gameweek outcome capture.")
+    .WithDescription(
+        "Outcomes are operator-imported only after the official event is finished and "
+        + "data-checked, every Gameweek fixture is finished, and player coverage is complete.")
+    .WithTags("Data")
+    .Produces<OfficialFplOutcomeCaptureDocument>()
+    .Produces(StatusCodes.Status404NotFound);
+app.MapGet(
+    "/api/v1/data/official-fpl/replays/{seasonCode}/{gameweek:int:min(1):max(38)}/outcome",
+    async (
+        string seasonCode,
+        int gameweek,
+        OfficialFplCaptureStore captureStore,
+        OfficialFplOutcomeStore outcomeStore,
+        CancellationToken cancellationToken) =>
+    {
+        OfficialFplReplayOutcomeDocument? pair =
+            await outcomeStore.GetReplayOutcomeAsync(
+                captureStore,
+                seasonCode,
+                gameweek,
+                cancellationToken);
+        return pair is null ? Results.NotFound() : Results.Ok(pair);
+    })
+    .WithName("GetOfficialFplReplayOutcome")
+    .WithSummary("Pair cutoff-safe pre-deadline evidence with a complete official outcome.")
+    .WithDescription(
+        "The pair is returned only when every player in the selected pre-deadline capture "
+        + "has a matching row in the latest final Gameweek outcome.")
+    .WithTags("Data")
+    .Produces<OfficialFplReplayOutcomeDocument>()
     .Produces(StatusCodes.Status404NotFound);
 app.MapPost(
     "/api/v1/decision-snapshots",

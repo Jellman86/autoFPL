@@ -193,15 +193,17 @@ Its data is deliberately synthetic. It establishes the product contract but
 does not constitute a forecast.
 
 The SQLite persistence vertical slice is deployed and survives a managed
-container recreate. The operator-triggered fixed-origin official FPL capture
-stores exact raw hashes, retrieval-time availability and normalised
-player/Gameweek/team/fixture rows. The API can now select the newest capture
-that was available before a requested Gameweek's recorded deadline, and the
-decision room shows that real-data footing separately from its synthetic
-forecast fixture. A historical pre-deadline capture still needs to be paired
-with later player outcomes before it is a replay dataset suitable for baseline
-evaluation. There is still no promoted model, scenario engine, optimiser, MCP
-server, live AI provider or product release.
+container recreate. Operator-triggered fixed-origin official FPL collectors
+store exact raw hashes, retrieval-time availability and normalised
+player/Gameweek/team/fixture rows. The API selects the newest capture available
+before a requested Gameweek's recorded deadline. A second fail-closed command
+can retain official per-player outcomes only after the event is finished and
+data-checked, every fixture is finished and player coverage exactly matches the
+post-event reference capture. The API and decision room can pair that final
+outcome with a cutoff-safe replay. No 2026/27 Gameweek has completed yet, so a
+real pair and baseline evaluation dataset do not exist. There is still no
+promoted model, scenario engine, optimiser, MCP server, live AI provider or
+product release.
 
 ## v0.1 — Evidence-grounded single-Gameweek advisor
 
@@ -249,11 +251,9 @@ and cutoff.
 
 ### Milestone C — real point-in-time evidence
 
-**Status:** active — the first official FPL bootstrap/fixture capture is
-implemented with bounded fixed-origin retrieval, raw content hashes,
-retrieval-time availability, immutable revisions and normalised reference rows.
-Historical pre-deadline replay and automatic later-outcome reconstruction
-remain.
+**Status:** active — bounded immutable reference capture, cutoff-safe replay,
+final per-player outcome capture and complete replay/outcome pairing are
+implemented. The first real pair awaits a completed 2026/27 Gameweek.
 
 - Implement the smallest useful real historical/current importer alongside the
   fields it actually supplies.
@@ -382,10 +382,11 @@ v1.0 hardens the proven product rather than introducing its first UI:
 
 The next development slices are:
 
-1. capture and normalise later official player Gameweek outcomes;
-2. pair one real pre-deadline capture with its later outcome;
-3. build the first rolling-origin baseline command;
-4. populate real player cards only after that baseline has valid out-of-time evidence.
+1. run the final-outcome command after the first completed, data-checked
+   Gameweek and verify the resulting real replay/outcome pair;
+2. build the first rolling-origin baseline command;
+3. accumulate enough cutoff-safe Gameweeks for honest out-of-time comparison;
+4. populate real player cards only after a baseline has valid out-of-time evidence.
 
 Do not add another standalone governance, universal contract, infrastructure or
 AI-orchestrator project ahead of those slices.
