@@ -10,6 +10,7 @@ Routes:
 |---|---|---|
 | `GET` | `/` | Renders the responsive Gameweek decision room |
 | `GET` | `/api/v1/advice/demo` | Returns the latest persisted Baseline v0 artifact, or the typed synthetic acceptance fixture when no qualifying capture exists |
+| `GET` | `/api/v1/forecasts/player-gameweek/latest` | Returns the latest immutable provisional Baseline v0 artifact for every eligible official player |
 | `GET` | `/api/v1/data/fpl-form-forecast/latest` | Returns provenance and counts for the latest immutable public FPL Form forecast capture |
 | `GET` | `/api/v1/data/fpl-form-forecast/status` | Distinguishes not checked, provider waiting, collection failure and retained forecast states |
 | `GET` | `/api/v1/data/fpl-form-forecast/{captureId}/identity-coverage` | Reports deterministic cutoff-correct official player/fixture coverage for one immutable forecast capture |
@@ -53,6 +54,14 @@ capture; explicit official import and the background official poller persist a
 new artifact after a successful capture. The advice route and “Refresh
 prediction” action only read the latest artifact; they never start collection
 or mutate forecast state.
+
+Migration 17 stores a separate all-player forecast artifact from the same exact
+capture. It retains each eligible player's official identity, fixture context,
+expected points, deliberately wide interval and availability-weighted expected
+minutes. Its status is `provisional-unvalidated`, its distribution status is
+`interval-only-uncalibrated`, and start/60-minute probabilities remain `null`
+until a fitted temporal model earns promotion. The selected 15-player advice
+artifact remains the downstream squad decision result.
 
 ## Official FPL capture
 
@@ -199,7 +208,7 @@ See the [evidence-fusion programme](../research/player-source-evidence-fusion-v1
 
 ## SQLite operations
 
-The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies sixteen explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
+The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies seventeen explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
 
 The root filesystem stays read-only. Production must mount a private, UID
 `1654`-writable persistent directory at `/data`; the CI smoke test uses an

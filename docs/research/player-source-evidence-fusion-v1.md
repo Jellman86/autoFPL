@@ -95,10 +95,12 @@ season.
 
 1. Retain and evaluate the existing simple distribution, minutes and
    availability baselines as real outcome folds accumulate.
-2. Emit a versioned player-Gameweek forecast artifact for every eligible
-   player, with explicit provisional/calibrated status and missing components.
-3. Persist immutable quarantined typed claims with official player identity and
-   cutoff-safe reads.
+2. **Implemented provisionally:** emit a versioned player-Gameweek forecast
+   artifact for every eligible player, with explicit provisional status,
+   uncalibrated interval-only distribution and missing fitted components.
+3. **Implemented as a quarantine boundary:** persist immutable typed claims
+   with official player identity and cutoff-safe reads. Source adapters,
+   outcome scoring and promotion remain.
 4. Inventory and shadow-capture the smallest useful official club/manager,
    predicted-lineup, quantitative and named-expert source set through Quark's
    existing research services.

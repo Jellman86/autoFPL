@@ -2,7 +2,8 @@
 
 Use this index to find the maintained source for each topic. The deterministic
 private-development foundation, decision room, SQLite snapshots and persisted,
-explicitly unvalidated Baseline v0 forecast artifacts are deployed. Fixed-origin
+explicitly unvalidated Baseline v0 selection and all-player forecast artifacts
+are deployed. Fixed-origin
 official FPL reference and final-outcome capture plus cutoff-safe pairing are
 implemented; the first completed 2026/27 Gameweek pair, validated forecasting,
 simulation, optimisation, advisory MCP tools and proposal persistence do not

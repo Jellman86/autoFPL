@@ -1,4 +1,5 @@
 using AutoFpl.Api.Advice;
+using AutoFpl.Api.Forecasts;
 
 namespace AutoFpl.Api.Sources;
 
@@ -9,13 +10,15 @@ public sealed class OfficialFplPoller : BackgroundService
     private readonly OfficialFplPollingOptions _options;
     private readonly TimeProvider _timeProvider;
     private readonly BaselineForecastArtifactStore _forecastStore;
+    private readonly PlayerGameweekForecastArtifactStore _playerForecastStore;
 
     public OfficialFplPoller(
         OfficialFplImporter importer,
         OfficialFplCaptureStore store,
         OfficialFplPollingOptions options,
         TimeProvider timeProvider,
-        BaselineForecastArtifactStore forecastStore)
+        BaselineForecastArtifactStore forecastStore,
+        PlayerGameweekForecastArtifactStore playerForecastStore)
     {
         _importer = importer ?? throw new ArgumentNullException(nameof(importer));
         _store = store ?? throw new ArgumentNullException(nameof(store));
@@ -23,6 +26,9 @@ public sealed class OfficialFplPoller : BackgroundService
         _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
         _forecastStore =
             forecastStore ?? throw new ArgumentNullException(nameof(forecastStore));
+        _playerForecastStore =
+            playerForecastStore
+            ?? throw new ArgumentNullException(nameof(playerForecastStore));
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -49,6 +55,7 @@ public sealed class OfficialFplPoller : BackgroundService
             {
                 await _importer.ImportLatestAsync(stoppingToken);
                 await _forecastStore.RefreshLatestAsync(stoppingToken);
+                await _playerForecastStore.RefreshLatestAsync(stoppingToken);
             }
             catch (Exception exception) when (
                 exception is OfficialFplPayloadException
