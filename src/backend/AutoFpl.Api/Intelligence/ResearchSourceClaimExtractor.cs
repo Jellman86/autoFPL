@@ -10,9 +10,11 @@ namespace AutoFpl.Api.Intelligence;
 public sealed partial class ResearchSourceClaimExtractor
 {
     public const string FfScoutExtractionVersion =
-        "ffscout-claims/v2";
+        "ffscout-claims/v3";
     public const string FfScoutLineupExtractionVersion =
         "ffscout-predicted-lineups/v1";
+    public const string FfScoutLineupComplementExtractionVersion =
+        "ffscout-predicted-lineup-complement/v1";
     public const string FfScoutAvailabilityExtractionVersion =
         "ffscout-availability/v1";
     public const string StraightredExtractionVersion =
@@ -92,23 +94,31 @@ public sealed partial class ResearchSourceClaimExtractor
                 cancellationToken);
         IReadOnlyDictionary<int, ResearchOfficialPlayerIdentity> identitiesByCode =
             identities.ToDictionary(identity => identity.PlayerCode);
-        int[] unresolvedCodes = candidates
-            .Where(candidate =>
-                !identitiesByCode.ContainsKey(candidate.PlayerCode))
-            .Select(candidate => candidate.PlayerCode)
+        IReadOnlyList<ResolvedLineupCandidate> resolvedCandidates = candidates
+            .Select(candidate =>
+                new ResolvedLineupCandidate(
+                    candidate,
+                    ResolveLineupIdentity(
+                        candidate,
+                        identitiesByCode,
+                        identities)))
+            .ToArray();
+        int[] unresolvedCodes = resolvedCandidates
+            .Where(candidate => candidate.Match is null)
+            .Select(candidate => candidate.Candidate.PlayerCode)
             .Distinct()
             .Order()
             .ToArray();
 
         var claims = new List<EvidenceClaimDocument>();
-        foreach (LineupCandidate candidate in candidates)
+        foreach (ResolvedLineupCandidate resolved in resolvedCandidates)
         {
-            if (!identitiesByCode.TryGetValue(
-                    candidate.PlayerCode,
-                    out ResearchOfficialPlayerIdentity? identity))
+            if (resolved.Match is null)
             {
                 continue;
             }
+            LineupCandidate candidate = resolved.Candidate;
+            ResearchOfficialPlayerIdentity identity = resolved.Match.Identity;
 
             claims.Add(
                 await _claimStore.ImportForIdentityCaptureAsync(
@@ -135,13 +145,88 @@ public sealed partial class ResearchSourceClaimExtractor
                         candidate.SourceSpan,
                         "deterministic",
                         FfScoutLineupExtractionVersion,
-                        1m,
+                        resolved.Match.ExtractionConfidence,
                         ComputeDuplicateClusterKey(
                             snapshot,
                             "start",
                             identity.PlayerCode)),
                     snapshot.IdentityCaptureId,
                     cancellationToken));
+        }
+        foreach (IGrouping<string, ResolvedLineupCandidate> team in
+                 resolvedCandidates.GroupBy(
+                     candidate => candidate.Candidate.TeamName,
+                     StringComparer.Ordinal))
+        {
+            ResolvedLineupCandidate[] teamCandidates = team.ToArray();
+            if (teamCandidates.Length != 11
+                || teamCandidates.Any(candidate => candidate.Match is null))
+            {
+                continue;
+            }
+
+            ResearchOfficialPlayerIdentity[] predictedStarters = teamCandidates
+                .Select(candidate => candidate.Match!.Identity)
+                .ToArray();
+            string[] officialTeamNames = predictedStarters
+                .Select(identity => identity.TeamName)
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
+            if (officialTeamNames.Length != 1
+                || predictedStarters
+                    .Select(identity => identity.PlayerId)
+                    .Distinct()
+                    .Count() != 11)
+            {
+                continue;
+            }
+
+            HashSet<int> predictedStarterIds = predictedStarters
+                .Select(identity => identity.PlayerId)
+                .ToHashSet();
+            decimal complementConfidence = teamCandidates
+                .Min(candidate => candidate.Match!.ExtractionConfidence);
+            foreach (ResearchOfficialPlayerIdentity identity in identities
+                         .Where(identity =>
+                             StringComparer.Ordinal.Equals(
+                                 identity.TeamName,
+                                 officialTeamNames[0])
+                             && !predictedStarterIds.Contains(identity.PlayerId))
+                         .OrderBy(identity => identity.PlayerId))
+            {
+                claims.Add(
+                    await _claimStore.ImportForIdentityCaptureAsync(
+                        new EvidenceClaimImportRequest(
+                            "1.0",
+                            snapshot.SourceKey,
+                            snapshot.CanonicalUrl,
+                            "Fantasy Football Scout",
+                            null,
+                            snapshot.RetrievedAtUtc,
+                            snapshot.AvailableAtUtc,
+                            snapshot.ContentSha256,
+                            snapshot.SourceRevision,
+                            snapshot.SeasonCode,
+                            snapshot.Gameweek,
+                            identity.PlayerId,
+                            "start",
+                            null,
+                            "does-not-start",
+                            null,
+                            null,
+                            null,
+                            "model-forecast",
+                            $"{team.Key} complete predicted XI omits: {identity.WebName}",
+                            "deterministic",
+                            FfScoutLineupComplementExtractionVersion,
+                            complementConfidence,
+                            ComputeDuplicateClusterKey(
+                                snapshot,
+                                "start",
+                                identity.PlayerCode)),
+                        snapshot.IdentityCaptureId,
+                        cancellationToken));
+            }
         }
         int startClaimCount = claims.Count;
 
@@ -336,6 +421,8 @@ public sealed partial class ResearchSourceClaimExtractor
                 }
                 candidates.Add(
                     new(
+                        teamName,
+                        playerName,
                         playerCode,
                         sourceSpan));
             }
@@ -628,6 +715,45 @@ public sealed partial class ResearchSourceClaimExtractor
             candidate.PlayerName,
             identities);
 
+    private static AvailabilityIdentityMatch? ResolveLineupIdentity(
+        LineupCandidate candidate,
+        IReadOnlyDictionary<int, ResearchOfficialPlayerIdentity> identitiesByCode,
+        IReadOnlyList<ResearchOfficialPlayerIdentity> identities)
+    {
+        if (identitiesByCode.TryGetValue(
+                candidate.PlayerCode,
+                out ResearchOfficialPlayerIdentity? identity)
+            && TeamNamesMatch(candidate.TeamName, identity.TeamName))
+        {
+            return new(identity, 1m);
+        }
+
+        AvailabilityIdentityMatch? fallback = ResolveTeamScopedIdentity(
+            candidate.TeamName,
+            candidate.PlayerName,
+            identities);
+        return fallback is null
+            ? null
+            : fallback with
+            {
+                ExtractionConfidence =
+                    Math.Min(0.95m, fallback.ExtractionConfidence),
+            };
+    }
+
+    private static bool TeamNamesMatch(string sourceName, string officialName)
+    {
+        string normalizedSource = Normalize(sourceName);
+        string expectedOfficial = TeamAliases.TryGetValue(
+            normalizedSource,
+            out string? alias)
+            ? alias
+            : normalizedSource;
+        return StringComparer.Ordinal.Equals(
+            expectedOfficial,
+            Normalize(officialName));
+    }
+
     private static AvailabilityIdentityMatch? ResolveTeamScopedIdentity(
         string teamName,
         string playerName,
@@ -791,7 +917,11 @@ public sealed partial class ResearchSourceClaimExtractor
         matchTimeoutMilliseconds: 1000)]
     private static partial Regex ConsensusFormationRegex();
 
-    internal sealed record LineupCandidate(int PlayerCode, string SourceSpan);
+    internal sealed record LineupCandidate(
+        string TeamName,
+        string PlayerName,
+        int PlayerCode,
+        string SourceSpan);
 
     internal sealed record AvailabilityCandidate(
         string TeamName,
@@ -811,4 +941,8 @@ public sealed partial class ResearchSourceClaimExtractor
     private sealed record AvailabilityIdentityMatch(
         ResearchOfficialPlayerIdentity Identity,
         decimal ExtractionConfidence);
+
+    private sealed record ResolvedLineupCandidate(
+        LineupCandidate Candidate,
+        AvailabilityIdentityMatch? Match);
 }

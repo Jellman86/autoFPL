@@ -730,12 +730,13 @@ The next development slices are:
    attributable named-expert challengers without treating correlated reports
    as independent votes;
 5. operate the implemented deterministic FFScout adapters, which resolve
-   predicted-XI photo codes plus unique team-scoped `Out` and
-   percentage-bearing `Doubts` into separately versioned quarantined start and
-   availability claims; operate the implemented dependent strAIghtred consensus
-   adapter under the same player/target duplicate clusters and the implemented
-   read-only start-claim evaluator by source and lead time; then add a
-   fail-closed official-injury adapter plus defensible availability truth
+   predicted-XI photo codes with a unique team-scoped fallback, derive
+   non-starter claims only from complete identity-resolved XIs, and retain
+   unique team-scoped `Out` and percentage-bearing `Doubts` as separately
+   versioned quarantined claims; operate the implemented dependent strAIghtred
+   consensus adapter under the same player/target duplicate clusters and the
+   implemented read-only start-claim evaluator by source and lead time; then
+   add a fail-closed official-injury adapter plus defensible availability truth
    before any feature use;
 6. run the final-outcome command after the first completed, data-checked
    Gameweek and verify the resulting real replay/outcome pair;

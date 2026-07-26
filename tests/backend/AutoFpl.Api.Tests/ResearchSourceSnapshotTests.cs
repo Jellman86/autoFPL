@@ -246,6 +246,124 @@ public sealed class ResearchSourceSnapshotTests
     }
 
     [Fact]
+    public async Task Ffscout_extractor_falls_back_to_a_unique_team_scoped_name()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = await CreateDatabaseAsync(files.DatabasePath);
+        var snapshotStore = new ResearchSourceSnapshotStore(
+            options,
+            new FixedTimeProvider(RetrievalTime));
+        ResearchSourceDefinition source =
+            ResearchSourceRegistry.Get("ffscout-predicted-lineups");
+        ResearchSourceSnapshotDocument snapshot = await snapshotStore.PersistAsync(
+            source,
+            new SpiderScrapeResult(
+                source.CanonicalUri,
+                200,
+                """
+                Our Team News page will house predicted line-ups for all 20 Premier League teams.
+                ![Home badge](https://example.test/home.png)##
+                Home
+                * ![Avatar of Test Player](https://resources.premierleague.com/premierleague25/photos/players/110x140/9999.png)Test Player
+                * **Out:**
+                * **Doubts:**
+                * **Banned:**
+                """,
+                "untrusted_remote_content"),
+            TestContext.Current.CancellationToken);
+        var extractor = new ResearchSourceClaimExtractor(
+            snapshotStore,
+            new EvidenceClaimStore(options, TimeProvider.System));
+
+        ResearchSourceClaimExtractionDocument extraction =
+            await extractor.ExtractAsync(
+                snapshot.SnapshotId,
+                TestContext.Current.CancellationToken);
+
+        Assert.Equal(1, extraction.StartClaimCount);
+        Assert.Empty(extraction.UnresolvedPlayerCodes);
+        EvidenceClaimSetDocument claims =
+            await new EvidenceClaimStore(options, TimeProvider.System)
+                .GetForGameweekAsync(
+                    "2026-27",
+                    1,
+                    RetrievalTime,
+                    TestContext.Current.CancellationToken);
+        EvidenceClaimDocument claim = Assert.Single(claims.Claims);
+        Assert.Equal(101, claim.PlayerId);
+        Assert.Equal(0.95m, claim.ExtractionConfidence);
+    }
+
+    [Fact]
+    public async Task Ffscout_extractor_infers_non_starters_only_from_a_complete_resolved_xi()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = await CreateDatabaseAsync(files.DatabasePath);
+        await AddHomePlayersAsync(options);
+        var snapshotStore = new ResearchSourceSnapshotStore(
+            options,
+            new FixedTimeProvider(RetrievalTime));
+        ResearchSourceDefinition source =
+            ResearchSourceRegistry.Get("ffscout-predicted-lineups");
+        ResearchSourceSnapshotDocument snapshot = await snapshotStore.PersistAsync(
+            source,
+            new SpiderScrapeResult(
+                source.CanonicalUri,
+                200,
+                """
+                Our Team News page will house predicted line-ups for all 20 Premier League teams.
+                ![Home badge](https://example.test/home.png)##
+                Home
+                * ![Avatar of Test Player](https://resources.premierleague.com/premierleague25/photos/players/110x140/1001.png)Test Player
+                * ![Avatar of Onana](https://resources.premierleague.com/premierleague25/photos/players/110x140/1002.png)Onana
+                * ![Avatar of Carvalho](https://resources.premierleague.com/premierleague25/photos/players/110x140/1003.png)Carvalho
+                * ![Avatar of Alice Smith](https://resources.premierleague.com/premierleague25/photos/players/110x140/1004.png)Alice Smith
+                * ![Avatar of Bob Smith](https://resources.premierleague.com/premierleague25/photos/players/110x140/1005.png)Bob Smith
+                * ![Avatar of Extra 106](https://resources.premierleague.com/premierleague25/photos/players/110x140/1106.png)Extra 106
+                * ![Avatar of Extra 107](https://resources.premierleague.com/premierleague25/photos/players/110x140/1107.png)Extra 107
+                * ![Avatar of Extra 108](https://resources.premierleague.com/premierleague25/photos/players/110x140/1108.png)Extra 108
+                * ![Avatar of Extra 109](https://resources.premierleague.com/premierleague25/photos/players/110x140/1109.png)Extra 109
+                * ![Avatar of Extra 110](https://resources.premierleague.com/premierleague25/photos/players/110x140/1110.png)Extra 110
+                * ![Avatar of Extra 111](https://resources.premierleague.com/premierleague25/photos/players/110x140/1111.png)Extra 111
+                * **Out:**
+                * **Doubts:**
+                * **Banned:**
+                """,
+                "untrusted_remote_content"),
+            TestContext.Current.CancellationToken);
+        var extractor = new ResearchSourceClaimExtractor(
+            snapshotStore,
+            new EvidenceClaimStore(options, TimeProvider.System));
+
+        ResearchSourceClaimExtractionDocument extraction =
+            await extractor.ExtractAsync(
+                snapshot.SnapshotId,
+                TestContext.Current.CancellationToken);
+
+        Assert.Equal(11, extraction.CandidateCount);
+        Assert.Equal(12, extraction.StartClaimCount);
+        Assert.Equal(12, extraction.ClaimCount);
+        Assert.Empty(extraction.UnresolvedPlayerCodes);
+        EvidenceClaimSetDocument claims =
+            await new EvidenceClaimStore(options, TimeProvider.System)
+                .GetForGameweekAsync(
+                    "2026-27",
+                    1,
+                    RetrievalTime,
+                    TestContext.Current.CancellationToken);
+        EvidenceClaimDocument omitted = Assert.Single(
+            claims.Claims,
+            claim => claim.StartStatus == "does-not-start");
+        Assert.Equal(112, omitted.PlayerId);
+        Assert.Equal(
+            ResearchSourceClaimExtractor.FfScoutLineupComplementExtractionVersion,
+            omitted.ExtractionVersion);
+        Assert.Equal(
+            "Home complete predicted XI omits: Extra 112",
+            omitted.SourceSpan);
+    }
+
+    [Fact]
     public async Task Straightred_extractor_retains_dependent_consensus_probabilities()
     {
         using var files = new TemporaryDatabaseFiles();
@@ -432,6 +550,66 @@ public sealed class ResearchSourceSnapshotTests
                 CaptureTime,
                 TestContext.Current.CancellationToken);
         return options;
+    }
+
+    private static async Task AddHomePlayersAsync(DatabaseOptions options)
+    {
+        await using var connection = new SqliteConnection(options.ConnectionString);
+        await connection.OpenAsync(TestContext.Current.CancellationToken);
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText =
+            """
+            WITH RECURSIVE extra(player_id) AS (
+                VALUES (106)
+                UNION ALL
+                SELECT player_id + 1
+                FROM extra
+                WHERE player_id < 112
+            )
+            INSERT INTO official_fpl_players (
+                capture_id,
+                player_id,
+                code,
+                team_id,
+                position,
+                first_name,
+                second_name,
+                web_name,
+                price_tenths,
+                status,
+                news,
+                news_added_utc,
+                chance_next_round,
+                selected_by_percent,
+                total_points,
+                minutes,
+                starts,
+                photo_identifier,
+                expected_points_next
+            )
+            SELECT
+                1,
+                player_id,
+                1000 + player_id,
+                1,
+                'midfielder',
+                'Extra',
+                CAST(player_id AS TEXT),
+                'Extra ' || player_id,
+                50,
+                'a',
+                '',
+                NULL,
+                NULL,
+                '0.0',
+                0,
+                0,
+                0,
+                (1000 + player_id) || '.png',
+                '2.0'
+            FROM extra;
+            """;
+        await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
     }
 
     private static byte[] CreateBootstrap() =>

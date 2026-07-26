@@ -51,6 +51,7 @@ public static class ResearchSourceRegistry
             false,
             [
                 "A named predicted XI is a categorical forecast, not a calibrated probability.",
+                "Early or partial pages may omit clubs; missing coverage is not a negative forecast.",
                 "Its upstream reporting may overlap official and other specialist sources.",
             ]),
         new(
