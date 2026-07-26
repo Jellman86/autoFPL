@@ -114,7 +114,9 @@ season.
    adapters now resolve FFScout predicted-XI entries by embedded official photo
    code and `Out`/percentage-bearing `Doubts` by unique team-scoped official
    names, writing separately versioned quarantined start and availability
-   claims. Bans remain excluded; official-injury and consensus extraction,
+   claims. Bans remain excluded. A separate deterministic adapter retains the
+   strAIghtred consensus percentages under the same player/target duplicate
+   clusters as FFScout, making dependence explicit. Official-injury extraction,
    quantitative reproduction, named experts and scoring remain.
 5. Score sources by target and lead time, then implement same-fold no-source
    versus source-feature ablations.

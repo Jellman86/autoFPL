@@ -15,10 +15,14 @@ public sealed partial class ResearchSourceClaimExtractor
         "ffscout-predicted-lineups/v1";
     public const string FfScoutAvailabilityExtractionVersion =
         "ffscout-availability/v1";
+    public const string StraightredExtractionVersion =
+        "straightred-consensus/v1";
 
     private const string FfScoutSourceKey = "ffscout-predicted-lineups";
+    private const string StraightredSourceKey =
+        "straightred-lineup-consensus";
 
-    private static readonly IReadOnlyDictionary<string, string> FfScoutTeamAliases =
+    private static readonly IReadOnlyDictionary<string, string> TeamAliases =
         new Dictionary<string, string>(StringComparer.Ordinal)
         {
             ["brighton and hove albion"] = "brighton",
@@ -62,7 +66,17 @@ public sealed partial class ResearchSourceClaimExtractor
             throw new ResearchSourceSnapshotException(
                 "Only shadow-only research snapshots can produce quarantined claims.");
         }
-        if (!StringComparer.Ordinal.Equals(snapshot.SourceKey, FfScoutSourceKey))
+        if (StringComparer.Ordinal.Equals(
+                snapshot.SourceKey,
+                StraightredSourceKey))
+        {
+            return await ExtractStraightredAsync(
+                retained,
+                cancellationToken);
+        }
+        if (!StringComparer.Ordinal.Equals(
+                snapshot.SourceKey,
+                FfScoutSourceKey))
         {
             throw new ResearchSourceSnapshotException(
                 $"No deterministic claim extractor is registered for {snapshot.SourceKey}.");
@@ -184,11 +198,88 @@ public sealed partial class ResearchSourceClaimExtractor
             FfScoutExtractionVersion,
             candidates.Count,
             startClaimCount,
+            unresolvedCodes.Length,
             availabilityCandidates.Count,
             availabilityClaimCount,
             unresolvedAvailabilityCount,
             claims.Count,
             unresolvedCodes);
+    }
+
+    private async Task<ResearchSourceClaimExtractionDocument>
+        ExtractStraightredAsync(
+            ResearchSourceSnapshotContent retained,
+            CancellationToken cancellationToken)
+    {
+        ResearchSourceSnapshotDocument snapshot = retained.Snapshot;
+        IReadOnlyList<ConsensusCandidate> candidates =
+            ExtractStraightredCandidates(retained.Content);
+        IReadOnlyList<ResearchOfficialPlayerIdentity> identities =
+            await _snapshotStore.GetPlayerIdentitiesAsync(
+                snapshot.IdentityCaptureId,
+                cancellationToken);
+
+        int unresolvedStartCount = 0;
+        var claims = new List<EvidenceClaimDocument>();
+        foreach (ConsensusCandidate candidate in candidates)
+        {
+            AvailabilityIdentityMatch? match = ResolveTeamScopedIdentity(
+                candidate.TeamName,
+                candidate.PlayerName,
+                identities);
+            if (match is null)
+            {
+                unresolvedStartCount++;
+                continue;
+            }
+
+            claims.Add(
+                await _claimStore.ImportForIdentityCaptureAsync(
+                    new EvidenceClaimImportRequest(
+                        "1.0",
+                        snapshot.SourceKey,
+                        snapshot.CanonicalUrl,
+                        "strAIghtred",
+                        null,
+                        snapshot.RetrievedAtUtc,
+                        snapshot.AvailableAtUtc,
+                        snapshot.ContentSha256,
+                        snapshot.SourceRevision,
+                        snapshot.SeasonCode,
+                        snapshot.Gameweek,
+                        match.Identity.PlayerId,
+                        "start",
+                        null,
+                        "starts",
+                        candidate.ForecastProbability,
+                        null,
+                        null,
+                        "model-forecast",
+                        candidate.SourceSpan,
+                        "deterministic",
+                        StraightredExtractionVersion,
+                        match.ExtractionConfidence,
+                        ComputeDuplicateClusterKey(
+                            snapshot,
+                            "start",
+                            match.Identity.PlayerCode)),
+                    snapshot.IdentityCaptureId,
+                    cancellationToken));
+        }
+
+        return new(
+            "1.0",
+            snapshot.SnapshotId,
+            snapshot.SourceKey,
+            StraightredExtractionVersion,
+            candidates.Count,
+            claims.Count,
+            unresolvedStartCount,
+            0,
+            0,
+            0,
+            claims.Count,
+            []);
     }
 
     internal static IReadOnlyList<LineupCandidate> ExtractFfScoutLineupCandidates(
@@ -325,6 +416,130 @@ public sealed partial class ResearchSourceClaimExtractor
         return candidates;
     }
 
+    internal static IReadOnlyList<ConsensusCandidate>
+        ExtractStraightredCandidates(string content)
+    {
+        ArgumentNullException.ThrowIfNull(content);
+        string[] lines = content.Split('\n');
+        int markerIndex = Array.FindIndex(
+            lines,
+            line => line.Contains(
+                "Powered by multiple prediction sources.",
+                StringComparison.Ordinal));
+        if (markerIndex < 0)
+        {
+            throw new ResearchSourceSnapshotException(
+                "The strAIghtred consensus content marker was not found.");
+        }
+
+        int fixtureIndex = Array.FindIndex(
+            lines,
+            markerIndex + 1,
+            line => line.Contains(" vs ", StringComparison.Ordinal)
+                && line.Contains('·'));
+        if (fixtureIndex < 0)
+        {
+            throw new ResearchSourceSnapshotException(
+                "The strAIghtred consensus fixture marker was not found.");
+        }
+
+        string fixture = lines[fixtureIndex].Trim().TrimEnd('\r');
+        int versus = fixture.IndexOf(" vs ", StringComparison.Ordinal);
+        int sourceSeparator = fixture.LastIndexOf('·');
+        if (versus <= 0 || sourceSeparator <= versus + 4)
+        {
+            throw new ResearchSourceSnapshotException(
+                "The strAIghtred consensus fixture had an unsupported shape.");
+        }
+        string homeTeam = TrimToLetters(fixture[..versus]);
+        string awayTeam = TrimToLetters(
+            fixture[(versus + 4)..sourceSeparator]);
+        Match sourceCountMatch = ConsensusSourceCountRegex().Match(
+            fixture[(sourceSeparator + 1)..].Trim());
+        if (!sourceCountMatch.Success
+            || !int.TryParse(
+                sourceCountMatch.Groups["count"].Value,
+                NumberStyles.None,
+                CultureInfo.InvariantCulture,
+                out int sourceCount)
+            || sourceCount is < 1 or > 100)
+        {
+            throw new ResearchSourceSnapshotException(
+                "The strAIghtred consensus source count was invalid.");
+        }
+
+        var candidates = new List<ConsensusCandidate>();
+        for (int index = fixtureIndex + 1; index < lines.Length;)
+        {
+            string line = lines[index].Trim().TrimEnd('\r');
+            if (line is "")
+            {
+                index++;
+                continue;
+            }
+            if (ConsensusFormationRegex().IsMatch(line))
+            {
+                break;
+            }
+            Match nameMatch = FfScoutAvailabilityNameRegex().Match(line);
+            if (!nameMatch.Success || index + 1 >= lines.Length)
+            {
+                throw new ResearchSourceSnapshotException(
+                    "A strAIghtred consensus player had an unsupported shape.");
+            }
+
+            string probabilityLine = lines[index + 1].Trim().TrimEnd('\r');
+            Match probabilityMatch =
+                ConsensusProbabilityRegex().Match(probabilityLine);
+            if (!probabilityMatch.Success
+                || !int.TryParse(
+                    probabilityMatch.Groups["percent"].Value,
+                    NumberStyles.None,
+                    CultureInfo.InvariantCulture,
+                    out int percent)
+                || percent is < 0 or > 100)
+            {
+                throw new ResearchSourceSnapshotException(
+                    "A strAIghtred consensus probability was invalid.");
+            }
+
+            string playerName = nameMatch.Groups["name"].Value.Trim();
+            string sourceSpan =
+                $"{homeTeam} consensus ({sourceCount} sources): "
+                + $"{playerName} {percent}%";
+            if (sourceSpan.Length > 500)
+            {
+                throw new ResearchSourceSnapshotException(
+                    "A strAIghtred consensus source span exceeded the evidence limit.");
+            }
+            candidates.Add(
+                new(
+                    homeTeam,
+                    awayTeam,
+                    sourceCount,
+                    playerName,
+                    percent / 100m,
+                    sourceSpan));
+            index += 2;
+        }
+
+        if (candidates.Count is < 1 or > 11)
+        {
+            throw new ResearchSourceSnapshotException(
+                "The strAIghtred snapshot did not contain a bounded consensus XI.");
+        }
+        if (candidates
+            .Select(candidate => Normalize(candidate.PlayerName))
+            .Distinct(StringComparer.Ordinal)
+            .Count() != candidates.Count)
+        {
+            throw new ResearchSourceSnapshotException(
+                "The strAIghtred snapshot contained duplicate consensus players.");
+        }
+
+        return candidates;
+    }
+
     private static void AddAvailabilitySection(
         ICollection<AvailabilityCandidate> candidates,
         string teamName,
@@ -407,15 +622,24 @@ public sealed partial class ResearchSourceClaimExtractor
 
     private static AvailabilityIdentityMatch? ResolveAvailabilityIdentity(
         AvailabilityCandidate candidate,
+        IReadOnlyList<ResearchOfficialPlayerIdentity> identities) =>
+        ResolveTeamScopedIdentity(
+            candidate.TeamName,
+            candidate.PlayerName,
+            identities);
+
+    private static AvailabilityIdentityMatch? ResolveTeamScopedIdentity(
+        string teamName,
+        string playerName,
         IReadOnlyList<ResearchOfficialPlayerIdentity> identities)
     {
-        string sourceTeam = Normalize(candidate.TeamName);
-        string officialTeam = FfScoutTeamAliases.TryGetValue(
+        string sourceTeam = Normalize(teamName);
+        string officialTeam = TeamAliases.TryGetValue(
             sourceTeam,
             out string? alias)
             ? alias
             : sourceTeam;
-        string candidateName = Normalize(candidate.PlayerName);
+        string candidateName = Normalize(playerName);
 
         ResearchOfficialPlayerIdentity[] teamPlayers = identities
             .Where(identity =>
@@ -449,6 +673,26 @@ public sealed partial class ResearchSourceClaimExtractor
         return suffixMatches.Length == 1
             ? new(suffixMatches[0], 0.95m)
             : null;
+    }
+
+    private static string TrimToLetters(string value)
+    {
+        int first = 0;
+        while (first < value.Length && !char.IsLetter(value[first]))
+        {
+            first++;
+        }
+        int last = value.Length - 1;
+        while (last >= first && !char.IsLetterOrDigit(value[last]))
+        {
+            last--;
+        }
+        if (first > last)
+        {
+            throw new ResearchSourceSnapshotException(
+                "A consensus team name was empty.");
+        }
+        return value[first..(last + 1)].Trim();
     }
 
     private static HashSet<string> OfficialNames(
@@ -529,6 +773,24 @@ public sealed partial class ResearchSourceClaimExtractor
         matchTimeoutMilliseconds: 1000)]
     private static partial Regex FfScoutDoubtRegex();
 
+    [GeneratedRegex(
+        @"^(?<count>[0-9]{1,3})\s+sources?$",
+        RegexOptions.CultureInvariant,
+        matchTimeoutMilliseconds: 1000)]
+    private static partial Regex ConsensusSourceCountRegex();
+
+    [GeneratedRegex(
+        @"^(?<percent>[0-9]{1,3})%$",
+        RegexOptions.CultureInvariant,
+        matchTimeoutMilliseconds: 1000)]
+    private static partial Regex ConsensusProbabilityRegex();
+
+    [GeneratedRegex(
+        @"^[0-9]{1,2}(?:-[0-9]{1,2}){2,4}$",
+        RegexOptions.CultureInvariant,
+        matchTimeoutMilliseconds: 1000)]
+    private static partial Regex ConsensusFormationRegex();
+
     internal sealed record LineupCandidate(int PlayerCode, string SourceSpan);
 
     internal sealed record AvailabilityCandidate(
@@ -536,6 +798,14 @@ public sealed partial class ResearchSourceClaimExtractor
         string PlayerName,
         string AvailabilityStatus,
         decimal? ForecastProbability,
+        string SourceSpan);
+
+    internal sealed record ConsensusCandidate(
+        string TeamName,
+        string OpponentName,
+        int SourceCount,
+        string PlayerName,
+        decimal ForecastProbability,
         string SourceSpan);
 
     private sealed record AvailabilityIdentityMatch(

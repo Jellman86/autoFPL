@@ -700,8 +700,10 @@ The next development slices are:
 4. operate the implemented deterministic FFScout adapters, which resolve
    predicted-XI photo codes plus unique team-scoped `Out` and
    percentage-bearing `Doubts` into separately versioned quarantined start and
-   availability claims; then add fail-closed official-injury and consensus
-   adapters and score claims by target and lead time before any feature use;
+   availability claims; operate the implemented dependent strAIghtred consensus
+   adapter under the same player/target duplicate clusters; then add a
+   fail-closed official-injury adapter and score claims by target and lead time
+   before any feature use;
 5. run the final-outcome command after the first completed, data-checked
    Gameweek and verify the resulting real replay/outcome pair;
 6. run the baseline command as complete pairs accumulate and retain the
