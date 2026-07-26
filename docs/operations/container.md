@@ -10,6 +10,7 @@ Routes:
 |---|---|---|
 | `GET` | `/` | Renders the responsive Gameweek decision room |
 | `GET` | `/api/v1/advice/demo` | Returns the typed synthetic forecast fixture joined to persisted snapshot metadata/state |
+| `GET` | `/api/v1/data/fpl-form-forecast/latest` | Returns provenance and counts for the latest immutable public FPL Form forecast capture |
 | `GET` | `/openapi/v1.json` | Returns the generated OpenAPI 3.1 HTTP contract |
 | `GET` | `/healthz` | Liveness response: `{"status":"healthy"}` |
 | `GET` | `/readyz` | Returns ready only when the current SQLite migration is present |
@@ -74,9 +75,25 @@ fields are retained immutably. The provider supplies no separately verifiable
 publication time, so availability is the completed retrieval time. The web
 process exposes no collection route.
 
+## Public forecast capture
+
+Run the fixed-origin FPL Form capture as an operator command:
+
+```text
+dotnet AutoFpl.Api.dll --import-fpl-form-forecast
+```
+
+The command makes one public HTML request and captures only an active
+next-Gameweek prediction set. It rejects the provider's off-season sentinel
+without writing a capture. The page is currently large, so the importer
+enforces a 128 MiB limit and stores the exact HTML compressed; prediction rows
+and raw HTML remain private. Published points are conditional on appearing,
+not expected minutes or an autoFPL-promoted forecast. See the
+[source record](../data/sources/fpl-form-public-forecast-v1.md).
+
 ## SQLite operations
 
-The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies five explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
+The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies six explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
 
 The root filesystem stays read-only. Production must mount a private, UID
 `1654`-writable persistent directory at `/data`; the CI smoke test uses an
