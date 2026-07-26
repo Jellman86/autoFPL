@@ -49,7 +49,7 @@ Use this index to find the maintained source for each topic. The deterministic p
 - [Evidence base](research/evidence-base.md) — durable sources supporting the research approach.
 - [Baseline evaluation v4](research/baseline-evaluation-v4.md) — executable point, expected-minutes, availability and empirical distribution baselines with rolling chronology, proper scores and calibration diagnostics.
 - [FPL Form external evaluation v1](research/fpl-form-external-evaluation-v1.md) — cutoff- and identity-gated scoring of published conditional points and the separately named appearance-adjusted challenger.
-- [Temporal feature table v1](research/temporal-feature-table-v1.md) — cutoff-safe player and team match-leading features with explicit missingness and correction chronology.
+- [Temporal feature table v2](research/temporal-feature-table-v2.md) — cutoff-safe player, underlying-outcome and team match-leading features with explicit missingness and correction chronology.
 - [Temporal ridge challenger v1](research/temporal-ridge-v1.md) — fold-local regularised total-points challenger over the cutoff-safe temporal feature table.
 - [Temporal histogram-tree challenger v1](research/temporal-tree-v1.md) — fixed nonlinear comparison on the ridge evaluator's identical expanding-origin folds.
 - [FPL Form temporal feature v1](research/fpl-form-temporal-feature-v1.md) — exact-cutoff, strict-direct-identity bridge from retained public forecasts into model-ready player features.

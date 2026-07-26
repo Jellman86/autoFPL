@@ -12,8 +12,8 @@ from pathlib import Path
 from typing import Any, DefaultDict, Dict, List, Mapping, Optional, Sequence
 
 SCHEMA_VERSION = "1.0"
-FEATURE_SET = "official-temporal-v1"
-REQUIRED_DATABASE_VERSION = 7
+FEATURE_SET = "official-temporal-v2"
+REQUIRED_DATABASE_VERSION = 10
 WINDOWS = (1, 3, 5)
 EWMA_ALPHA = 0.5
 METRICS = (
@@ -28,6 +28,24 @@ METRICS = (
     "bonus",
     "yellowCards",
     "redCards",
+)
+UNDERLYING_METRICS = (
+    "ownGoals",
+    "penaltiesSaved",
+    "penaltiesMissed",
+    "bps",
+    "influence",
+    "creativity",
+    "threat",
+    "ictIndex",
+    "clearancesBlocksInterceptions",
+    "recoveries",
+    "tackles",
+    "defensiveContribution",
+    "expectedGoals",
+    "expectedAssists",
+    "expectedGoalInvolvements",
+    "expectedGoalsConceded",
 )
 
 
@@ -63,7 +81,7 @@ class OutcomeCapture:
 @dataclass(frozen=True)
 class HistoricalOutcome:
     gameweek: int
-    values: Mapping[str, int]
+    values: Mapping[str, Optional[float]]
 
 
 def build_feature_table(
@@ -151,6 +169,10 @@ def build_feature_table(
                 "ewmaAlpha": EWMA_ALPHA,
                 "historyUnit": "official-gameweek-total",
                 "crossSeasonPlayerMatching": False,
+                "nullableUnderlyingMetrics": list(UNDERLYING_METRICS),
+                "underlyingMetricMissingness": (
+                    "null-preserved-with-per-metric-sample-count"
+                ),
             },
             "provenance": provenance,
             "dataIdentitySha256": data_identity,
@@ -330,7 +352,23 @@ def _load_histories(
                 saves,
                 bonus,
                 yellow_cards,
-                red_cards
+                red_cards,
+                own_goals,
+                penalties_saved,
+                penalties_missed,
+                bps,
+                influence,
+                creativity,
+                threat,
+                ict_index,
+                clearances_blocks_interceptions,
+                recoveries,
+                tackles,
+                defensive_contribution,
+                expected_goals,
+                expected_assists,
+                expected_goal_involvements,
+                expected_goals_conceded
             FROM official_fpl_player_outcomes
             WHERE outcome_capture_id = :outcome_capture_id
             ORDER BY player_id;
@@ -360,6 +398,30 @@ def _load_histories(
                         "bonus": row["bonus"],
                         "yellowCards": row["yellow_cards"],
                         "redCards": row["red_cards"],
+                        "ownGoals": row["own_goals"],
+                        "penaltiesSaved": row["penalties_saved"],
+                        "penaltiesMissed": row["penalties_missed"],
+                        "bps": row["bps"],
+                        "influence": row["influence"],
+                        "creativity": row["creativity"],
+                        "threat": row["threat"],
+                        "ictIndex": row["ict_index"],
+                        "clearancesBlocksInterceptions": row[
+                            "clearances_blocks_interceptions"
+                        ],
+                        "recoveries": row["recoveries"],
+                        "tackles": row["tackles"],
+                        "defensiveContribution": row[
+                            "defensive_contribution"
+                        ],
+                        "expectedGoals": row["expected_goals"],
+                        "expectedAssists": row["expected_assists"],
+                        "expectedGoalInvolvements": row[
+                            "expected_goal_involvements"
+                        ],
+                        "expectedGoalsConceded": row[
+                            "expected_goals_conceded"
+                        ],
                     },
                 )
             )
@@ -718,6 +780,14 @@ def _summarise_window(
         summary[f"{metric}Mean"] = _mean(
             [item.values[metric] for item in history]
         )
+    for metric in UNDERLYING_METRICS:
+        observed = [
+            value
+            for item in history
+            if (value := item.values[metric]) is not None
+        ]
+        summary[f"{metric}Mean"] = _mean(observed)
+        summary[f"{metric}SampleCount"] = len(observed)
     return summary
 
 
@@ -740,16 +810,24 @@ def _summarise_ewma(
         summary[f"{metric}Mean"] = _ewma(
             [item.values[metric] for item in history]
         )
+    for metric in UNDERLYING_METRICS:
+        observed = [
+            value
+            for item in history
+            if (value := item.values[metric]) is not None
+        ]
+        summary[f"{metric}Mean"] = _ewma(observed) if observed else None
+        summary[f"{metric}SampleCount"] = len(observed)
     return summary
 
 
-def _mean(values: Sequence[int]) -> Optional[float]:
+def _mean(values: Sequence[float]) -> Optional[float]:
     if not values:
         return None
     return _rounded(sum(values) / float(len(values)))
 
 
-def _ewma(values: Sequence[int]) -> float:
+def _ewma(values: Sequence[float]) -> float:
     value = float(values[0])
     for current in values[1:]:
         value = (EWMA_ALPHA * current) + ((1.0 - EWMA_ALPHA) * value)

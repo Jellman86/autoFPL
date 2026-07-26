@@ -22,7 +22,7 @@ this is a normal pre-source state rather than an error.
 
 ## Temporal boundary
 
-The command first builds `official-temporal-v1`, then selects the latest FPL
+The command first builds `official-temporal-v2`, then selects the latest FPL
 Form capture satisfying:
 
 ```text
