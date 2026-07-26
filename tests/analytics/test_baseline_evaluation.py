@@ -26,8 +26,8 @@ class BaselineEvaluationTests(unittest.TestCase):
             report = evaluate_database(database, season_code="2026-27")
 
         self.assertEqual("complete", report["status"])
-        self.assertEqual("1.1", report["schemaVersion"])
-        self.assertEqual("baseline-evaluation-v2", report["evaluatorVersion"])
+        self.assertEqual("1.2", report["schemaVersion"])
+        self.assertEqual("baseline-evaluation-v3", report["evaluatorVersion"])
         self.assertEqual("exploratory-baseline-not-promoted", report["researchStatus"])
         self.assertEqual(5, report["configuration"]["calibrationBinCount"])
         self.assertEqual(3, report["completePairCount"])
@@ -110,6 +110,36 @@ class BaselineEvaluationTests(unittest.TestCase):
         for model in probability_models.values():
             self.assertGreaterEqual(model["metrics"]["meanProbability"], 0.0)
             self.assertLessEqual(model["metrics"]["meanProbability"], 1.0)
+        expected_minutes_models = {
+            model["name"]: model
+            for model in report["expectedMinutesModels"]
+        }
+        self.assertEqual(
+            {
+                "minutes-zero",
+                "minutes-global-expanding-mean",
+                "minutes-position-expanding-mean",
+                "minutes-player-expanding-mean",
+                "minutes-player-last",
+                "minutes-official-running-mean",
+            },
+            set(expected_minutes_models),
+        )
+        player_minutes = expected_minutes_models[
+            "minutes-player-expanding-mean"
+        ]
+        self.assertEqual(4, player_minutes["metrics"]["count"])
+        self.assertEqual(75.0, player_minutes["metrics"]["mae"])
+        self.assertEqual(75.746287, player_minutes["metrics"]["rmse"])
+        self.assertEqual(7.5, player_minutes["metrics"]["meanError"])
+        self.assertEqual(
+            2,
+            player_minutes["slices"]["position"]["goalkeeper"]["count"],
+        )
+        self.assertEqual(
+            75.0,
+            expected_minutes_models["minutes-zero"]["metrics"]["rmse"],
+        )
 
     def test_report_is_deterministic_and_database_remains_byte_identical(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -125,6 +155,21 @@ class BaselineEvaluationTests(unittest.TestCase):
         self.assertEqual(first, second)
         self.assertEqual(before, after)
 
+    def test_expected_minutes_scores_double_gameweek_total_without_cap(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            database = Path(temporary_directory) / "autofpl.db"
+            self._create_database(database)
+            self._seed_complete_history(database)
+
+            report = evaluate_database(database, season_code="2026-27")
+
+        models = {
+            model["name"]: model
+            for model in report["expectedMinutesModels"]
+        }
+        self.assertEqual(4, models["minutes-zero"]["metrics"]["count"])
+        self.assertEqual(75.0, models["minutes-zero"]["metrics"]["rmse"])
+
     def test_no_pairs_returns_machine_readable_insufficient_data(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             database = Path(temporary_directory) / "autofpl.db"
@@ -137,6 +182,7 @@ class BaselineEvaluationTests(unittest.TestCase):
         self.assertEqual(0, report["eligibleFoldCount"])
         self.assertEqual([], report["models"])
         self.assertEqual([], report["probabilityModels"])
+        self.assertEqual([], report["expectedMinutesModels"])
 
     def test_incomplete_player_pair_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -223,6 +269,7 @@ class BaselineEvaluationTests(unittest.TestCase):
                     player_id INTEGER NOT NULL,
                     position TEXT NOT NULL,
                     total_points INTEGER NOT NULL,
+                    minutes INTEGER NOT NULL,
                     starts INTEGER NOT NULL,
                     PRIMARY KEY (capture_id, player_id)
                 );
@@ -266,6 +313,11 @@ class BaselineEvaluationTests(unittest.TestCase):
             2: {1: 1, 2: 1},
             3: {1: 1, 2: 2},
         }
+        cumulative_minutes = {
+            1: {1: 0, 2: 0},
+            2: {1: 90, 2: 30},
+            3: {1: 90, 2: 150},
+        }
         outcome_rows = {
             1: (
                 1,
@@ -289,7 +341,7 @@ class BaselineEvaluationTests(unittest.TestCase):
                 3,
                 "2026-08-16T18:00:00.0000000Z",
                 {1: 2, 2: 8},
-                {1: 60, 2: 0},
+                {1: 120, 2: 0},
             ),
         }
         with sqlite3.connect(database) as connection:
@@ -331,9 +383,10 @@ class BaselineEvaluationTests(unittest.TestCase):
                         player_id,
                         position,
                         total_points,
+                        minutes,
                         starts
                     )
-                    VALUES (?, ?, ?, ?, ?);
+                    VALUES (?, ?, ?, ?, ?, ?);
                     """,
                     [
                         (
@@ -341,6 +394,7 @@ class BaselineEvaluationTests(unittest.TestCase):
                             1,
                             "goalkeeper",
                             cumulative_points[gameweek][1],
+                            cumulative_minutes[gameweek][1],
                             cumulative_starts[gameweek][1],
                         ),
                         (
@@ -348,6 +402,7 @@ class BaselineEvaluationTests(unittest.TestCase):
                             2,
                             "forward",
                             cumulative_points[gameweek][2],
+                            cumulative_minutes[gameweek][2],
                             cumulative_starts[gameweek][2],
                         ),
                     ],

@@ -1,4 +1,4 @@
-# Baseline evaluation v2
+# Baseline evaluation v3
 
 ## Status
 
@@ -14,16 +14,17 @@ Gameweek deadline:
 
 1. predict the player's final official integer FPL points for that Gameweek;
 2. predict the probability that the player's final official Gameweek minutes
-   are at least 60.
+   are at least 60; and
+3. predict the player's final official Gameweek-total minutes.
 
 The population contains only players whose pre-deadline replay identity matches
 an official final outcome. Added post-deadline players may exist in the outcome
 capture but do not enter that earlier prediction population.
 
-The binary target uses the official Gameweek-total minutes field. In a double
+Both minutes targets use the official Gameweek-total minutes field. In a double
 Gameweek, reaching 60 minutes across either or both fixtures is therefore a
-positive outcome; this baseline does not yet model individual fixture
-appearances.
+positive outcome and expected minutes may exceed 90. This baseline does not yet
+model individual fixture appearances.
 
 ## Point-in-time split
 
@@ -84,12 +85,33 @@ keeps small-sample forecasts away from unjustified zero and one probabilities.
 These are audit-friendly incumbents, not claims that starting and reaching 60
 minutes are equivalent.
 
+## Expected-minutes baselines
+
+The expected-minutes baselines produce one unconditional Gameweek-total
+minutes prediction per eligible player:
+
+- `minutes-zero` — always predicts zero;
+- `minutes-global-expanding-mean` — mean prior minutes across all players;
+- `minutes-position-expanding-mean` — mean prior minutes for the player's
+  position, falling back to the global mean;
+- `minutes-player-expanding-mean` — mean prior minutes for the player, falling
+  back to the position mean;
+- `minutes-player-last` — the player's most recent eligible prior minutes,
+  falling back to the position mean; and
+- `minutes-official-running-mean` — cumulative minutes visible in the
+  pre-deadline official capture divided by elapsed prior Gameweeks.
+
+These forecasts intentionally include zero-minute outcomes. A later
+availability model may also report conditional minutes, but simulation needs
+the unconditional expectation and its uncertainty rather than silently
+assuming a player is available.
+
 ## Metrics and slices
 
-The command reports mean absolute error, root mean squared error and signed mean
-error over all eligible player/Gameweek predictions, plus the same metrics by
-position. Lower MAE/RMSE is better; signed mean error exposes systematic over-
-or under-prediction.
+For points and expected minutes, the command reports mean absolute error, root
+mean squared error and signed mean error over all eligible player/Gameweek
+predictions, plus the same metrics by position. Lower MAE/RMSE is better;
+signed mean error exposes systematic over- or under-prediction.
 
 For the binary probability target it reports:
 
@@ -101,8 +123,9 @@ For the binary probability target it reports:
 - the same aggregate probability metrics by position.
 
 Calibration bins are descriptive, especially in the tiny early sample. They
-must not be read as proof of calibration. The point models still do not produce
-a full points distribution, so CRPS and interval coverage remain future work.
+must not be read as proof of calibration. The point and minutes models still do
+not produce predictive distributions, so CRPS and interval coverage remain
+future work.
 
 ## Reproducibility and output
 
@@ -122,7 +145,8 @@ The SQLite connection is query-only. The report records:
 - replay/outcome IDs, timestamps and source hashes for every target and
   training fold;
 - a canonical data-identity hash;
-- point and probability metrics, calibration bins and position slices; and
+- point, expected-minutes and probability metrics, calibration bins and
+  position slices; and
 - a canonical run-identity hash.
 
 The command refuses to overwrite an existing report. With no complete pair or
@@ -134,6 +158,6 @@ Schema mismatch, incomplete coverage and invalid configuration fail closed.
 No final holdout or promotion threshold is registered yet because the live
 2026/27 sample contains no completed Gameweeks. Before any challenger influences
 advice, register the training window, final holdout, minimum sample, tuning
-budget, decision-utility evaluation and promotion rule. Add a calibrated points
-distribution and minutes expectation before scenario simulation depends on
-them. Player-card forecasts remain synthetic until that later gate passes.
+budget, decision-utility evaluation and promotion rule. Add calibrated minutes
+and points distributions before scenario simulation depends on them.
+Player-card forecasts remain synthetic until that later gate passes.

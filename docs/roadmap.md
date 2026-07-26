@@ -260,6 +260,9 @@ implemented. The first real pair awaits a completed 2026/27 Gameweek.
 - Preserve source identity, retrieval/publication/availability times, content
   identity, corrections, missingness and player matching.
 - Reconstruct at least one historical deadline without future-known values.
+- After the core minutes and points incumbents exist, ingest one bounded public
+  predicted-points/minutes source as a timestamped external baseline. Score its
+  published forecast alone before testing it as a model feature.
 - Keep richer news, scout, browser and Byparr sources optional until an ablation
   shows predictive value.
 
@@ -273,9 +276,9 @@ Tracked by [#42](https://github.com/Jellman86/autoFPL/issues/42).
 **Status:** active — the read-only baseline command, expanding-origin
 selection, correction-time leakage checks, deterministic point baselines,
 smoothed probability-of-60-minutes baselines, proper binary scores,
-calibration diagnostics, position slices and reproducibility identities are
-implemented against test fixtures. Real evaluation remains unavailable until
-completed replay/outcome pairs exist.
+expected-minutes baselines, calibration diagnostics, position slices and
+reproducibility identities are implemented against test fixtures. Real
+evaluation remains unavailable until completed replay/outcome pairs exist.
 
 - Implement a local Python evaluation command using SQLite snapshots.
 - Reproduce naive and credible strong baselines with rolling origins.
@@ -393,11 +396,14 @@ The next development slices are:
    Gameweek and verify the resulting real replay/outcome pair;
 2. run the baseline command as complete pairs accumulate and retain the
    machine-readable reports;
-3. retain the probability-of-60-minutes baseline reports, then add expected
-   minutes and a calibrated points distribution as real folds accumulate;
-4. compare regularised/tabular challengers only when they can be evaluated
-   against those retained incumbents;
-5. populate real player cards only after a baseline has valid out-of-time evidence.
+3. retain the probability-of-60-minutes and expected-minutes reports, then add
+   calibrated minutes and points distributions as real folds accumulate;
+4. add one bounded public predicted-points/minutes adapter, preserving its
+   publication, retrieval and availability times, and score it as an external
+   incumbent before using any of its values as features;
+5. compare regularised/tabular and scraped-feature challengers only when they
+   can be evaluated against the retained incumbents;
+6. populate real player cards only after a baseline has valid out-of-time evidence.
 
 Do not add another standalone governance, universal contract, infrastructure or
 AI-orchestrator project ahead of those slices.
@@ -407,8 +413,9 @@ AI-orchestrator project ahead of those slices.
 - News/scout/pundit source evaluation
   [#55](https://github.com/Jellman86/autoFPL/issues/55), claim extraction
   [#56](https://github.com/Jellman86/autoFPL/issues/56) and a hardened Byparr
-  connector [#57](https://github.com/Jellman86/autoFPL/issues/57) are challengers
-  after a baseline exists.
+  connector [#57](https://github.com/Jellman86/autoFPL/issues/57) follow the
+  first direct public-forecast comparison. Each remains a challenger until an
+  out-of-time ablation shows gain.
 - Accelerator investigation [#30](https://github.com/Jellman86/autoFPL/issues/30)
   is activated by the representative Monte Carlo workload and deployed hardware,
   not by unused device availability.
