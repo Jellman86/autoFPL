@@ -6,6 +6,7 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Changed
 
+- **The roadmap now specifies the decision-room and player-dossier overhaul.** Official-photo pitch cards lead to a responsive cutoff-aware dossier with forecast distributions, chronological prior-Gameweek outcomes, upcoming fixtures and evidence provenance; the delivery order now includes official photo capture, a typed dossier API, richer temporal features and explicit missing/double-Gameweek states before real forecasts populate the UI.
 - **The roadmap now defines a dependency-ordered route to the human-approved advisor.** It identifies the current deployed deterministic checkpoint, the first usable v0.1 single-Gameweek advisory journey, transfer and chip planning horizons, the v1.0 product boundary, critical-path issues and evidence gates without implying that forecasting or advisory product behavior already exists.
 - **The v0.1 route is now code-first and home-lab sized.** SQLite persistence and a leakage-safe baseline forecast are the critical path; news/scout/pundit features and Byparr are optional enhancements that must prove out-of-time gain rather than blocking the first prediction.
 - **Research controls now apply at the correct stage.** Literature guides candidate selection and exploratory analytics can begin immediately; target/split/baseline registration, final-holdout discipline, calibration, decision utility and reproducibility remain mandatory before a result influences advice.
