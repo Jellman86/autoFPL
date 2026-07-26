@@ -257,6 +257,10 @@ function stat(label, value) {
   return item;
 }
 
+function fixedStat(label, value, digits = 2) {
+  return stat(label, Number(value).toFixed(digits));
+}
+
 function renderRecentForm(outcomes) {
   const container = document.querySelector("#recent-form");
   if (!outcomes.length) {
@@ -306,6 +310,23 @@ function renderRecentForm(outcomes) {
       stat("RC", outcome.redCards),
     );
     row.append(headline, stats);
+    if (outcome.expectedGoals !== null) {
+      const underlying = document.createElement("div");
+      underlying.className = "underlying-stats";
+      underlying.setAttribute(
+        "aria-label",
+        "Official underlying performance statistics",
+      );
+      underlying.append(
+        fixedStat("xG", outcome.expectedGoals),
+        fixedStat("xA", outcome.expectedAssists),
+        fixedStat("xGC", outcome.expectedGoalsConceded),
+        fixedStat("ICT", outcome.ictIndex, 1),
+        stat("BPS", outcome.bps),
+        stat("DEF", outcome.defensiveContribution),
+      );
+      row.append(underlying);
+    }
     return row;
   });
   container.replaceChildren(...rows);

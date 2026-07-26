@@ -93,7 +93,11 @@ normalised fields:
 - fixture ID, Gameweek, teams, kickoff, state and final/provisional score.
 
 Final outcome rows retain player ID, minutes, starts, total points, goals,
-assists, clean sheets, goals conceded, saves, bonus and cards. The exact live
+assists, clean sheets, goals conceded, saves, bonus, cards, own goals and
+penalty outcomes. They also retain the provider's BPS, influence, creativity,
+threat, ICT, defensive-action counts, defensive contribution, expected goals,
+expected assists, expected goal involvements and expected goals conceded.
+These are observed Gameweek outcomes, not pre-match predictions. The exact live
 JSON remains private for later parser correction and audit.
 
 Foreign keys and range checks reject unknown teams, events, positions,
@@ -132,9 +136,11 @@ The player dossier route at
 `GET /api/v1/data/official-fpl/replays/{seasonCode}/{gameweek}/players/{playerId}`
 selects the same pre-deadline reference capture, then returns identity, the
 latest five prior official outcomes whose corrections were available by that
-deadline and fixtures from the selected capture. A single-fixture outcome is
-match-specific; double-Gameweek statistics remain visibly aggregated while the
-individual opponents are listed.
+deadline and fixtures from the selected capture. Retained underlying statistics
+are exposed for new outcome captures and remain explicitly null for legacy rows
+that predate their normalisation. A single-fixture outcome is match-specific;
+double-Gameweek statistics remain visibly aggregated while the individual
+opponents are listed.
 
 ## Retention and responsible use
 

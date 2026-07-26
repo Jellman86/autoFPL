@@ -241,6 +241,16 @@ public sealed class OfficialFplOutcomeImporterTests
         Assert.Equal(90, outcome.Minutes);
         Assert.Equal(4, outcome.Saves);
         Assert.Equal(2, outcome.Bonus);
+        Assert.Equal(32, outcome.Bps);
+        Assert.Equal(44.2m, outcome.Influence);
+        Assert.Equal(12.3m, outcome.Creativity);
+        Assert.Equal(8.4m, outcome.Threat);
+        Assert.Equal(6.5m, outcome.IctIndex);
+        Assert.Equal(10, outcome.DefensiveContribution);
+        Assert.Equal(0.31m, outcome.ExpectedGoals);
+        Assert.Equal(0.22m, outcome.ExpectedAssists);
+        Assert.Equal(0.53m, outcome.ExpectedGoalInvolvements);
+        Assert.Equal(0.74m, outcome.ExpectedGoalsConceded);
         Assert.False(outcome.IsGameweekAggregate);
         OfficialFplPlayerFixtureDocument priorFixture = Assert.Single(outcome.Fixtures);
         Assert.Equal(1, priorFixture.FixtureId);
@@ -320,6 +330,14 @@ public sealed class OfficialFplOutcomeImporterTests
         await AssertInvalidLivePayloadAsync(
             CreateLivePayload(playerIds: [1, 2, 3]),
             "exactly cover");
+    }
+
+    [Fact]
+    public async Task Invalid_underlying_stat_is_rejected_atomically()
+    {
+        await AssertInvalidLivePayloadAsync(
+            CreateLivePayload(firstExpectedGoals: "NaN"),
+            "expected_goals");
     }
 
     private static async Task AssertInvalidLivePayloadAsync(
@@ -467,7 +485,8 @@ public sealed class OfficialFplOutcomeImporterTests
 
     private static byte[] CreateLivePayload(
         int firstPlayerPoints = 6,
-        int[]? playerIds = null)
+        int[]? playerIds = null,
+        string firstExpectedGoals = "0.31")
     {
         int[] ids = playerIds ?? [1, 2, 3, 4];
         return JsonSerializer.SerializeToUtf8Bytes(
@@ -490,6 +509,22 @@ public sealed class OfficialFplOutcomeImporterTests
                             bonus = id == 1 ? 2 : 0,
                             yellow_cards = 0,
                             red_cards = 0,
+                            own_goals = 0,
+                            penalties_saved = 0,
+                            penalties_missed = 0,
+                            bps = id == 1 ? 32 : id,
+                            influence = id == 1 ? "44.2" : "1.0",
+                            creativity = id == 1 ? "12.3" : "1.0",
+                            threat = id == 1 ? "8.4" : "1.0",
+                            ict_index = id == 1 ? "6.5" : "0.3",
+                            clearances_blocks_interceptions = id == 1 ? 4 : 1,
+                            recoveries = id == 1 ? 6 : 1,
+                            tackles = id == 1 ? 2 : 1,
+                            defensive_contribution = id == 1 ? 10 : 2,
+                            expected_goals = id == 1 ? firstExpectedGoals : "0.10",
+                            expected_assists = id == 1 ? "0.22" : "0.10",
+                            expected_goal_involvements = id == 1 ? "0.53" : "0.20",
+                            expected_goals_conceded = id == 1 ? "0.74" : "1.10",
                         },
                     }),
             });

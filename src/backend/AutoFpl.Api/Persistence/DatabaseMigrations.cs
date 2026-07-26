@@ -4,7 +4,7 @@ internal sealed record DatabaseMigration(int Version, string Name, string Sql);
 
 internal static class DatabaseMigrations
 {
-    public const int CurrentVersion = 9;
+    public const int CurrentVersion = 10;
 
     public static IReadOnlyList<DatabaseMigration> All { get; } =
     [
@@ -718,6 +718,95 @@ internal static class DatabaseMigrations
                     available_at_utc DESC,
                     capture_id DESC
                 );
+            """),
+        new(
+            10,
+            "official-fpl-underlying-outcome-stats",
+            """
+            ALTER TABLE official_fpl_player_outcomes
+                ADD COLUMN own_goals INTEGER
+                    CHECK (own_goals IS NULL OR own_goals BETWEEN 0 AND 20);
+            ALTER TABLE official_fpl_player_outcomes
+                ADD COLUMN penalties_saved INTEGER
+                    CHECK (
+                        penalties_saved IS NULL
+                        OR penalties_saved BETWEEN 0 AND 20
+                    );
+            ALTER TABLE official_fpl_player_outcomes
+                ADD COLUMN penalties_missed INTEGER
+                    CHECK (
+                        penalties_missed IS NULL
+                        OR penalties_missed BETWEEN 0 AND 20
+                    );
+            ALTER TABLE official_fpl_player_outcomes
+                ADD COLUMN bps INTEGER
+                    CHECK (bps IS NULL OR bps BETWEEN -500 AND 2000);
+            ALTER TABLE official_fpl_player_outcomes
+                ADD COLUMN influence REAL
+                    CHECK (
+                        influence IS NULL
+                        OR influence BETWEEN 0 AND 10000
+                    );
+            ALTER TABLE official_fpl_player_outcomes
+                ADD COLUMN creativity REAL
+                    CHECK (
+                        creativity IS NULL
+                        OR creativity BETWEEN 0 AND 10000
+                    );
+            ALTER TABLE official_fpl_player_outcomes
+                ADD COLUMN threat REAL
+                    CHECK (threat IS NULL OR threat BETWEEN 0 AND 10000);
+            ALTER TABLE official_fpl_player_outcomes
+                ADD COLUMN ict_index REAL
+                    CHECK (
+                        ict_index IS NULL
+                        OR ict_index BETWEEN 0 AND 10000
+                    );
+            ALTER TABLE official_fpl_player_outcomes
+                ADD COLUMN clearances_blocks_interceptions INTEGER
+                    CHECK (
+                        clearances_blocks_interceptions IS NULL
+                        OR clearances_blocks_interceptions BETWEEN 0 AND 1000
+                    );
+            ALTER TABLE official_fpl_player_outcomes
+                ADD COLUMN recoveries INTEGER
+                    CHECK (
+                        recoveries IS NULL
+                        OR recoveries BETWEEN 0 AND 1000
+                    );
+            ALTER TABLE official_fpl_player_outcomes
+                ADD COLUMN tackles INTEGER
+                    CHECK (tackles IS NULL OR tackles BETWEEN 0 AND 1000);
+            ALTER TABLE official_fpl_player_outcomes
+                ADD COLUMN defensive_contribution INTEGER
+                    CHECK (
+                        defensive_contribution IS NULL
+                        OR defensive_contribution BETWEEN 0 AND 1000
+                    );
+            ALTER TABLE official_fpl_player_outcomes
+                ADD COLUMN expected_goals REAL
+                    CHECK (
+                        expected_goals IS NULL
+                        OR expected_goals BETWEEN 0 AND 100
+                    );
+            ALTER TABLE official_fpl_player_outcomes
+                ADD COLUMN expected_assists REAL
+                    CHECK (
+                        expected_assists IS NULL
+                        OR expected_assists BETWEEN 0 AND 100
+                    );
+            ALTER TABLE official_fpl_player_outcomes
+                ADD COLUMN expected_goal_involvements REAL
+                    CHECK (
+                        expected_goal_involvements IS NULL
+                        OR expected_goal_involvements BETWEEN 0 AND 100
+                    );
+            ALTER TABLE official_fpl_player_outcomes
+                ADD COLUMN expected_goals_conceded REAL
+                    CHECK (
+                        expected_goals_conceded IS NULL
+                        OR expected_goals_conceded BETWEEN 0 AND 100
+                    );
             """),
     ];
 }

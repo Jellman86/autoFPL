@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Globalization;
 using System.Text.Json;
 
 namespace AutoFpl.Api.Sources;
@@ -71,7 +72,47 @@ internal static class OfficialFplOutcomePayloadParser
                         RequireInt32(stats, "saves", 0, 100),
                         RequireInt32(stats, "bonus", 0, 30),
                         RequireInt32(stats, "yellow_cards", 0, 4),
-                        RequireInt32(stats, "red_cards", 0, 4)));
+                        RequireInt32(stats, "red_cards", 0, 4),
+                        RequireInt32(stats, "own_goals", 0, 20),
+                        RequireInt32(stats, "penalties_saved", 0, 20),
+                        RequireInt32(stats, "penalties_missed", 0, 20),
+                        RequireInt32(stats, "bps", -500, 2_000),
+                        RequireDecimal(stats, "influence", 0m, 10_000m),
+                        RequireDecimal(stats, "creativity", 0m, 10_000m),
+                        RequireDecimal(stats, "threat", 0m, 10_000m),
+                        RequireDecimal(stats, "ict_index", 0m, 10_000m),
+                        RequireInt32(
+                            stats,
+                            "clearances_blocks_interceptions",
+                            0,
+                            1_000),
+                        RequireInt32(stats, "recoveries", 0, 1_000),
+                        RequireInt32(stats, "tackles", 0, 1_000),
+                        RequireInt32(
+                            stats,
+                            "defensive_contribution",
+                            0,
+                            1_000),
+                        RequireDecimal(
+                            stats,
+                            "expected_goals",
+                            0m,
+                            100m),
+                        RequireDecimal(
+                            stats,
+                            "expected_assists",
+                            0m,
+                            100m),
+                        RequireDecimal(
+                            stats,
+                            "expected_goal_involvements",
+                            0m,
+                            100m),
+                        RequireDecimal(
+                            stats,
+                            "expected_goals_conceded",
+                            0m,
+                            100m)));
             }
 
             return new(
@@ -104,6 +145,49 @@ internal static class OfficialFplOutcomePayloadParser
             || result > maximum)
         {
             throw Invalid($"{name} must be an integer in the supported range.");
+        }
+
+        return result;
+    }
+
+    private static decimal RequireDecimal(
+        JsonElement value,
+        string name,
+        decimal minimum,
+        decimal maximum)
+    {
+        if (!value.TryGetProperty(name, out JsonElement property))
+        {
+            throw Invalid($"{name} must be a decimal in the supported range.");
+        }
+
+        decimal result;
+        if (property.ValueKind == JsonValueKind.String)
+        {
+            if (!decimal.TryParse(
+                    property.GetString(),
+                    NumberStyles.AllowDecimalPoint,
+                    CultureInfo.InvariantCulture,
+                    out result))
+            {
+                throw Invalid($"{name} must be a decimal in the supported range.");
+            }
+        }
+        else if (property.ValueKind == JsonValueKind.Number)
+        {
+            if (!property.TryGetDecimal(out result))
+            {
+                throw Invalid($"{name} must be a decimal in the supported range.");
+            }
+        }
+        else
+        {
+            throw Invalid($"{name} must be a decimal in the supported range.");
+        }
+
+        if (result < minimum || result > maximum)
+        {
+            throw Invalid($"{name} must be a decimal in the supported range.");
         }
 
         return result;

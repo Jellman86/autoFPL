@@ -89,7 +89,23 @@ public sealed class OfficialFplPlayerDossierStore
                     outcome.Saves,
                     outcome.Bonus,
                     outcome.YellowCards,
-                    outcome.RedCards));
+                    outcome.RedCards,
+                    outcome.OwnGoals,
+                    outcome.PenaltiesSaved,
+                    outcome.PenaltiesMissed,
+                    outcome.Bps,
+                    outcome.Influence,
+                    outcome.Creativity,
+                    outcome.Threat,
+                    outcome.IctIndex,
+                    outcome.ClearancesBlocksInterceptions,
+                    outcome.Recoveries,
+                    outcome.Tackles,
+                    outcome.DefensiveContribution,
+                    outcome.ExpectedGoals,
+                    outcome.ExpectedAssists,
+                    outcome.ExpectedGoalInvolvements,
+                    outcome.ExpectedGoalsConceded));
         }
 
         IReadOnlyList<OfficialFplPlayerFixtureDocument> upcoming =
@@ -206,6 +222,22 @@ public sealed class OfficialFplPlayerDossierStore
                     outcome.bonus,
                     outcome.yellow_cards,
                     outcome.red_cards,
+                    outcome.own_goals,
+                    outcome.penalties_saved,
+                    outcome.penalties_missed,
+                    outcome.bps,
+                    outcome.influence,
+                    outcome.creativity,
+                    outcome.threat,
+                    outcome.ict_index,
+                    outcome.clearances_blocks_interceptions,
+                    outcome.recoveries,
+                    outcome.tackles,
+                    outcome.defensive_contribution,
+                    outcome.expected_goals,
+                    outcome.expected_assists,
+                    outcome.expected_goal_involvements,
+                    outcome.expected_goals_conceded,
                     ROW_NUMBER() OVER (
                         PARTITION BY capture.gameweek
                         ORDER BY
@@ -240,7 +272,23 @@ public sealed class OfficialFplPlayerDossierStore
                 saves,
                 bonus,
                 yellow_cards,
-                red_cards
+                red_cards,
+                own_goals,
+                penalties_saved,
+                penalties_missed,
+                bps,
+                influence,
+                creativity,
+                threat,
+                ict_index,
+                clearances_blocks_interceptions,
+                recoveries,
+                tackles,
+                defensive_contribution,
+                expected_goals,
+                expected_assists,
+                expected_goal_involvements,
+                expected_goals_conceded
             FROM ranked_outcomes
             WHERE correction_rank = 1
             ORDER BY gameweek DESC
@@ -273,7 +321,23 @@ public sealed class OfficialFplPlayerDossierStore
                     reader.GetInt32(12),
                     reader.GetInt32(13),
                     reader.GetInt32(14),
-                    reader.GetInt32(15)));
+                    reader.GetInt32(15),
+                    ReadNullableInt32(reader, 16),
+                    ReadNullableInt32(reader, 17),
+                    ReadNullableInt32(reader, 18),
+                    ReadNullableInt32(reader, 19),
+                    ReadNullableDecimal(reader, 20),
+                    ReadNullableDecimal(reader, 21),
+                    ReadNullableDecimal(reader, 22),
+                    ReadNullableDecimal(reader, 23),
+                    ReadNullableInt32(reader, 24),
+                    ReadNullableInt32(reader, 25),
+                    ReadNullableInt32(reader, 26),
+                    ReadNullableInt32(reader, 27),
+                    ReadNullableDecimal(reader, 28),
+                    ReadNullableDecimal(reader, 29),
+                    ReadNullableDecimal(reader, 30),
+                    ReadNullableDecimal(reader, 31)));
         }
 
         return results;
@@ -376,6 +440,16 @@ public sealed class OfficialFplPlayerDossierStore
             CultureInfo.InvariantCulture,
             DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
 
+    private static int? ReadNullableInt32(
+        SqliteDataReader reader,
+        int ordinal) =>
+        reader.IsDBNull(ordinal) ? null : reader.GetInt32(ordinal);
+
+    private static decimal? ReadNullableDecimal(
+        SqliteDataReader reader,
+        int ordinal) =>
+        reader.IsDBNull(ordinal) ? null : reader.GetDecimal(ordinal);
+
     private sealed record PlayerIdentityRow(
         int PlayerId,
         int PlayerCode,
@@ -407,5 +481,21 @@ public sealed class OfficialFplPlayerDossierStore
         int Saves,
         int Bonus,
         int YellowCards,
-        int RedCards);
+        int RedCards,
+        int? OwnGoals,
+        int? PenaltiesSaved,
+        int? PenaltiesMissed,
+        int? Bps,
+        decimal? Influence,
+        decimal? Creativity,
+        decimal? Threat,
+        decimal? IctIndex,
+        int? ClearancesBlocksInterceptions,
+        int? Recoveries,
+        int? Tackles,
+        int? DefensiveContribution,
+        decimal? ExpectedGoals,
+        decimal? ExpectedAssists,
+        decimal? ExpectedGoalInvolvements,
+        decimal? ExpectedGoalsConceded);
 }

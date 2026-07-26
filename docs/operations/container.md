@@ -81,9 +81,12 @@ nothing unless the refreshed event is finished and data-checked, at least one
 target fixture exists, every target fixture is finished, the live payload is
 non-empty and its player IDs exactly cover the refreshed reference capture.
 The exact live bytes, SHA-256 identity and bounded points/minutes/scoring-event
-fields are retained immutably. The provider supplies no separately verifiable
-publication time, so availability is the completed retrieval time. The web
-process exposes no collection route.
+fields are retained immutably, together with official expected goals/assists,
+ICT/BPS and defensive-action outcomes. The cutoff-safe player dossier exposes
+those underlying values for prior Gameweeks and keeps pre-migration values
+explicitly null. The provider supplies no separately verifiable publication
+time, so availability is the completed retrieval time. The web process exposes
+no collection route.
 
 ## Public forecast capture
 
@@ -129,7 +132,7 @@ position, zero-minute and missing-probability diagnostics. It exits `2` with an
 
 ## SQLite operations
 
-The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies nine explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
+The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies ten explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
 
 The root filesystem stays read-only. Production must mount a private, UID
 `1654`-writable persistent directory at `/data`; the CI smoke test uses an
@@ -227,9 +230,9 @@ When rolling back to a prior verified digest:
 3. Redeploy the Git-backed stack through Dockhand.
 4. Verify container health and representative 200/400/422 behavior.
 
-Before deploying this fifth migration, create an online backup and verify the
-live database with `--database-integrity-check`. Version-four code rejects a
-version-five database, so rollback requires restoring the matching
+Before deploying a schema migration, create an online backup and verify the
+live database with `--database-integrity-check`. Older code rejects a newer
+database, so rollback across a migration requires restoring the matching
 pre-migration backup before redeploying the older image. Apply that restore
 through a separately reviewed operational change. Never copy the live WAL
 database file directly while the application is running.
