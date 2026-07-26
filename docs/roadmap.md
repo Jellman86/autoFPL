@@ -697,9 +697,10 @@ The next development slices are:
    inventory; then add reproducible quantitative, market/team-strength and
    attributable named-expert challengers without treating correlated reports
    as independent votes;
-4. operate the implemented deterministic FFScout predicted-XI adapter, which
-   resolves embedded official photo codes and populates only quarantined
-   categorical start claims; then add fail-closed official-injury and consensus
+4. operate the implemented deterministic FFScout adapters, which resolve
+   predicted-XI photo codes plus unique team-scoped `Out` and
+   percentage-bearing `Doubts` into separately versioned quarantined start and
+   availability claims; then add fail-closed official-injury and consensus
    adapters and score claims by target and lead time before any feature use;
 5. run the final-outcome command after the first completed, data-checked
    Gameweek and verify the resulting real replay/outcome pair;

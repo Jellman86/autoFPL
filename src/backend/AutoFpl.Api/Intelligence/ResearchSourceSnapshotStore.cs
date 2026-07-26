@@ -273,7 +273,8 @@ public sealed class ResearchSourceSnapshotStore
         return new(Read(reader), Decompress((byte[])reader[20]));
     }
 
-    internal async Task<IReadOnlyDictionary<int, int>> GetPlayerIdsByCodeAsync(
+    internal async Task<IReadOnlyList<ResearchOfficialPlayerIdentity>>
+        GetPlayerIdentitiesAsync(
         long identityCaptureId,
         CancellationToken cancellationToken = default)
     {
@@ -288,22 +289,41 @@ public sealed class ResearchSourceSnapshotStore
         await using SqliteCommand command = connection.CreateCommand();
         command.CommandText =
             """
-            SELECT code, player_id
-            FROM official_fpl_players
-            WHERE capture_id = $captureId
-            ORDER BY code;
+            SELECT
+                player.player_id,
+                player.code,
+                team.name,
+                player.first_name,
+                player.second_name,
+                player.web_name
+            FROM official_fpl_players AS player
+            INNER JOIN official_fpl_teams AS team
+                ON team.capture_id = player.capture_id
+               AND team.team_id = player.team_id
+            WHERE player.capture_id = $captureId
+            ORDER BY player.code;
             """;
         command.Parameters.AddWithValue("$captureId", identityCaptureId);
-        var identities = new Dictionary<int, int>();
+        var identities = new List<ResearchOfficialPlayerIdentity>();
+        var playerCodes = new HashSet<int>();
         await using SqliteDataReader reader =
             await command.ExecuteReaderAsync(cancellationToken);
         while (await reader.ReadAsync(cancellationToken))
         {
-            if (!identities.TryAdd(reader.GetInt32(0), reader.GetInt32(1)))
+            int playerCode = reader.GetInt32(1);
+            if (!playerCodes.Add(playerCode))
             {
                 throw new ResearchSourceSnapshotException(
                     "The official identity capture contains a duplicate player code.");
             }
+            identities.Add(
+                new(
+                    reader.GetInt32(0),
+                    playerCode,
+                    reader.GetString(2),
+                    reader.GetString(3),
+                    reader.GetString(4),
+                    reader.GetString(5)));
         }
 
         return identities;
@@ -507,3 +527,11 @@ public sealed class ResearchSourceSnapshotStore
 internal sealed record ResearchSourceSnapshotContent(
     ResearchSourceSnapshotDocument Snapshot,
     string Content);
+
+internal sealed record ResearchOfficialPlayerIdentity(
+    int PlayerId,
+    int PlayerCode,
+    string TeamName,
+    string FirstName,
+    string SecondName,
+    string WebName);

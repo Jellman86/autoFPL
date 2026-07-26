@@ -261,21 +261,26 @@ replay; the API returns only source class, dependence group, timing, revision,
 size and hash metadata. Repeated identical content is idempotent. Every source
 remains `shadow-only` and cannot alter claims, predictions or selections.
 
-Extract identity-checked categorical start claims from one retained FFScout
-snapshot explicitly:
+Extract identity-checked categorical start and availability claims from one
+retained FFScout snapshot explicitly:
 
 ```text
 dotnet AutoFpl.Api.dll \
   --extract-research-source-claims <snapshot-id>
 ```
 
-The deterministic v1 adapter reads only the private compressed snapshot,
-isolates predicted-XI team blocks and resolves players through the official
-Premier League photo code embedded in each retained card. It reports unmatched
-codes without writing claims for them. Repeating the command is idempotent.
-Imported claims remain `quarantined`; extraction confidence records parser
-certainty, not the chance that a player starts. Official-injury and consensus
-snapshots have no extractor yet and fail closed.
+The deterministic operator v2 reads only the private compressed snapshot. The
+unchanged lineup v1 adapter resolves predicted-XI players through the official
+Premier League photo code embedded in each retained card. Availability v1
+separately parses only `Out` and percentage-bearing `Doubts`, maps known source
+team labels to the exact official team, normalizes diacritics and requires one
+unique official name match. It retains a supplied doubt percentage as the
+claim probability, excludes the distinct `Banned` section, and reports
+unmatched or ambiguous identities without writing claims for them. Repeating
+the command is idempotent. Imported claims remain `quarantined`; extraction
+confidence records parser and identity certainty, not football truth.
+Official-injury and consensus snapshots still have no extractor and fail
+closed.
 
 See the [source portfolio](../research/research-source-portfolio-v1.md).
 

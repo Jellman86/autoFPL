@@ -115,7 +115,12 @@ public sealed class ResearchSourceSnapshotTests
                 **Next Match:** Away (H)
                 * ![Avatar of Test Player](https://resources.premierleague.com/premierleague25/photos/players/110x140/1001.png)Test Player
                 * **Out:**
+                * Mvom Onana
                 * **Doubts:**
+                *
+                Carvalho 25%
+                * **Banned:**
+                * Test Player
                 """,
                 "untrusted_remote_content"),
             TestContext.Current.CancellationToken);
@@ -135,7 +140,11 @@ public sealed class ResearchSourceSnapshotTests
                 TestContext.Current.CancellationToken);
 
         Assert.Equal(1, first.CandidateCount);
-        Assert.Equal(1, first.ClaimCount);
+        Assert.Equal(1, first.StartClaimCount);
+        Assert.Equal(2, first.AvailabilityCandidateCount);
+        Assert.Equal(2, first.AvailabilityClaimCount);
+        Assert.Equal(0, first.UnresolvedAvailabilityCount);
+        Assert.Equal(3, first.ClaimCount);
         Assert.Empty(first.UnresolvedPlayerCodes);
         Assert.Equal(first, duplicate);
 
@@ -146,16 +155,38 @@ public sealed class ResearchSourceSnapshotTests
                     1,
                     RetrievalTime,
                     TestContext.Current.CancellationToken);
-        EvidenceClaimDocument claim = Assert.Single(claims.Claims);
+        Assert.Equal(3, claims.Claims.Count);
+        EvidenceClaimDocument claim =
+            Assert.Single(
+                claims.Claims,
+                item => item.ClaimType == "start");
         Assert.Equal(101, claim.PlayerId);
         Assert.Equal("start", claim.ClaimType);
         Assert.Equal("starts", claim.StartStatus);
         Assert.Equal("model-forecast", claim.Directness);
         Assert.Equal(
-            ResearchSourceClaimExtractor.FfScoutExtractionVersion,
+            ResearchSourceClaimExtractor.FfScoutLineupExtractionVersion,
             claim.ExtractionVersion);
         Assert.Equal("Home predicted XI: Test Player", claim.SourceSpan);
         Assert.Equal(1m, claim.ExtractionConfidence);
+        EvidenceClaimDocument unavailable =
+            Assert.Single(
+                claims.Claims,
+                item => item.AvailabilityStatus == "unavailable");
+        Assert.Equal(102, unavailable.PlayerId);
+        Assert.Equal("reported", unavailable.Directness);
+        Assert.Null(unavailable.ForecastProbability);
+        Assert.Equal(0.95m, unavailable.ExtractionConfidence);
+        Assert.Equal(
+            ResearchSourceClaimExtractor.FfScoutAvailabilityExtractionVersion,
+            unavailable.ExtractionVersion);
+        EvidenceClaimDocument doubtful =
+            Assert.Single(
+                claims.Claims,
+                item => item.AvailabilityStatus == "doubtful");
+        Assert.Equal(103, doubtful.PlayerId);
+        Assert.Equal(0.25m, doubtful.ForecastProbability);
+        Assert.Equal(1m, doubtful.ExtractionConfidence);
 
         await using var connection =
             new SqliteConnection(options.ConnectionString);
@@ -163,7 +194,7 @@ public sealed class ResearchSourceSnapshotTests
         await using SqliteCommand count = connection.CreateCommand();
         count.CommandText = "SELECT COUNT(*) FROM evidence_claims;";
         Assert.Equal(
-            1L,
+            3L,
             (long)(await count.ExecuteScalarAsync(
                 TestContext.Current.CancellationToken))!);
     }
@@ -189,6 +220,10 @@ public sealed class ResearchSourceSnapshotTests
                 Home
                 * ![Avatar of Unknown](https://resources.premierleague.com/premierleague25/photos/players/110x140/9999.png)Unknown
                 * **Out:**
+                * Unknown
+                * Smith
+                * **Doubts:**
+                * **Banned:**
                 """,
                 "untrusted_remote_content"),
             TestContext.Current.CancellationToken);
@@ -202,6 +237,10 @@ public sealed class ResearchSourceSnapshotTests
                 TestContext.Current.CancellationToken);
 
         Assert.Equal(1, extraction.CandidateCount);
+        Assert.Equal(0, extraction.StartClaimCount);
+        Assert.Equal(2, extraction.AvailabilityCandidateCount);
+        Assert.Equal(0, extraction.AvailabilityClaimCount);
+        Assert.Equal(2, extraction.UnresolvedAvailabilityCount);
         Assert.Equal(0, extraction.ClaimCount);
         Assert.Equal([9999], extraction.UnresolvedPlayerCodes);
     }
@@ -363,6 +402,90 @@ public sealed class ResearchSourceSnapshotTests
                         chance_of_playing_next_round = (int?)null,
                         selected_by_percent = "12.5",
                         ep_next = "4.2",
+                        total_points = 0,
+                        minutes = 0,
+                        starts = 0,
+                    },
+                    new
+                    {
+                        id = 102,
+                        code = 1002,
+                        team = 1,
+                        element_type = 3,
+                        first_name = "Amadou",
+                        second_name = "Onana",
+                        web_name = "Onana",
+                        photo = "1002.png",
+                        now_cost = 55,
+                        status = "a",
+                        news = string.Empty,
+                        news_added = (string?)null,
+                        chance_of_playing_next_round = (int?)null,
+                        selected_by_percent = "1.0",
+                        ep_next = "2.0",
+                        total_points = 0,
+                        minutes = 0,
+                        starts = 0,
+                    },
+                    new
+                    {
+                        id = 103,
+                        code = 1003,
+                        team = 1,
+                        element_type = 3,
+                        first_name = "Fábio",
+                        second_name = "Freitas Gouveia Carvalho",
+                        web_name = "Carvalho",
+                        photo = "1003.png",
+                        now_cost = 50,
+                        status = "a",
+                        news = string.Empty,
+                        news_added = (string?)null,
+                        chance_of_playing_next_round = (int?)null,
+                        selected_by_percent = "1.0",
+                        ep_next = "2.0",
+                        total_points = 0,
+                        minutes = 0,
+                        starts = 0,
+                    },
+                    new
+                    {
+                        id = 104,
+                        code = 1004,
+                        team = 1,
+                        element_type = 3,
+                        first_name = "Alice",
+                        second_name = "Smith",
+                        web_name = "Smith",
+                        photo = "1004.png",
+                        now_cost = 50,
+                        status = "a",
+                        news = string.Empty,
+                        news_added = (string?)null,
+                        chance_of_playing_next_round = (int?)null,
+                        selected_by_percent = "1.0",
+                        ep_next = "2.0",
+                        total_points = 0,
+                        minutes = 0,
+                        starts = 0,
+                    },
+                    new
+                    {
+                        id = 105,
+                        code = 1005,
+                        team = 1,
+                        element_type = 3,
+                        first_name = "Bob",
+                        second_name = "Smith",
+                        web_name = "Smith",
+                        photo = "1005.png",
+                        now_cost = 50,
+                        status = "a",
+                        news = string.Empty,
+                        news_added = (string?)null,
+                        chance_of_playing_next_round = (int?)null,
+                        selected_by_percent = "1.0",
+                        ep_next = "2.0",
                         total_points = 0,
                         minutes = 0,
                         starts = 0,
