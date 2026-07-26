@@ -92,6 +92,8 @@ public sealed class ManualEvidenceContractTests
                 (["schemaVersion", "sourceType"], ContractMetadata)),
             ["/api/v1/decision-snapshots"] = CreateSemantics(
                 (PersistedSnapshotFields, new("schema-validated", "schema-validated"))),
+            ["/api/v1/selections/drafts"] = CreateSemantics(
+                (["forecastArtifactId"], DecisionState)),
             ["/api/v1/squads/validation"] = CreateSemantics(
                 (SquadDecisionFields, DecisionState)),
             ["/api/v1/lineups/validation"] = CreateSemantics(
@@ -156,6 +158,9 @@ public sealed class ManualEvidenceContractTests
         Assert.Equal(
             "explicit-on-decision-snapshot-route",
             timing.GetProperty("requestTimestampHandling").GetString());
+        Assert.Equal(
+            "application-for-persisted-state",
+            timing.GetProperty("receiptTimeOwner").GetString());
         Assert.Equal("not-before-receipt", timing.GetProperty("replayAvailabilityPolicy").GetString());
         Assert.Equal("unknown-unless-separately-recorded", timing.GetProperty("observationTimePolicy").GetString());
         Assert.Equal("mixed", catalog.RootElement.GetProperty("persistence").GetString());

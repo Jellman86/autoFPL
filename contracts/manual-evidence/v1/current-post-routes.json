@@ -9,10 +9,10 @@
   "derivedRequestValuesAccepted": false,
   "timingPolicy": {
     "requestTimestampHandling": "explicit-on-decision-snapshot-route",
-    "receiptTimeOwner": "application-for-persisted-snapshots",
+    "receiptTimeOwner": "application-for-persisted-state",
     "replayAvailabilityPolicy": "not-before-receipt",
     "observationTimePolicy": "unknown-unless-separately-recorded",
-    "statement": "Validation and outcome routes remain ephemeral. The decision-snapshot route persists explicit UTC observation, retrieval and availability times, records application receipt, and materialises only evidence with availableAtUtc at or before the decision cutoff."
+    "statement": "Validation and outcome routes remain ephemeral. The decision-snapshot route persists explicit UTC observation, retrieval and availability times and materialises only evidence with availableAtUtc at or before the decision cutoff. The selection-draft route resolves an already-persisted forecast artifact and records the application receipt time for a new immutable user-owned revision."
   },
   "routes": [
     {
@@ -231,6 +231,21 @@
           "temporalRole": "revision-lineage",
           "replayAvailabilityPolicy": "persisted",
           "notes": "Prior immutable snapshot corrected by this revision."
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/selections/drafts",
+      "requestType": "AutoFpl.Contracts.Selections.SelectionDraftFromForecastRequest",
+      "phase": "decision",
+      "fields": [
+        {
+          "jsonPath": "forecastArtifactId",
+          "classification": "decision-state",
+          "temporalRole": "decision-state-at-receipt",
+          "replayAvailabilityPolicy": "not-before-receipt",
+          "notes": "User instruction to preserve the exact already-persisted forecast selection as an immutable local draft; the server verifies and resolves the artifact at request receipt."
         }
       ]
     },

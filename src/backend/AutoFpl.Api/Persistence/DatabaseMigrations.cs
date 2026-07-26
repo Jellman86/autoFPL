@@ -4,7 +4,7 @@ internal sealed record DatabaseMigration(int Version, string Name, string Sql);
 
 internal static class DatabaseMigrations
 {
-    public const int CurrentVersion = 14;
+    public const int CurrentVersion = 15;
 
     public static IReadOnlyList<DatabaseMigration> All { get; } =
     [
@@ -920,6 +920,77 @@ internal static class DatabaseMigrations
                                 BETWEEN -20.0 AND 100.0
                         )
                     );
+            """),
+        new(
+            15,
+            "selection-revision-lifecycle",
+            """
+            CREATE TABLE selection_revisions (
+                selection_revision_id INTEGER PRIMARY KEY,
+                schema_version TEXT NOT NULL CHECK (schema_version = '1.0'),
+                revision INTEGER NOT NULL CHECK (revision > 0),
+                supersedes_selection_revision_id INTEGER UNIQUE
+                    REFERENCES selection_revisions(selection_revision_id)
+                    ON DELETE RESTRICT,
+                season_code TEXT NOT NULL CHECK (length(season_code) BETWEEN 4 AND 16),
+                gameweek INTEGER NOT NULL CHECK (gameweek BETWEEN 1 AND 38),
+                deadline_utc TEXT NOT NULL,
+                forecast_artifact_id INTEGER NOT NULL
+                    REFERENCES baseline_forecast_artifacts(artifact_id)
+                    ON DELETE RESTRICT,
+                forecast_artifact_content_sha256 TEXT NOT NULL
+                    CHECK (length(forecast_artifact_content_sha256) = 64),
+                selection_json TEXT NOT NULL
+                    CHECK (length(selection_json) BETWEEN 2 AND 16384),
+                selection_content_sha256 TEXT NOT NULL
+                    CHECK (length(selection_content_sha256) = 64),
+                created_at_utc TEXT NOT NULL,
+                locked_at_utc TEXT,
+                UNIQUE (season_code, gameweek, revision),
+                CHECK (
+                    (revision = 1 AND supersedes_selection_revision_id IS NULL)
+                    OR (revision > 1 AND supersedes_selection_revision_id IS NOT NULL)
+                )
+            );
+
+            CREATE INDEX selection_revisions_latest_idx
+                ON selection_revisions (
+                    season_code,
+                    gameweek,
+                    revision DESC
+                );
+
+            CREATE TRIGGER selection_revisions_immutable
+            BEFORE UPDATE OF
+                schema_version,
+                revision,
+                supersedes_selection_revision_id,
+                season_code,
+                gameweek,
+                deadline_utc,
+                forecast_artifact_id,
+                forecast_artifact_content_sha256,
+                selection_json,
+                selection_content_sha256,
+                created_at_utc
+            ON selection_revisions
+            BEGIN
+                SELECT RAISE(ABORT, 'selection revisions are immutable');
+            END;
+
+            CREATE TRIGGER selection_revisions_lock_once
+            BEFORE UPDATE OF locked_at_utc
+            ON selection_revisions
+            WHEN OLD.locked_at_utc IS NOT NULL OR NEW.locked_at_utc IS NULL
+            BEGIN
+                SELECT RAISE(ABORT, 'selection revision lock is append-only');
+            END;
+
+            CREATE TRIGGER selection_revisions_no_delete
+            BEFORE DELETE ON selection_revisions
+            BEGIN
+                SELECT RAISE(ABORT, 'selection revisions cannot be deleted');
+            END;
             """),
     ];
 }

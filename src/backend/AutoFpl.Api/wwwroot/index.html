@@ -61,6 +61,67 @@
     </section>
 
     <section
+      class="selection-workflow"
+      id="selection-workflow"
+      data-state="loading"
+      aria-labelledby="selection-workflow-title">
+      <div class="selection-workflow-copy">
+        <p class="eyebrow">Your decision</p>
+        <div class="selection-title-row">
+          <h2 id="selection-workflow-title">Checking your selection.</h2>
+          <span class="selection-state" id="selection-state">Loading</span>
+        </div>
+        <p id="selection-workflow-summary">
+          Looking for a user-owned draft or lock linked to this forecast.
+        </p>
+        <p class="selection-feedback" id="selection-feedback" aria-live="polite"></p>
+      </div>
+
+      <ol class="selection-rail" aria-label="Selection lifecycle">
+        <li data-selection-step="draft">
+          <span>1</span>
+          <strong>Draft</strong>
+          <small>Preserve a choice</small>
+        </li>
+        <li data-selection-step="locked">
+          <span>2</span>
+          <strong>Locked</strong>
+          <small>Your explicit action</small>
+        </li>
+        <li data-selection-step="frozen">
+          <span>3</span>
+          <strong>Frozen</strong>
+          <small>At the deadline</small>
+        </li>
+      </ol>
+
+      <div class="selection-workflow-actions">
+        <dl class="selection-revision-meta">
+          <div>
+            <dt>Revision</dt>
+            <dd id="selection-revision">None</dd>
+          </div>
+          <div>
+            <dt>Forecast</dt>
+            <dd id="selection-forecast">—</dd>
+          </div>
+          <div>
+            <dt>Locked</dt>
+            <dd id="selection-locked-at">Not locked</dd>
+          </div>
+        </dl>
+        <div class="selection-buttons">
+          <button class="selection-secondary" id="create-selection-draft" type="button">
+            Use prediction as draft
+          </button>
+          <button class="selection-primary" id="lock-selection" type="button" disabled>
+            Lock this selection
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section
       class="source-tape"
       id="official-data"
       data-state="loading"
@@ -326,5 +387,28 @@
     <span>Human-approved decisions only.</span>
     <span>Facts, forecasts and AI judgement stay separate.</span>
   </footer>
+
+  <dialog class="lock-dialog" id="lock-dialog" aria-labelledby="lock-dialog-title">
+    <form method="dialog">
+      <p class="eyebrow">Explicit confirmation</p>
+      <h2 id="lock-dialog-title">Lock this selection?</h2>
+      <p id="lock-dialog-copy">
+        autoFPL will preserve this revision as your chosen Gameweek selection.
+      </p>
+      <div class="lock-dialog-note">
+        This records your decision inside autoFPL. It does not submit or change
+        anything in your Fantasy Premier League account.
+      </div>
+      <div class="lock-dialog-actions">
+        <button class="selection-secondary" value="cancel">Keep editing</button>
+        <button
+          class="selection-primary"
+          id="confirm-selection-lock"
+          type="button">
+          Confirm lock
+        </button>
+      </div>
+    </form>
+  </dialog>
 </body>
 </html>

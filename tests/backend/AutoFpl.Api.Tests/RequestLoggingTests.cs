@@ -150,6 +150,10 @@ public sealed class RequestLoggingTests
             string,
             (string Body, string Sentinel, HttpStatusCode ExpectedStatus)>(StringComparer.Ordinal)
         {
+            ["/api/v1/selections/drafts"] = (
+                Serialize(new { forecastArtifactId = SentinelPlayerId }),
+                sentinel,
+                HttpStatusCode.NotFound),
             ["/api/v1/decision-snapshot-metadata/validation"] = (
                 """{"schemaVersion":"1.0","sourceType":"AUTOFPL_PRIVATE_SENTINEL_METADATA"}""",
                 "AUTOFPL_PRIVATE_SENTINEL_METADATA",

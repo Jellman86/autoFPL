@@ -2,24 +2,25 @@
 
 ## Status and scope
 
-This document defines how the private POST routes interpret manually submitted fields for reproducible research. Validation and outcome routes remain stateless; `/api/v1/decision-snapshots` is the one explicit persistence boundary. No route adds a connector, external retrieval or account action.
+This document defines how the private POST routes interpret manually submitted fields for reproducible research. Validation and outcome routes remain stateless. `/api/v1/decision-snapshots` persists replay evidence, while `/api/v1/selections/drafts` resolves an existing forecast artifact into a new immutable user-owned decision revision. No route adds a connector, external retrieval or account action.
 
 The exact machine-readable inventory is [`contracts/manual-evidence/v1/current-post-routes.json`](../../contracts/manual-evidence/v1/current-post-routes.json), validated by [`manual-evidence-catalog.schema.json`](../../contracts/manual-evidence/v1/manual-evidence-catalog.schema.json). Contract tests compare that inventory with the actual .NET request DTOs so a field cannot be added or reinterpreted silently.
 
 ## Current runtime boundary
 
-The validation and outcome routes validate one request in memory, return a deterministic response and discard it. The decision-snapshot route accepts explicit UTC timestamps and persists the validated squad, selection, observations, cutoff and immutable snapshot lineage in SQLite. No route accepts credentials, cookies, sessions, opaque uploads or account-action instructions. The all-route integration test captures framework messages, structured state, exceptions and scopes and verifies that unique request values are absent. Unknown fields return `400`; well-formed but invalid evidence returns stable `422` responses.
+The validation and outcome routes validate one request in memory, return a deterministic response and discard it. The decision-snapshot route accepts explicit UTC timestamps and persists the validated squad, selection, observations, cutoff and immutable snapshot lineage in SQLite. The selection-draft route accepts only a persisted forecast-artifact ID, verifies the artifact and records an application-timestamped immutable selection revision; locking is a separate bodyless action. No route accepts credentials, cookies, sessions, opaque uploads or account-action instructions. The all-route integration test captures framework messages, structured state, exceptions and scopes and verifies that unique request values are absent. Unknown fields return `400`; well-formed but invalid evidence returns stable `422` or `409` responses.
 
 A persisted observation records what the caller asserted and when the caller says it was observed, retrieved and available. That does not prove provider origin or publication time. Until a real importer supplies stronger provenance, these records are acceptance/development evidence and must not be presented as independently verified historical facts.
 
 ## Field inventory and interpretation
 
-The catalog contains every top-level and nested field accepted by all nine current POST routes. The grouped inventory below is the reader-facing summary; the catalog is authoritative for exact paths.
+The catalog contains every top-level and nested field accepted by all ten current POST routes. The grouped inventory below is the reader-facing summary; the catalog is authoritative for exact paths.
 
 | Route | Accepted field groups | Interpretation |
 | --- | --- | --- |
 | `/api/v1/decision-snapshot-metadata/validation` | `schemaVersion`, `sourceType` | Decision-state contract metadata. `sourceType=manual` describes submission mode; it is not proof of origin or historical availability. |
 | `/api/v1/decision-snapshots` | season/Gameweek/deadline/cutoff; complete squad and selection; timestamped decimal observations; correction lineage | Persists authoritative local state and materialises only the latest eligible observation revision at the cutoff. |
+| `/api/v1/selections/drafts` | persisted `forecastArtifactId` | Resolves the exact persisted forecast at receipt and creates or reuses an immutable local decision revision; it does not lock or submit the selection. |
 | `/api/v1/squads/validation` | budget; player IDs, clubs, positions and integer-tenths prices | Decision state submitted at receipt. |
 | `/api/v1/lineups/validation` | squad fields; starting XI; captain and vice-captain | Decision state submitted at receipt. |
 | `/api/v1/gameweek-selections/validation` | lineup fields; replacement goalkeeper; ordered outfield bench | Decision state submitted at receipt. |
