@@ -121,3 +121,23 @@ It validates direct player and fixture identities again, aggregates
 fixture-level conditional and appearance-adjusted values, preserves missing
 players/probabilities, and remains an unpromoted feature artefact. See the
 [FPL Form temporal feature specification](../../docs/research/fpl-form-temporal-feature-v1.md).
+
+## FPL Form model-feature ablation v1
+
+The source ablation recomputes official-only and FPL-Form-enhanced ridge/tree
+models on identical, source-complete expanding-origin folds:
+
+```bash
+PYTHONPATH=src/analytics python3 -m autofpl_analytics.fpl_form_ablation \
+  --database /path/to/autofpl.db \
+  --season 2026-27 \
+  --minimum-training-gameweeks 3 \
+  --output /path/to/fpl-form-ablation.json
+```
+
+Every training and target Gameweek must have a forecast captured by its own
+official feature cutoff. Missing source history excludes the fold from every
+variant; missing player predictions and appearance probabilities remain
+explicit model inputs. The report is read-only, deterministic, unpromoted and
+returns exit code `2` until at least one source-complete fold exists. See the
+[FPL Form feature ablation specification](../../docs/research/fpl-form-feature-ablation-v1.md).

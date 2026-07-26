@@ -53,6 +53,7 @@ Use this index to find the maintained source for each topic. The deterministic p
 - [Temporal ridge challenger v1](research/temporal-ridge-v1.md) — fold-local regularised total-points challenger over the cutoff-safe temporal feature table.
 - [Temporal histogram-tree challenger v1](research/temporal-tree-v1.md) — fixed nonlinear comparison on the ridge evaluator's identical expanding-origin folds.
 - [FPL Form temporal feature v1](research/fpl-form-temporal-feature-v1.md) — exact-cutoff, strict-direct-identity bridge from retained public forecasts into model-ready player features.
+- [FPL Form feature ablation v1](research/fpl-form-feature-ablation-v1.md) — same-cohort official-only versus public-forecast ridge/tree comparison with source-complete temporal folds.
 - [Predictive research-review template](research/literature-review-template.md) — optional working note for method selection and promotion registration.
 - [Dataset-card template](research/dataset-card-template.md) — provenance, rights and quality record.
 - [Model-card template](research/model-card-template.md) — intended use, evaluation, limitations and monitoring.

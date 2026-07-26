@@ -468,15 +468,25 @@ def _predict_fold(
     training: Sequence[Sample],
     target: Sequence[Sample],
     ridge_penalty: float,
+    continuous_features: Sequence[str] = CONTINUOUS_FEATURES,
+    model_name: str = MODEL_NAME,
+    include_baselines: bool = True,
 ) -> Tuple[List[Prediction], Dict[str, Any]]:
     if not training or not target:
         raise TemporalRidgeError(
             "evaluation.empty-fold",
             "An eligible fold has no training or target rows.",
         )
-    transform = _fit_transform(training)
-    train_x = [_apply_transform(sample, transform) for sample in training]
-    target_x = [_apply_transform(sample, transform) for sample in target]
+    feature_names = tuple(continuous_features)
+    transform = _fit_transform(training, feature_names)
+    train_x = [
+        _apply_transform(sample, transform, feature_names)
+        for sample in training
+    ]
+    target_x = [
+        _apply_transform(sample, transform, feature_names)
+        for sample in target
+    ]
     train_y = [float(sample.actual) for sample in training]
     intercept, coefficients = _fit_ridge(train_x, train_y, ridge_penalty)
     ridge_values = [
@@ -506,13 +516,16 @@ def _predict_fold(
             sample.features["cumulativePointsPerPriorGameweek"]
         )
         assert official_mean is not None
-        values = {
-            MODEL_NAME: ridge_value,
-            "zero-points": 0.0,
-            "position-expanding-mean": position_mean,
-            "player-last-points": last_points,
-            "official-running-mean": float(official_mean),
-        }
+        values = {model_name: ridge_value}
+        if include_baselines:
+            values.update(
+                {
+                    "zero-points": 0.0,
+                    "position-expanding-mean": position_mean,
+                    "player-last-points": last_points,
+                    "official-running-mean": float(official_mean),
+                }
+            )
         predictions.extend(
             Prediction(
                 model=name,
@@ -530,13 +543,13 @@ def _predict_fold(
         key=lambda item: (-abs(item[1]), item[0]),
     )
     diagnostic = {
-        "continuousFeatureCount": len(CONTINUOUS_FEATURES),
+        "continuousFeatureCount": len(feature_names),
         "modelFeatureCount": len(transform.feature_names),
         "ridgePenalty": ridge_penalty,
         "trainingTargetMean": _round(sum(train_y) / len(train_y)),
         "imputation": {
             name: count
-            for name, count in zip(CONTINUOUS_FEATURES, transform.missing_counts)
+            for name, count in zip(feature_names, transform.missing_counts)
             if count
         },
         "zeroVarianceFeatures": list(transform.zero_variance_features),
@@ -551,10 +564,14 @@ def _predict_fold(
     return predictions, diagnostic
 
 
-def _fit_transform(samples: Sequence[Sample]) -> FittedTransform:
+def _fit_transform(
+    samples: Sequence[Sample],
+    continuous_features: Sequence[str] = CONTINUOUS_FEATURES,
+) -> FittedTransform:
+    continuous_names = tuple(continuous_features)
     columns = [
         [sample.features[name] for sample in samples]
-        for name in CONTINUOUS_FEATURES
+        for name in continuous_names
     ]
     medians = tuple(
         float(statistics.median([value for value in column if value is not None]))
@@ -566,12 +583,12 @@ def _fit_transform(samples: Sequence[Sample]) -> FittedTransform:
         sum(value is None for value in column) for column in columns
     )
     unscaled = [
-        _expand_sample(sample, medians)
+        _expand_sample(sample, medians, continuous_names)
         for sample in samples
     ]
     feature_names = tuple(
         name
-        for continuous in CONTINUOUS_FEATURES
+        for continuous in continuous_names
         for name in (continuous, f"{continuous}.missing")
     ) + tuple(f"position.{position}" for position in POSITIONS)
     means = tuple(
@@ -605,9 +622,10 @@ def _fit_transform(samples: Sequence[Sample]) -> FittedTransform:
 def _expand_sample(
     sample: Sample,
     medians: Sequence[float],
+    continuous_features: Sequence[str] = CONTINUOUS_FEATURES,
 ) -> List[float]:
     values: List[float] = []
-    for index, name in enumerate(CONTINUOUS_FEATURES):
+    for index, name in enumerate(continuous_features):
         value = sample.features[name]
         values.extend(
             (
@@ -622,8 +640,13 @@ def _expand_sample(
 def _apply_transform(
     sample: Sample,
     transform: FittedTransform,
+    continuous_features: Sequence[str] = CONTINUOUS_FEATURES,
 ) -> List[float]:
-    values = _expand_sample(sample, transform.medians)
+    values = _expand_sample(
+        sample,
+        transform.medians,
+        continuous_features,
+    )
     return [
         (value - mean) / scale
         for value, mean, scale in zip(
