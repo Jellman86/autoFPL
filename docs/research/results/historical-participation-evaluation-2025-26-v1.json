@@ -1,0 +1,160 @@
+{
+  "schemaVersion": "1.0",
+  "resultType": "retained-evaluation-summary",
+  "evaluatorVersion": "historical-participation-evaluation-v1.1",
+  "researchStatus": "exploratory-preseason-bridge-not-promoted",
+  "isPromoted": false,
+  "status": "complete",
+  "allTargetsSupportedForProvisionalBridge": false,
+  "provenance": {
+    "historicalCaptureId": 1,
+    "sourceRevision": "f9ed3e8839b0f970e0d5d4a83c5628f6eaee755a",
+    "availableAtUtc": "2026-07-26T18:17:21.4965221+00:00",
+    "playersSha256": "412ce0172016f8f98f25177dc6de9f3cd2a8ec7a6135f9aa638d7fdee784d67b",
+    "gameweeksSha256": "0d09f1f1cb1b5520ec8e2f25238aa652efe2a263d8ca7cb2b6538b27bf86727d",
+    "playerCount": 841,
+    "playerGameweekRowCount": 29747,
+    "stableCodeCount": 841
+  },
+  "developmentFoldCount": 25,
+  "lockedHoldoutFoldCount": 8,
+  "targets": [
+    {
+      "target": "appearance",
+      "selectedCandidate": {
+        "name": "historical-appearance-histogram-classifier",
+        "count": 6252,
+        "brierScore": 0.084772,
+        "logLoss": 0.277871,
+        "calibrationError10": 0.010912,
+        "meanProbability": 0.367904,
+        "eventRate": 0.365323
+      },
+      "selectedBaseline": {
+        "name": "player-rolling3-smoothed-rate",
+        "count": 6252,
+        "brierScore": 0.108087,
+        "logLoss": 0.370582,
+        "calibrationError10": 0.11223,
+        "meanProbability": 0.37497,
+        "eventRate": 0.365323
+      },
+      "recommendation": {
+        "status": "supported-for-provisional-preseason-bridge",
+        "isPromoted": false,
+        "holdoutBrierImprovementFraction": 0.215706,
+        "holdoutFoldWins": 8,
+        "maximumPositionBrierRegression": -0.017431,
+        "checks": {
+          "minimumBrierImprovement": true,
+          "noLogLossRegression": true,
+          "calibrationWithinTolerance": true,
+          "majorityFoldWins": true,
+          "noMaterialPositionBrierRegression": true
+        }
+      }
+    },
+    {
+      "target": "start",
+      "selectedCandidate": {
+        "name": "historical-start-histogram-classifier",
+        "count": 6252,
+        "brierScore": 0.081821,
+        "logLoss": 0.260154,
+        "calibrationError10": 0.007872,
+        "meanProbability": 0.269488,
+        "eventRate": 0.267115
+      },
+      "selectedBaseline": {
+        "name": "player-rolling3-smoothed-rate",
+        "count": 6252,
+        "brierScore": 0.104625,
+        "logLoss": 0.351971,
+        "calibrationError10": 0.081378,
+        "meanProbability": 0.274362,
+        "eventRate": 0.267115
+      },
+      "recommendation": {
+        "status": "supported-for-provisional-preseason-bridge",
+        "isPromoted": false,
+        "holdoutBrierImprovementFraction": 0.217959,
+        "holdoutFoldWins": 8,
+        "maximumPositionBrierRegression": -0.018499,
+        "checks": {
+          "minimumBrierImprovement": true,
+          "noLogLossRegression": true,
+          "calibrationWithinTolerance": true,
+          "majorityFoldWins": true,
+          "noMaterialPositionBrierRegression": true
+        }
+      }
+    },
+    {
+      "target": "played-60",
+      "selectedCandidate": {
+        "name": "historical-played-60-histogram-classifier",
+        "count": 6252,
+        "brierScore": 0.083342,
+        "logLoss": 0.261876,
+        "calibrationError10": 0.008338,
+        "meanProbability": 0.251601,
+        "eventRate": 0.25112
+      },
+      "selectedBaseline": {
+        "name": "player-rolling3-smoothed-rate",
+        "count": 6252,
+        "brierScore": 0.102468,
+        "logLoss": 0.344931,
+        "calibrationError10": 0.074506,
+        "meanProbability": 0.257076,
+        "eventRate": 0.25112
+      },
+      "recommendation": {
+        "status": "supported-for-provisional-preseason-bridge",
+        "isPromoted": false,
+        "holdoutBrierImprovementFraction": 0.186653,
+        "holdoutFoldWins": 8,
+        "maximumPositionBrierRegression": -0.018019,
+        "checks": {
+          "minimumBrierImprovement": true,
+          "noLogLossRegression": true,
+          "calibrationWithinTolerance": true,
+          "majorityFoldWins": true,
+          "noMaterialPositionBrierRegression": true
+        }
+      }
+    },
+    {
+      "target": "minutes",
+      "selectedCandidate": {
+        "name": "historical-minutes-histogram-tree",
+        "count": 6252,
+        "mae": 13.470439,
+        "rmse": 23.3691,
+        "meanError": 0.282713
+      },
+      "selectedBaseline": {
+        "name": "minutes-player-last",
+        "count": 6252,
+        "mae": 12.280442,
+        "rmse": 28.954555,
+        "meanError": 0.076988
+      },
+      "recommendation": {
+        "status": "not-supported",
+        "isPromoted": false,
+        "holdoutMaeImprovementFraction": -0.096902,
+        "holdoutFoldWins": 1,
+        "maximumPositionMaeRegressionFraction": 0.202002,
+        "checks": {
+          "minimumMaeImprovement": false,
+          "noRmseRegression": true,
+          "majorityFoldWins": false,
+          "noMaterialPositionMaeRegression": false
+        }
+      }
+    }
+  ],
+  "dataIdentitySha256": "a6d3c3c2c9a64c123ef69584c46aa7200fc6f467eab7858b4e88dd0e12cb5113",
+  "completeReportRunIdentitySha256": "c39a19a93b0233e0130fe278af63b0278a4170c937db571ff056861c92451063"
+}
