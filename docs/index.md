@@ -64,6 +64,7 @@ yet exist.
 - [Official underlying feature ablation v1](research/official-underlying-feature-ablation-v1.md) — same-fold ridge/tree comparison of the unchanged official contract with fixed xG/xA/xGC, ICT/BPS and defensive additions.
 - [Temporal ridge challenger v1](research/temporal-ridge-v1.md) — fold-local regularised total-points challenger over the cutoff-safe temporal feature table.
 - [Cross-season player state v1](research/cross-season-player-state-v1.md) — stable-code prior-season performance and durability state with current-health precedence.
+- [Cross-season feature ablation v1](research/cross-season-feature-ablation-v1.md) — identical-fold incumbent comparison for prior-season performance and durability candidates.
 - [Temporal histogram-tree challenger v1](research/temporal-tree-v1.md) — fixed nonlinear comparison on the ridge evaluator's identical expanding-origin folds.
 - [FPL Form temporal feature v1](research/fpl-form-temporal-feature-v1.md) — exact-cutoff, strict-direct-identity bridge from retained public forecasts into model-ready player features.
 - [FPL Form feature ablation v1](research/fpl-form-feature-ablation-v1.md) — same-cohort official-only versus public-forecast ridge/tree comparison with source-complete temporal folds.

@@ -82,6 +82,26 @@ override current official health. The artifact is deterministic, read-only,
 hash-identified and explicitly does not influence a forecast. See the
 [cross-season state specification](../../docs/research/cross-season-player-state-v1.md).
 
+## Cross-season feature ablation v1
+
+The promotion-gate command compares unchanged ridge/tree models with
+cross-season-state variants on identical source-complete folds:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.cross_season_ablation \
+  --database /path/to/autofpl.db \
+  --season 2026-27 \
+  --minimum-training-gameweeks 3 \
+  --output /path/to/cross-season-ablation.json
+```
+
+Missing prior player identity remains explicit; a prior-season archive missing
+at any fold cutoff excludes that fold from every variant. Archived final health
+and source `xP` are not candidate features. The report remains unpromoted and
+returns exit code `2` until a source-complete fold exists. See the
+[cross-season ablation specification](../../docs/research/cross-season-feature-ablation-v1.md).
+
 ## Official underlying feature ablation v1
 
 The official feature ablation compares the unchanged ridge/tree contract with
