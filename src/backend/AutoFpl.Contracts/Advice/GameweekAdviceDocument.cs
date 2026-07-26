@@ -40,7 +40,9 @@ public sealed record AdvicePlayerDocument(
     [property: JsonPropertyName("upper80")] decimal Upper80,
     [property: JsonPropertyName("expectedMinutes")] int ExpectedMinutes,
     [property: JsonPropertyName("reasons")] IReadOnlyList<string> Reasons,
-    [property: JsonPropertyName("risks")] IReadOnlyList<string> Risks);
+    [property: JsonPropertyName("risks")] IReadOnlyList<string> Risks,
+    [property: JsonPropertyName("photoUrl")] string? PhotoUrl = null,
+    [property: JsonPropertyName("dossierPath")] string? DossierPath = null);
 
 public sealed record AdviceAlternativeDocument(
     [property: JsonPropertyName("name")] string Name,

@@ -36,6 +36,14 @@ Decision-snapshot writes require a complete valid squad and selection plus UTC o
 
 On an empty development database, startup creates one clearly labelled synthetic acceptance snapshot (`demo-2026`, Gameweek 1). The decision room reads its snapshot ID, revision, deadline, cutoff and selection state from SQLite while forecast values remain the explicitly synthetic UI fixture. Set `AutoFpl__SeedDemoSnapshot=false` for isolated tests or an operator-managed database.
 
+When an operator-managed database contains a qualifying official pre-deadline
+capture, the demo advice route replaces synthetic player identities with a
+legal 15-player official identity preview selected by current ownership,
+position quota and three-per-club limit. The UI then shows allowlisted Premier
+League portraits and cutoff-aware player dossiers. This identity preview is not
+an optimiser result: points, minutes, uncertainty, captaincy and bench choices
+remain synthetic and are labelled accordingly.
+
 ## Official FPL capture
 
 Run the bounded fixed-origin import as an operator command:

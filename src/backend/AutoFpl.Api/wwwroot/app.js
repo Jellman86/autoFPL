@@ -1,6 +1,10 @@
 const positionOrder = ["forward", "midfielder", "defender", "goalkeeper"];
+const mobileDossierQuery = window.matchMedia("(max-width: 980px)");
+
 let selectedPlayerId = null;
 let advice = null;
+let lastSelectedCard = null;
+let dossierRequest = 0;
 
 function formatDeadline(value) {
   return new Intl.DateTimeFormat(undefined, {
@@ -22,17 +26,56 @@ function formatCompactInstant(value) {
   }).format(new Date(value));
 }
 
+function formatKickoff(value) {
+  if (!value) return "TBC";
+  return new Intl.DateTimeFormat(undefined, {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
 function formatLeadTime(totalSeconds) {
   const hours = Math.floor(totalSeconds / 3600);
   const days = Math.floor(hours / 24);
   const remainingHours = hours % 24;
-  if (days > 0) {
-    return `${days}d ${remainingHours}h before deadline`;
-  }
-  if (hours > 0) {
-    return `${hours}h before deadline`;
-  }
+  if (days > 0) return `${days}d ${remainingHours}h before deadline`;
+  if (hours > 0) return `${hours}h before deadline`;
   return `${Math.max(0, Math.floor(totalSeconds / 60))}m before deadline`;
+}
+
+function initials(name) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+}
+
+function createPortrait(name, photoUrl, className) {
+  const portrait = document.createElement("span");
+  portrait.className = className;
+  const fallback = document.createElement("span");
+  fallback.className = "portrait-fallback";
+  fallback.textContent = initials(name);
+  portrait.append(fallback);
+
+  if (photoUrl) {
+    const image = document.createElement("img");
+    image.src = photoUrl;
+    image.alt = "";
+    image.loading = "lazy";
+    image.decoding = "async";
+    image.addEventListener("load", () => portrait.classList.add("has-photo"));
+    image.addEventListener("error", () => image.remove());
+    portrait.append(image);
+  }
+
+  return portrait;
 }
 
 function createPlayerCard(player) {
@@ -43,30 +86,36 @@ function createPlayerCard(player) {
   button.setAttribute("aria-pressed", String(player.playerId === selectedPlayerId));
   button.setAttribute(
     "aria-label",
-    `${player.name}, ${player.expectedPoints} expected points, ${player.expectedMinutes} expected minutes`,
+    `${player.name}, ${player.expectedPoints} synthetic expected points, ${player.expectedMinutes} expected minutes. Open player dossier.`,
   );
 
+  const portrait = createPortrait(player.name, player.photoUrl, "card-portrait");
+  const badgeRail = document.createElement("span");
+  badgeRail.className = "badge-rail";
   if (player.captaincy) {
     const captain = document.createElement("span");
     captain.className = "captain";
     captain.textContent = player.captaincy === "captain" ? "C" : "VC";
-    button.append(captain);
+    badgeRail.append(captain);
   }
-
   if (player.benchOrder) {
     const order = document.createElement("span");
     order.className = "bench-order";
     order.textContent = String(player.benchOrder);
-    button.append(order);
+    badgeRail.append(order);
   }
 
+  const body = document.createElement("span");
+  body.className = "card-body";
+  const identity = document.createElement("span");
+  identity.className = "card-identity";
   const club = document.createElement("span");
   club.className = "club";
   club.textContent = `${player.clubShortName} · ${player.position.slice(0, 3).toUpperCase()}`;
-
   const name = document.createElement("span");
   name.className = "name";
   name.textContent = player.name;
+  identity.append(club, name);
 
   const projection = document.createElement("span");
   projection.className = "projection";
@@ -84,16 +133,67 @@ function createPlayerCard(player) {
 
   const fixture = document.createElement("span");
   fixture.className = "fixture";
-  fixture.textContent = `${player.isHome ? "vs" : "at"} ${player.opponent}`;
+  fixture.textContent =
+    `${player.isHome ? "vs" : "at"} ${player.opponent} · ${player.expectedMinutes}′`;
 
-  button.append(club, name, projection, range, fixture);
-  button.addEventListener("click", () => selectPlayer(player.playerId));
+  body.append(identity, projection, range, fixture);
+  button.append(portrait, badgeRail, body);
+  button.addEventListener("click", () => {
+    lastSelectedCard = button;
+    selectPlayer(player.playerId, { updateHistory: true, focusDossier: true });
+  });
   return button;
 }
 
-function selectPlayer(playerId) {
+function setDossierPortrait(name, photoUrl) {
+  const portrait = document.querySelector("#dossier-portrait");
+  portrait.replaceChildren();
+  const rendered = createPortrait(name, photoUrl, "dossier-portrait-content");
+  portrait.append(...rendered.childNodes);
+  portrait.classList.toggle("has-photo", Boolean(photoUrl));
+  const image = portrait.querySelector("img");
+  if (image) {
+    image.addEventListener("error", () => portrait.classList.remove("has-photo"));
+  }
+}
+
+function openDossier(focusDossier) {
+  const dossier = document.querySelector("#player-dossier");
+  if (mobileDossierQuery.matches && !focusDossier) {
+    dossier.classList.remove("is-open");
+    dossier.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("dossier-open");
+    return;
+  }
+
+  dossier.classList.add("is-open");
+  dossier.setAttribute("aria-hidden", "false");
+  document.body.classList.add("dossier-open");
+  if (focusDossier && mobileDossierQuery.matches) {
+    dossier.focus({ preventScroll: true });
+  }
+}
+
+function closeDossier() {
+  if (!mobileDossierQuery.matches) return;
+  const dossier = document.querySelector("#player-dossier");
+  dossier.classList.remove("is-open");
+  dossier.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("dossier-open");
+  lastSelectedCard?.focus({ preventScroll: true });
+}
+
+function updatePlayerUrl(playerId) {
+  const url = new URL(window.location.href);
+  url.searchParams.set("player", String(playerId));
+  window.history.replaceState({ playerId }, "", url);
+}
+
+function selectPlayer(playerId, options = {}) {
   selectedPlayerId = playerId;
-  const player = advice.selection.players.find((candidate) => candidate.playerId === playerId);
+  const player = advice?.selection.players.find(
+    (candidate) => candidate.playerId === playerId,
+  );
   if (!player) return;
 
   document.querySelectorAll(".player-card").forEach((card) => {
@@ -105,19 +205,23 @@ function selectPlayer(playerId) {
     `${player.clubShortName} · ${player.position} · ${player.isHome ? "home to" : "away at"} ${player.opponent}`;
   document.querySelector("#player-points").textContent = player.expectedPoints.toFixed(1);
   document.querySelector("#player-minutes").textContent = `${player.expectedMinutes}′`;
-  document.querySelector("#player-range").textContent = `${player.lower80.toFixed(0)}–${player.upper80.toFixed(0)}`;
+  document.querySelector("#player-range").textContent =
+    `${player.lower80.toFixed(0)}–${player.upper80.toFixed(0)}`;
+  setDossierPortrait(player.name, player.photoUrl);
 
   const badge = document.querySelector("#player-badge");
-  const badgeText = player.captaincy
+  badge.textContent = player.captaincy
     ? player.captaincy
     : player.lineupPlace === "bench"
       ? `bench ${player.benchOrder}`
       : "starter";
-  badge.textContent = badgeText;
   badge.hidden = false;
 
   renderList("#player-reasons", player.reasons);
   renderList("#player-risks", player.risks);
+  openDossier(Boolean(options.focusDossier));
+  if (options.updateHistory !== false) updatePlayerUrl(playerId);
+  loadPlayerDossier(player);
 }
 
 function renderList(selector, values) {
@@ -130,24 +234,202 @@ function renderList(selector, values) {
   });
 }
 
+function setDossierState(state, message) {
+  const element = document.querySelector("#dossier-state");
+  element.dataset.state = state;
+  element.textContent = message;
+}
+
+function renderEmpty(container, message) {
+  const empty = document.createElement("p");
+  empty.className = "empty-state";
+  empty.textContent = message;
+  container.replaceChildren(empty);
+}
+
+function stat(label, value) {
+  const item = document.createElement("span");
+  const term = document.createElement("small");
+  term.textContent = label;
+  const amount = document.createElement("strong");
+  amount.textContent = String(value);
+  item.append(term, amount);
+  return item;
+}
+
+function renderRecentForm(outcomes) {
+  const container = document.querySelector("#recent-form");
+  if (!outcomes.length) {
+    renderEmpty(
+      container,
+      "No completed outcome is available before this deadline yet. Missing history stays missing.",
+    );
+    return;
+  }
+
+  const rows = outcomes.map((outcome) => {
+    const row = document.createElement("article");
+    row.className = "form-row";
+    const headline = document.createElement("div");
+    headline.className = "form-headline";
+    const gameweek = document.createElement("span");
+    gameweek.className = "gameweek-chip";
+    gameweek.textContent = `GW${outcome.gameweek}`;
+    const opponent = document.createElement("strong");
+    opponent.textContent = outcome.fixtures.length
+      ? outcome.fixtures
+          .map((fixture) => `${fixture.isHome ? "vs" : "at"} ${fixture.opponentShortName}`)
+          .join(" · ")
+      : "Fixture unavailable";
+    const points = document.createElement("span");
+    points.className = "outcome-points";
+    points.textContent = `${outcome.totalPoints} pts`;
+    headline.append(gameweek, opponent, points);
+    if (outcome.isGameweekAggregate) {
+      const aggregate = document.createElement("span");
+      aggregate.className = "aggregate-chip";
+      aggregate.textContent = "GW aggregate";
+      headline.append(aggregate);
+    }
+
+    const stats = document.createElement("div");
+    stats.className = "form-stats";
+    stats.append(
+      stat("MIN", outcome.minutes),
+      stat("START", outcome.starts),
+      stat("G", outcome.goalsScored),
+      stat("A", outcome.assists),
+      stat("CS", outcome.cleanSheets),
+      stat("SAV", outcome.saves),
+      stat("BON", outcome.bonus),
+      stat("YC", outcome.yellowCards),
+      stat("RC", outcome.redCards),
+    );
+    row.append(headline, stats);
+    return row;
+  });
+  container.replaceChildren(...rows);
+}
+
+function renderUpcomingFixtures(fixtures) {
+  const container = document.querySelector("#upcoming-fixtures");
+  if (!fixtures.length) {
+    renderEmpty(container, "No upcoming fixture is present in the selected capture.");
+    return;
+  }
+
+  const cards = fixtures.map((fixture) => {
+    const card = document.createElement("article");
+    card.className = "fixture-card";
+    const gameweek = document.createElement("span");
+    gameweek.textContent = `GW ${fixture.gameweek}`;
+    const opponent = document.createElement("strong");
+    opponent.textContent = fixture.opponentShortName;
+    const venue = document.createElement("small");
+    venue.textContent = fixture.isHome ? "HOME" : "AWAY";
+    const kickoff = document.createElement("time");
+    kickoff.dateTime = fixture.kickoffUtc ?? "";
+    kickoff.textContent = formatKickoff(fixture.kickoffUtc);
+    card.append(gameweek, opponent, venue, kickoff);
+    return card;
+  });
+  container.replaceChildren(...cards);
+}
+
+async function loadPlayerDossier(player) {
+  const request = ++dossierRequest;
+  renderEmpty(document.querySelector("#recent-form"), "Loading previous Gameweeks…");
+  renderEmpty(document.querySelector("#upcoming-fixtures"), "Loading upcoming fixtures…");
+
+  if (!player.dossierPath) {
+    setDossierState(
+      "preview",
+      "Official dossier unavailable for this synthetic identity; forecast evidence remains visible.",
+    );
+    renderEmpty(
+      document.querySelector("#recent-form"),
+      "This fallback preview has no official match history.",
+    );
+    renderEmpty(
+      document.querySelector("#upcoming-fixtures"),
+      "This fallback preview has no official fixture join.",
+    );
+    return;
+  }
+
+  setDossierState("loading", "Loading cutoff-correct official identity, form and fixtures…");
+  try {
+    const response = await fetch(player.dossierPath, {
+      headers: { Accept: "application/json" },
+    });
+    if (request !== dossierRequest) return;
+    if (response.status === 404) {
+      setDossierState(
+        "empty",
+        "No qualifying dossier exists for this player at the selected deadline.",
+      );
+      renderEmpty(document.querySelector("#recent-form"), "No prior outcome is available.");
+      renderEmpty(document.querySelector("#upcoming-fixtures"), "No fixture data is available.");
+      return;
+    }
+    if (!response.ok) throw new Error(`Dossier request failed with ${response.status}`);
+
+    const dossier = await response.json();
+    if (request !== dossierRequest) return;
+    document.querySelector("#player-name").textContent = dossier.player.fullName;
+    document.querySelector("#player-context").textContent =
+      `${dossier.player.teamShortName} · ${dossier.player.position} · £${(dossier.player.priceTenths / 10).toFixed(1)}m`;
+    setDossierPortrait(dossier.player.fullName, dossier.player.photoUrl);
+    setDossierState(
+      "ready",
+      `Official capture #${dossier.selectedCaptureId} · evidence available ${formatCompactInstant(dossier.captureAvailableAtUtc)} · cutoff ${formatCompactInstant(dossier.decisionCutoffUtc)}`,
+    );
+    renderRecentForm(dossier.recentOutcomes);
+    renderUpcomingFixtures(dossier.upcomingFixtures);
+  } catch (error) {
+    if (request !== dossierRequest) return;
+    setDossierState(
+      "error",
+      "Official form and fixtures could not be loaded. Forecast preview remains available.",
+    );
+    renderEmpty(document.querySelector("#recent-form"), "Player history is temporarily unavailable.");
+    renderEmpty(document.querySelector("#upcoming-fixtures"), "Fixtures are temporarily unavailable.");
+    console.error(error);
+  }
+}
+
 function renderAdvice(adviceDocument) {
   advice = adviceDocument;
-  document.querySelector("#evidence-status").textContent = adviceDocument.evidenceStatus.replace("-", " ");
-  document.querySelector("#gameweek-label").textContent = `Gameweek ${adviceDocument.gameweek} decision room`;
-  document.querySelector("#recommendation-summary").textContent = adviceDocument.recommendationSummary;
+  document.querySelector("#evidence-status").textContent =
+    adviceDocument.evidenceStatus.replaceAll("-", " ");
+  document.querySelector("#gameweek-label").textContent =
+    `Gameweek ${adviceDocument.gameweek} decision room`;
+  document.querySelector("#recommendation-summary").textContent =
+    adviceDocument.recommendationSummary;
   document.querySelector("#deadline").textContent = formatDeadline(adviceDocument.deadlineUtc);
   document.querySelector("#decision-cutoff").textContent =
-    adviceDocument.decisionCutoffUtc ? formatDeadline(adviceDocument.decisionCutoffUtc) : "Not persisted";
+    adviceDocument.decisionCutoffUtc
+      ? formatDeadline(adviceDocument.decisionCutoffUtc)
+      : "Not persisted";
   document.querySelector("#snapshot-reference").textContent =
     adviceDocument.snapshotId
       ? `#${adviceDocument.snapshotId} · revision ${adviceDocument.snapshotRevision}`
-      : "Preview only";
+      : "Identity preview";
   document.querySelector("#model-label").textContent = adviceDocument.modelLabel;
-  document.querySelector("#team-points").textContent = adviceDocument.selection.expectedPoints.toFixed(1);
-  document.querySelector("#selection-objective").textContent = adviceDocument.selection.objective;
+  document.querySelector("#team-points").textContent =
+    adviceDocument.selection.expectedPoints.toFixed(1);
+  document.querySelector("#selection-objective").textContent =
+    adviceDocument.selection.objective;
   document.querySelector("#ai-status").textContent = adviceDocument.aiAccess.status;
 
-  const starters = adviceDocument.selection.players.filter((player) => player.lineupPlace === "starting");
+  const callout = document.querySelector("#synthetic-callout");
+  callout.dataset.realIdentities = String(
+    adviceDocument.evidenceStatus === "synthetic-forecast-real-identities",
+  );
+
+  const starters = adviceDocument.selection.players.filter(
+    (player) => player.lineupPlace === "starting",
+  );
   const formation = document.querySelector("#formation");
   formation.replaceChildren();
   positionOrder.forEach((position) => {
@@ -184,7 +466,14 @@ function renderAdvice(adviceDocument) {
     alternatives.append(card);
   });
 
-  selectPlayer(starters.find((player) => player.captaincy === "captain")?.playerId ?? starters[0].playerId);
+  const requestedPlayerId = Number(new URL(window.location.href).searchParams.get("player"));
+  const initialPlayer = adviceDocument.selection.players.find(
+    (player) => player.playerId === requestedPlayerId,
+  ) ?? starters.find((player) => player.captaincy === "captain") ?? starters[0];
+  selectPlayer(initialPlayer.playerId, {
+    updateHistory: false,
+    focusDossier: false,
+  });
 }
 
 async function loadAdvice() {
@@ -245,7 +534,6 @@ async function loadOfficialData() {
 
     const capture = await captureResponse.json();
     renderCaptureCounts(capture);
-
     if (!capture.nextGameweekNumber || !capture.nextDeadlineUtc) {
       setOfficialDataState(
         "partial",
@@ -291,11 +579,16 @@ async function loadOfficialData() {
     setOfficialDataState(
       "ready",
       "Replay ready",
-      "Real source captured. Forecasts still synthetic.",
+      "Official identities ready. Forecasts still synthetic.",
       `Gameweek ${replay.gameweek} can be rebuilt from capture #${replay.selectedCaptureId} without using data retrieved after its deadline.`,
     );
 
-    const outcomeGameweek = capture.latestCompletedGameweek ?? replay.gameweek;
+    if (!capture.latestCompletedGameweek) {
+      outcomeStatus.textContent = "Awaiting";
+      return;
+    }
+
+    const outcomeGameweek = capture.latestCompletedGameweek;
     const pairPath =
       `/api/v1/data/official-fpl/replays/${encodeURIComponent(capture.seasonCode)}` +
       `/${outcomeGameweek}/outcome`;
@@ -339,5 +632,50 @@ async function loadOfficialData() {
   }
 }
 
+function trapDossierFocus(event) {
+  if (
+    event.key !== "Tab" ||
+    !mobileDossierQuery.matches ||
+    !document.querySelector("#player-dossier").classList.contains("is-open")
+  ) {
+    return;
+  }
+
+  const dossier = document.querySelector("#player-dossier");
+  const focusable = [...dossier.querySelectorAll("button, a, input, [tabindex='0']")]
+    .filter((element) => !element.disabled && element.offsetParent !== null);
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
+document.querySelector("#dossier-close").addEventListener("click", closeDossier);
+document.querySelector("#dossier-backdrop").addEventListener("click", closeDossier);
+document.querySelector("#player-dossier").addEventListener("keydown", trapDossierFocus);
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeDossier();
+});
+mobileDossierQuery.addEventListener("change", (event) => {
+  if (event.matches) {
+    closeDossier();
+  } else if (selectedPlayerId !== null) {
+    openDossier(false);
+  }
+});
+window.addEventListener("popstate", () => {
+  if (!advice) return;
+  const playerId = Number(new URL(window.location.href).searchParams.get("player"));
+  if (advice.selection.players.some((player) => player.playerId === playerId)) {
+    selectPlayer(playerId, { updateHistory: false, focusDossier: false });
+  }
+});
 document.querySelector("#ai-form").addEventListener("submit", (event) => event.preventDefault());
+
 Promise.all([loadAdvice(), loadOfficialData()]);

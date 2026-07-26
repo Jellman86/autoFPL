@@ -5,7 +5,9 @@ namespace AutoFpl.Api.Advice;
 
 public static class DemoGameweekAdvice
 {
-    public static GameweekAdviceDocument Create(DecisionSnapshotDocument? snapshot = null)
+    public static GameweekAdviceDocument Create(
+        DecisionSnapshotDocument? snapshot = null,
+        OfficialDecisionRoomPreview? officialPreview = null)
     {
         GameweekAdviceDocument fixture = new(
             SchemaVersion: "1.0",
@@ -85,6 +87,11 @@ public static class DemoGameweekAdvice
                     "AI conversation is not connected in this preview. Planned access is through ChatGPT/Codex MCP or a server-side provider key.",
                 PlannedModes: ["chatgpt-plugin", "mcp", "server-api-key", "compatible-provider"]));
 
+        if (officialPreview is not null)
+        {
+            return ApplyOfficialPreview(fixture, officialPreview);
+        }
+
         if (snapshot is null)
         {
             return fixture;
@@ -133,6 +140,75 @@ public static class DemoGameweekAdvice
             DeadlineUtc = snapshot.DeadlineUtc,
             GeneratedAtUtc = snapshot.DecisionCutoffUtc,
             Selection = fixture.Selection with { Players = players },
+        };
+    }
+
+    private static GameweekAdviceDocument ApplyOfficialPreview(
+        GameweekAdviceDocument fixture,
+        OfficialDecisionRoomPreview preview)
+    {
+        IReadOnlyDictionary<string, Queue<OfficialDecisionRoomPlayer>> byPosition =
+            preview.Players
+                .GroupBy(player => player.Position, StringComparer.Ordinal)
+                .ToDictionary(
+                    group => group.Key,
+                    group => new Queue<OfficialDecisionRoomPlayer>(group),
+                    StringComparer.Ordinal);
+        AdvicePlayerDocument[] players = fixture.Selection.Players
+            .Select(template =>
+            {
+                if (!byPosition.TryGetValue(
+                        template.Position,
+                        out Queue<OfficialDecisionRoomPlayer>? candidates)
+                    || candidates.Count == 0)
+                {
+                    throw new InvalidOperationException(
+                        "Official preview does not satisfy the selection shape.");
+                }
+
+                OfficialDecisionRoomPlayer identity = candidates.Dequeue();
+                return template with
+                {
+                    PlayerId = identity.PlayerId,
+                    Name = identity.Name,
+                    ClubShortName = identity.ClubShortName,
+                    Opponent = identity.Opponent,
+                    IsHome = identity.IsHome,
+                    Reasons =
+                    [
+                        "Official identity and fixture context are loaded from the cutoff-safe FPL capture.",
+                        "The points and minutes shown remain synthetic UI values, not a fitted forecast.",
+                    ],
+                    Risks =
+                    [
+                        "Do not use this preview as transfer, captaincy or lineup advice.",
+                    ],
+                    PhotoUrl = identity.PhotoUrl,
+                    DossierPath = identity.DossierPath,
+                };
+            })
+            .ToArray();
+
+        return fixture with
+        {
+            EvidenceStatus = "synthetic-forecast-real-identities",
+            SnapshotId = null,
+            SnapshotRevision = null,
+            SnapshotContentHash = null,
+            DecisionCutoffUtc = preview.CaptureAvailableAtUtc,
+            Gameweek = preview.Gameweek,
+            DeadlineUtc = preview.DeadlineUtc,
+            GeneratedAtUtc = preview.CaptureAvailableAtUtc,
+            ModelLabel = $"Synthetic estimates · official {preview.SeasonCode} identities",
+            RecommendationSummary =
+                "A decision-room preview using official players, portraits and fixtures. "
+                + "Every forecast value remains synthetic until an evaluated model is promoted.",
+            Selection = fixture.Selection with
+            {
+                Objective =
+                    "Demonstrate the official identity and player-dossier journey; not a recommendation.",
+                Players = players,
+            },
         };
     }
 
