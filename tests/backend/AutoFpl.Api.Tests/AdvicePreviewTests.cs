@@ -5,6 +5,9 @@ using AutoFpl.Contracts.Advice;
 
 using Microsoft.AspNetCore.Mvc.Testing;
 
+using ModelContextProtocol.Client;
+using ModelContextProtocol.Protocol;
+
 using Xunit;
 
 namespace AutoFpl.Api.Tests;
@@ -16,6 +19,49 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
     public AdvicePreviewTests(WebApplicationFactory<Program> factory)
     {
         _client = factory.CreateClient();
+    }
+
+    [Fact]
+    public async Task Mcp_endpoint_advertises_only_the_public_player_dossier_tool()
+    {
+        await using var transport = new HttpClientTransport(
+            new()
+            {
+                Endpoint = new Uri(_client.BaseAddress!, "/mcp"),
+                Name = "autoFPL inventory test",
+                TransportMode = HttpTransportMode.StreamableHttp,
+            },
+            _client);
+        await using McpClient mcpClient = await McpClient.CreateAsync(
+            transport,
+            cancellationToken: TestContext.Current.CancellationToken);
+
+        McpClientTool tool = Assert.Single(
+            await mcpClient.ListToolsAsync(
+                cancellationToken: TestContext.Current.CancellationToken));
+        Assert.Equal("get_player_dossier", tool.Name);
+        Assert.Contains(
+            "quarantined",
+            tool.Description,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.True(tool.ProtocolTool.Annotations?.ReadOnlyHint);
+        Assert.False(tool.ProtocolTool.Annotations?.DestructiveHint);
+        Assert.False(tool.ProtocolTool.Annotations?.OpenWorldHint);
+
+        CallToolResult invalid = await mcpClient.CallToolAsync(
+            "get_player_dossier",
+            new Dictionary<string, object?>
+            {
+                ["seasonCode"] = "invalid",
+                ["gameweek"] = 1,
+                ["playerId"] = 1,
+            },
+            cancellationToken: TestContext.Current.CancellationToken);
+        Assert.True(invalid.IsError);
+        Assert.Contains(
+            "seasonCode",
+            Assert.Single(invalid.Content.OfType<TextContentBlock>()).Text,
+            StringComparison.Ordinal);
     }
 
     [Fact]

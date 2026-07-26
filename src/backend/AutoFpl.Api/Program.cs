@@ -7,6 +7,7 @@ using AutoFpl.Api.Errors;
 using AutoFpl.Api.Forecasts;
 using AutoFpl.Api.Health;
 using AutoFpl.Api.Intelligence;
+using AutoFpl.Api.Mcp;
 using AutoFpl.Api.Persistence;
 using AutoFpl.Api.Selections;
 using AutoFpl.Api.Sources;
@@ -24,6 +25,8 @@ using AutoFpl.Domain.Outcomes;
 using AutoFpl.Domain.Selections;
 using AutoFpl.Domain.Snapshots;
 using AutoFpl.Domain.Squads;
+
+using ModelContextProtocol.Protocol;
 
 if (args.Length == 1 && StringComparer.Ordinal.Equals(args[0], "--health-check"))
 {
@@ -170,6 +173,7 @@ bool runNonWebCommand =
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(
     runNonWebCommand ? [] : args);
+builder.Logging.AddFilter("ModelContextProtocol", LogLevel.Warning);
 if (runNonWebCommand)
 {
     builder.Logging.SetMinimumLevel(LogLevel.Warning);
@@ -177,6 +181,22 @@ if (runNonWebCommand)
 
 builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi("v1");
+builder.Services
+    .AddMcpServer(options =>
+    {
+        options.ServerInfo = new()
+        {
+            Name = "autofpl",
+            Version = "0.1.0",
+        };
+        options.ServerInstructions =
+            "autoFPL returns read-only, cutoff-correct football evidence. "
+            + "Research claims are quarantined and must never be described as "
+            + "influencing Baseline v0. Preserve stable IDs, timestamps, evidence "
+            + "status and source URLs when explaining a dossier.";
+    })
+    .WithHttpTransport(options => options.Stateless = true)
+    .WithTools<PlayerDossierMcpTools>();
 builder.Services.AddSingleton(serviceProvider =>
     DatabaseOptions.FromConfiguration(
         serviceProvider.GetRequiredService<IConfiguration>()));
@@ -616,6 +636,8 @@ app.UseExceptionHandler();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
+app.MapMcp("/mcp")
+    .WithMetadata(new MachineProtocolEndpointMetadata());
 app.MapOpenApi("/openapi/{documentName}.json");
 app.MapGet("/healthz", () => Results.Ok(new ProbeResponse("healthy")))
     .WithName("GetHealth")

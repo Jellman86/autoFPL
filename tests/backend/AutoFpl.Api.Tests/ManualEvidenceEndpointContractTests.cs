@@ -3,6 +3,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
+using AutoFpl.Api.Mcp;
+
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Routing;
@@ -48,6 +50,8 @@ public sealed class ManualEvidenceEndpointContractTests
                 .GetMetadata<HttpMethodMetadata>()?
                 .HttpMethods
                 .Contains("POST", StringComparer.Ordinal) is true)
+            .Where(endpoint => endpoint.Metadata
+                .GetMetadata<MachineProtocolEndpointMetadata>() is null)
             .OrderBy(endpoint => endpoint.RoutePattern.RawText, StringComparer.Ordinal)
             .ToArray();
 
