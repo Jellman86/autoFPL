@@ -145,14 +145,19 @@ def evaluate_temporal_tree(
 def _predict_tree(
     training: Sequence[Sample],
     target: Sequence[Sample],
+    continuous_features: Sequence[str] = CONTINUOUS_FEATURES,
+    model_name: str = MODEL_NAME,
 ) -> Tuple[List[Prediction], Dict[str, Any]]:
     if not training or not target:
         raise TemporalRidgeError(
             "evaluation.empty-fold",
             "An eligible tree fold has no training or target rows.",
         )
-    raw_training_matrix, feature_names = _matrix(training)
-    raw_target_matrix, _ = _matrix(target)
+    raw_training_matrix, feature_names = _matrix(
+        training,
+        continuous_features,
+    )
+    raw_target_matrix, _ = _matrix(target, continuous_features)
     selected_indices = [
         index
         for index in range(raw_training_matrix.shape[1])
@@ -170,7 +175,7 @@ def _predict_tree(
         mean = float(targets.mean())
         predictions = [
             Prediction(
-                model=MODEL_NAME,
+                model=model_name,
                 season_code=sample.season_code,
                 gameweek=sample.gameweek,
                 player_id=sample.player_id,
@@ -215,7 +220,7 @@ def _predict_tree(
         )
     predictions = [
         Prediction(
-            model=MODEL_NAME,
+            model=model_name,
             season_code=sample.season_code,
             gameweek=sample.gameweek,
             player_id=sample.player_id,
@@ -244,8 +249,10 @@ def _predict_tree(
 
 def _matrix(
     samples: Sequence[Sample],
+    continuous_features: Sequence[str] = CONTINUOUS_FEATURES,
 ) -> Tuple[np.ndarray, Tuple[str, ...]]:
-    feature_names = CONTINUOUS_FEATURES + tuple(
+    continuous_names = tuple(continuous_features)
+    feature_names = continuous_names + tuple(
         f"position.{position}" for position in POSITIONS
     )
     rows = [
@@ -253,7 +260,7 @@ def _matrix(
             math.nan
             if sample.features[name] is None
             else float(sample.features[name])
-            for name in CONTINUOUS_FEATURES
+            for name in continuous_names
         ]
         + [
             float(sample.position == position)
