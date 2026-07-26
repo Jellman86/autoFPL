@@ -86,6 +86,10 @@ builder.Services.AddSingleton(serviceProvider =>
         serviceProvider.GetRequiredService<DatabaseOptions>(),
         serviceProvider.GetRequiredService<OfficialFplCaptureStore>()));
 builder.Services.AddSingleton(serviceProvider =>
+    new OfficialDecisionRoomPreviewStore(
+        serviceProvider.GetRequiredService<DatabaseOptions>(),
+        serviceProvider.GetRequiredService<OfficialFplCaptureStore>()));
+builder.Services.AddSingleton(serviceProvider =>
     new FplFormForecastStore(
         serviceProvider.GetRequiredService<DatabaseOptions>()));
 builder.Services.AddSingleton(TimeProvider.System);
@@ -270,13 +274,20 @@ app.MapGet(
     .Produces(StatusCodes.Status503ServiceUnavailable);
 app.MapGet(
     "/api/v1/advice/demo",
-    async (DecisionSnapshotStore store, CancellationToken cancellationToken) =>
+    async (
+        DecisionSnapshotStore store,
+        OfficialDecisionRoomPreviewStore previewStore,
+        CancellationToken cancellationToken) =>
     {
         DecisionSnapshotDocument? snapshot = await store.GetLatestSnapshotAsync(
             SyntheticDecisionSnapshotSeeder.SeasonCode,
             SyntheticDecisionSnapshotSeeder.Gameweek,
             cancellationToken);
-        GameweekAdviceDocument advice = DemoGameweekAdvice.Create(snapshot);
+        OfficialDecisionRoomPreview? officialPreview =
+            await previewStore.GetLatestAsync(cancellationToken);
+        GameweekAdviceDocument advice = officialPreview is null
+            ? DemoGameweekAdvice.Create(snapshot)
+            : DemoGameweekAdvice.Create(officialPreview: officialPreview);
         return Results.Ok(advice);
     })
     .WithName("GetDemoGameweekAdvice")

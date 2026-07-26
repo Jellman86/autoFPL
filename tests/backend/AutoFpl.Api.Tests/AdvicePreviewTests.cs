@@ -30,7 +30,9 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
         string body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         Assert.Contains("Gameweek decision room", body, StringComparison.Ordinal);
         Assert.Contains("Ask about this exact selection", body, StringComparison.Ordinal);
-        Assert.Contains("Preview data", body, StringComparison.Ordinal);
+        Assert.Contains("Player dossier", body, StringComparison.Ordinal);
+        Assert.Contains("Recent form", body, StringComparison.Ordinal);
+        Assert.Contains("Select any player for the full dossier", body, StringComparison.Ordinal);
         Assert.Contains("Official data footing", body, StringComparison.Ordinal);
         Assert.Contains("Capture to deadline provenance", body, StringComparison.Ordinal);
         Assert.Contains("<dt>Outcome</dt>", body, StringComparison.Ordinal);

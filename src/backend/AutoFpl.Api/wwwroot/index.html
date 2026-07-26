@@ -113,7 +113,10 @@
             <p class="eyebrow">Recommended selection</p>
             <h2 id="formation-title">Starting XI</h2>
           </div>
-          <p class="formation-note" id="selection-objective"></p>
+          <div class="formation-heading-copy">
+            <p class="formation-note" id="selection-objective"></p>
+            <span class="card-hint">Select any player for the full dossier</span>
+          </div>
         </div>
 
         <div class="pitch" aria-label="Recommended formation">
@@ -133,43 +136,112 @@
         </div>
       </section>
 
-      <aside class="evidence-panel" aria-labelledby="player-name">
-        <p class="eyebrow">Decision evidence</p>
-        <div class="player-heading">
-          <div>
-            <h2 id="player-name">Select a player</h2>
-            <p id="player-context">Choose any card to inspect its recommendation.</p>
+      <button
+        class="dossier-backdrop"
+        id="dossier-backdrop"
+        type="button"
+        aria-label="Close player dossier"
+        tabindex="-1">
+      </button>
+
+      <aside
+        class="evidence-panel"
+        id="player-dossier"
+        aria-labelledby="player-name"
+        aria-live="polite"
+        tabindex="-1">
+        <div class="dossier-handle" aria-hidden="true"></div>
+        <div class="dossier-hero">
+          <div class="dossier-portrait" id="dossier-portrait" aria-hidden="true">
+            <span id="dossier-initials">—</span>
           </div>
-          <span id="player-badge" class="player-badge" hidden></span>
+          <div class="dossier-title">
+            <p class="eyebrow">Player dossier</p>
+            <div class="player-heading">
+              <div>
+                <h2 id="player-name">Select a player</h2>
+                <p id="player-context">Choose any card to inspect its evidence.</p>
+              </div>
+              <span id="player-badge" class="player-badge" hidden></span>
+            </div>
+          </div>
+          <button class="dossier-close" id="dossier-close" type="button">
+            <span aria-hidden="true">×</span>
+            <span class="visually-hidden">Close player dossier</span>
+          </button>
         </div>
 
-        <div class="forecast-strip">
-          <div>
-            <span>Expected points</span>
-            <strong id="player-points">—</strong>
-          </div>
-          <div>
-            <span>Expected minutes</span>
-            <strong id="player-minutes">—</strong>
-          </div>
-          <div>
-            <span>80% range</span>
-            <strong id="player-range">—</strong>
-          </div>
-        </div>
+        <p class="dossier-state" id="dossier-state">
+          Forecast evidence appears here; official form and fixtures load when available.
+        </p>
 
-        <section class="evidence-list" aria-labelledby="why-title">
-          <h3 id="why-title">Why this choice</h3>
-          <ul id="player-reasons"></ul>
-        </section>
-        <section class="evidence-list risks" aria-labelledby="risk-title">
-          <h3 id="risk-title">What could change it</h3>
-          <ul id="player-risks"></ul>
-        </section>
+        <div class="dossier-scroll">
+          <section class="dossier-section forecast-section" aria-labelledby="forecast-title">
+            <div class="dossier-section-heading">
+              <span>01</span>
+              <h3 id="forecast-title">Forecast</h3>
+              <small>Synthetic preview</small>
+            </div>
+            <div class="forecast-strip">
+              <div>
+                <span>Expected points</span>
+                <strong id="player-points">—</strong>
+              </div>
+              <div>
+                <span>Expected minutes</span>
+                <strong id="player-minutes">—</strong>
+              </div>
+              <div>
+                <span>80% range</span>
+                <strong id="player-range">—</strong>
+              </div>
+            </div>
+          </section>
 
-        <div class="synthetic-callout">
-          <strong>Preview data</strong>
-          <span>This screen proves the product contract. It is not real FPL advice or a fitted forecast.</span>
+          <section class="dossier-section" aria-labelledby="form-title">
+            <div class="dossier-section-heading">
+              <span>02</span>
+              <h3 id="form-title">Recent form</h3>
+              <small>Cutoff-correct</small>
+            </div>
+            <div id="recent-form" class="recent-form">
+              <p class="empty-state">Select a player to load previous Gameweeks.</p>
+            </div>
+          </section>
+
+          <section class="dossier-section" aria-labelledby="fixtures-title">
+            <div class="dossier-section-heading">
+              <span>03</span>
+              <h3 id="fixtures-title">Fixtures</h3>
+              <small>Next six Gameweeks</small>
+            </div>
+            <div id="upcoming-fixtures" class="fixture-ribbon">
+              <p class="empty-state">Upcoming opponents will appear here.</p>
+            </div>
+          </section>
+
+          <section class="dossier-section" aria-labelledby="why-title">
+            <div class="dossier-section-heading">
+              <span>04</span>
+              <h3 id="why-title">Evidence</h3>
+              <small>Why and risk</small>
+            </div>
+            <div class="evidence-columns">
+              <section class="evidence-list">
+                <h4>Why this choice</h4>
+                <ul id="player-reasons"></ul>
+              </section>
+              <section class="evidence-list risks">
+                <h4>What could change it</h4>
+                <ul id="player-risks"></ul>
+              </section>
+            </div>
+          </section>
+
+          <div class="synthetic-callout" id="synthetic-callout">
+            <strong>Forecast preview</strong>
+            <span>Official identity and history; synthetic estimates until a model is promoted.</span>
+          </div>
         </div>
       </aside>
     </div>

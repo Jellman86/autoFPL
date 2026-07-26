@@ -57,12 +57,14 @@ need.
 
 ## Decision-room visual direction
 
-The next UI iteration should feel like a focused football analysis desk rather
-than a generic administration dashboard. The pitch remains the primary
-selection surface; official player portraits, forecast uncertainty and
+The implemented decision-room foundation feels like a focused football analysis
+desk rather than a generic administration dashboard. The pitch remains the
+primary selection surface; official player portraits, forecast uncertainty and
 selection role make each player immediately recognisable. Dense research detail
 belongs in one selected-player dossier instead of being repeated across every
-card.
+card. Forecast-specific fields remain synthetic until promotion, while identity,
+prior outcomes and fixtures can already come from the cutoff-safe official
+capture.
 
 On the pitch and bench, each player card shows:
 
@@ -367,16 +369,16 @@ Tracked by [#43](https://github.com/Jellman86/autoFPL/issues/43).
   valid baseline.
 - Store a compact forecast artefact linked to snapshot, model/run, code, data
   and configuration identities.
-- Replace the current compact text-only pitch cards with official-photo player
-  cards that retain legible expected points, minutes, uncertainty and selection
-  role at desktop and mobile sizes.
-- Make every pitch and bench card open the typed player dossier described
-  above, with chronological form, fixtures, forecast evidence and honest
-  missing/aggregated states.
-- Keep the pitch, dossier and alternative selection in sync without a page
-  reload, and preserve the selected player in a shareable URL.
-- Prove loading, empty, missing-photo, missing-history, stale-data and provider
-  failure states with accessible keyboard/touch interaction.
+- Retain the implemented official-photo pitch cards and responsive player
+  dossier while replacing their synthetic point, minute and uncertainty values
+  with the promoted forecast artefact.
+- Extend the implemented chronological form and fixture views with model/run
+  identity, freshness and material feature evidence.
+- Keep the implemented pitch/dossier URL synchronisation while adding editable
+  user alternatives.
+- Continue proving stale-data and provider-failure states; loading,
+  missing-photo and missing-history states already have browser-tested
+  fallbacks with keyboard and touch interaction.
 
 **Exit:** the decision room displays the first honest out-of-time-evaluated
 forecast on recognisable player cards, and a user can inspect the complete
@@ -483,15 +485,13 @@ The next development slices are:
    times, prove player/fixture identity coverage and score its conditional
    published values as an external incumbent before using any value as a
    feature;
-5. exercise the implemented official photo identifier and cutoff-aware
-   player-dossier API against live captures as prior outcomes accumulate;
-6. implement the decision-room visual overhaul and clickable responsive player
-   dossier against honest synthetic and recorded states;
-7. build the point-in-time temporal feature table and compare
+5. keep exercising the implemented official-photo decision room and
+   cutoff-aware dossiers against live captures as prior outcomes accumulate;
+6. build the point-in-time temporal feature table and compare
    regularised/tabular and scraped-feature challengers only when they
    can be evaluated against the retained incumbents;
-8. populate player cards with promoted forecasts only after a baseline has
-   valid out-of-time evidence.
+7. populate the implemented player cards with promoted forecasts only after a
+   baseline has valid out-of-time evidence.
 
 Do not add another standalone governance, universal contract, infrastructure or
 AI-orchestrator project ahead of those slices.

@@ -121,7 +121,7 @@ public sealed class OfficialFplPlayerDossierStore
                 identity.Status,
                 identity.News,
                 identity.PhotoIdentifier,
-                BuildPhotoUrl(identity.PhotoIdentifier)),
+                CreatePhotoUrl(identity.PhotoIdentifier)),
             outcomes,
             upcoming);
     }
@@ -342,7 +342,7 @@ public sealed class OfficialFplPlayerDossierStore
         return results;
     }
 
-    private static string? BuildPhotoUrl(string? photoIdentifier)
+    public static string? CreatePhotoUrl(string? photoIdentifier)
     {
         if (string.IsNullOrEmpty(photoIdentifier))
         {
