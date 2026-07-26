@@ -214,6 +214,42 @@ metadata and PKCE for MCP clients, and OpenAPI plus MCP schemas for the
 integration contracts. Prefer an established identity provider over an
 autoFPL-authored authorization server.
 
+### Dashboard sharing and owner access
+
+Dashboard sharing is a future product capability, not a reason to expand the
+current private single-owner slice. Before any dashboard can be exposed beyond
+the trusted private boundary, autoFPL must establish an authenticated owner
+session through OpenID Connect and enforce authorisation in the backend rather
+than relying on hidden UI controls.
+
+The initial roles and boundaries are deliberately small:
+
+- **Owner:** may configure integrations and provider secrets, manage collection
+  and retention, create or revoke shares, edit and lock selections, and invoke
+  other consequential instance actions allowed by deployment policy.
+- **Viewer:** may inspect only the explicitly shared, read-only dashboard or
+  immutable decision snapshot. Possession of a share link never grants owner
+  access, write access or a reusable application session.
+- **Future collaborator:** requires a separately designed role and audit
+  contract. It must not emerge implicitly by giving a viewer selected owner
+  routes.
+
+Shares default to a sanitized, read-only decision view and have an explicit
+scope, creation time, expiry policy and revocation control. They may use a
+high-entropy capability link for bounded low-sensitivity sharing or require an
+authenticated invited viewer when the deployment policy demands it. A shared
+view may include the selected squad, forecasts, player dossiers, explanations,
+uncertainty, evidence citations and freshness. It must exclude integration
+secrets, provider configuration, private AI conversations, retained raw source
+payloads, infrastructure metadata, administrative controls and every
+write-capable route or MCP tool.
+
+Owner authentication and viewer isolation are release gates for sharing.
+Automated tests must prove direct-route authorisation, sanitized responses,
+expiry and revocation, cache behavior and the absence of privilege gained by
+changing client-side state. Relevant owner actions and share lifecycle events
+must be auditable without logging secrets or private evidence payloads.
+
 ## Scientific programme
 
 Prediction quality is evaluated out of time and at the decision cutoff. Every
@@ -511,6 +547,9 @@ Tracked initially by [#46](https://github.com/Jellman86/autoFPL/issues/46).
   policy and secret injection in the Compose/deployment boundary.
 - Implement standards-based autoFPL identity and MCP OAuth before exposing
   user-specific data beyond the trusted single-user network.
+- Establish the authenticated owner role and backend authorisation boundary
+  that future dashboard sharing will depend on; do not expose sharing in this
+  milestone.
 - Scope every conversation to explicit snapshot and candidate IDs.
 - Require citations/tool evidence for factual claims; keep deterministic
   explanations available without AI.
@@ -568,7 +607,10 @@ v1.0 hardens the proven product rather than introducing its first UI:
 
 - accessible desktop and mobile decision experiences;
 - user/proposal history and explicit approval/rejection where useful;
-- authentication before exposure beyond the trusted private boundary;
+- an OpenID Connect owner session with backend-enforced gates for configuration,
+  collection, selection locking and other consequential actions;
+- explicit, revocable read-only dashboard or snapshot sharing with sanitized
+  viewer responses and tested owner/viewer isolation;
 - migrations, backup/restore, retention and observability;
 - provider configuration and secret lifecycle;
 - signed SemVer release, recovery and exercised rollback; and
