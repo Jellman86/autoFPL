@@ -222,6 +222,93 @@ public sealed class ResearchSourceSnapshotStore
             snapshots);
     }
 
+    internal async Task<ResearchSourceSnapshotContent?> ReadContentAsync(
+        long snapshotId,
+        CancellationToken cancellationToken = default)
+    {
+        if (snapshotId <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(snapshotId));
+        }
+
+        await using var connection =
+            new SqliteConnection(_options.ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText =
+            """
+            SELECT
+                snapshot_id,
+                schema_version,
+                status,
+                source_key,
+                source_class,
+                canonical_url,
+                final_url,
+                dependence_group,
+                transport_key,
+                transport_version,
+                season_code,
+                gameweek,
+                deadline_utc,
+                identity_capture_id,
+                retrieved_at_utc,
+                available_at_utc,
+                source_revision,
+                content_sha256,
+                content_bytes,
+                created_at_utc,
+                content_brotli
+            FROM research_source_snapshots
+            WHERE snapshot_id = $snapshotId;
+            """;
+        command.Parameters.AddWithValue("$snapshotId", snapshotId);
+        await using SqliteDataReader reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+        if (!await reader.ReadAsync(cancellationToken))
+        {
+            return null;
+        }
+
+        return new(Read(reader), Decompress((byte[])reader[20]));
+    }
+
+    internal async Task<IReadOnlyDictionary<int, int>> GetPlayerIdsByCodeAsync(
+        long identityCaptureId,
+        CancellationToken cancellationToken = default)
+    {
+        if (identityCaptureId <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(identityCaptureId));
+        }
+
+        await using var connection =
+            new SqliteConnection(_options.ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText =
+            """
+            SELECT code, player_id
+            FROM official_fpl_players
+            WHERE capture_id = $captureId
+            ORDER BY code;
+            """;
+        command.Parameters.AddWithValue("$captureId", identityCaptureId);
+        var identities = new Dictionary<int, int>();
+        await using SqliteDataReader reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            if (!identities.TryAdd(reader.GetInt32(0), reader.GetInt32(1)))
+            {
+                throw new ResearchSourceSnapshotException(
+                    "The official identity capture contains a duplicate player code.");
+            }
+        }
+
+        return identities;
+    }
+
     private static async Task<TargetContext> GetTargetContextAsync(
         SqliteConnection connection,
         SqliteTransaction transaction,
@@ -388,6 +475,19 @@ public sealed class ResearchSourceSnapshotStore
         return output.ToArray();
     }
 
+    private static string Decompress(byte[] content)
+    {
+        using var input = new MemoryStream(content);
+        using var decompressor = new BrotliStream(
+            input,
+            CompressionMode.Decompress);
+        using var reader = new StreamReader(
+            decompressor,
+            Encoding.UTF8,
+            detectEncodingFromByteOrderMarks: false);
+        return reader.ReadToEnd();
+    }
+
     private static string FormatUtc(DateTimeOffset value) =>
         value.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture);
 
@@ -403,3 +503,7 @@ public sealed class ResearchSourceSnapshotStore
         int Gameweek,
         DateTimeOffset DeadlineUtc);
 }
+
+internal sealed record ResearchSourceSnapshotContent(
+    ResearchSourceSnapshotDocument Snapshot,
+    string Content);

@@ -41,3 +41,13 @@ public sealed record ResearchSourceInventoryDocument(
         IReadOnlyList<ResearchSourceDefinitionDocument> Sources,
     [property: JsonPropertyName("latestSnapshots")]
         IReadOnlyList<ResearchSourceSnapshotDocument> LatestSnapshots);
+
+public sealed record ResearchSourceClaimExtractionDocument(
+    [property: JsonPropertyName("schemaVersion")] string SchemaVersion,
+    [property: JsonPropertyName("snapshotId")] long SnapshotId,
+    [property: JsonPropertyName("sourceKey")] string SourceKey,
+    [property: JsonPropertyName("extractionVersion")] string ExtractionVersion,
+    [property: JsonPropertyName("candidateCount")] int CandidateCount,
+    [property: JsonPropertyName("claimCount")] int ClaimCount,
+    [property: JsonPropertyName("unresolvedPlayerCodes")]
+        IReadOnlyList<int> UnresolvedPlayerCodes);

@@ -61,6 +61,24 @@ public sealed class EvidenceClaimStore
 
     public async Task<EvidenceClaimDocument> ImportAsync(
         EvidenceClaimImportRequest request,
+        CancellationToken cancellationToken = default) =>
+        await ImportAsync(
+            request,
+            expectedIdentityCaptureId: null,
+            cancellationToken);
+
+    internal async Task<EvidenceClaimDocument> ImportForIdentityCaptureAsync(
+        EvidenceClaimImportRequest request,
+        long expectedIdentityCaptureId,
+        CancellationToken cancellationToken = default) =>
+        await ImportAsync(
+            request,
+            expectedIdentityCaptureId,
+            cancellationToken);
+
+    private async Task<EvidenceClaimDocument> ImportAsync(
+        EvidenceClaimImportRequest request,
+        long? expectedIdentityCaptureId,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -76,6 +94,11 @@ public sealed class EvidenceClaimStore
             transaction,
             claim,
             cancellationToken);
+        if (expectedIdentityCaptureId is not null
+            && identity.IdentityCaptureId != expectedIdentityCaptureId)
+        {
+            throw Invalid("identity-capture.mismatch", "playerId");
+        }
         string claimContentSha256 = ComputeClaimContentSha256(claim, identity);
         DateTimeOffset createdAtUtc = _timeProvider.GetUtcNow().ToUniversalTime();
 

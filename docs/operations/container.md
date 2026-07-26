@@ -261,11 +261,27 @@ replay; the API returns only source class, dependence group, timing, revision,
 size and hash metadata. Repeated identical content is idempotent. Every source
 remains `shadow-only` and cannot alter claims, predictions or selections.
 
+Extract identity-checked categorical start claims from one retained FFScout
+snapshot explicitly:
+
+```text
+dotnet AutoFpl.Api.dll \
+  --extract-research-source-claims <snapshot-id>
+```
+
+The deterministic v1 adapter reads only the private compressed snapshot,
+isolates predicted-XI team blocks and resolves players through the official
+Premier League photo code embedded in each retained card. It reports unmatched
+codes without writing claims for them. Repeating the command is idempotent.
+Imported claims remain `quarantined`; extraction confidence records parser
+certainty, not the chance that a player starts. Official-injury and consensus
+snapshots have no extractor yet and fail closed.
+
 See the [source portfolio](../research/research-source-portfolio-v1.md).
 
 ## SQLite operations
 
-The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies eighteen explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
+The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies nineteen explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
 
 The root filesystem stays read-only. Production must mount a private, UID
 `1654`-writable persistent directory at `/data`; the CI smoke test uses an

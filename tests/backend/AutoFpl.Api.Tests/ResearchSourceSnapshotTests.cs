@@ -93,6 +93,120 @@ public sealed class ResearchSourceSnapshotTests
     }
 
     [Fact]
+    public async Task Ffscout_extractor_uses_official_photo_code_and_is_idempotent()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = await CreateDatabaseAsync(files.DatabasePath);
+        var snapshotStore = new ResearchSourceSnapshotStore(
+            options,
+            new FixedTimeProvider(RetrievalTime));
+        ResearchSourceDefinition source =
+            ResearchSourceRegistry.Get("ffscout-predicted-lineups");
+        ResearchSourceSnapshotDocument snapshot = await snapshotStore.PersistAsync(
+            source,
+            new SpiderScrapeResult(
+                source.CanonicalUri,
+                200,
+                """
+                FPL 2026/27 - Predicted Line-ups
+                Our Team News page will house predicted line-ups for all 20 Premier League teams.
+                ![Home badge](https://example.test/home.png)##
+                Home
+                **Next Match:** Away (H)
+                * ![Avatar of Test Player](https://resources.premierleague.com/premierleague25/photos/players/110x140/1001.png)Test Player
+                * **Out:**
+                * **Doubts:**
+                """,
+                "untrusted_remote_content"),
+            TestContext.Current.CancellationToken);
+        var extractor = new ResearchSourceClaimExtractor(
+            snapshotStore,
+            new EvidenceClaimStore(
+                options,
+                new FixedTimeProvider(RetrievalTime.AddMinutes(1))));
+
+        ResearchSourceClaimExtractionDocument first =
+            await extractor.ExtractAsync(
+                snapshot.SnapshotId,
+                TestContext.Current.CancellationToken);
+        ResearchSourceClaimExtractionDocument duplicate =
+            await extractor.ExtractAsync(
+                snapshot.SnapshotId,
+                TestContext.Current.CancellationToken);
+
+        Assert.Equal(1, first.CandidateCount);
+        Assert.Equal(1, first.ClaimCount);
+        Assert.Empty(first.UnresolvedPlayerCodes);
+        Assert.Equal(first, duplicate);
+
+        EvidenceClaimSetDocument claims =
+            await new EvidenceClaimStore(options, TimeProvider.System)
+                .GetForGameweekAsync(
+                    "2026-27",
+                    1,
+                    RetrievalTime,
+                    TestContext.Current.CancellationToken);
+        EvidenceClaimDocument claim = Assert.Single(claims.Claims);
+        Assert.Equal(101, claim.PlayerId);
+        Assert.Equal("start", claim.ClaimType);
+        Assert.Equal("starts", claim.StartStatus);
+        Assert.Equal("model-forecast", claim.Directness);
+        Assert.Equal(
+            ResearchSourceClaimExtractor.FfScoutExtractionVersion,
+            claim.ExtractionVersion);
+        Assert.Equal("Home predicted XI: Test Player", claim.SourceSpan);
+        Assert.Equal(1m, claim.ExtractionConfidence);
+
+        await using var connection =
+            new SqliteConnection(options.ConnectionString);
+        await connection.OpenAsync(TestContext.Current.CancellationToken);
+        await using SqliteCommand count = connection.CreateCommand();
+        count.CommandText = "SELECT COUNT(*) FROM evidence_claims;";
+        Assert.Equal(
+            1L,
+            (long)(await count.ExecuteScalarAsync(
+                TestContext.Current.CancellationToken))!);
+    }
+
+    [Fact]
+    public async Task Ffscout_extractor_reports_unresolved_photo_codes_without_claims()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = await CreateDatabaseAsync(files.DatabasePath);
+        var snapshotStore = new ResearchSourceSnapshotStore(
+            options,
+            new FixedTimeProvider(RetrievalTime));
+        ResearchSourceDefinition source =
+            ResearchSourceRegistry.Get("ffscout-predicted-lineups");
+        ResearchSourceSnapshotDocument snapshot = await snapshotStore.PersistAsync(
+            source,
+            new SpiderScrapeResult(
+                source.CanonicalUri,
+                200,
+                """
+                Our Team News page will house predicted line-ups for all 20 Premier League teams.
+                ![Home badge](https://example.test/home.png)##
+                Home
+                * ![Avatar of Unknown](https://resources.premierleague.com/premierleague25/photos/players/110x140/9999.png)Unknown
+                * **Out:**
+                """,
+                "untrusted_remote_content"),
+            TestContext.Current.CancellationToken);
+        var extractor = new ResearchSourceClaimExtractor(
+            snapshotStore,
+            new EvidenceClaimStore(options, TimeProvider.System));
+
+        ResearchSourceClaimExtractionDocument extraction =
+            await extractor.ExtractAsync(
+                snapshot.SnapshotId,
+                TestContext.Current.CancellationToken);
+
+        Assert.Equal(1, extraction.CandidateCount);
+        Assert.Equal(0, extraction.ClaimCount);
+        Assert.Equal([9999], extraction.UnresolvedPlayerCodes);
+    }
+
+    [Fact]
     public async Task Inventory_api_exposes_diverse_registry_and_metadata_but_not_source_text()
     {
         using var files = new TemporaryDatabaseFiles();
