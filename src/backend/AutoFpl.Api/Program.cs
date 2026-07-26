@@ -90,6 +90,23 @@ if (requestedResearchSourceClaimExtraction
         "Usage: --extract-research-source-claims <snapshot-id>");
     return 2;
 }
+bool requestedEvidenceClaimEvaluation =
+    args.Length > 0
+    && StringComparer.Ordinal.Equals(
+        args[0],
+        "--evaluate-evidence-claims");
+bool runEvidenceClaimEvaluation =
+    requestedEvidenceClaimEvaluation
+    && args.Length is 1 or 2
+    && (args.Length == 1
+        || (!string.IsNullOrWhiteSpace(args[1])
+            && args[1].Length is >= 4 and <= 16));
+if (requestedEvidenceClaimEvaluation && !runEvidenceClaimEvaluation)
+{
+    await Console.Error.WriteLineAsync(
+        "Usage: --evaluate-evidence-claims [season-code]");
+    return 2;
+}
 bool requestedFplFormForecastEvaluation =
     args.Length > 0
     && StringComparer.Ordinal.Equals(args[0], "--evaluate-fpl-form-forecast");
@@ -146,6 +163,7 @@ bool runNonWebCommand =
     || runEvidenceClaimImport
     || runResearchSourceCapture
     || runResearchSourceClaimExtraction
+    || runEvidenceClaimEvaluation
     || runFplFormForecastEvaluation
     || runOfficialExpectedPointsEvaluation
     || runOfficialFplOutcomeImport;
@@ -214,6 +232,9 @@ builder.Services.AddSingleton(serviceProvider =>
     new EvidenceClaimStore(
         serviceProvider.GetRequiredService<DatabaseOptions>(),
         serviceProvider.GetRequiredService<TimeProvider>()));
+builder.Services.AddSingleton(serviceProvider =>
+    new EvidenceClaimEvaluationStore(
+        serviceProvider.GetRequiredService<DatabaseOptions>()));
 builder.Services.AddSingleton<EvidenceClaimImporter>();
 builder.Services.AddSingleton(serviceProvider =>
     new ResearchSourceSnapshotStore(
@@ -524,6 +545,19 @@ if (runResearchSourceClaimExtraction)
         await Console.Error.WriteLineAsync(exception.Message);
         return 2;
     }
+}
+
+if (runEvidenceClaimEvaluation)
+{
+    EvidenceClaimEvaluationDocument evaluation =
+        await app.Services
+            .GetRequiredService<EvidenceClaimEvaluationStore>()
+            .EvaluateAsync(args.Length == 2 ? args[1] : null);
+    await Console.Out.WriteLineAsync(
+        JsonSerializer.Serialize(
+            evaluation,
+            new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+    return evaluation.Status == "complete" ? 0 : 2;
 }
 
 if (runFplFormForecastEvaluation)

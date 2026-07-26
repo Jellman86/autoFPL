@@ -106,8 +106,9 @@ season.
    artifact for every eligible player, with explicit provisional status,
    uncalibrated interval-only distribution and missing fitted components.
 3. **Implemented as a quarantine boundary:** persist immutable typed claims
-   with official player identity and cutoff-safe reads. Source adapters,
-   outcome scoring and promotion remain.
+   with official player identity and cutoff-safe reads. Start-claim outcome
+   scoring is now implemented; availability/minutes/role truth and promotion
+   remain.
 4. **Implemented for three diverse public pages:** inventory and shadow-capture
    official availability, specialist predicted-lineup and dependent-consensus
    sources through Quark's existing Spider service. A deterministic first
@@ -117,9 +118,12 @@ season.
    claims. Bans remain excluded. A separate deterministic adapter retains the
    strAIghtred consensus percentages under the same player/target duplicate
    clusters as FFScout, making dependence explicit. Official-injury extraction,
-   quantitative reproduction, named experts and scoring remain.
-5. Score sources by target and lead time, then implement same-fold no-source
-   versus source-feature ablations.
+   quantitative reproduction and named experts remain.
+5. **Implemented for start truth:** score pre-deadline categorical and
+   probabilistic start claims against exact official Gameweek starts by source
+   and fixed lead-time bucket. Availability is not proxied by appearance;
+   reliability shrinkage and same-fold no-source versus source-feature
+   ablations remain.
 6. Add Bayesian component updates and/or predictive-distribution stacking only
    when their registered comparison supports them.
 7. Feed the full player distributions into a correlated CPU reference
