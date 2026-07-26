@@ -684,12 +684,13 @@ v1.0 hardens the proven product rather than introducing its first UI:
 
 The next development slices are:
 
-1. use the implemented pinned 2025/26 archive import to build a versioned
-   cross-season player-state artifact so prior-season match performance,
-   minutes, starts, underlying events, team/manager changes and health or
-   return-to-play chronology inform early-season predictions with fitted
-   temporal decay and honest missingness; archived final health is only a
-   durability prior and current official availability must dominate it;
+1. use the implemented pinned 2025/26 archive and exploratory cross-season
+   player-state artifact to run identical-fold feature ablations so
+   prior-season match performance, minutes, starts, underlying events,
+   team/manager changes and participation-derived durability inform
+   early-season predictions only when fitted temporal decay and honest
+   missingness improve out-of-time results; archived final health remains a
+   durability prior and current official availability always dominates it;
 2. extend the implemented provisional all-player artifact with fitted
    appearance/start/minutes and point-distribution components only as real
    rolling folds justify them;

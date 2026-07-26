@@ -62,6 +62,26 @@ never overwrites an existing file.
 The exact boundary and limitations are recorded in the
 [temporal feature table specification](../../docs/research/temporal-feature-table-v2.md).
 
+## Cross-season player state v1
+
+The read-only cross-season command joins the pinned 2025/26 archive to one
+current official target through stable player codes:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.cross_season_player_state \
+  --database /path/to/autofpl.db \
+  --season 2026-27 \
+  --gameweek 1 \
+  --output /path/to/cross-season-state.json
+```
+
+Every current player remains present. Missing prior identity is explicit;
+prior-season 1/3/5/10-Gameweek and EWMA performance/durability summaries never
+override current official health. The artifact is deterministic, read-only,
+hash-identified and explicitly does not influence a forecast. See the
+[cross-season state specification](../../docs/research/cross-season-player-state-v1.md).
+
 ## Official underlying feature ablation v1
 
 The official feature ablation compares the unchanged ridge/tree contract with
