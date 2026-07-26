@@ -39,7 +39,12 @@ baselines.
 
 Development uses expanding Gameweek origins before Gameweek 31. Each target
 selects its comparator on development data. Gameweeks 31–38 remain the locked
-holdout and are opened only after that selection.
+holdout and are opened only after that selection. Because the challenger and
+its configuration are fixed before this evaluation, development folds fit only
+the inexpensive comparators; the challenger is neither selected nor tuned
+there. Challenger fitting begins only after the comparator is locked, avoiding
+work that cannot affect the decision while preserving the identical holdout
+gate.
 
 ## Metrics and gate
 
