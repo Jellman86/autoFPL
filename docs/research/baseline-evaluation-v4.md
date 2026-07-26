@@ -1,4 +1,4 @@
-# Baseline evaluation v3
+# Baseline evaluation v4
 
 ## Status
 
@@ -15,7 +15,9 @@ Gameweek deadline:
 1. predict the player's final official integer FPL points for that Gameweek;
 2. predict the probability that the player's final official Gameweek minutes
    are at least 60; and
-3. predict the player's final official Gameweek-total minutes.
+3. predict the player's final official Gameweek-total minutes; and
+4. produce empirical predictive distributions for Gameweek-total points and
+   minutes.
 
 The population contains only players whose pre-deadline replay identity matches
 an official final outcome. Added post-deadline players may exist in the outcome
@@ -106,6 +108,23 @@ availability model may also report conditional minutes, but simulation needs
 the unconditional expectation and its uncertainty rather than silently
 assuming a player is available.
 
+## Distribution baselines
+
+Points and minutes each have four distributional incumbents:
+
+- a degenerate distribution at zero;
+- the empirical distribution of all eligible prior player/Gameweek outcomes;
+- the empirical distribution for the player's position, falling back to the
+  global distribution; and
+- the empirical distribution for the player, falling back to the position
+  distribution.
+
+Every empirical sample is drawn from the correction-safe training window for
+that target deadline. The distributions are discrete and intentionally
+dependency-free. They preserve multimodality and double-Gameweek totals without
+assuming a Gaussian shape, but early player histories are necessarily
+degenerate or very sparse.
+
 ## Metrics and slices
 
 For points and expected minutes, the command reports mean absolute error, root
@@ -123,9 +142,20 @@ For the binary probability target it reports:
 - the same aggregate probability metrics by position.
 
 Calibration bins are descriptive, especially in the tiny early sample. They
-must not be read as proof of calibration. The point and minutes models still do
-not produce predictive distributions, so CRPS and interval coverage remain
-future work.
+must not be read as proof of calibration.
+
+For the point and minutes distributions, the command reports:
+
+- mean continuous ranked probability score (CRPS), where lower is better;
+- median absolute error and mean pinball loss across fixed quantiles;
+- observed quantile-at-or-below rates and absolute calibration gaps;
+- observed coverage and mean width for central 50%, 80% and 95% intervals;
+- mean empirical sample count, exposing sparse distributions; and
+- the same diagnostics by position.
+
+Quantiles use deterministic linear interpolation. Coverage and calibration
+diagnostics are descriptive until enough real rolling folds exist. No fitted
+calibrator is applied yet, and no fixture result is evidence of calibration.
 
 ## Reproducibility and output
 
@@ -145,8 +175,8 @@ The SQLite connection is query-only. The report records:
 - replay/outcome IDs, timestamps and source hashes for every target and
   training fold;
 - a canonical data-identity hash;
-- point, expected-minutes and probability metrics, calibration bins and
-  position slices; and
+- point, expected-minutes, binary-probability and distributional metrics,
+  calibration diagnostics and position slices; and
 - a canonical run-identity hash.
 
 The command refuses to overwrite an existing report. With no complete pair or
@@ -159,5 +189,6 @@ No final holdout or promotion threshold is registered yet because the live
 2026/27 sample contains no completed Gameweeks. Before any challenger influences
 advice, register the training window, final holdout, minimum sample, tuning
 budget, decision-utility evaluation and promotion rule. Add calibrated minutes
-and points distributions before scenario simulation depends on them.
-Player-card forecasts remain synthetic until that later gate passes.
+and points challengers only by fitting any calibrator inside each training
+window and comparing it with these empirical incumbents. Player-card forecasts
+remain synthetic until that later gate passes.

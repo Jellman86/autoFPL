@@ -276,9 +276,10 @@ Tracked by [#42](https://github.com/Jellman86/autoFPL/issues/42).
 **Status:** active — the read-only baseline command, expanding-origin
 selection, correction-time leakage checks, deterministic point baselines,
 smoothed probability-of-60-minutes baselines, proper binary scores,
-expected-minutes baselines, calibration diagnostics, position slices and
-reproducibility identities are implemented against test fixtures. Real
-evaluation remains unavailable until completed replay/outcome pairs exist.
+expected-minutes baselines, empirical point/minutes distributions, CRPS,
+quantile/interval calibration diagnostics, position slices and reproducibility
+identities are implemented against test fixtures. Real evaluation remains
+unavailable until completed replay/outcome pairs exist.
 
 - Implement a local Python evaluation command using SQLite snapshots.
 - Reproduce naive and credible strong baselines with rolling origins.
@@ -396,9 +397,9 @@ The next development slices are:
    Gameweek and verify the resulting real replay/outcome pair;
 2. run the baseline command as complete pairs accumulate and retain the
    machine-readable reports;
-3. retain the probability-of-60-minutes and expected-minutes reports, then add
-   calibrated minutes and points distributions as real folds accumulate;
-4. add one bounded public predicted-points/minutes adapter, preserving its
+3. retain the point, probability-of-60-minutes, expected-minutes and empirical
+   distribution reports as real folds accumulate;
+4. next, add one bounded public predicted-points/minutes adapter, preserving its
    publication, retrieval and availability times, and score it as an external
    incumbent before using any of its values as features;
 5. compare regularised/tabular and scraped-feature challengers only when they

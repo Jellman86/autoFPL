@@ -13,10 +13,24 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src" / "analytics"))
 
-from autofpl_analytics.baseline import EvaluationError, evaluate_database, main
+from autofpl_analytics.baseline import (
+    EvaluationError,
+    _empirical_crps,
+    _empirical_distribution,
+    _empirical_quantile,
+    evaluate_database,
+    main,
+)
 
 
 class BaselineEvaluationTests(unittest.TestCase):
+    def test_empirical_distribution_math_matches_exact_reference(self) -> None:
+        distribution = _empirical_distribution([90, 60, 0, 90])
+
+        self.assertEqual(41.25, _empirical_crps(distribution, 120))
+        self.assertEqual(45.0, _empirical_quantile(distribution, 0.25))
+        self.assertEqual(90.0, _empirical_quantile(distribution, 0.9))
+
     def test_rolling_origins_exclude_corrections_unavailable_at_deadline(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             database = Path(temporary_directory) / "autofpl.db"
@@ -26,8 +40,8 @@ class BaselineEvaluationTests(unittest.TestCase):
             report = evaluate_database(database, season_code="2026-27")
 
         self.assertEqual("complete", report["status"])
-        self.assertEqual("1.2", report["schemaVersion"])
-        self.assertEqual("baseline-evaluation-v3", report["evaluatorVersion"])
+        self.assertEqual("1.3", report["schemaVersion"])
+        self.assertEqual("baseline-evaluation-v4", report["evaluatorVersion"])
         self.assertEqual("exploratory-baseline-not-promoted", report["researchStatus"])
         self.assertEqual(5, report["configuration"]["calibrationBinCount"])
         self.assertEqual(3, report["completePairCount"])
@@ -140,6 +154,67 @@ class BaselineEvaluationTests(unittest.TestCase):
             75.0,
             expected_minutes_models["minutes-zero"]["metrics"]["rmse"],
         )
+        point_distribution_models = {
+            model["name"]: model
+            for model in report["pointDistributionModels"]
+        }
+        self.assertEqual(
+            {
+                "points-zero-degenerate",
+                "points-global-empirical",
+                "points-position-empirical",
+                "points-player-empirical",
+            },
+            set(point_distribution_models),
+        )
+        player_points_distribution = point_distribution_models[
+            "points-player-empirical"
+        ]
+        self.assertEqual(
+            3.875,
+            player_points_distribution["metrics"]["meanCrps"],
+        )
+        self.assertEqual(
+            1.5,
+            player_points_distribution["metrics"][
+                "meanDistributionSampleCount"
+            ],
+        )
+        self.assertEqual(
+            5,
+            len(
+                player_points_distribution["metrics"][
+                    "quantileCalibration"
+                ]
+            ),
+        )
+        self.assertEqual(
+            3,
+            len(
+                player_points_distribution["metrics"][
+                    "centralIntervals"
+                ]
+            ),
+        )
+        minutes_distribution_models = {
+            model["name"]: model
+            for model in report["minutesDistributionModels"]
+        }
+        self.assertEqual(
+            {
+                "minutes-zero-degenerate",
+                "minutes-global-empirical",
+                "minutes-position-empirical",
+                "minutes-player-empirical",
+            },
+            set(minutes_distribution_models),
+        )
+        self.assertEqual(
+            67.5,
+            minutes_distribution_models["minutes-player-empirical"][
+                "metrics"
+            ]["meanCrps"],
+        )
 
     def test_report_is_deterministic_and_database_remains_byte_identical(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -169,6 +244,16 @@ class BaselineEvaluationTests(unittest.TestCase):
         }
         self.assertEqual(4, models["minutes-zero"]["metrics"]["count"])
         self.assertEqual(75.0, models["minutes-zero"]["metrics"]["rmse"])
+        distribution_models = {
+            model["name"]: model
+            for model in report["minutesDistributionModels"]
+        }
+        self.assertEqual(
+            52.5,
+            distribution_models["minutes-zero-degenerate"]["metrics"][
+                "meanCrps"
+            ],
+        )
 
     def test_no_pairs_returns_machine_readable_insufficient_data(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -183,6 +268,8 @@ class BaselineEvaluationTests(unittest.TestCase):
         self.assertEqual([], report["models"])
         self.assertEqual([], report["probabilityModels"])
         self.assertEqual([], report["expectedMinutesModels"])
+        self.assertEqual([], report["pointDistributionModels"])
+        self.assertEqual([], report["minutesDistributionModels"])
 
     def test_incomplete_player_pair_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
