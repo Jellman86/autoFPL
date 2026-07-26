@@ -161,6 +161,36 @@ footer {
   text-transform: uppercase;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.refresh-prediction {
+  min-height: 2.55rem;
+  padding: 0 0.9rem;
+  cursor: pointer;
+  border: 1px solid var(--ink-950);
+  border-radius: 0.35rem;
+  color: var(--ink-950);
+  background: transparent;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.67rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.refresh-prediction:hover,
+.refresh-prediction:focus-visible {
+  background: var(--lime);
+}
+
+.refresh-prediction:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
 .status-dot {
   width: 0.6rem;
   height: 0.6rem;
@@ -1702,8 +1732,20 @@ footer {
 }
 
 @media (max-width: 520px) {
+  .header-actions {
+    gap: 0.55rem;
+  }
+
+  .refresh-prediction {
+    width: 5.4rem;
+    min-height: 2.3rem;
+    padding: 0 0.45rem;
+    font-size: 0.58rem;
+    line-height: 1.15;
+  }
+
   .run-state {
-    max-width: 11rem;
+    max-width: 7.5rem;
     justify-content: flex-end;
     text-align: right;
   }

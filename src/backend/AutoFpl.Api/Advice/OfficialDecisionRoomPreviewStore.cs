@@ -57,13 +57,36 @@ public sealed class OfficialDecisionRoomPreviewStore
                 replay.SelectedCaptureId,
                 replay.Gameweek,
                 cancellationToken);
-        IReadOnlyList<PreviewCandidate> selected = SelectSquad(candidates);
+        IReadOnlyList<ScoredCandidate> scored = candidates
+            .Select(candidate => Score(candidate, fixturesByTeam))
+            .ToArray();
+        IReadOnlyList<ScoredCandidate> selected = SelectSquad(scored);
         if (selected.Count != 15)
         {
             return null;
         }
 
+        IReadOnlyList<ScoredCandidate> lineup = SelectLineup(selected);
+        if (lineup.Count != 11)
+        {
+            return null;
+        }
+
+        var starterIds = lineup.Select(player => player.PlayerId).ToHashSet();
+        int captainId = lineup.OrderByDescending(player => player.ExpectedPoints)
+            .ThenBy(player => player.PlayerId)
+            .First()
+            .PlayerId;
+        int viceCaptainId = lineup.OrderByDescending(player => player.ExpectedPoints)
+            .ThenBy(player => player.PlayerId)
+            .Skip(1)
+            .First()
+            .PlayerId;
+        IReadOnlyDictionary<int, int> benchOrder = BenchOrder(selected, starterIds);
         OfficialDecisionRoomPlayer[] players = selected
+            .OrderBy(candidate => starterIds.Contains(candidate.PlayerId) ? 0 : 1)
+            .ThenBy(candidate => PositionOrder(candidate.Position))
+            .ThenByDescending(candidate => candidate.ExpectedPoints)
             .Select(candidate =>
             {
                 fixturesByTeam.TryGetValue(
@@ -84,6 +107,21 @@ public sealed class OfficialDecisionRoomPreviewStore
                     candidate.Position,
                     opponent,
                     isHome,
+                    starterIds.Contains(candidate.PlayerId) ? "starting" : "bench",
+                    benchOrder.GetValueOrDefault(candidate.PlayerId) is 0
+                        ? null
+                        : benchOrder[candidate.PlayerId],
+                    candidate.PlayerId == captainId
+                        ? "captain"
+                        : candidate.PlayerId == viceCaptainId
+                            ? "vice-captain"
+                            : null,
+                    candidate.ExpectedPoints,
+                    candidate.Lower80,
+                    candidate.Upper80,
+                    candidate.ExpectedMinutes,
+                    candidate.Reasons,
+                    candidate.Risks,
                     OfficialFplPlayerDossierStore.CreatePhotoUrl(
                         candidate.PhotoIdentifier),
                     $"/api/v1/data/official-fpl/replays/"
@@ -101,15 +139,18 @@ public sealed class OfficialDecisionRoomPreviewStore
             players);
     }
 
-    private static IReadOnlyList<PreviewCandidate> SelectSquad(
-        IReadOnlyList<PreviewCandidate> candidates)
+    private static IReadOnlyList<ScoredCandidate> SelectSquad(
+        IReadOnlyList<ScoredCandidate> candidates)
     {
         var teamCounts = new Dictionary<int, int>();
-        var selected = new List<PreviewCandidate>(15);
+        var selected = new List<ScoredCandidate>(15);
         foreach ((string position, int quota) in SquadQuotas)
         {
-            foreach (PreviewCandidate candidate in candidates.Where(
-                item => StringComparer.Ordinal.Equals(item.Position, position)))
+            foreach (ScoredCandidate candidate in candidates
+                .Where(item => StringComparer.Ordinal.Equals(item.Position, position))
+                .OrderByDescending(item => item.ExpectedPoints)
+                .ThenBy(item => item.PriceTenths)
+                .ThenBy(item => item.PlayerId))
             {
                 int teamCount = teamCounts.GetValueOrDefault(candidate.TeamId);
                 if (teamCount >= 3)
@@ -128,7 +169,109 @@ public sealed class OfficialDecisionRoomPreviewStore
             }
         }
 
+        while (selected.Sum(player => player.PriceTenths) > 1000)
+        {
+            (ScoredCandidate Selected, ScoredCandidate Replacement, decimal Cost)? best = null;
+            foreach (ScoredCandidate current in selected)
+            {
+                foreach (ScoredCandidate replacement in candidates.Where(candidate =>
+                    StringComparer.Ordinal.Equals(candidate.Position, current.Position)
+                    && candidate.PriceTenths < current.PriceTenths
+                    && selected.All(item => item.PlayerId != candidate.PlayerId)))
+                {
+                    int replacementTeamCount = teamCounts.GetValueOrDefault(replacement.TeamId)
+                        - (replacement.TeamId == current.TeamId ? 1 : 0);
+                    if (replacementTeamCount >= 3)
+                    {
+                        continue;
+                    }
+
+                    int saving = current.PriceTenths - replacement.PriceTenths;
+                    decimal loss = current.ExpectedPoints - replacement.ExpectedPoints;
+                    decimal cost = loss / saving;
+                    if (best is null
+                        || cost < best.Value.Cost
+                        || (cost == best.Value.Cost
+                            && replacement.PlayerId < best.Value.Replacement.PlayerId))
+                    {
+                        best = (current, replacement, cost);
+                    }
+                }
+            }
+
+            if (best is null)
+            {
+                return [];
+            }
+
+            selected.Remove(best.Value.Selected);
+            teamCounts[best.Value.Selected.TeamId]--;
+            selected.Add(best.Value.Replacement);
+            teamCounts[best.Value.Replacement.TeamId] =
+                teamCounts.GetValueOrDefault(best.Value.Replacement.TeamId) + 1;
+        }
+
         return selected;
+    }
+
+    private static ScoredCandidate Score(
+        PreviewCandidate candidate,
+        IReadOnlyDictionary<int, IReadOnlyList<PreviewFixture>> fixturesByTeam)
+    {
+        fixturesByTeam.TryGetValue(candidate.TeamId, out var fixtures);
+        fixtures ??= [];
+        int fixtureCount = Math.Max(1, fixtures.Count);
+        decimal positionPrior = candidate.Position switch
+        {
+            "goalkeeper" => 3.2m,
+            "defender" => 3.4m,
+            "midfielder" => 3.6m,
+            _ => 3.7m,
+        };
+        decimal marketPrior = positionPrior
+            + Math.Clamp((candidate.PriceTenths - 45) * 0.045m, -0.45m, 3.6m)
+            + (decimal)Math.Sqrt((double)candidate.SelectedByPercent) * 0.035m;
+        decimal observed = candidate.Starts > 0
+            ? candidate.TotalPoints / (decimal)candidate.Starts
+            : positionPrior;
+        decimal historyWeight = candidate.Starts / (candidate.Starts + 5m);
+        decimal perFixture = marketPrior * (1m - historyWeight) + observed * historyWeight;
+        if (fixtures.Count > 0 && fixtures[0].IsHome)
+        {
+            perFixture += 0.2m;
+        }
+
+        int availability = candidate.Status switch
+        {
+            "u" => 0,
+            "i" or "s" => candidate.ChanceOfPlaying ?? 20,
+            "d" => candidate.ChanceOfPlaying ?? 50,
+            _ => candidate.ChanceOfPlaying ?? 92,
+        };
+        int expectedMinutes = (int)Math.Round(90m * availability / 100m);
+        decimal expected = Math.Round(
+            perFixture * fixtureCount * availability / 100m,
+            2,
+            MidpointRounding.AwayFromZero);
+        decimal spread = 3.5m + expected * 0.55m;
+        return new(
+            candidate,
+            expected,
+            Math.Max(0m, Math.Round(expected - spread, 1)),
+            Math.Round(expected + spread, 1),
+            expectedMinutes,
+            [
+                $"Market prior uses £{candidate.PriceTenths / 10m:0.0}m price and {candidate.SelectedByPercent:0.0}% ownership.",
+                fixtures.Count == 0
+                    ? "No confirmed Gameweek fixture is present; a one-fixture neutral prior is used."
+                    : $"{fixtures.Count} confirmed fixture{(fixtures.Count == 1 ? "" : "s")} with {(fixtures[0].IsHome ? "home" : "away")} context.",
+            ],
+            [
+                candidate.Starts == 0
+                    ? "No capture-reported starts are available, so uncertainty remains deliberately wide."
+                    : $"Only {candidate.Starts} capture-reported start{(candidate.Starts == 1 ? "" : "s")} inform the observed-rate blend.",
+                "This preseason market baseline has not yet earned promotion through rolling out-of-time evaluation.",
+            ]);
     }
 
     private static async Task<IReadOnlyList<PreviewCandidate>> ReadCandidatesAsync(
@@ -145,7 +288,14 @@ public sealed class OfficialDecisionRoomPreviewStore
                 player.team_id,
                 team.short_name,
                 player.position,
-                player.photo_identifier
+                player.photo_identifier,
+                player.price_tenths,
+                CAST(player.selected_by_percent AS REAL),
+                player.status,
+                player.chance_next_round,
+                player.total_points,
+                player.minutes,
+                player.starts
             FROM official_fpl_players AS player
             INNER JOIN official_fpl_teams AS team
                 ON team.capture_id = player.capture_id
@@ -170,7 +320,16 @@ public sealed class OfficialDecisionRoomPreviewStore
                     reader.GetInt32(2),
                     reader.GetString(3),
                     reader.GetString(4),
-                    reader.IsDBNull(5) ? null : reader.GetString(5)));
+                    reader.IsDBNull(5) ? null : reader.GetString(5),
+                    reader.GetInt32(6),
+                    Convert.ToDecimal(
+                        reader.GetDouble(7),
+                        System.Globalization.CultureInfo.InvariantCulture),
+                    reader.GetString(8),
+                    reader.IsDBNull(9) ? null : reader.GetInt32(9),
+                    reader.GetInt32(10),
+                    reader.GetInt32(11),
+                    reader.GetInt32(12)));
         }
 
         return results;
@@ -242,13 +401,108 @@ public sealed class OfficialDecisionRoomPreviewStore
         fixtures.Add(fixture);
     }
 
+    private static IReadOnlyList<ScoredCandidate> SelectLineup(
+        IReadOnlyList<ScoredCandidate> squad)
+    {
+        IReadOnlyList<ScoredCandidate> best = [];
+        decimal bestScore = decimal.MinValue;
+        for (int defenders = 3; defenders <= 5; defenders++)
+        {
+            for (int midfielders = 2; midfielders <= 5; midfielders++)
+            {
+                int forwards = 10 - defenders - midfielders;
+                if (forwards is < 1 or > 3)
+                {
+                    continue;
+                }
+
+                ScoredCandidate[] candidate =
+                [
+                    .. squad.Where(item => item.Position == "goalkeeper")
+                        .OrderByDescending(item => item.ExpectedPoints)
+                        .Take(1),
+                    .. squad.Where(item => item.Position == "defender")
+                        .OrderByDescending(item => item.ExpectedPoints)
+                        .Take(defenders),
+                    .. squad.Where(item => item.Position == "midfielder")
+                        .OrderByDescending(item => item.ExpectedPoints)
+                        .Take(midfielders),
+                    .. squad.Where(item => item.Position == "forward")
+                        .OrderByDescending(item => item.ExpectedPoints)
+                        .Take(forwards),
+                ];
+                decimal score = candidate.Sum(item => item.ExpectedPoints);
+                if (candidate.Length == 11 && score > bestScore)
+                {
+                    best = candidate;
+                    bestScore = score;
+                }
+            }
+        }
+
+        return best;
+    }
+
+    private static IReadOnlyDictionary<int, int> BenchOrder(
+        IReadOnlyList<ScoredCandidate> squad,
+        IReadOnlySet<int> starterIds)
+    {
+        ScoredCandidate goalkeeper = squad.Single(
+            item => item.Position == "goalkeeper" && !starterIds.Contains(item.PlayerId));
+        ScoredCandidate[] outfield = squad
+            .Where(item => item.Position != "goalkeeper" && !starterIds.Contains(item.PlayerId))
+            .OrderByDescending(item => item.ExpectedPoints)
+            .ThenBy(item => item.PlayerId)
+            .ToArray();
+        var result = new Dictionary<int, int> { [goalkeeper.PlayerId] = 1 };
+        for (int index = 0; index < outfield.Length; index++)
+        {
+            result[outfield[index].PlayerId] = index + 2;
+        }
+
+        return result;
+    }
+
+    private static int PositionOrder(string position) => position switch
+    {
+        "goalkeeper" => 0,
+        "defender" => 1,
+        "midfielder" => 2,
+        _ => 3,
+    };
+
     private sealed record PreviewCandidate(
         int PlayerId,
         string FullName,
         int TeamId,
         string TeamShortName,
         string Position,
-        string? PhotoIdentifier);
+        string? PhotoIdentifier,
+        int PriceTenths,
+        decimal SelectedByPercent,
+        string Status,
+        int? ChanceOfPlaying,
+        int TotalPoints,
+        int Minutes,
+        int Starts);
+
+    private sealed record ScoredCandidate(
+        PreviewCandidate Candidate,
+        decimal ExpectedPoints,
+        decimal Lower80,
+        decimal Upper80,
+        int ExpectedMinutes,
+        IReadOnlyList<string> Reasons,
+        IReadOnlyList<string> Risks)
+    {
+        public int PlayerId => Candidate.PlayerId;
+        public int TeamId => Candidate.TeamId;
+        public string FullName => Candidate.FullName;
+        public string TeamShortName => Candidate.TeamShortName;
+        public string Position => Candidate.Position;
+        public string? PhotoIdentifier => Candidate.PhotoIdentifier;
+        public int PriceTenths => Candidate.PriceTenths;
+    }
 
     private sealed record PreviewFixture(
         string OpponentShortName,
@@ -270,5 +524,14 @@ public sealed record OfficialDecisionRoomPlayer(
     string Position,
     string Opponent,
     bool IsHome,
+    string LineupPlace,
+    int? BenchOrder,
+    string? Captaincy,
+    decimal ExpectedPoints,
+    decimal Lower80,
+    decimal Upper80,
+    int ExpectedMinutes,
+    IReadOnlyList<string> Reasons,
+    IReadOnlyList<string> Risks,
     string? PhotoUrl,
     string DossierPath);

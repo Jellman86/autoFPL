@@ -136,9 +136,12 @@ photo identifiers from the unchanged retained bootstrap bytes.
   quality or model validity. Multiple completed cutoff-safe Gameweeks are still
   required for rolling evaluation.
 
-The current UI renders capture provenance and replay readiness separately from
-the explicitly synthetic advice fixture. The slice does not join official
-fields into a forecast, fit a model or submit any FPL action.
+The current UI renders capture provenance and replay readiness alongside an
+explicitly unvalidated Baseline v0 when a qualifying capture exists. That
+baseline uses price, ownership, availability, capture-reported aggregates and
+fixture context to produce an initial legal selection; it is not a fitted or
+promoted model. Without qualifying evidence, the UI retains its explicitly
+synthetic acceptance fixture. Neither path submits an FPL action.
 
 The player dossier route at
 `GET /api/v1/data/official-fpl/replays/{seasonCode}/{gameweek}/players/{playerId}`

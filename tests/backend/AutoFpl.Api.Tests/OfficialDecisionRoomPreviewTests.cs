@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 
+using AutoFpl.Api.Advice;
 using AutoFpl.Api.Persistence;
 using AutoFpl.Api.Sources;
 using AutoFpl.Contracts.Advice;
@@ -36,6 +37,10 @@ public sealed class OfficialDecisionRoomPreviewTests
             CreateFixtures(),
             CaptureTime,
             TestContext.Current.CancellationToken);
+        OfficialDecisionRoomPreview? preview =
+            await new OfficialDecisionRoomPreviewStore(options, captureStore)
+                .GetLatestAsync(TestContext.Current.CancellationToken);
+        Assert.NotNull(preview);
 
         await using WebApplicationFactory<Program> factory =
             new WebApplicationFactory<Program>()
@@ -52,8 +57,9 @@ public sealed class OfficialDecisionRoomPreviewTests
             TestContext.Current.CancellationToken);
 
         Assert.NotNull(advice);
-        Assert.True(advice.IsSynthetic);
-        Assert.Equal("synthetic-forecast-real-identities", advice.EvidenceStatus);
+        Assert.False(advice.IsSynthetic);
+        Assert.Equal("official-market-baseline-v0", advice.EvidenceStatus);
+        Assert.Equal("Baseline v0 · limited preseason evidence", advice.ModelLabel);
         Assert.Null(advice.SnapshotId);
         Assert.Equal(CaptureTime, advice.DecisionCutoffUtc);
         Assert.Equal(15, advice.Selection.Players.Count);
@@ -72,6 +78,18 @@ public sealed class OfficialDecisionRoomPreviewTests
         Assert.All(
             advice.Selection.Players.GroupBy(player => player.ClubShortName),
             club => Assert.True(club.Count() <= 3));
+        Assert.True(
+            advice.Selection.Players.Sum(player => 45 + player.PlayerId) <= 1000);
+        Assert.Equal(
+            11,
+            advice.Selection.Players.Count(player => player.LineupPlace == "starting"));
+        Assert.Single(
+            advice.Selection.Players,
+            player => player.Captaincy == "captain");
+        Assert.Single(
+            advice.Selection.Players,
+            player => player.Captaincy == "vice-captain");
+        Assert.True(advice.Selection.ExpectedPoints > 0);
         Assert.All(
             advice.Selection.Players,
             player =>
@@ -85,7 +103,9 @@ public sealed class OfficialDecisionRoomPreviewTests
                     player.DossierPath);
                 Assert.Contains(
                     player.Reasons,
-                    reason => reason.Contains("synthetic", StringComparison.Ordinal));
+                    reason => reason.Contains("Market prior", StringComparison.Ordinal));
+                Assert.True(player.Lower80 <= player.ExpectedPoints);
+                Assert.True(player.ExpectedPoints <= player.Upper80);
             });
     }
 
