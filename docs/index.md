@@ -46,7 +46,7 @@ Use this index to find the maintained source for each topic. The deterministic p
 ## Research and evidence
 
 - [Evidence base](research/evidence-base.md) — durable sources supporting the research approach.
-- [Baseline evaluation v2](research/baseline-evaluation-v2.md) — executable point and 60-minute probability baselines, rolling-origin chronology, proper scores, calibration and promotion boundary.
+- [Baseline evaluation v3](research/baseline-evaluation-v3.md) — executable point, expected-minutes and 60-minute probability baselines, rolling-origin chronology, proper scores, calibration and promotion boundary.
 - [Predictive research-review template](research/literature-review-template.md) — optional working note for method selection and promotion registration.
 - [Dataset-card template](research/dataset-card-template.md) — provenance, rights and quality record.
 - [Model-card template](research/model-card-template.md) — intended use, evaluation, limitations and monitoring.

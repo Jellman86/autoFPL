@@ -11,8 +11,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, DefaultDict, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
-SCHEMA_VERSION = "1.1"
-EVALUATOR_VERSION = "baseline-evaluation-v2"
+SCHEMA_VERSION = "1.2"
+EVALUATOR_VERSION = "baseline-evaluation-v3"
 REQUIRED_DATABASE_VERSION = 5
 BASELINE_NAMES = (
     "zero-points",
@@ -26,6 +26,14 @@ PROBABILITY_BASELINE_NAMES = (
     "position-played60-rate",
     "player-played60-rate",
     "official-start-rate",
+)
+EXPECTED_MINUTES_BASELINE_NAMES = (
+    "minutes-zero",
+    "minutes-global-expanding-mean",
+    "minutes-position-expanding-mean",
+    "minutes-player-expanding-mean",
+    "minutes-player-last",
+    "minutes-official-running-mean",
 )
 CALIBRATION_BIN_COUNT = 5
 LOG_LOSS_EPSILON = 1e-15
@@ -60,6 +68,7 @@ class PlayerOutcome:
     player_id: int
     position: str
     cumulative_points_at_deadline: int
+    cumulative_minutes_at_deadline: int
     cumulative_starts_at_deadline: int
     total_points: int
     minutes: int
@@ -92,7 +101,7 @@ def evaluate_database(
     season_code: Optional[str] = None,
     minimum_training_gameweeks: int = 1,
 ) -> Dict[str, Any]:
-    """Evaluate point and 60-minute baselines with expanding Gameweek origins."""
+    """Evaluate point, minutes, and availability baselines by Gameweek."""
     path = Path(database_path)
     if minimum_training_gameweeks < 1:
         raise EvaluationError(
@@ -129,10 +138,12 @@ def evaluate_database(
                 folds=[],
                 models=[],
                 probability_models=[],
+                expected_minutes_models=[],
             )
 
         predictions: List[Prediction] = []
         probability_predictions: List[ProbabilityPrediction] = []
+        expected_minutes_predictions: List[Prediction] = []
         folds: List[Dict[str, Any]] = []
         for target_pair in target_pairs:
             training_pairs = _load_training_pairs(
@@ -149,13 +160,16 @@ def evaluate_database(
                 for pair in training_pairs
             ]
             target_rows = _load_player_rows(connection, target_pair)
-            fold_predictions, fold_probability_predictions = _predict_fold(
-                target_pair,
-                target_rows,
-                training_rows,
-            )
+            (
+                fold_predictions,
+                fold_probability_predictions,
+                fold_expected_minutes_predictions,
+            ) = _predict_fold(target_pair, target_rows, training_rows)
             predictions.extend(fold_predictions)
             probability_predictions.extend(fold_probability_predictions)
+            expected_minutes_predictions.extend(
+                fold_expected_minutes_predictions
+            )
             folds.append(
                 {
                     "seasonCode": target_pair.season_code,
@@ -178,6 +192,7 @@ def evaluate_database(
                 folds=[],
                 models=[],
                 probability_models=[],
+                expected_minutes_models=[],
             )
 
         models = [
@@ -195,6 +210,13 @@ def evaluate_database(
                 model["name"],
             )
         )
+        expected_minutes_models = [
+            _summarise_model(name, expected_minutes_predictions)
+            for name in EXPECTED_MINUTES_BASELINE_NAMES
+        ]
+        expected_minutes_models.sort(
+            key=lambda model: (model["metrics"]["mae"], model["name"])
+        )
         return _finish_report(
             base_report,
             status="complete",
@@ -202,6 +224,7 @@ def evaluate_database(
             folds=folds,
             models=models,
             probability_models=probability_models,
+            expected_minutes_models=expected_minutes_models,
         )
     finally:
         connection.close()
@@ -370,6 +393,7 @@ def _load_player_rows(
             player.player_id,
             player.position,
             player.total_points AS cumulative_points_at_deadline,
+            player.minutes AS cumulative_minutes_at_deadline,
             player.starts AS cumulative_starts_at_deadline,
             outcome.total_points,
             outcome.minutes
@@ -405,6 +429,9 @@ def _load_player_rows(
             cumulative_points_at_deadline=row[
                 "cumulative_points_at_deadline"
             ],
+            cumulative_minutes_at_deadline=row[
+                "cumulative_minutes_at_deadline"
+            ],
             cumulative_starts_at_deadline=row[
                 "cumulative_starts_at_deadline"
             ],
@@ -419,10 +446,17 @@ def _predict_fold(
     target_pair: PairedGameweek,
     target_rows: Sequence[PlayerOutcome],
     training: Sequence[Tuple[PairedGameweek, Sequence[PlayerOutcome]]],
-) -> Tuple[List[Prediction], List[ProbabilityPrediction]]:
+) -> Tuple[
+    List[Prediction],
+    List[ProbabilityPrediction],
+    List[Prediction],
+]:
     all_training_points: List[int] = []
     position_points: DefaultDict[str, List[int]] = defaultdict(list)
     player_points: DefaultDict[int, List[Tuple[int, int]]] = defaultdict(list)
+    all_training_minutes: List[int] = []
+    position_minutes: DefaultDict[str, List[int]] = defaultdict(list)
+    player_minutes: DefaultDict[int, List[Tuple[int, int]]] = defaultdict(list)
     all_training_played_60: List[int] = []
     position_played_60: DefaultDict[str, List[int]] = defaultdict(list)
     player_played_60: DefaultDict[int, List[Tuple[int, int]]] = defaultdict(list)
@@ -431,6 +465,9 @@ def _predict_fold(
             all_training_points.append(row.total_points)
             position_points[row.position].append(row.total_points)
             player_points[row.player_id].append((pair.gameweek, row.total_points))
+            all_training_minutes.append(row.minutes)
+            position_minutes[row.position].append(row.minutes)
+            player_minutes[row.player_id].append((pair.gameweek, row.minutes))
             played_60 = int(row.minutes >= 60)
             all_training_played_60.append(played_60)
             position_played_60[row.position].append(played_60)
@@ -444,9 +481,11 @@ def _predict_fold(
             "An eligible fold has no player outcomes in its training window.",
         )
     global_mean = _mean(all_training_points)
+    global_minutes_mean = _mean(all_training_minutes)
     global_played_60_rate = _smoothed_rate(all_training_played_60)
     predictions: List[Prediction] = []
     probability_predictions: List[ProbabilityPrediction] = []
+    expected_minutes_predictions: List[Prediction] = []
     for row in target_rows:
         position_mean = _mean(position_points[row.position]) if position_points[
             row.position
@@ -515,7 +554,53 @@ def _predict_fold(
             )
             for name, value in probability_values.items()
         )
-    return predictions, probability_predictions
+        position_minutes_mean = (
+            _mean(position_minutes[row.position])
+            if position_minutes[row.position]
+            else global_minutes_mean
+        )
+        minutes_history = sorted(player_minutes[row.player_id])
+        player_minutes_mean = (
+            _mean([minutes for _, minutes in minutes_history])
+            if minutes_history
+            else position_minutes_mean
+        )
+        last_minutes = (
+            float(minutes_history[-1][1])
+            if minutes_history
+            else position_minutes_mean
+        )
+        official_running_minutes_mean = (
+            row.cumulative_minutes_at_deadline
+            / float(target_pair.gameweek - 1)
+        )
+        expected_minutes_values = {
+            "minutes-zero": 0.0,
+            "minutes-global-expanding-mean": global_minutes_mean,
+            "minutes-position-expanding-mean": position_minutes_mean,
+            "minutes-player-expanding-mean": player_minutes_mean,
+            "minutes-player-last": last_minutes,
+            "minutes-official-running-mean": (
+                official_running_minutes_mean
+            ),
+        }
+        expected_minutes_predictions.extend(
+            Prediction(
+                model=name,
+                season_code=target_pair.season_code,
+                gameweek=target_pair.gameweek,
+                player_id=row.player_id,
+                position=row.position,
+                predicted=value,
+                actual=row.minutes,
+            )
+            for name, value in expected_minutes_values.items()
+        )
+    return (
+        predictions,
+        probability_predictions,
+        expected_minutes_predictions,
+    )
 
 
 def _summarise_model(
@@ -707,6 +792,7 @@ def _base_report(
             "probabilityTarget": (
                 "official-fpl-played-at-least-60-minutes"
             ),
+            "expectedMinutesTarget": "official-fpl-gameweek-total-minutes",
             "split": "expanding-window-by-gameweek",
             "minimumTrainingGameweeks": minimum_training_gameweeks,
             "trainingOutcomeAvailabilityRule": (
@@ -714,6 +800,9 @@ def _base_report(
             ),
             "baselines": list(BASELINE_NAMES),
             "probabilityBaselines": list(PROBABILITY_BASELINE_NAMES),
+            "expectedMinutesBaselines": list(
+                EXPECTED_MINUTES_BASELINE_NAMES
+            ),
             "probabilitySmoothing": "beta-posterior-mean-alpha-1-beta-1",
             "calibrationBinCount": CALIBRATION_BIN_COUNT,
         },
@@ -728,6 +817,7 @@ def _finish_report(
     folds: Sequence[Mapping[str, Any]],
     models: Sequence[Mapping[str, Any]],
     probability_models: Sequence[Mapping[str, Any]],
+    expected_minutes_models: Sequence[Mapping[str, Any]],
 ) -> Dict[str, Any]:
     report["status"] = status
     report["reason"] = reason
@@ -735,6 +825,7 @@ def _finish_report(
     report["folds"] = list(folds)
     report["models"] = list(models)
     report["probabilityModels"] = list(probability_models)
+    report["expectedMinutesModels"] = list(expected_minutes_models)
     report["dataIdentitySha256"] = _sha256_json(
         [
             {
@@ -822,8 +913,8 @@ def _write_report(report: Mapping[str, Any], output_path: Optional[Path]) -> Non
 def main(arguments: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         description=(
-            "Evaluate leakage-safe autoFPL point and 60-minute probability "
-            "baselines from complete SQLite replay/outcome pairs."
+            "Evaluate leakage-safe autoFPL point, expected-minutes, and "
+            "60-minute probability baselines from complete SQLite pairs."
         )
     )
     parser.add_argument("--database", required=True, type=Path)
