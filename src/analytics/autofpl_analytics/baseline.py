@@ -11,8 +11,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, DefaultDict, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
-SCHEMA_VERSION = "1.0"
-EVALUATOR_VERSION = "baseline-evaluation-v1"
+SCHEMA_VERSION = "1.1"
+EVALUATOR_VERSION = "baseline-evaluation-v2"
 REQUIRED_DATABASE_VERSION = 5
 BASELINE_NAMES = (
     "zero-points",
@@ -21,6 +21,14 @@ BASELINE_NAMES = (
     "player-last-points",
     "official-running-mean",
 )
+PROBABILITY_BASELINE_NAMES = (
+    "global-played60-rate",
+    "position-played60-rate",
+    "player-played60-rate",
+    "official-start-rate",
+)
+CALIBRATION_BIN_COUNT = 5
+LOG_LOSS_EPSILON = 1e-15
 
 
 class EvaluationError(Exception):
@@ -52,7 +60,9 @@ class PlayerOutcome:
     player_id: int
     position: str
     cumulative_points_at_deadline: int
+    cumulative_starts_at_deadline: int
     total_points: int
+    minutes: int
 
 
 @dataclass(frozen=True)
@@ -66,12 +76,23 @@ class Prediction:
     actual: int
 
 
+@dataclass(frozen=True)
+class ProbabilityPrediction:
+    model: str
+    season_code: str
+    gameweek: int
+    player_id: int
+    position: str
+    probability: float
+    actual: int
+
+
 def evaluate_database(
     database_path: Path,
     season_code: Optional[str] = None,
     minimum_training_gameweeks: int = 1,
 ) -> Dict[str, Any]:
-    """Evaluate deterministic point baselines with expanding Gameweek origins."""
+    """Evaluate point and 60-minute baselines with expanding Gameweek origins."""
     path = Path(database_path)
     if minimum_training_gameweeks < 1:
         raise EvaluationError(
@@ -107,9 +128,11 @@ def evaluate_database(
                 reason="no-complete-replay-outcome-pairs",
                 folds=[],
                 models=[],
+                probability_models=[],
             )
 
         predictions: List[Prediction] = []
+        probability_predictions: List[ProbabilityPrediction] = []
         folds: List[Dict[str, Any]] = []
         for target_pair in target_pairs:
             training_pairs = _load_training_pairs(
@@ -126,9 +149,13 @@ def evaluate_database(
                 for pair in training_pairs
             ]
             target_rows = _load_player_rows(connection, target_pair)
-            predictions.extend(
-                _predict_fold(target_pair, target_rows, training_rows)
+            fold_predictions, fold_probability_predictions = _predict_fold(
+                target_pair,
+                target_rows,
+                training_rows,
             )
+            predictions.extend(fold_predictions)
+            probability_predictions.extend(fold_probability_predictions)
             folds.append(
                 {
                     "seasonCode": target_pair.season_code,
@@ -150,6 +177,7 @@ def evaluate_database(
                 reason="no-eligible-rolling-origin-folds",
                 folds=[],
                 models=[],
+                probability_models=[],
             )
 
         models = [
@@ -157,12 +185,23 @@ def evaluate_database(
             for name in BASELINE_NAMES
         ]
         models.sort(key=lambda model: (model["metrics"]["mae"], model["name"]))
+        probability_models = [
+            _summarise_probability_model(name, probability_predictions)
+            for name in PROBABILITY_BASELINE_NAMES
+        ]
+        probability_models.sort(
+            key=lambda model: (
+                model["metrics"]["brierScore"],
+                model["name"],
+            )
+        )
         return _finish_report(
             base_report,
             status="complete",
             reason=None,
             folds=folds,
             models=models,
+            probability_models=probability_models,
         )
     finally:
         connection.close()
@@ -331,7 +370,9 @@ def _load_player_rows(
             player.player_id,
             player.position,
             player.total_points AS cumulative_points_at_deadline,
-            outcome.total_points
+            player.starts AS cumulative_starts_at_deadline,
+            outcome.total_points,
+            outcome.minutes
         FROM official_fpl_players AS player
         INNER JOIN official_fpl_player_outcomes AS outcome
             ON outcome.player_id = player.player_id
@@ -364,7 +405,11 @@ def _load_player_rows(
             cumulative_points_at_deadline=row[
                 "cumulative_points_at_deadline"
             ],
+            cumulative_starts_at_deadline=row[
+                "cumulative_starts_at_deadline"
+            ],
             total_points=row["total_points"],
+            minutes=row["minutes"],
         )
         for row in rows
     ]
@@ -374,15 +419,24 @@ def _predict_fold(
     target_pair: PairedGameweek,
     target_rows: Sequence[PlayerOutcome],
     training: Sequence[Tuple[PairedGameweek, Sequence[PlayerOutcome]]],
-) -> List[Prediction]:
+) -> Tuple[List[Prediction], List[ProbabilityPrediction]]:
     all_training_points: List[int] = []
     position_points: DefaultDict[str, List[int]] = defaultdict(list)
     player_points: DefaultDict[int, List[Tuple[int, int]]] = defaultdict(list)
+    all_training_played_60: List[int] = []
+    position_played_60: DefaultDict[str, List[int]] = defaultdict(list)
+    player_played_60: DefaultDict[int, List[Tuple[int, int]]] = defaultdict(list)
     for pair, rows in training:
         for row in rows:
             all_training_points.append(row.total_points)
             position_points[row.position].append(row.total_points)
             player_points[row.player_id].append((pair.gameweek, row.total_points))
+            played_60 = int(row.minutes >= 60)
+            all_training_played_60.append(played_60)
+            position_played_60[row.position].append(played_60)
+            player_played_60[row.player_id].append(
+                (pair.gameweek, played_60)
+            )
 
     if not all_training_points:
         raise EvaluationError(
@@ -390,7 +444,9 @@ def _predict_fold(
             "An eligible fold has no player outcomes in its training window.",
         )
     global_mean = _mean(all_training_points)
+    global_played_60_rate = _smoothed_rate(all_training_played_60)
     predictions: List[Prediction] = []
+    probability_predictions: List[ProbabilityPrediction] = []
     for row in target_rows:
         position_mean = _mean(position_points[row.position]) if position_points[
             row.position
@@ -424,7 +480,42 @@ def _predict_fold(
             )
             for name, value in values.items()
         )
-    return predictions
+        position_played_60_rate = (
+            _smoothed_rate(position_played_60[row.position])
+            if position_played_60[row.position]
+            else global_played_60_rate
+        )
+        played_60_history = sorted(player_played_60[row.player_id])
+        player_played_60_rate = (
+            _smoothed_rate([played_60 for _, played_60 in played_60_history])
+            if played_60_history
+            else position_played_60_rate
+        )
+        prior_gameweeks = target_pair.gameweek - 1
+        official_start_rate = min(
+            1.0,
+            (row.cumulative_starts_at_deadline + 1.0)
+            / (prior_gameweeks + 2.0),
+        )
+        probability_values = {
+            "global-played60-rate": global_played_60_rate,
+            "position-played60-rate": position_played_60_rate,
+            "player-played60-rate": player_played_60_rate,
+            "official-start-rate": official_start_rate,
+        }
+        probability_predictions.extend(
+            ProbabilityPrediction(
+                model=name,
+                season_code=target_pair.season_code,
+                gameweek=target_pair.gameweek,
+                player_id=row.player_id,
+                position=row.position,
+                probability=value,
+                actual=int(row.minutes >= 60),
+            )
+            for name, value in probability_values.items()
+        )
+    return predictions, probability_predictions
 
 
 def _summarise_model(
@@ -467,6 +558,140 @@ def _metrics(predictions: Sequence[Prediction]) -> Dict[str, Any]:
     }
 
 
+def _summarise_probability_model(
+    name: str,
+    predictions: Sequence[ProbabilityPrediction],
+) -> Dict[str, Any]:
+    selected = [
+        prediction for prediction in predictions if prediction.model == name
+    ]
+    by_position: DefaultDict[str, List[ProbabilityPrediction]] = defaultdict(
+        list
+    )
+    for prediction in selected:
+        by_position[prediction.position].append(prediction)
+    metrics, calibration_bins = _probability_metrics(
+        selected,
+        include_calibration_bins=True,
+    )
+    return {
+        "name": name,
+        "metrics": metrics,
+        "calibrationBins": calibration_bins,
+        "slices": {
+            "position": {
+                position: _probability_metrics(
+                    items,
+                    include_calibration_bins=False,
+                )[0]
+                for position, items in sorted(by_position.items())
+            }
+        },
+    }
+
+
+def _probability_metrics(
+    predictions: Sequence[ProbabilityPrediction],
+    include_calibration_bins: bool,
+) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
+    if not predictions:
+        raise EvaluationError(
+            "evaluation.empty-probability-predictions",
+            "A probability baseline produced no predictions.",
+        )
+    calibration_groups = _calibration_groups(predictions)
+    calibration_bins = _calibration_bins(calibration_groups)
+    count = len(predictions)
+    brier_score = sum(
+        (prediction.probability - prediction.actual) ** 2
+        for prediction in predictions
+    ) / count
+    log_loss = -sum(
+        prediction.actual * math.log(
+            min(
+                1.0 - LOG_LOSS_EPSILON,
+                max(LOG_LOSS_EPSILON, prediction.probability),
+            )
+        )
+        + (1 - prediction.actual)
+        * math.log(
+            min(
+                1.0 - LOG_LOSS_EPSILON,
+                max(LOG_LOSS_EPSILON, 1.0 - prediction.probability),
+            )
+        )
+        for prediction in predictions
+    ) / count
+    expected_calibration_error = sum(
+        len(items)
+        / count
+        * abs(
+            sum(item.probability for item in items) / len(items)
+            - sum(item.actual for item in items) / len(items)
+        )
+        for items in calibration_groups.values()
+    )
+    metrics = {
+        "count": count,
+        "brierScore": _round(brier_score),
+        "logLoss": _round(log_loss),
+        "observedRate": _round(
+            sum(prediction.actual for prediction in predictions) / count
+        ),
+        "meanProbability": _round(
+            sum(prediction.probability for prediction in predictions) / count
+        ),
+        "expectedCalibrationError": _round(expected_calibration_error),
+    }
+    return metrics, calibration_bins if include_calibration_bins else []
+
+
+def _calibration_groups(
+    predictions: Sequence[ProbabilityPrediction],
+) -> Dict[int, List[ProbabilityPrediction]]:
+    bins: DefaultDict[int, List[ProbabilityPrediction]] = defaultdict(list)
+    for prediction in predictions:
+        if not 0.0 <= prediction.probability <= 1.0:
+            raise EvaluationError(
+                "evaluation.invalid-probability",
+                "A probability baseline produced a value outside [0, 1].",
+            )
+        index = min(
+            int(prediction.probability * CALIBRATION_BIN_COUNT),
+            CALIBRATION_BIN_COUNT - 1,
+        )
+        bins[index].append(prediction)
+    return dict(sorted(bins.items()))
+
+
+def _calibration_bins(
+    groups: Mapping[int, Sequence[ProbabilityPrediction]],
+) -> List[Dict[str, Any]]:
+    output: List[Dict[str, Any]] = []
+    for index, items in groups.items():
+        count = len(items)
+        mean_probability = sum(item.probability for item in items) / count
+        observed_rate = sum(item.actual for item in items) / count
+        output.append(
+            {
+                "lowerBoundInclusive": _round(
+                    index / float(CALIBRATION_BIN_COUNT)
+                ),
+                "upperBound": _round(
+                    (index + 1) / float(CALIBRATION_BIN_COUNT)
+                ),
+                "upperBoundInclusive": index == CALIBRATION_BIN_COUNT - 1,
+                "count": count,
+                "meanProbability": _round(mean_probability),
+                "observedRate": _round(observed_rate),
+                "absoluteGap": _round(
+                    abs(mean_probability - observed_rate)
+                ),
+            }
+        )
+    return output
+
+
 def _base_report(
     season_code: Optional[str],
     minimum_training_gameweeks: int,
@@ -479,12 +704,18 @@ def _base_report(
         "configuration": {
             "seasonCode": season_code,
             "target": "official-fpl-total-points",
+            "probabilityTarget": (
+                "official-fpl-played-at-least-60-minutes"
+            ),
             "split": "expanding-window-by-gameweek",
             "minimumTrainingGameweeks": minimum_training_gameweeks,
             "trainingOutcomeAvailabilityRule": (
                 "outcome.availableAtUtc <= evaluation.deadlineUtc"
             ),
             "baselines": list(BASELINE_NAMES),
+            "probabilityBaselines": list(PROBABILITY_BASELINE_NAMES),
+            "probabilitySmoothing": "beta-posterior-mean-alpha-1-beta-1",
+            "calibrationBinCount": CALIBRATION_BIN_COUNT,
         },
         "completePairCount": complete_pair_count,
     }
@@ -496,12 +727,14 @@ def _finish_report(
     reason: Optional[str],
     folds: Sequence[Mapping[str, Any]],
     models: Sequence[Mapping[str, Any]],
+    probability_models: Sequence[Mapping[str, Any]],
 ) -> Dict[str, Any]:
     report["status"] = status
     report["reason"] = reason
     report["eligibleFoldCount"] = len(folds)
     report["folds"] = list(folds)
     report["models"] = list(models)
+    report["probabilityModels"] = list(probability_models)
     report["dataIdentitySha256"] = _sha256_json(
         [
             {
@@ -535,6 +768,11 @@ def _pair_identity(pair: PairedGameweek) -> Dict[str, Any]:
 def _mean(values: Iterable[int]) -> float:
     materialised = list(values)
     return sum(materialised) / float(len(materialised))
+
+
+def _smoothed_rate(values: Iterable[int]) -> float:
+    materialised = list(values)
+    return (sum(materialised) + 1.0) / (len(materialised) + 2.0)
 
 
 def _round(value: float) -> float:
@@ -584,8 +822,8 @@ def _write_report(report: Mapping[str, Any], output_path: Optional[Path]) -> Non
 def main(arguments: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         description=(
-            "Evaluate leakage-safe autoFPL point baselines from complete "
-            "SQLite replay/outcome pairs."
+            "Evaluate leakage-safe autoFPL point and 60-minute probability "
+            "baselines from complete SQLite replay/outcome pairs."
         )
     )
     parser.add_argument("--database", required=True, type=Path)
