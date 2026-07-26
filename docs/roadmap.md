@@ -270,6 +270,11 @@ later outcome without manual catalogue entry.
 
 Tracked by [#42](https://github.com/Jellman86/autoFPL/issues/42).
 
+**Status:** active — the read-only deterministic baseline command, expanding
+origin selection, correction-time leakage checks, point metrics, position
+slices and reproducibility identities are implemented against test fixtures.
+Real evaluation remains unavailable until completed replay/outcome pairs exist.
+
 - Implement a local Python evaluation command using SQLite snapshots.
 - Reproduce naive and credible strong baselines with rolling origins.
 - Register targets, windows, metrics, tuning budget and promotion rule before
@@ -384,8 +389,10 @@ The next development slices are:
 
 1. run the final-outcome command after the first completed, data-checked
    Gameweek and verify the resulting real replay/outcome pair;
-2. build the first rolling-origin baseline command;
-3. accumulate enough cutoff-safe Gameweeks for honest out-of-time comparison;
+2. run the baseline command as complete pairs accumulate and retain the
+   machine-readable reports;
+3. add the first probabilistic minutes/points baseline with proper scores and
+   calibration once the sample supports an honest fold;
 4. populate real player cards only after a baseline has valid out-of-time evidence.
 
 Do not add another standalone governance, universal contract, infrastructure or
