@@ -88,7 +88,8 @@ normalised fields:
 - Gameweek ID, name, deadline and completion/current/next flags;
 - team ID, provider code, name and short name;
 - player ID/code, team, position, names, price, availability status/news,
-  selection percentage, total points, minutes and starts; and
+  official photo identifier, selection percentage, total points, minutes and
+  starts; and
 - fixture ID, Gameweek, teams, kickoff, state and final/provisional score.
 
 Final outcome rows retain player ID, minutes, starts, total points, goals,
@@ -98,6 +99,14 @@ JSON remains private for later parser correction and audit.
 Foreign keys and range checks reject unknown teams, events, positions,
 one-sided scores, duplicate IDs and schema/type drift before a transaction is
 written.
+
+The photo identifier must contain only a positive numeric official asset code
+plus `.jpg` or `.png`. The player-dossier read model removes that validated
+extension and constructs a PNG URL only beneath
+`https://resources.premierleague.com/premierleague/photos/players/110x140/`.
+It never accepts or stores a caller/provider-supplied arbitrary URL. Re-running
+an identical capture after the photo migration fills only missing normalised
+photo identifiers from the unchanged retained bootstrap bytes.
 
 ## Known limitations and feature boundary
 
@@ -118,6 +127,14 @@ written.
 The current UI renders capture provenance and replay readiness separately from
 the explicitly synthetic advice fixture. The slice does not join official
 fields into a forecast, fit a model or submit any FPL action.
+
+The player dossier route at
+`GET /api/v1/data/official-fpl/replays/{seasonCode}/{gameweek}/players/{playerId}`
+selects the same pre-deadline reference capture, then returns identity, the
+latest five prior official outcomes whose corrections were available by that
+deadline and fixtures from the selected capture. A single-fixture outcome is
+match-specific; double-Gameweek statistics remain visibly aggregated while the
+individual opponents are listed.
 
 ## Retention and responsible use
 

@@ -16,6 +16,7 @@ Routes:
 | `GET` | `/readyz` | Returns ready only when the current SQLite migration is present |
 | `GET` | `/api/v1/data/official-fpl/latest` | Returns provenance, timing, hashes and counts for the latest private official FPL capture, or 404 before the first import |
 | `GET` | `/api/v1/data/official-fpl/replays/{seasonCode}/{gameweek}/pre-deadline` | Selects the newest immutable capture that was available no later than the deadline recorded in that capture |
+| `GET` | `/api/v1/data/official-fpl/replays/{seasonCode}/{gameweek}/players/{playerId}` | Returns cutoff-correct player identity, an official portrait URL, prior outcomes and upcoming fixtures |
 | `GET` | `/api/v1/data/official-fpl/outcomes/{seasonCode}/{gameweek}/latest` | Returns the latest immutable final per-player outcome capture metadata, or 404 |
 | `GET` | `/api/v1/data/official-fpl/replays/{seasonCode}/{gameweek}/outcome` | Pairs a cutoff-safe replay with the latest final outcome only when every replay player matches |
 | `POST` | `/api/v1/decision-snapshots` | Persists validated squad/selection state and creates an immutable cutoff-correct snapshot |
@@ -93,7 +94,7 @@ not expected minutes or an autoFPL-promoted forecast. See the
 
 ## SQLite operations
 
-The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies six explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
+The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies seven explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
 
 The root filesystem stays read-only. Production must mount a private, UID
 `1654`-writable persistent directory at `/data`; the CI smoke test uses an

@@ -82,6 +82,10 @@ builder.Services.AddSingleton(serviceProvider =>
     new OfficialFplOutcomeStore(
         serviceProvider.GetRequiredService<DatabaseOptions>()));
 builder.Services.AddSingleton(serviceProvider =>
+    new OfficialFplPlayerDossierStore(
+        serviceProvider.GetRequiredService<DatabaseOptions>(),
+        serviceProvider.GetRequiredService<OfficialFplCaptureStore>()));
+builder.Services.AddSingleton(serviceProvider =>
     new FplFormForecastStore(
         serviceProvider.GetRequiredService<DatabaseOptions>()));
 builder.Services.AddSingleton(TimeProvider.System);
@@ -339,6 +343,32 @@ app.MapGet(
         + "available no later than the deadline recorded in that same capture.")
     .WithTags("Data")
     .Produces<OfficialFplReplayDocument>()
+    .Produces(StatusCodes.Status404NotFound);
+app.MapGet(
+    "/api/v1/data/official-fpl/replays/{seasonCode}/{gameweek:int:min(1):max(38)}/players/{playerId:int:min(1)}",
+    async (
+        string seasonCode,
+        int gameweek,
+        int playerId,
+        OfficialFplPlayerDossierStore store,
+        CancellationToken cancellationToken) =>
+    {
+        OfficialFplPlayerDossierDocument? dossier = await store.GetAsync(
+            seasonCode,
+            gameweek,
+            playerId,
+            cancellationToken);
+        return dossier is null ? Results.NotFound() : Results.Ok(dossier);
+    })
+    .WithName("GetOfficialFplPlayerDossier")
+    .WithSummary(
+        "Read one cutoff-correct player identity, recent outcomes and upcoming fixtures.")
+    .WithDescription(
+        "Selects the same latest official capture available before the target Gameweek "
+        + "deadline, excludes later outcome corrections and derives photo URLs only from "
+        + "validated official bootstrap identifiers.")
+    .WithTags("Data")
+    .Produces<OfficialFplPlayerDossierDocument>()
     .Produces(StatusCodes.Status404NotFound);
 app.MapGet(
     "/api/v1/data/official-fpl/outcomes/{seasonCode}/{gameweek:int:min(1):max(38)}/latest",

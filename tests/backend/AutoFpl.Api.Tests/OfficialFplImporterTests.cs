@@ -42,6 +42,7 @@ public sealed class OfficialFplImporterTests
 
         OfficialFplCaptureDocument first =
             await importer.ImportLatestAsync(TestContext.Current.CancellationToken);
+        await ClearPhotoIdentifierAsync(files.DatabasePath, first.CaptureId, playerId: 1);
         OfficialFplCaptureDocument duplicate =
             await importer.ImportCapturedPayloadAsync(
                 bootstrap,
@@ -72,6 +73,12 @@ public sealed class OfficialFplImporterTests
         OfficialFplCaptureDocument? latest =
             await captureStore.GetLatestAsync(TestContext.Current.CancellationToken);
         Assert.Equal(first, latest);
+        Assert.Equal(
+            "101.jpg",
+            await ReadPhotoIdentifierAsync(
+                files.DatabasePath,
+                first.CaptureId,
+                playerId: 1));
         await AssertDatabaseShapeAsync(files.DatabasePath, expectedCaptures: 1);
 
         await using WebApplicationFactory<Program> factory =
@@ -255,6 +262,30 @@ public sealed class OfficialFplImporterTests
     }
 
     [Fact]
+    public async Task Arbitrary_photo_identifier_is_rejected_before_any_rows_are_written()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = CreateOptions(files.DatabasePath);
+        await new DecisionSnapshotStore(options)
+            .MigrateAsync(TestContext.Current.CancellationToken);
+        var captureStore = new OfficialFplCaptureStore(options);
+        using var httpClient = new HttpClient(new StaticOfficialFplHandler(
+            CreateBootstrap(60, firstPlayerPhoto: "../portrait.jpg"),
+            CreateFixtures()));
+        var importer = new OfficialFplImporter(
+            httpClient,
+            captureStore,
+            new FixedTimeProvider(RetrievedAtUtc));
+
+        OfficialFplPayloadException exception =
+            await Assert.ThrowsAsync<OfficialFplPayloadException>(
+                () => importer.ImportLatestAsync(TestContext.Current.CancellationToken));
+
+        Assert.Contains("official asset identifier", exception.Message, StringComparison.Ordinal);
+        Assert.Null(await captureStore.GetLatestAsync(TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
     public async Task Non_json_response_is_rejected()
     {
         using var files = new TemporaryDatabaseFiles();
@@ -312,11 +343,21 @@ public sealed class OfficialFplImporterTests
 
     private static byte[] CreateBootstrap(
         int priceTenths,
-        int firstPlayerTeamId = 1)
+        int firstPlayerTeamId = 1,
+        string? firstPlayerPhoto = null)
     {
         object[] players =
         [
-            Player(1, 101, firstPlayerTeamId, 1, "Ada", "Keeper", "Keeper", priceTenths),
+            Player(
+                1,
+                101,
+                firstPlayerTeamId,
+                1,
+                "Ada",
+                "Keeper",
+                "Keeper",
+                priceTenths,
+                firstPlayerPhoto),
             Player(2, 102, 1, 2, "Bea", "Back", "Back", 50),
             Player(3, 103, 2, 3, "Mia", "Middle", "Middle", 75),
             Player(4, 104, 2, 4, "Fran", "Forward", "Forward", 80),
@@ -364,7 +405,8 @@ public sealed class OfficialFplImporterTests
         string firstName,
         string secondName,
         string webName,
-        int priceTenths) =>
+        int priceTenths,
+        string? photoIdentifier = null) =>
         new
         {
             id,
@@ -374,6 +416,7 @@ public sealed class OfficialFplImporterTests
             first_name = firstName,
             second_name = secondName,
             web_name = webName,
+            photo = photoIdentifier ?? $"{code}.jpg",
             now_cost = priceTenths,
             status = "a",
             news = string.Empty,
@@ -403,6 +446,47 @@ public sealed class OfficialFplImporterTests
                     team_a_score = (int?)null,
                 },
             });
+
+    private static async Task ClearPhotoIdentifierAsync(
+        string databasePath,
+        long captureId,
+        int playerId)
+    {
+        await using var connection = new SqliteConnection($"Data Source={databasePath}");
+        await connection.OpenAsync(TestContext.Current.CancellationToken);
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText =
+            """
+            UPDATE official_fpl_players
+            SET photo_identifier = NULL
+            WHERE capture_id = $captureId AND player_id = $playerId;
+            """;
+        command.Parameters.AddWithValue("$captureId", captureId);
+        command.Parameters.AddWithValue("$playerId", playerId);
+        Assert.Equal(
+            1,
+            await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken));
+    }
+
+    private static async Task<string?> ReadPhotoIdentifierAsync(
+        string databasePath,
+        long captureId,
+        int playerId)
+    {
+        await using var connection = new SqliteConnection($"Data Source={databasePath}");
+        await connection.OpenAsync(TestContext.Current.CancellationToken);
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText =
+            """
+            SELECT photo_identifier
+            FROM official_fpl_players
+            WHERE capture_id = $captureId AND player_id = $playerId;
+            """;
+        command.Parameters.AddWithValue("$captureId", captureId);
+        command.Parameters.AddWithValue("$playerId", playerId);
+        return (string?)await command.ExecuteScalarAsync(
+            TestContext.Current.CancellationToken);
+    }
 
     private static async Task AssertDatabaseShapeAsync(
         string databasePath,

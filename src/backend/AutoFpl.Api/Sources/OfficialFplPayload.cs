@@ -37,6 +37,7 @@ internal sealed record OfficialFplPlayer(
     string FirstName,
     string SecondName,
     string WebName,
+    string PhotoIdentifier,
     int PriceTenths,
     string Status,
     string News,

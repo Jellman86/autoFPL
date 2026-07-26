@@ -14,7 +14,7 @@ from typing import Any, DefaultDict, Dict, Iterable, List, Mapping, Optional, Se
 
 SCHEMA_VERSION = "1.3"
 EVALUATOR_VERSION = "baseline-evaluation-v4"
-REQUIRED_DATABASE_VERSION = 6
+REQUIRED_DATABASE_VERSION = 7
 BASELINE_NAMES = (
     "zero-points",
     "position-expanding-mean",

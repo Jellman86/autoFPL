@@ -7,7 +7,7 @@ The executable backend validates decision-snapshot metadata, deterministic manua
 The wire boundary is deliberately separate from the domain:
 
 - `AutoFpl.Contracts` maps validated domain values to transport documents;
-- `AutoFpl.Api` exposes liveness, SQLite-aware readiness, source-capture metadata, immutable decision-snapshot persistence/readback and the deterministic validation/outcome routes over HTTP;
+- `AutoFpl.Api` exposes liveness, SQLite-aware readiness, source-capture metadata, a cutoff-aware official player dossier, immutable decision-snapshot persistence/readback and the deterministic validation/outcome routes over HTTP;
 - `contracts/decision-snapshot/v1/metadata.schema.json` is the versioned JSON Schema Draft 7 contract;
 - `contracts/manual-evidence/v1/current-post-routes.json` inventories every accepted manual request field and its point-in-time interpretation;
 - checked-in manual and synthetic examples are executable fixtures;
