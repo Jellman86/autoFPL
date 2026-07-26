@@ -478,9 +478,11 @@ The next development slices are:
    machine-readable reports;
 3. retain the point, probability-of-60-minutes, expected-minutes and empirical
    distribution reports as real folds accumulate;
-4. next, add one bounded public predicted-points/minutes adapter, preserving its
-   publication, retrieval and availability times, and score it as an external
-   incumbent before using any of its values as features;
+4. operate the bounded FPL Form public predicted-points adapter once its
+   2026/27 active forecast is available, preserve retrieval and availability
+   times, prove player/fixture identity coverage and score its conditional
+   published values as an external incumbent before using any value as a
+   feature;
 5. add the official photo identifier, cutoff-aware player-dossier API and
    previous-Gameweek/fixture read model;
 6. implement the decision-room visual overhaul and clickable responsive player

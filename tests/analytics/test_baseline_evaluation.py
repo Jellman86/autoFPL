@@ -335,7 +335,7 @@ class BaselineEvaluationTests(unittest.TestCase):
                 INSERT INTO schema_migrations
                     (version, name, applied_at_utc)
                 VALUES
-                    (5, 'official-fpl-gameweek-outcome', '2026-07-01T00:00:00.0000000Z');
+                    (6, 'fpl-form-forecast-capture', '2026-07-01T00:00:00.0000000Z');
 
                 CREATE TABLE official_fpl_captures (
                     capture_id INTEGER PRIMARY KEY,

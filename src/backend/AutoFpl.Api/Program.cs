@@ -34,6 +34,9 @@ bool runBackup =
 bool runOfficialFplImport =
     args.Length == 1
     && StringComparer.Ordinal.Equals(args[0], "--import-official-fpl");
+bool runFplFormForecastImport =
+    args.Length == 1
+    && StringComparer.Ordinal.Equals(args[0], "--import-fpl-form-forecast");
 bool requestedOfficialFplOutcomeImport =
     args.Length > 0
     && StringComparer.Ordinal.Equals(args[0], "--import-official-fpl-outcome");
@@ -54,6 +57,7 @@ bool runNonWebCommand =
     runIntegrityCheck
     || runBackup
     || runOfficialFplImport
+    || runFplFormForecastImport
     || runOfficialFplOutcomeImport;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(
@@ -76,6 +80,9 @@ builder.Services.AddSingleton(serviceProvider =>
         serviceProvider.GetRequiredService<DatabaseOptions>()));
 builder.Services.AddSingleton(serviceProvider =>
     new OfficialFplOutcomeStore(
+        serviceProvider.GetRequiredService<DatabaseOptions>()));
+builder.Services.AddSingleton(serviceProvider =>
+    new FplFormForecastStore(
         serviceProvider.GetRequiredService<DatabaseOptions>()));
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services
@@ -110,6 +117,23 @@ builder.Services
             AutomaticDecompression = DecompressionMethods.None,
             ConnectTimeout = TimeSpan.FromSeconds(5),
             MaxConnectionsPerServer = 2,
+            PooledConnectionLifetime = TimeSpan.FromMinutes(10),
+        });
+builder.Services
+    .AddHttpClient<FplFormForecastImporter>(
+        client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(60);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd(
+                "autoFPL-private-research/0.1");
+        })
+    .ConfigurePrimaryHttpMessageHandler(
+        () => new SocketsHttpHandler
+        {
+            AllowAutoRedirect = false,
+            AutomaticDecompression = DecompressionMethods.None,
+            ConnectTimeout = TimeSpan.FromSeconds(5),
+            MaxConnectionsPerServer = 1,
             PooledConnectionLifetime = TimeSpan.FromMinutes(10),
         });
 builder.Services.AddExceptionHandler<DecisionSnapshotPersistenceExceptionHandler>();
@@ -176,6 +200,27 @@ if (runOfficialFplImport)
             capture,
             new JsonSerializerOptions(JsonSerializerDefaults.Web)));
     return 0;
+}
+
+if (runFplFormForecastImport)
+{
+    try
+    {
+        FplFormForecastCaptureDocument capture =
+            await app.Services
+                .GetRequiredService<FplFormForecastImporter>()
+                .ImportLatestAsync();
+        await Console.Out.WriteLineAsync(
+            JsonSerializer.Serialize(
+                capture,
+                new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+        return 0;
+    }
+    catch (FplFormForecastPayloadException exception)
+    {
+        await Console.Error.WriteLineAsync(exception.Message);
+        return 2;
+    }
 }
 
 if (runOfficialFplOutcomeImport)
@@ -251,6 +296,25 @@ app.MapGet(
         + "Provider publication time is unknown; availableAtUtc is the completed retrieval time.")
     .WithTags("Data")
     .Produces<OfficialFplCaptureDocument>()
+    .Produces(StatusCodes.Status404NotFound);
+app.MapGet(
+    "/api/v1/data/fpl-form-forecast/latest",
+    async (
+        FplFormForecastStore store,
+        CancellationToken cancellationToken) =>
+    {
+        FplFormForecastCaptureDocument? capture =
+            await store.GetLatestAsync(cancellationToken);
+        return capture is null ? Results.NotFound() : Results.Ok(capture);
+    })
+    .WithName("GetLatestFplFormForecastCapture")
+    .WithSummary(
+        "Read provenance and counts for the latest immutable public FPL Form forecast capture.")
+    .WithDescription(
+        "The fixed-origin operator import records the active next-Gameweek fixture forecasts. "
+        + "Provider publication time is unknown; availableAtUtc is the completed retrieval time.")
+    .WithTags("Data")
+    .Produces<FplFormForecastCaptureDocument>()
     .Produces(StatusCodes.Status404NotFound);
 app.MapGet(
     "/api/v1/data/official-fpl/replays/{seasonCode}/{gameweek:int:min(1):max(38)}/pre-deadline",
