@@ -42,6 +42,14 @@ dotnet AutoFpl.Api.dll --import-official-fpl
 dotnet AutoFpl.Api.dll --import-official-fpl-outcome <gameweek>
 ```
 
+An instance may set
+`AutoFpl__Research__OfficialFplPollIntervalMinutes=360` (or another bounded
+value from 60 through 1440 minutes) for automatic reference capture. The
+persisted attempt time throttles unchanged responses and restarts; the URL set,
+validation and immutable deduplication are identical to the operator command.
+Final outcome import remains an explicit command because it requires a
+finished, data-checked Gameweek number.
+
 The command writes one JSON summary to stdout. A new database may be created;
 an existing database receives migrations first. The supported HTTP API exposes
 only capture metadata and counts at
