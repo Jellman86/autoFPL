@@ -25,6 +25,8 @@ This foundation list establishes the programme's initial boundaries; it does not
 - [Bhatt et al., ICWSM 2019](https://doi.org/10.1609/icwsm.v13i01.3213) — crowd diversity and captaincy decisions.
 - [Ramezani, 2025 preprint](https://arxiv.org/abs/2505.02170) — integer/robust optimisation and simulation; useful design evidence, not peer-reviewed proof.
 - [Open FPL Solver](https://github.com/solioanalytics/open-fpl-solver) — active Apache-2.0 reference implementation; pin and audit before reuse.
+- [Groos, OpenFPL 2025](https://arxiv.org/abs/2508.09992) and its [MIT implementation](https://github.com/daniegr/OpenFPL) — prospective public-data FPL/Understat position ensembles and a valuable feature benchmark; local temporal reproduction and ablation remain required.
+- [Vaastav FPL Historical Dataset](https://github.com/vaastav/Fantasy-Premier-League) — useful historical FPL/Understat backfill whose maintainers explicitly warn that same-Gameweek `xP` may contain post-match lookahead; exclude that field unless a pre-deadline capture proves its timing.
 
 ## Engineering and supply chain
 

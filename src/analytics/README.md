@@ -101,3 +101,23 @@ before real evaluation.
 
 See the
 [temporal tree specification](../../docs/research/temporal-tree-v1.md).
+
+## Cutoff-safe FPL Form features v1
+
+The first scraped-forecast modelling bridge joins a retained FPL Form capture
+only when it was available by the official feature replay's exact capture
+time:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.fpl_form_feature_table \
+  --database /path/to/autofpl.db \
+  --season 2026-27 \
+  --gameweek 4 \
+  --output /path/to/fpl-form-features-gw4.json
+```
+
+It validates direct player and fixture identities again, aggregates
+fixture-level conditional and appearance-adjusted values, preserves missing
+players/probabilities, and remains an unpromoted feature artefact. See the
+[FPL Form temporal feature specification](../../docs/research/fpl-form-temporal-feature-v1.md).

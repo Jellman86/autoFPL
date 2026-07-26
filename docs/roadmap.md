@@ -529,8 +529,8 @@ The next development slices are:
 5. keep exercising the implemented official-photo decision room and
    cutoff-aware dossiers against live captures as prior outcomes accumulate;
 6. run the implemented fold-local ridge and fixed histogram-tree challengers
-   as real folds accumulate, adding scraped features only as explicit ablations
-   against the retained incumbents;
+   as real folds accumulate, then run the implemented exact-cutoff FPL Form
+   feature bridge through an official-only versus scraped-feature ablation;
 7. populate the implemented player cards with promoted forecasts only after a
    baseline has valid out-of-time evidence.
 
