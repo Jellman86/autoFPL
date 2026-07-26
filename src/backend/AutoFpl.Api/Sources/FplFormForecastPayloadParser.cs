@@ -8,6 +8,13 @@ internal static class FplFormForecastPayloadParser
 {
     private const int MaximumPlayers = 2_000;
     private const int MaximumPredictions = 4_000;
+    private const int MaximumExtractedEvidenceBytes = 4 * 1024 * 1024;
+    private const string ExtractedSchemaVersion = "fpl-form-dom/v1";
+    private const string ForecastUrl =
+        "https://www.fplform.com/fpl-predicted-points.php";
+    private const string DirectTransport = "direct-http/v1";
+    private const string DirectExtractionVersion = "fpl-form-full-html/v1";
+    private const string McpTransport = "playwright-mcp/v1";
 
     private static ReadOnlySpan<byte> NextGameweekMarker => "data-nw=\""u8;
 
@@ -70,8 +77,13 @@ internal static class FplFormForecastPayloadParser
             return new(
                 DeriveSeasonCode(season),
                 gameweek,
-                html.ToArray(),
+                html,
                 Convert.ToHexString(SHA256.HashData(html)).ToLowerInvariant(),
+                DirectTransport,
+                DirectExtractionVersion,
+                Convert.ToHexString(
+                        SHA256.HashData(playersJson.AsSpan(0, playersJsonLength)))
+                    .ToLowerInvariant(),
                 predictions);
         }
         catch (FplFormForecastPayloadException)
@@ -82,6 +94,182 @@ internal static class FplFormForecastPayloadParser
         {
             throw new FplFormForecastPayloadException(
                 "FPL Form returned malformed embedded prediction JSON.",
+                exception);
+        }
+    }
+
+    public static FplFormForecastPayload ParseExtractedEvidence(byte[] evidence)
+    {
+        ArgumentNullException.ThrowIfNull(evidence);
+        if (evidence.Length > MaximumExtractedEvidenceBytes)
+        {
+            throw Invalid("Playwright MCP returned too much extracted FPL Form evidence.");
+        }
+
+        try
+        {
+            using JsonDocument document = JsonDocument.Parse(
+                evidence,
+                new JsonDocumentOptions
+                {
+                    AllowTrailingCommas = false,
+                    CommentHandling = JsonCommentHandling.Disallow,
+                    MaxDepth = 32,
+                    AllowDuplicateProperties = false,
+                });
+            JsonElement root = RequireObject(document.RootElement, "extracted evidence");
+            RequireExactProperties(
+                root,
+                "extracted evidence",
+                "schemaVersion",
+                "sourceUrl",
+                "season",
+                "gameweek",
+                "providerPayloadSha256",
+                "predictions");
+            if (!StringComparer.Ordinal.Equals(
+                RequireText(root, "schemaVersion", 64),
+                ExtractedSchemaVersion))
+            {
+                throw Invalid("Playwright MCP returned an unsupported extraction version.");
+            }
+
+            if (!StringComparer.Ordinal.Equals(
+                RequireText(root, "sourceUrl", 200),
+                ForecastUrl))
+            {
+                throw Invalid("Playwright MCP returned evidence from an unexpected source URL.");
+            }
+
+            int gameweek = RequireInteger(root, "gameweek", 1, 99);
+            if (gameweek is < 1 or > 38)
+            {
+                throw Invalid("FPL Form has no active next-Gameweek forecast.");
+            }
+
+            int season = RequireInteger(root, "season", 20, 99);
+            string providerPayloadSha256 = RequireSha256(
+                root,
+                "providerPayloadSha256");
+            JsonElement extractedPredictions = RequireArrayProperty(root, "predictions");
+            if (extractedPredictions.GetArrayLength() is < 1 or > MaximumPredictions)
+            {
+                throw Invalid("Prediction counts are outside the supported range.");
+            }
+
+            var identities = new HashSet<(int PlayerId, int FixtureId)>();
+            var predictions = new List<FplFormFixturePrediction>(
+                extractedPredictions.GetArrayLength());
+            foreach (JsonElement item in extractedPredictions.EnumerateArray())
+            {
+                JsonElement prediction = RequireObject(item, "extracted prediction");
+                RequireExactProperties(
+                    prediction,
+                    "extracted prediction",
+                    "sourcePlayerId",
+                    "fixtureId",
+                    "playerName",
+                    "teamName",
+                    "position",
+                    "kickoffLocal",
+                    "predictedPoints",
+                    "appearanceProbability");
+                int sourcePlayerId = RequireInteger(
+                    prediction,
+                    "sourcePlayerId",
+                    1,
+                    int.MaxValue);
+                int fixtureId = RequireInteger(
+                    prediction,
+                    "fixtureId",
+                    1,
+                    int.MaxValue);
+                if (!identities.Add((sourcePlayerId, fixtureId)))
+                {
+                    throw Invalid(
+                        "Extracted evidence contains a duplicate player/fixture prediction.");
+                }
+
+                string providerPosition = RequireText(prediction, "position", 32);
+                if (!Positions.TryGetValue(providerPosition, out string? position))
+                {
+                    throw Invalid("Extracted evidence contains an unsupported position.");
+                }
+
+                decimal predictedPoints = RequireDecimalString(
+                    prediction,
+                    "predictedPoints",
+                    -20m,
+                    100m);
+                predictions.Add(
+                    new(
+                        sourcePlayerId,
+                        fixtureId,
+                        RequireText(prediction, "playerName", 150),
+                        RequireText(prediction, "teamName", 100),
+                        position,
+                        RequireText(prediction, "kickoffLocal", 32),
+                        predictedPoints,
+                        OptionalDecimalString(
+                            prediction,
+                            "appearanceProbability",
+                            0m,
+                            1m)));
+            }
+
+            FplFormFixturePrediction[] ordered = predictions
+                .OrderBy(item => item.SourcePlayerId)
+                .ThenBy(item => item.FixtureId)
+                .ToArray();
+            if (ordered.Select(item => item.SourcePlayerId).Distinct().Count()
+                > MaximumPlayers)
+            {
+                throw Invalid("Prediction counts are outside the supported range.");
+            }
+
+            byte[] canonicalEvidence = JsonSerializer.SerializeToUtf8Bytes(
+                new CanonicalExtractedEvidence(
+                    ExtractedSchemaVersion,
+                    ForecastUrl,
+                    season,
+                    gameweek,
+                    providerPayloadSha256,
+                    ordered.Select(
+                            item => new CanonicalExtractedPrediction(
+                                item.SourcePlayerId,
+                                item.FixtureId,
+                                item.PlayerName,
+                                item.TeamName,
+                                Positions.Single(
+                                    position => StringComparer.Ordinal.Equals(
+                                        position.Value,
+                                        item.Position)).Key,
+                                item.KickoffLocal,
+                                item.PredictedPoints.ToString(
+                                    CultureInfo.InvariantCulture),
+                                item.AppearanceProbability?.ToString(
+                                    CultureInfo.InvariantCulture)))
+                        .ToArray()),
+                new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            return new(
+                DeriveSeasonCode(season),
+                gameweek,
+                canonicalEvidence,
+                Convert.ToHexString(SHA256.HashData(canonicalEvidence))
+                    .ToLowerInvariant(),
+                McpTransport,
+                ExtractedSchemaVersion,
+                providerPayloadSha256,
+                ordered);
+        }
+        catch (FplFormForecastPayloadException)
+        {
+            throw;
+        }
+        catch (JsonException exception)
+        {
+            throw new FplFormForecastPayloadException(
+                "Playwright MCP returned malformed extracted FPL Form evidence.",
                 exception);
         }
     }
@@ -313,6 +501,28 @@ internal static class FplFormForecastPayloadParser
         return value;
     }
 
+    private static void RequireExactProperties(
+        JsonElement value,
+        string name,
+        params string[] expectedProperties)
+    {
+        var remaining = new HashSet<string>(
+            expectedProperties,
+            StringComparer.Ordinal);
+        foreach (JsonProperty property in value.EnumerateObject())
+        {
+            if (!remaining.Remove(property.Name))
+            {
+                throw Invalid($"{name} contains an unsupported field.");
+            }
+        }
+
+        if (remaining.Count != 0)
+        {
+            throw Invalid($"{name} is missing a required field.");
+        }
+    }
+
     private static JsonElement RequireObjectProperty(JsonElement value, string name)
     {
         if (!value.TryGetProperty(name, out JsonElement property)
@@ -322,6 +532,35 @@ internal static class FplFormForecastPayloadParser
         }
 
         return property;
+    }
+
+    private static JsonElement RequireArrayProperty(JsonElement value, string name)
+    {
+        if (!value.TryGetProperty(name, out JsonElement property)
+            || property.ValueKind != JsonValueKind.Array)
+        {
+            throw Invalid($"{name} must be an array.");
+        }
+
+        return property;
+    }
+
+    private static int RequireInteger(
+        JsonElement value,
+        string name,
+        int minimum,
+        int maximum)
+    {
+        if (!value.TryGetProperty(name, out JsonElement property)
+            || property.ValueKind != JsonValueKind.Number
+            || !property.TryGetInt32(out int result)
+            || result < minimum
+            || result > maximum)
+        {
+            throw Invalid($"{name} must be an integer in the supported range.");
+        }
+
+        return result;
     }
 
     private static string RequireText(JsonElement value, string name, int maximumLength)
@@ -336,6 +575,21 @@ internal static class FplFormForecastPayloadParser
         if (string.IsNullOrWhiteSpace(result) || result.Length > maximumLength)
         {
             throw Invalid($"{name} is outside the supported length.");
+        }
+
+        return result;
+    }
+
+    private static string RequireSha256(JsonElement value, string name)
+    {
+        string result = RequireText(value, name, 64);
+        if (result.Length != 64
+            || result.Any(
+                character => character is not (
+                    >= '0' and <= '9'
+                    or >= 'a' and <= 'f')))
+        {
+            throw Invalid($"{name} must be a lowercase SHA-256 digest.");
         }
 
         return result;
@@ -357,6 +611,14 @@ internal static class FplFormForecastPayloadParser
 
         return result;
     }
+
+    private static decimal RequireDecimalString(
+        JsonElement value,
+        string name,
+        decimal minimum,
+        decimal maximum) =>
+        OptionalDecimalString(value, name, minimum, maximum)
+        ?? throw Invalid($"{name} must be a decimal string in the supported range.");
 
     private static void RequireExactIntegerString(
         JsonElement value,
@@ -404,6 +666,24 @@ internal static class FplFormForecastPayloadParser
             CultureInfo.InvariantCulture,
             $"{startYear:D4}-{endYear % 100:D2}");
     }
+
+    private sealed record CanonicalExtractedEvidence(
+        string SchemaVersion,
+        string SourceUrl,
+        int Season,
+        int Gameweek,
+        string ProviderPayloadSha256,
+        IReadOnlyList<CanonicalExtractedPrediction> Predictions);
+
+    private sealed record CanonicalExtractedPrediction(
+        int SourcePlayerId,
+        int FixtureId,
+        string PlayerName,
+        string TeamName,
+        string Position,
+        string KickoffLocal,
+        string PredictedPoints,
+        string? AppearanceProbability);
 
     private static FplFormForecastPayloadException Invalid(string message) => new(message);
 }

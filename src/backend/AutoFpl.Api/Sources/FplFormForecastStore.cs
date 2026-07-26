@@ -40,7 +40,7 @@ public sealed class FplFormForecastStore
             return (await GetAsync(existingId.Value, cancellationToken))!;
         }
 
-        byte[] compressedHtml = Compress(payload.Html);
+        byte[] compressedEvidence = Compress(payload.Evidence);
         int playerCount = payload.Predictions
             .Select(item => item.SourcePlayerId)
             .Distinct()
@@ -53,7 +53,7 @@ public sealed class FplFormForecastStore
             payload,
             retrievedAtUtc,
             availableAtUtc,
-            compressedHtml,
+            compressedEvidence,
             playerCount,
             probabilityCount,
             cancellationToken);
@@ -137,6 +137,9 @@ public sealed class FplFormForecastStore
                 retrieved_at_utc,
                 available_at_utc,
                 content_sha256,
+                transport,
+                extraction_version,
+                provider_payload_sha256,
                 player_count,
                 fixture_prediction_count,
                 appearance_probability_count
@@ -169,6 +172,9 @@ public sealed class FplFormForecastStore
                 retrieved_at_utc,
                 available_at_utc,
                 content_sha256,
+                transport,
+                extraction_version,
+                provider_payload_sha256,
                 player_count,
                 fixture_prediction_count,
                 appearance_probability_count
@@ -207,7 +213,7 @@ public sealed class FplFormForecastStore
         FplFormForecastPayload payload,
         DateTimeOffset retrievedAtUtc,
         DateTimeOffset availableAtUtc,
-        byte[] compressedHtml,
+        byte[] compressedEvidence,
         int playerCount,
         int probabilityCount,
         CancellationToken cancellationToken)
@@ -225,14 +231,17 @@ public sealed class FplFormForecastStore
                 retrieved_at_utc,
                 available_at_utc,
                 content_sha256,
-                html_brotli,
+                transport,
+                extraction_version,
+                provider_payload_sha256,
+                evidence_brotli,
                 player_count,
                 fixture_prediction_count,
                 appearance_probability_count,
                 created_at_utc
             )
             VALUES (
-                '1.0',
+                '1.1',
                 $sourceKey,
                 $sourceUrl,
                 $seasonCode,
@@ -240,7 +249,10 @@ public sealed class FplFormForecastStore
                 $retrievedAtUtc,
                 $availableAtUtc,
                 $contentSha256,
-                $htmlBrotli,
+                $transport,
+                $extractionVersion,
+                $providerPayloadSha256,
+                $evidenceBrotli,
                 $playerCount,
                 $fixturePredictionCount,
                 $appearanceProbabilityCount,
@@ -257,7 +269,16 @@ public sealed class FplFormForecastStore
         command.Parameters.AddWithValue("$retrievedAtUtc", FormatUtc(retrievedAtUtc));
         command.Parameters.AddWithValue("$availableAtUtc", FormatUtc(availableAtUtc));
         command.Parameters.AddWithValue("$contentSha256", payload.ContentSha256);
-        command.Parameters.AddWithValue("$htmlBrotli", compressedHtml);
+        command.Parameters.AddWithValue("$transport", payload.Transport);
+        command.Parameters.AddWithValue(
+            "$extractionVersion",
+            payload.ExtractionVersion);
+        command.Parameters.AddWithValue(
+            "$providerPayloadSha256",
+            payload.ProviderPayloadSha256 is null
+                ? DBNull.Value
+                : payload.ProviderPayloadSha256);
+        command.Parameters.AddWithValue("$evidenceBrotli", compressedEvidence);
         command.Parameters.AddWithValue("$playerCount", playerCount);
         command.Parameters.AddWithValue(
             "$fixturePredictionCount",
@@ -280,9 +301,12 @@ public sealed class FplFormForecastStore
             ParseUtc(reader.GetString(6)),
             ParseUtc(reader.GetString(7)),
             reader.GetString(8),
-            reader.GetInt32(9),
-            reader.GetInt32(10),
-            reader.GetInt32(11));
+            reader.GetString(9),
+            reader.GetString(10),
+            reader.IsDBNull(11) ? null : reader.GetString(11),
+            reader.GetInt32(12),
+            reader.GetInt32(13),
+            reader.GetInt32(14));
 
     private static FplFormForecastCaptureDocument CreateDocument(
         long captureId,
@@ -293,7 +317,7 @@ public sealed class FplFormForecastStore
         int probabilityCount) =>
         new(
             captureId,
-            "1.0",
+            "1.1",
             FplFormForecastImporter.SourceKey,
             FplFormForecastImporter.ForecastUri.AbsoluteUri,
             payload.SeasonCode,
@@ -302,6 +326,9 @@ public sealed class FplFormForecastStore
             retrievedAtUtc,
             availableAtUtc,
             payload.ContentSha256,
+            payload.Transport,
+            payload.ExtractionVersion,
+            payload.ProviderPayloadSha256,
             playerCount,
             payload.Predictions.Count,
             probabilityCount);

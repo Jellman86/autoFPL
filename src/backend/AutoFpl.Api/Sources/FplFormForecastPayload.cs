@@ -3,8 +3,11 @@ namespace AutoFpl.Api.Sources;
 internal sealed record FplFormForecastPayload(
     string SeasonCode,
     int Gameweek,
-    byte[] Html,
+    byte[] Evidence,
     string ContentSha256,
+    string Transport,
+    string ExtractionVersion,
+    string? ProviderPayloadSha256,
     IReadOnlyList<FplFormFixturePrediction> Predictions);
 
 internal sealed record FplFormFixturePrediction(

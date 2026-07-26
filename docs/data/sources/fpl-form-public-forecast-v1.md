@@ -20,17 +20,28 @@ Provider references:
 - [prediction method and field semantics](https://fplform.com/help)
 - [personal-use export and attribution terms](https://fplform.com/export-fpl-form-data)
 
-## Fixed resource and collection boundary
+## Existing research-stack collection boundary
 
-The operator importer performs one GET against:
+The operator importer asks Quark's existing isolated Playwright MCP service to
+navigate once to:
 
 - `https://www.fplform.com/fpl-predicted-points.php`
 
-The caller cannot provide a URL, proxy, header, cookie or credential. Redirects
-and automatic decompression are disabled. The request has a 60-second timeout,
-one connection to the provider and a 128 MiB response limit. The unusually high
-limit is necessary because the current page embeds multi-season history as well
-as the active forecast; it does not permit multiple pages or an unbounded crawl.
+autoFPL does not own a browser, proxy, crawler or general-purpose scraping
+endpoint. The deployed Playwright MCP already runs an isolated browser behind
+the hardened Quark research-egress policy. The caller cannot provide a URL,
+script, proxy, header, cookie or credential. autoFPL verifies the MCP protocol
+and Playwright server identity, opens one isolated session, invokes only
+`browser_navigate` and one versioned hard-coded `browser_evaluate`, then closes
+the page and deletes the session.
+
+The page currently embeds roughly 105 MB of multi-season data. The extraction
+function parses that data inside the existing browser process and returns only
+the active Gameweek rows plus a SHA-256 digest of the complete decoded
+`data-players` payload. The bounded MCP response is at most 6 MiB and the
+retained canonical evidence is at most 4 MiB. Spider MCP remains the appropriate
+transport for bounded news/article text, but its intentional 128 KiB result cap
+means it is not the right transport for this structured export.
 
 Run one capture with:
 
@@ -40,9 +51,10 @@ dotnet AutoFpl.Api.dll --import-fpl-form-forecast
 
 The importer accepts only an active `data-nw` Gameweek from 1 through 38 and
 normalises fixture predictions from the latest season in the page's embedded
-`data-players` JSON. An off-season sentinel, missing prediction set, malformed
-HTML/JSON, unsupported position, duplicate player/fixture identity, invalid
-range or oversized response fails without writing a partial capture.
+`data-players` JSON. An off-season sentinel, unexpected final URL, wrong MCP
+server, malformed extraction, missing prediction set, unsupported position,
+duplicate player/fixture identity, invalid range or oversized response fails
+without writing a partial capture.
 
 The read-only API exposes capture provenance and counts at
 `GET /api/v1/data/fpl-form-forecast/latest`. It does not trigger collection or
@@ -56,11 +68,14 @@ The page does not provide a separately verifiable publication timestamp.
 a Gameweek comparison only when that availability time is no later than the
 official Gameweek deadline.
 
-SHA-256 over the exact HTML is the immutable content identity. Identical
-content returns the earliest stored capture. Changed content creates a new
-capture and preserves the prior one. Historical predictions visible in a page
-retrieved after their deadlines are not backdated or treated as point-in-time
-evidence.
+SHA-256 over the canonical retained active-Gameweek evidence is the immutable
+capture identity. A second SHA-256 identifies the provider's complete decoded
+embedded player payload. The capture records transport
+`playwright-mcp/v1` and extraction version `fpl-form-dom/v1`; legacy direct-HTTP
+test/early-development rows remain distinguishable. Identical active evidence
+returns the earliest stored capture. Changed evidence creates a new immutable
+capture. Historical predictions visible in a page retrieved after their
+deadlines are not backdated or treated as point-in-time evidence.
 
 FPL Form player and fixture identifiers are source identities. They are not
 silently assumed to equal official FPL identifiers. A later evaluation join
@@ -71,7 +86,9 @@ unmatched rows.
 
 The private SQLite database retains:
 
-- the exact HTML compressed with Brotli, its hash and fixed source URL;
+- canonical compact extracted evidence compressed with Brotli, its hash, the
+  full embedded-payload hash, fixed source URL, MCP transport and extraction
+  version;
 - season, active Gameweek, retrieval and availability times;
 - source player and fixture identifiers;
 - player name, team, position and provider-local kickoff text;
@@ -102,6 +119,8 @@ publishes an active Gameweek and a later official outcome exists.
 Captures remain private and are not committed or served as a data mirror.
 Collection is operator-triggered and at most one fixed page per run. Do not
 collect login/session data, load a manager's squad through the provider, or use
-the site's credential-taking workflow. Stop collection if the provider rejects
-the client, removes public access, changes the personal-use boundary or exposes
-a smaller supported export that should replace the large HTML transport.
+the site's credential-taking workflow. Do not add a second autoFPL browser,
+crawler or egress proxy; use the existing Quark Playwright/Spider/SearXNG
+research stack according to source type. Stop collection if the provider
+rejects the client, removes public access, changes the personal-use boundary or
+exposes a smaller supported API/export that should replace browser extraction.

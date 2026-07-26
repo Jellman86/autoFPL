@@ -128,12 +128,22 @@ builder.Services
             PooledConnectionLifetime = TimeSpan.FromMinutes(10),
         });
 builder.Services
-    .AddHttpClient<FplFormForecastImporter>(
-        client =>
+    .AddHttpClient<PlaywrightMcpFplFormCollector>(
+        (serviceProvider, client) =>
         {
-            client.Timeout = TimeSpan.FromSeconds(60);
-            client.DefaultRequestHeaders.UserAgent.ParseAdd(
-                "autoFPL-private-research/0.1");
+            string configured =
+                serviceProvider.GetRequiredService<IConfiguration>()[
+                    "AutoFpl:Research:PlaywrightMcpUrl"]
+                ?? "http://playwright-mcp:8931/mcp";
+            if (!Uri.TryCreate(configured, UriKind.Absolute, out Uri? endpoint)
+                || endpoint.Scheme is not ("http" or "https"))
+            {
+                throw new InvalidOperationException(
+                    "AutoFpl:Research:PlaywrightMcpUrl must be an absolute HTTP(S) URL.");
+            }
+
+            client.BaseAddress = endpoint;
+            client.Timeout = TimeSpan.FromSeconds(180);
         })
     .ConfigurePrimaryHttpMessageHandler(
         () => new SocketsHttpHandler
@@ -144,6 +154,7 @@ builder.Services
             MaxConnectionsPerServer = 1,
             PooledConnectionLifetime = TimeSpan.FromMinutes(10),
         });
+builder.Services.AddTransient<FplFormForecastImporter>();
 builder.Services.AddExceptionHandler<DecisionSnapshotPersistenceExceptionHandler>();
 builder.Services.AddExceptionHandler<DecisionSnapshotValidationExceptionHandler>();
 builder.Services.AddExceptionHandler<SquadValidationExceptionHandler>();
@@ -326,8 +337,9 @@ app.MapGet(
     .WithSummary(
         "Read provenance and counts for the latest immutable public FPL Form forecast capture.")
     .WithDescription(
-        "The fixed-origin operator import records the active next-Gameweek fixture forecasts. "
-        + "Provider publication time is unknown; availableAtUtc is the completed retrieval time.")
+        "The fixed-origin operator import uses the existing isolated Playwright MCP service "
+        + "to record bounded active next-Gameweek fixture forecasts. Provider publication "
+        + "time is unknown; availableAtUtc is the completed retrieval time.")
     .WithTags("Data")
     .Produces<FplFormForecastCaptureDocument>()
     .Produces(StatusCodes.Status404NotFound);

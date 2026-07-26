@@ -92,17 +92,21 @@ Run the fixed-origin FPL Form capture as an operator command:
 dotnet AutoFpl.Api.dll --import-fpl-form-forecast
 ```
 
-The command makes one public HTML request and captures only an active
-next-Gameweek prediction set. It rejects the provider's off-season sentinel
-without writing a capture. The page is currently large, so the importer
-enforces a 128 MiB limit and stores the exact HTML compressed; prediction rows
-and raw HTML remain private. Published points are conditional on appearing,
-not expected minutes or an autoFPL-promoted forecast. See the
+The command uses Quark's existing isolated Playwright MCP browser to visit one
+fixed public page and return only the active next-Gameweek prediction set. It
+rejects the provider's off-season sentinel without writing a capture. autoFPL
+verifies the MCP server and final source URL, invokes only a hard-coded
+versioned extraction, hashes the complete embedded provider payload and stores
+bounded canonical extracted evidence. It does not deploy or control another
+browser, crawler or proxy. Published points are conditional on appearing, not
+expected minutes or an autoFPL-promoted forecast. Set
+`AutoFpl__Research__PlaywrightMcpUrl` only when the internal MCP endpoint differs
+from the container default `http://playwright-mcp:8931/mcp`. See the
 [source record](../data/sources/fpl-form-public-forecast-v1.md).
 
 ## SQLite operations
 
-The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies seven explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
+The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies eight explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
 
 The root filesystem stays read-only. Production must mount a private, UID
 `1654`-writable persistent directory at `/data`; the CI smoke test uses an

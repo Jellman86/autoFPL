@@ -29,26 +29,29 @@ public sealed class FplFormForecastImporterTests
         var migrationStore = new DecisionSnapshotStore(options);
         await migrationStore.MigrateAsync(TestContext.Current.CancellationToken);
 
-        byte[] html = CreateForecastHtml(6.25m);
-        var handler = new StaticHtmlHandler(html);
-        using var httpClient = new HttpClient(handler);
+        byte[] evidence = CreateForecastEvidence(6.25m);
+        var handler = new PlaywrightMcpHandler(evidence);
+        using var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("http://playwright-mcp:8931/mcp"),
+        };
         var store = new FplFormForecastStore(options);
         var importer = new FplFormForecastImporter(
-            httpClient,
+            new PlaywrightMcpFplFormCollector(httpClient),
             store,
             new FixedTimeProvider(RetrievedAtUtc));
 
         FplFormForecastCaptureDocument first =
             await importer.ImportLatestAsync(TestContext.Current.CancellationToken);
         FplFormForecastCaptureDocument duplicate =
-            await importer.ImportCapturedHtmlAsync(
-                html,
+            await importer.ImportExtractedEvidenceAsync(
+                evidence,
                 RetrievedAtUtc.AddMinutes(30),
                 TestContext.Current.CancellationToken);
 
         Assert.Equal(first, duplicate);
         Assert.Equal(1, first.CaptureId);
-        Assert.Equal("1.0", first.SchemaVersion);
+        Assert.Equal("1.1", first.SchemaVersion);
         Assert.Equal("fpl-form-public-forecast/v1", first.SourceKey);
         Assert.Equal(
             "https://www.fplform.com/fpl-predicted-points.php",
@@ -59,10 +62,16 @@ public sealed class FplFormForecastImporterTests
         Assert.Equal(RetrievedAtUtc, first.RetrievedAtUtc);
         Assert.Equal(RetrievedAtUtc, first.AvailableAtUtc);
         Assert.Equal(64, first.ContentSha256.Length);
+        Assert.Equal("playwright-mcp/v1", first.Transport);
+        Assert.Equal("fpl-form-dom/v1", first.ExtractionVersion);
+        Assert.Equal(new string('a', 64), first.ProviderPayloadSha256);
         Assert.Equal(2, first.PlayerCount);
         Assert.Equal(2, first.FixturePredictionCount);
         Assert.Equal(1, first.AppearanceProbabilityCount);
-        Assert.Equal([FplFormForecastImporter.ForecastUri], handler.Requests);
+        Assert.Equal(
+            ["initialize", "notifications/initialized", "browser_navigate",
+                "browser_evaluate", "browser_close", "DELETE"],
+            handler.Operations);
         Assert.Equal(
             first,
             await store.GetLatestAsync(TestContext.Current.CancellationToken));
@@ -94,10 +103,8 @@ public sealed class FplFormForecastImporterTests
         await new DecisionSnapshotStore(options)
             .MigrateAsync(TestContext.Current.CancellationToken);
         var store = new FplFormForecastStore(options);
-        using var httpClient = new HttpClient(
-            new StaticHtmlHandler(CreateForecastHtml(6.25m)));
         var importer = new FplFormForecastImporter(
-            httpClient,
+            CreateUnusedCollector(),
             store,
             new FixedTimeProvider(RetrievedAtUtc));
 
@@ -129,10 +136,14 @@ public sealed class FplFormForecastImporterTests
         await new DecisionSnapshotStore(options)
             .MigrateAsync(TestContext.Current.CancellationToken);
         var store = new FplFormForecastStore(options);
-        using var httpClient = new HttpClient(
-            new StaticHtmlHandler(CreateForecastHtml(6.25m, nextGameweek: 99)));
+        var handler = new PlaywrightMcpHandler(
+            CreateForecastEvidence(6.25m, nextGameweek: 99));
+        using var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("http://playwright-mcp:8931/mcp"),
+        };
         var importer = new FplFormForecastImporter(
-            httpClient,
+            new PlaywrightMcpFplFormCollector(httpClient),
             store,
             new FixedTimeProvider(RetrievedAtUtc));
 
@@ -145,15 +156,21 @@ public sealed class FplFormForecastImporterTests
     }
 
     [Fact]
-    public async Task Non_html_response_is_rejected()
+    public async Task Unexpected_mcp_server_is_rejected()
     {
         using var files = new TemporaryDatabaseFiles();
         DatabaseOptions options = CreateOptions(files.DatabasePath);
         await new DecisionSnapshotStore(options)
             .MigrateAsync(TestContext.Current.CancellationToken);
-        using var httpClient = new HttpClient(new JsonHandler());
+        using var httpClient = new HttpClient(
+            new PlaywrightMcpHandler(
+                CreateForecastEvidence(6.25m),
+                serverName: "Unexpected"))
+        {
+            BaseAddress = new Uri("http://playwright-mcp:8931/mcp"),
+        };
         var importer = new FplFormForecastImporter(
-            httpClient,
+            new PlaywrightMcpFplFormCollector(httpClient),
             new FplFormForecastStore(options),
             new FixedTimeProvider(RetrievedAtUtc));
 
@@ -161,7 +178,49 @@ public sealed class FplFormForecastImporterTests
             await Assert.ThrowsAsync<FplFormForecastPayloadException>(
                 () => importer.ImportLatestAsync(TestContext.Current.CancellationToken));
 
-        Assert.Contains("content type", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("expected Playwright", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Migration_preserves_legacy_direct_http_evidence()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        await CreateLegacyForecastDatabaseAsync(files.DatabasePath);
+        DatabaseOptions options = CreateOptions(files.DatabasePath);
+
+        await new DecisionSnapshotStore(options)
+            .MigrateAsync(TestContext.Current.CancellationToken);
+
+        var connectionString = new SqliteConnectionStringBuilder
+        {
+            DataSource = files.DatabasePath,
+            Mode = SqliteOpenMode.ReadOnly,
+        }.ToString();
+        await using var connection = new SqliteConnection(connectionString);
+        await connection.OpenAsync(TestContext.Current.CancellationToken);
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText =
+            """
+            SELECT
+                schema_version,
+                transport,
+                extraction_version,
+                provider_payload_sha256,
+                length(evidence_brotli),
+                (SELECT COUNT(*) FROM fpl_form_fixture_predictions),
+                (SELECT MAX(version) FROM schema_migrations)
+            FROM fpl_form_forecast_captures;
+            """;
+        await using SqliteDataReader reader =
+            await command.ExecuteReaderAsync(TestContext.Current.CancellationToken);
+        Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken));
+        Assert.Equal("1.0", reader.GetString(0));
+        Assert.Equal("direct-http/v1", reader.GetString(1));
+        Assert.Equal("fpl-form-full-html/v1", reader.GetString(2));
+        Assert.True(reader.IsDBNull(3));
+        Assert.Equal(2, reader.GetInt32(4));
+        Assert.Equal(1, reader.GetInt64(5));
+        Assert.Equal(8, reader.GetInt64(6));
     }
 
     private static DatabaseOptions CreateOptions(string databasePath)
@@ -174,6 +233,108 @@ public sealed class FplFormForecastImporterTests
                 })
             .Build();
         return DatabaseOptions.FromConfiguration(configuration);
+    }
+
+    private static async Task CreateLegacyForecastDatabaseAsync(string databasePath)
+    {
+        await using var connection = new SqliteConnection(
+            new SqliteConnectionStringBuilder
+            {
+                DataSource = databasePath,
+                Mode = SqliteOpenMode.ReadWriteCreate,
+            }.ToString());
+        await connection.OpenAsync(TestContext.Current.CancellationToken);
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText =
+            """
+            PRAGMA foreign_keys = ON;
+            CREATE TABLE schema_migrations (
+                version INTEGER PRIMARY KEY,
+                name TEXT NOT NULL UNIQUE,
+                applied_at_utc TEXT NOT NULL
+            );
+            INSERT INTO schema_migrations (version, name, applied_at_utc) VALUES
+                (1, 'season-gameweek-player', '2026-01-01T00:00:00Z'),
+                (2, 'squad-selection', '2026-01-01T00:00:00Z'),
+                (3, 'observation-snapshot', '2026-01-01T00:00:00Z'),
+                (4, 'official-fpl-capture', '2026-01-01T00:00:00Z'),
+                (5, 'official-fpl-gameweek-outcome', '2026-01-01T00:00:00Z'),
+                (6, 'fpl-form-forecast-capture', '2026-01-01T00:00:00Z'),
+                (7, 'official-fpl-player-photo', '2026-01-01T00:00:00Z');
+
+            CREATE TABLE fpl_form_forecast_captures (
+                capture_id INTEGER PRIMARY KEY,
+                schema_version TEXT NOT NULL CHECK (schema_version = '1.0'),
+                source_key TEXT NOT NULL,
+                source_url TEXT NOT NULL,
+                season_code TEXT NOT NULL,
+                gameweek INTEGER NOT NULL,
+                retrieved_at_utc TEXT NOT NULL,
+                available_at_utc TEXT NOT NULL,
+                content_sha256 TEXT NOT NULL,
+                html_brotli BLOB NOT NULL,
+                player_count INTEGER NOT NULL,
+                fixture_prediction_count INTEGER NOT NULL,
+                appearance_probability_count INTEGER NOT NULL,
+                created_at_utc TEXT NOT NULL,
+                UNIQUE (content_sha256),
+                UNIQUE (capture_id, gameweek)
+            );
+            CREATE INDEX fpl_form_forecast_captures_latest_idx
+                ON fpl_form_forecast_captures (
+                    season_code,
+                    gameweek,
+                    available_at_utc DESC,
+                    capture_id DESC
+                );
+            CREATE TABLE fpl_form_fixture_predictions (
+                capture_id INTEGER NOT NULL,
+                source_player_id INTEGER NOT NULL,
+                fixture_id INTEGER NOT NULL,
+                gameweek INTEGER NOT NULL,
+                player_name TEXT NOT NULL,
+                team_name TEXT NOT NULL,
+                position TEXT NOT NULL,
+                kickoff_local TEXT NOT NULL,
+                predicted_points TEXT NOT NULL,
+                appearance_probability TEXT,
+                PRIMARY KEY (capture_id, source_player_id, fixture_id),
+                FOREIGN KEY (capture_id, gameweek)
+                    REFERENCES fpl_form_forecast_captures(
+                        capture_id,
+                        gameweek
+                    ) ON DELETE RESTRICT
+            );
+            INSERT INTO fpl_form_forecast_captures VALUES (
+                1,
+                '1.0',
+                'fpl-form-public-forecast/v1',
+                'https://www.fplform.com/fpl-predicted-points.php',
+                '2026-27',
+                1,
+                '2026-08-14T09:15:00+00:00',
+                '2026-08-14T09:15:00+00:00',
+                'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+                X'0102',
+                1,
+                1,
+                0,
+                '2026-08-14T09:15:00+00:00'
+            );
+            INSERT INTO fpl_form_fixture_predictions VALUES (
+                1,
+                101,
+                10,
+                1,
+                'Ada Forward',
+                'North London',
+                'forward',
+                '2026-08-22 15:00:00',
+                '6.25',
+                NULL
+            );
+            """;
+        await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
     }
 
     private static byte[] CreateForecastHtml(
@@ -214,6 +375,59 @@ public sealed class FplFormForecastImporterTests
             </body>
             </html>
             """);
+    }
+
+    private static byte[] CreateForecastEvidence(
+        decimal firstPrediction,
+        int nextGameweek = 1)
+    {
+        object[] predictions =
+        [
+            new
+            {
+                sourcePlayerId = 101,
+                fixtureId = 10,
+                playerName = "Ada Forward",
+                teamName = "North London",
+                position = "Forward",
+                kickoffLocal = "2026-08-22 15:00:00",
+                predictedPoints = firstPrediction.ToString(
+                    System.Globalization.CultureInfo.InvariantCulture),
+                appearanceProbability = "0.95",
+            },
+            new
+            {
+                sourcePlayerId = 102,
+                fixtureId = 11,
+                playerName = "Bea Keeper",
+                teamName = "South Coast",
+                position = "Goalkeeper",
+                kickoffLocal = "2026-08-23 14:00:00",
+                predictedPoints = "3.5",
+                appearanceProbability = (string?)null,
+            },
+        ];
+        return JsonSerializer.SerializeToUtf8Bytes(
+            new
+            {
+                schemaVersion = "fpl-form-dom/v1",
+                sourceUrl = FplFormForecastImporter.ForecastUri.AbsoluteUri,
+                season = 26,
+                gameweek = nextGameweek,
+                providerPayloadSha256 =
+                    nextGameweek is >= 1 and <= 38 ? new string('a', 64) : null,
+                predictions =
+                    nextGameweek is >= 1 and <= 38 ? predictions : [],
+            });
+    }
+
+    private static PlaywrightMcpFplFormCollector CreateUnusedCollector()
+    {
+        var client = new HttpClient(new UnusedHandler())
+        {
+            BaseAddress = new Uri("http://playwright-mcp:8931/mcp"),
+        };
+        return new PlaywrightMcpFplFormCollector(client);
     }
 
     private static object Player(
@@ -273,7 +487,10 @@ public sealed class FplFormForecastImporterTests
             SELECT
                 (SELECT COUNT(*) FROM fpl_form_forecast_captures),
                 (SELECT COUNT(*) FROM fpl_form_fixture_predictions),
-                (SELECT MIN(length(html_brotli)) FROM fpl_form_forecast_captures);
+                (SELECT MIN(length(evidence_brotli)) FROM fpl_form_forecast_captures),
+                (SELECT COUNT(*)
+                 FROM fpl_form_forecast_captures
+                 WHERE transport IN ('direct-http/v1', 'playwright-mcp/v1'));
             """;
         await using SqliteDataReader reader =
             await command.ExecuteReaderAsync(TestContext.Current.CancellationToken);
@@ -281,6 +498,7 @@ public sealed class FplFormForecastImporterTests
         Assert.Equal(captures, reader.GetInt64(0));
         Assert.Equal(predictions, reader.GetInt64(1));
         Assert.True(reader.GetInt64(2) > 0);
+        Assert.Equal(captures, reader.GetInt64(3));
     }
 
     private static async Task AssertPredictionAsync(string databasePath)
@@ -318,37 +536,155 @@ public sealed class FplFormForecastImporterTests
         Assert.Equal("0.95", reader.GetString(6));
     }
 
-    private sealed class StaticHtmlHandler(byte[] html) : HttpMessageHandler
+    private sealed class PlaywrightMcpHandler(
+        byte[] evidence,
+        string serverName = "Playwright") : HttpMessageHandler
     {
-        public List<Uri> Requests { get; } = [];
+        public List<string> Operations { get; } = [];
 
-        protected override Task<HttpResponseMessage> SendAsync(
+        protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
-            Requests.Add(request.RequestUri!);
+            if (request.Method == HttpMethod.Delete)
+            {
+                Operations.Add("DELETE");
+                return new HttpResponseMessage(HttpStatusCode.OK);
+            }
+
+            string body = await request.Content!.ReadAsStringAsync(cancellationToken);
+            using JsonDocument document = JsonDocument.Parse(body);
+            string method = document.RootElement.GetProperty("method").GetString()!;
+            if (StringComparer.Ordinal.Equals(method, "initialize"))
+            {
+                Operations.Add("initialize");
+                return EventResponse(
+                    1,
+                    new
+                    {
+                        protocolVersion = "2025-03-26",
+                        capabilities = new { tools = new { } },
+                        serverInfo = new
+                        {
+                            name = serverName,
+                            version = "test",
+                        },
+                    },
+                    includeSession: true);
+            }
+
+            if (StringComparer.Ordinal.Equals(method, "notifications/initialized"))
+            {
+                Operations.Add("notifications/initialized");
+                return new HttpResponseMessage(HttpStatusCode.Accepted);
+            }
+
+            JsonElement parameters = document.RootElement.GetProperty("params");
+            string tool = parameters.GetProperty("name").GetString()!;
+            Operations.Add(tool);
+            if (StringComparer.Ordinal.Equals(tool, "browser_navigate"))
+            {
+                Assert.Equal(
+                    FplFormForecastImporter.ForecastUri.AbsoluteUri,
+                    parameters.GetProperty("arguments").GetProperty("url").GetString());
+                return EventResponse(
+                    2,
+                    new
+                    {
+                        content = new[]
+                        {
+                            new
+                            {
+                                type = "text",
+                                text = "### Page\nFPL Form",
+                            },
+                        },
+                    });
+            }
+
+            if (StringComparer.Ordinal.Equals(tool, "browser_evaluate"))
+            {
+                string function = parameters
+                    .GetProperty("arguments")
+                    .GetProperty("function")
+                    .GetString()!;
+                Assert.Contains("#php-data", function, StringComparison.Ordinal);
+                Assert.Contains("crypto.subtle.digest", function, StringComparison.Ordinal);
+                Assert.Contains("prediction.season", function, StringComparison.Ordinal);
+                Assert.Contains("kickoffIdentity", function, StringComparison.Ordinal);
+                string extracted = Encoding.UTF8.GetString(evidence);
+                string literal = JsonSerializer.Serialize(
+                    $"AUTOFPL_FPL_FORM_V1:{extracted}");
+                return EventResponse(
+                    3,
+                    new
+                    {
+                        content = new[]
+                        {
+                            new
+                            {
+                                type = "text",
+                                text =
+                                    "### Result\n"
+                                    + literal
+                                    + "\n### Ran Playwright code\n```js\nprobe\n```",
+                            },
+                        },
+                    });
+            }
+
+            Assert.Equal("browser_close", tool);
+            return EventResponse(
+                4,
+                new
+                {
+                    content = new[]
+                    {
+                        new
+                        {
+                            type = "text",
+                            text = "closed",
+                        },
+                    },
+                });
+        }
+
+        private static HttpResponseMessage EventResponse(
+            int id,
+            object result,
+            bool includeSession = false)
+        {
+            string envelope = JsonSerializer.Serialize(
+                new
+                {
+                    result,
+                    jsonrpc = "2.0",
+                    id,
+                });
             var response = new HttpResponseMessage(HttpStatusCode.OK)
             {
-                Content = new ByteArrayContent(html),
-                RequestMessage = request,
+                Content = new StringContent(
+                    $"event: message\ndata: {envelope}\n",
+                    Encoding.UTF8,
+                    "text/event-stream"),
             };
-            response.Content.Headers.ContentType =
-                new System.Net.Http.Headers.MediaTypeHeaderValue("text/html");
-            return Task.FromResult(response);
+            if (includeSession)
+            {
+                response.Headers.TryAddWithoutValidation(
+                    "Mcp-Session-Id",
+                    "test-session");
+            }
+
+            return response;
         }
     }
 
-    private sealed class JsonHandler : HttpMessageHandler
+    private sealed class UnusedHandler : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken) =>
-            Task.FromResult(
-                new HttpResponseMessage(HttpStatusCode.OK)
-                {
-                    Content = JsonContent.Create(new { message = "not HTML" }),
-                    RequestMessage = request,
-                });
+            throw new InvalidOperationException("The MCP collector should not be used.");
     }
 
     private sealed class FixedTimeProvider(DateTimeOffset value) : TimeProvider
