@@ -54,6 +54,9 @@ MAE and RMSE. Comparator selection occurs only on expanding-origin development
 folds before the Gameweek 31–38 holdout opens. The report is deterministic,
 read-only and cannot alter the preseason artifact or served advice. See the
 [historical participation specification](../../docs/research/historical-participation-evaluation-v1.md).
+The first retained result supports provisional appearance, start and
+60-minute classifiers, while rejecting the exact-minutes tree in favour of
+the player-last baseline.
 
 ## Provisional preseason player forecast v1
 

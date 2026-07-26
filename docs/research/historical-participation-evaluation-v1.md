@@ -65,6 +65,36 @@ majority of fold wins, with no position whose MAE regresses by more than 5%.
 Every target must pass before the report can mark the combined bridge
 supported. Passing still does not promote the result or alter served advice.
 
+## First retained result
+
+The first real run used historical capture `1`, source revision
+`f9ed3e8839b0f970e0d5d4a83c5628f6eaee755a`, 841 stable players and 29,747
+fixture rows. Every target selected its simple comparator on 25 development
+folds before the untouched Gameweek 31–38 holdout was opened.
+
+| Target | Challenger | Comparator | Challenger score | Comparator score | Improvement | Fold wins | Result |
+| --- | --- | --- | ---: | ---: | ---: | ---: | --- |
+| Appearance | Histogram classifier | Rolling-three rate | Brier 0.084772 | Brier 0.108087 | 21.5706% | 8/8 | Supported |
+| Start | Histogram classifier | Rolling-three rate | Brier 0.081821 | Brier 0.104625 | 21.7959% | 8/8 | Supported |
+| 60+ minutes | Histogram classifier | Rolling-three rate | Brier 0.083342 | Brier 0.102468 | 18.6653% | 8/8 | Supported |
+| Total minutes | Histogram tree | Player-last minutes | MAE 13.470439 | MAE 12.280442 | -9.6902% | 1/8 | Not supported |
+
+All three probability models also improved log loss, calibration and every
+position slice. Their mean holdout probabilities were within 0.0026 of the
+observed event rates. They therefore support separately labelled provisional
+current-player probability artifacts.
+
+The minutes tree lowered RMSE from 28.954555 to 23.369100 but worsened MAE,
+lost seven of eight holdout Gameweeks and regressed every position, including
+20.2002% for goalkeepers. It is rejected. Exact minutes must retain the
+transparent player-last comparator until a replacement passes the same locked
+gate. The combined four-target bridge is therefore not supported.
+
+The retained machine-readable summary is
+[`historical-participation-evaluation-2025-26-v1.json`](results/historical-participation-evaluation-2025-26-v1.json).
+The complete report is reproducible from the immutable archive with the
+command documented in `src/analytics/README.md`.
+
 ## Limitations and next action
 
 The archive is a settled export and lacks historical decision-time injury
@@ -73,7 +103,9 @@ calibrated across promoted clubs, transfers, tactical changes or the new
 season. Gameweek-level binary targets deliberately mean “at least one” for
 double Gameweeks.
 
-The next action is to run this fixed report against the exact retained Quark
-archive. Only target models that pass their locked gate may be fitted to
-current players, where current official availability remains authoritative and
-scout evidence stays a separately evaluated challenger.
+The next action is to fit the unchanged supported appearance, start and
+60-minute classifiers to current players. Current official availability
+remains authoritative and scout evidence stays a separately evaluated
+challenger. Exact minutes retains the player-last baseline while a new
+hierarchical or two-stage minutes challenger is evaluated on the identical
+folds.
