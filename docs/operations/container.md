@@ -112,6 +112,21 @@ catalogue available at that time. The route returns hashes, timing, aggregate
 match methods and bounded unresolved issue metadata; it never returns the
 provider's predicted values.
 
+After a later official outcome is available, run the read-only external
+evaluation:
+
+```text
+dotnet AutoFpl.Api.dll --evaluate-fpl-form-forecast [season-code]
+```
+
+The command selects the latest deadline-eligible forecast per Gameweek,
+requires complete identity coverage, pairs the latest final outcome and emits a
+deterministic hash-identified JSON report. It scores the published conditional
+values and the separately labelled appearance-probability adjustment, including
+position, zero-minute and missing-probability diagnostics. It exits `2` with an
+`insufficient-data` report until at least one complete pair exists. See the
+[evaluation specification](../research/fpl-form-external-evaluation-v1.md).
+
 ## SQLite operations
 
 The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies nine explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.

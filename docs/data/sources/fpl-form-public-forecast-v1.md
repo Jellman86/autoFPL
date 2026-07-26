@@ -118,12 +118,14 @@ FPL Form documents predicted points as conditional on the player appearing.
 They are not unconditional expected points and are not expected minutes.
 Probability of appearing is a separate optional field.
 
-The first evaluation therefore reports the published conditional prediction
+The implemented first evaluator reports the published conditional prediction
 as its own external baseline and labels its mismatch with zero-minute outcomes.
 Any probability-adjusted value is a separately named autoFPL-derived challenger,
-not presented as the provider's published number. The source cannot become a
-model feature until it has leakage-free rolling comparisons, identity coverage,
-missingness/failure slices and an ablation against the incumbent feature set.
+not presented as the provider's published number. It also reports position and
+missing-probability slices with deterministic source/outcome identities. The
+source cannot become a model feature until real leakage-free comparisons,
+missingness/failure slices and an ablation against the incumbent feature set
+earn promotion.
 
 No current capture can establish predictive quality before the 2026/27 source
 publishes an active Gameweek and a later official outcome exists.
