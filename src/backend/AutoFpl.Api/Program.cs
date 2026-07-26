@@ -39,6 +39,9 @@ bool runBackup =
 bool runOfficialFplImport =
     args.Length == 1
     && StringComparer.Ordinal.Equals(args[0], "--import-official-fpl");
+bool runHistoricalFplSeasonImport =
+    args.Length == 1
+    && StringComparer.Ordinal.Equals(args[0], "--import-historical-fpl-season");
 bool runFplFormForecastImport =
     args.Length == 1
     && StringComparer.Ordinal.Equals(args[0], "--import-fpl-form-forecast");
@@ -120,6 +123,7 @@ bool runNonWebCommand =
     runIntegrityCheck
     || runBackup
     || runOfficialFplImport
+    || runHistoricalFplSeasonImport
     || runFplFormForecastImport
     || runEvidenceClaimImport
     || runResearchSourceCapture
@@ -147,6 +151,9 @@ builder.Services.AddSingleton(serviceProvider =>
         serviceProvider.GetRequiredService<DatabaseOptions>()));
 builder.Services.AddSingleton(serviceProvider =>
     new OfficialFplOutcomeStore(
+        serviceProvider.GetRequiredService<DatabaseOptions>()));
+builder.Services.AddSingleton(serviceProvider =>
+    new HistoricalFplSeasonStore(
         serviceProvider.GetRequiredService<DatabaseOptions>()));
 builder.Services.AddSingleton(serviceProvider =>
     new OfficialFplPlayerDossierStore(
@@ -221,6 +228,23 @@ builder.Services
         client =>
         {
             client.Timeout = TimeSpan.FromSeconds(20);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd(
+                "autoFPL-private-research/0.1");
+        })
+    .ConfigurePrimaryHttpMessageHandler(
+        () => new SocketsHttpHandler
+        {
+            AllowAutoRedirect = false,
+            AutomaticDecompression = DecompressionMethods.None,
+            ConnectTimeout = TimeSpan.FromSeconds(5),
+            MaxConnectionsPerServer = 2,
+            PooledConnectionLifetime = TimeSpan.FromMinutes(10),
+        });
+builder.Services
+    .AddHttpClient<HistoricalFplSeasonImporter>(
+        client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(30);
             client.DefaultRequestHeaders.UserAgent.ParseAdd(
                 "autoFPL-private-research/0.1");
         })
@@ -368,6 +392,30 @@ if (runOfficialFplImport)
             capture,
             new JsonSerializerOptions(JsonSerializerDefaults.Web)));
     return 0;
+}
+
+if (runHistoricalFplSeasonImport)
+{
+    try
+    {
+        HistoricalFplSeasonCaptureDocument capture =
+            await app.Services
+                .GetRequiredService<HistoricalFplSeasonImporter>()
+                .ImportAsync();
+        await Console.Out.WriteLineAsync(
+            JsonSerializer.Serialize(
+                capture,
+                new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+        return 0;
+    }
+    catch (Exception exception)
+        when (exception is HistoricalFplSeasonPayloadException
+            or HttpRequestException
+            or TaskCanceledException)
+    {
+        await Console.Error.WriteLineAsync(exception.Message);
+        return 2;
+    }
 }
 
 if (runFplFormForecastImport)
@@ -793,6 +841,27 @@ app.MapGet(
         + "third-party article text or forecast influence.")
     .WithTags("Research")
     .Produces<ResearchSourceInventoryDocument>();
+app.MapGet(
+    "/api/v1/data/historical-fpl/{seasonCode}",
+    async (
+        string seasonCode,
+        HistoricalFplSeasonStore store,
+        CancellationToken cancellationToken) =>
+    {
+        HistoricalFplSeasonCaptureDocument? capture =
+            await store.GetLatestAsync(seasonCode, cancellationToken);
+        return capture is null ? Results.NotFound() : Results.Ok(capture);
+    })
+    .WithName("GetHistoricalFplSeasonCapture")
+    .WithSummary(
+        "Read provenance and coverage for one pinned historical FPL season archive.")
+    .WithDescription(
+        "The normalized prior-season performance and final availability archive is "
+        + "identified through stable official player codes. Raw CSV is retained "
+        + "privately, and the source xP field is deliberately excluded.")
+    .WithTags("Data")
+    .Produces<HistoricalFplSeasonCaptureDocument>()
+    .Produces(StatusCodes.Status404NotFound);
 app.MapGet(
     "/api/v1/data/fpl-form-forecast/status",
     async (
