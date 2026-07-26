@@ -287,6 +287,25 @@ cluster is the same `start × season × Gameweek × player` identity used by
 FFScout, preventing dependent agreement from masquerading as an independent
 vote. Premier League injury snapshots still have no extractor and fail closed.
 
+After a completed, data-checked Gameweek outcome has been imported, score
+pre-deadline start claims without writing the database:
+
+```text
+dotnet AutoFpl.Api.dll --evaluate-evidence-claims [season-code]
+```
+
+The evaluator joins claim and outcome players through stable official codes and
+uses the official per-player Gameweek `starts` count as the start-event truth.
+It reports categorical accuracy and, only where the source supplied an explicit
+probability, Brier score and natural-log loss in fixed `0-6h`, `6-24h`,
+`24-72h` and `72h+` lead-time buckets. The latest corrected official outcome is
+used; log loss applies a fixed `1e-15` numerical clamp to exact zero/one
+probabilities, and incomplete identity excludes the whole Gameweek fold.
+Availability claims are deliberately not scored against minutes or appearance
+because those are not equivalent to availability. The command exits `2` with
+`insufficient-data` until one scorable pair exists, and no result promotes a
+claim into a forecast.
+
 See the [source portfolio](../research/research-source-portfolio-v1.md).
 
 ## SQLite operations

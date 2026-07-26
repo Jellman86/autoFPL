@@ -701,8 +701,9 @@ The next development slices are:
    predicted-XI photo codes plus unique team-scoped `Out` and
    percentage-bearing `Doubts` into separately versioned quarantined start and
    availability claims; operate the implemented dependent strAIghtred consensus
-   adapter under the same player/target duplicate clusters; then add a
-   fail-closed official-injury adapter and score claims by target and lead time
+   adapter under the same player/target duplicate clusters and the implemented
+   read-only start-claim evaluator by source and lead time; then add a
+   fail-closed official-injury adapter plus defensible availability truth
    before any feature use;
 5. run the final-outcome command after the first completed, data-checked
    Gameweek and verify the resulting real replay/outcome pair;

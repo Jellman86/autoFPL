@@ -28,6 +28,17 @@ It emits deterministic exploratory JSON, returns exit `2` until one complete
 deadline-correct forecast/outcome pair exists, and never promotes the provider
 value into product advice.
 
+Quarantined start claims have a separate read-only evaluation command:
+
+```text
+dotnet AutoFpl.Api.dll --evaluate-evidence-claims [season-code]
+```
+
+It uses exact official Gameweek starts, resolves identity through stable player
+codes, reports source/lead-time accuracy and proper probability scores, returns
+exit `2` until a complete pair exists and cannot promote a claim. Availability
+is not scored against appearance.
+
 The validator and licensing decision is recorded in [ADR-0008](../../docs/adr/0008-versioned-json-contracts.md).
 
 Run the locked .NET test suite from the repository root:
