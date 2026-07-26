@@ -653,6 +653,91 @@ async function loadOfficialData() {
   }
 }
 
+function setForecastSourceState(state, label, title, summary) {
+  const panel = document.querySelector("#forecast-source");
+  panel.dataset.state = state;
+  document.querySelector("#forecast-source-state").textContent = label;
+  document.querySelector("#forecast-source-title").textContent = title;
+  document.querySelector("#forecast-source-summary").textContent = summary;
+}
+
+async function loadForecastSource() {
+  const checked = document.querySelector("#forecast-source-checked");
+  const capture = document.querySelector("#forecast-source-capture");
+  const coverage = document.querySelector("#forecast-source-coverage");
+  try {
+    const response = await fetch("/api/v1/data/fpl-form-forecast/status", {
+      headers: { Accept: "application/json" },
+    });
+    if (!response.ok) {
+      throw new Error(`Forecast source request failed with ${response.status}`);
+    }
+
+    const source = await response.json();
+    checked.textContent = source.checkedAtUtc
+      ? formatCompactInstant(source.checkedAtUtc)
+      : "Not run";
+
+    if (source.latestCapture) {
+      capture.textContent =
+        `${source.latestCapture.seasonCode} · GW${source.latestCapture.gameweek} · #${source.latestCapture.captureId}`;
+      coverage.textContent =
+        `${source.latestCapture.playerCount.toLocaleString()} players · ${source.latestCapture.fixturePredictionCount.toLocaleString()} fixtures`;
+    } else {
+      capture.textContent = "None retained";
+      coverage.textContent = "Awaiting active Gameweek";
+    }
+
+    if (source.status === "captured") {
+      setForecastSourceState(
+        "ready",
+        "Captured",
+        "Public forecast retained for evaluation.",
+        "The values remain a challenger until identity coverage and out-of-time scoring beat the declared baselines.",
+      );
+      return;
+    }
+    if (source.status === "waiting") {
+      setForecastSourceState(
+        "waiting",
+        "Waiting",
+        "FPL Form has no active forecast.",
+        "The collector reached the provider successfully. It will retain predictions only when an active next-Gameweek forecast is published.",
+      );
+      return;
+    }
+    if (source.status === "failed") {
+      setForecastSourceState(
+        "error",
+        "Check failed",
+        "The public forecast could not be checked.",
+        source.latestCapture
+          ? "The last immutable capture remains available; no partial replacement was stored."
+          : "No partial forecast was stored. Official FPL evidence and the decision room remain available.",
+      );
+      return;
+    }
+
+    setForecastSourceState(
+      "empty",
+      "Not checked",
+      "No FPL Form collection has run.",
+      "The decision room will show source readiness after the bounded operator import runs.",
+    );
+  } catch (error) {
+    checked.textContent = "Unknown";
+    capture.textContent = "Unavailable";
+    coverage.textContent = "Not evaluated";
+    setForecastSourceState(
+      "error",
+      "Unavailable",
+      "Forecast-source status could not be loaded.",
+      "Official FPL evidence and the core decision room remain available.",
+    );
+    console.error(error);
+  }
+}
+
 function trapDossierFocus(event) {
   if (
     event.key !== "Tab" ||
@@ -699,4 +784,4 @@ window.addEventListener("popstate", () => {
 });
 document.querySelector("#ai-form").addEventListener("submit", (event) => event.preventDefault());
 
-Promise.all([loadAdvice(), loadOfficialData()]);
+Promise.all([loadAdvice(), loadOfficialData(), loadForecastSource()]);

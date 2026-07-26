@@ -75,6 +75,12 @@ public sealed class FplFormForecastImporterTests
         Assert.Equal(
             first,
             await store.GetLatestAsync(TestContext.Current.CancellationToken));
+        FplFormForecastStatusDocument status =
+            await store.GetStatusAsync(TestContext.Current.CancellationToken);
+        Assert.Equal("captured", status.Status);
+        Assert.Equal(RetrievedAtUtc.AddMinutes(30), status.CheckedAtUtc);
+        Assert.Null(status.ReasonCode);
+        Assert.Equal(first, status.LatestCapture);
 
         await AssertDatabaseShapeAsync(files.DatabasePath, 1, 2);
         await AssertPredictionAsync(files.DatabasePath);
@@ -93,6 +99,11 @@ public sealed class FplFormForecastImporterTests
                 "/api/v1/data/fpl-form-forecast/latest",
                 TestContext.Current.CancellationToken);
         Assert.Equal(first, served);
+        FplFormForecastStatusDocument? servedStatus =
+            await client.GetFromJsonAsync<FplFormForecastStatusDocument>(
+                "/api/v1/data/fpl-form-forecast/status",
+                TestContext.Current.CancellationToken);
+        Assert.Equal(status, servedStatus);
     }
 
     [Fact]
@@ -176,6 +187,12 @@ public sealed class FplFormForecastImporterTests
 
         Assert.Contains("no active next-Gameweek", exception.Message, StringComparison.Ordinal);
         Assert.Null(await store.GetLatestAsync(TestContext.Current.CancellationToken));
+        FplFormForecastStatusDocument status =
+            await store.GetStatusAsync(TestContext.Current.CancellationToken);
+        Assert.Equal("waiting", status.Status);
+        Assert.Equal(RetrievedAtUtc, status.CheckedAtUtc);
+        Assert.Equal("provider-no-active-gameweek", status.ReasonCode);
+        Assert.Null(status.LatestCapture);
     }
 
     [Fact]
@@ -192,9 +209,10 @@ public sealed class FplFormForecastImporterTests
         {
             BaseAddress = new Uri("http://playwright-mcp:8931/mcp"),
         };
+        var store = new FplFormForecastStore(options);
         var importer = new FplFormForecastImporter(
             new PlaywrightMcpFplFormCollector(httpClient),
-            new FplFormForecastStore(options),
+            store,
             new FixedTimeProvider(RetrievedAtUtc));
 
         FplFormForecastPayloadException exception =
@@ -202,6 +220,11 @@ public sealed class FplFormForecastImporterTests
                 () => importer.ImportLatestAsync(TestContext.Current.CancellationToken));
 
         Assert.Contains("expected Playwright", exception.Message, StringComparison.Ordinal);
+        FplFormForecastStatusDocument status =
+            await store.GetStatusAsync(TestContext.Current.CancellationToken);
+        Assert.Equal("failed", status.Status);
+        Assert.Equal("collection-failed", status.ReasonCode);
+        Assert.Null(status.LatestCapture);
     }
 
     [Fact]
@@ -243,7 +266,7 @@ public sealed class FplFormForecastImporterTests
         Assert.True(reader.IsDBNull(3));
         Assert.Equal(2, reader.GetInt32(4));
         Assert.Equal(1, reader.GetInt64(5));
-        Assert.Equal(10, reader.GetInt64(6));
+        Assert.Equal(11, reader.GetInt64(6));
     }
 
     private static DatabaseOptions CreateOptions(string databasePath)

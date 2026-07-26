@@ -379,6 +379,21 @@ app.MapGet(
     .Produces<FplFormForecastCaptureDocument>()
     .Produces(StatusCodes.Status404NotFound);
 app.MapGet(
+    "/api/v1/data/fpl-form-forecast/status",
+    async (
+        FplFormForecastStore store,
+        CancellationToken cancellationToken) =>
+        Results.Ok(await store.GetStatusAsync(cancellationToken)))
+    .WithName("GetFplFormForecastStatus")
+    .WithSummary(
+        "Read the latest FPL Form collection check and retained forecast state.")
+    .WithDescription(
+        "Distinguishes an active captured forecast from a provider with no active "
+        + "Gameweek, a failed collection, and a source that has not been checked. "
+        + "A failed or waiting check never removes an earlier immutable capture.")
+    .WithTags("Data")
+    .Produces<FplFormForecastStatusDocument>();
+app.MapGet(
     "/api/v1/data/fpl-form-forecast/{captureId:long:min(1)}/identity-coverage",
     async (
         long captureId,

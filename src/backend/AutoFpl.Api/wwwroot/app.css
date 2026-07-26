@@ -409,6 +409,73 @@ h3 {
   font-weight: 800;
 }
 
+.forecast-source {
+  display: grid;
+  grid-template-columns: minmax(20rem, 1fr) minmax(26rem, 0.85fr);
+  gap: clamp(1rem, 3vw, 3rem);
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 1rem clamp(1rem, 2.5vw, 2rem);
+  border: 1px solid #c8d4d5;
+  border-radius: 0.55rem;
+  background: #eef3f2;
+}
+
+.forecast-source .eyebrow {
+  color: #476164;
+}
+
+.forecast-source .source-title-row h2 {
+  font-size: clamp(1.1rem, 1.6vw, 1.45rem);
+}
+
+.forecast-source p:last-child {
+  margin: 0.55rem 0 0;
+  color: #476164;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.forecast-source[data-state="ready"] .source-state {
+  background: var(--lime);
+}
+
+.forecast-source[data-state="error"] .source-state {
+  color: var(--white);
+  background: var(--coral);
+}
+
+.forecast-source-meta {
+  display: grid;
+  grid-template-columns: 0.8fr 1.1fr 1.1fr;
+  gap: 1px;
+  margin: 0;
+  border: 1px solid #c8d4d5;
+  background: #c8d4d5;
+}
+
+.forecast-source-meta div {
+  min-width: 0;
+  padding: 0.65rem;
+  background: var(--white);
+}
+
+.forecast-source-meta dt {
+  color: #647b7e;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+}
+
+.forecast-source-meta dd {
+  overflow: hidden;
+  margin: 0.3rem 0 0;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.71rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .workspace {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(24rem, 0.47fr);
@@ -1343,6 +1410,10 @@ footer {
     grid-template-columns: 1fr;
   }
 
+  .forecast-source {
+    grid-template-columns: 1fr;
+  }
+
   .source-counts {
     grid-column: auto;
   }
@@ -1467,6 +1538,10 @@ footer {
     padding: 1rem;
   }
 
+  .forecast-source {
+    padding: 1rem;
+  }
+
   .source-title-row {
     align-items: flex-start;
     flex-direction: column;
@@ -1474,6 +1549,14 @@ footer {
 
   .source-counts {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .forecast-source-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .forecast-source-meta dd {
+    white-space: normal;
   }
 
   .section-heading {

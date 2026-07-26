@@ -63,7 +63,11 @@ duplicate player/fixture identity, invalid range or oversized response fails
 without writing a partial capture.
 
 The read-only API exposes capture provenance and counts at
-`GET /api/v1/data/fpl-form-forecast/latest`. It also exposes a derived,
+`GET /api/v1/data/fpl-form-forecast/latest` and the latest bounded collection
+check at `GET /api/v1/data/fpl-form-forecast/status`. The status distinguishes
+an unchecked source, provider off-season/waiting, collection failure and a
+successful capture; a failed check does not remove an earlier immutable
+capture. It also exposes a derived,
 non-provider-mirroring identity report at
 `GET /api/v1/data/fpl-form-forecast/{captureId}/identity-coverage`. Neither
 route triggers collection or exposes provider HTML, predicted values or raw
