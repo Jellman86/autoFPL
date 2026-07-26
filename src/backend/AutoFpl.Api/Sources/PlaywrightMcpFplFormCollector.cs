@@ -198,7 +198,10 @@ public sealed class PlaywrightMcpFplFormCollector
             throw Invalid("Playwright MCP returned an invalid session identifier.");
         }
 
-        using JsonDocument envelope = await ReadEnvelopeAsync(response, cancellationToken);
+        using JsonDocument envelope = await ReadEnvelopeAsync(
+            response,
+            expectedId: 1,
+            cancellationToken);
         JsonElement result = RequireResult(envelope.RootElement, expectedId: 1);
         if (!result.TryGetProperty("protocolVersion", out JsonElement protocol)
             || protocol.ValueKind != JsonValueKind.String
@@ -258,7 +261,10 @@ public sealed class PlaywrightMcpFplFormCollector
             sessionId,
             cancellationToken);
         RequireStatus(response, HttpStatusCode.OK);
-        using JsonDocument envelope = await ReadEnvelopeAsync(response, cancellationToken);
+        using JsonDocument envelope = await ReadEnvelopeAsync(
+            response,
+            requestId,
+            cancellationToken);
         JsonElement result = RequireResult(envelope.RootElement, requestId);
         if (result.TryGetProperty("isError", out JsonElement isError)
             && isError.ValueKind == JsonValueKind.True)
@@ -321,23 +327,103 @@ public sealed class PlaywrightMcpFplFormCollector
 
     private static async Task<JsonDocument> ReadEnvelopeAsync(
         HttpResponseMessage response,
+        int expectedId,
         CancellationToken cancellationToken)
     {
         byte[] body = await ReadBoundedAsync(response.Content, cancellationToken);
+        string? mediaType = response.Content.Headers.ContentType?.MediaType;
+        if (StringComparer.OrdinalIgnoreCase.Equals(mediaType, "application/json"))
+        {
+            if (body.Length == 0)
+            {
+                throw Invalid("Playwright MCP returned an empty JSON response.");
+            }
+
+            return ParseJson(body);
+        }
+
+        if (!StringComparer.OrdinalIgnoreCase.Equals(mediaType, "text/event-stream"))
+        {
+            throw Invalid("Playwright MCP returned an unsupported response content type.");
+        }
+
         string eventStream = Encoding.UTF8.GetString(body);
-        string? data = eventStream
-            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
-            .Select(line => line.TrimEnd('\r'))
-            .Where(line => line.StartsWith("data:", StringComparison.Ordinal))
-            .Select(line => line["data:".Length..].TrimStart())
-            .LastOrDefault();
-        if (string.IsNullOrWhiteSpace(data))
+        var data = new StringBuilder();
+        foreach (string rawLine in eventStream.Split('\n'))
+        {
+            string line = rawLine.TrimEnd('\r');
+            if (line.Length == 0)
+            {
+                JsonDocument? envelope = ParseMatchingEvent(data, expectedId);
+                if (envelope is not null)
+                {
+                    return envelope;
+                }
+
+                data.Clear();
+                continue;
+            }
+
+            if (!line.StartsWith("data:", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (data.Length > 0)
+            {
+                data.Append('\n');
+            }
+
+            ReadOnlySpan<char> value = line.AsSpan("data:".Length);
+            if (!value.IsEmpty && value[0] == ' ')
+            {
+                value = value[1..];
+            }
+
+            data.Append(value);
+        }
+
+        JsonDocument? finalEnvelope = ParseMatchingEvent(data, expectedId);
+        return finalEnvelope
+            ?? throw Invalid("Playwright MCP returned no matching JSON-RPC response.");
+    }
+
+    private static JsonDocument? ParseMatchingEvent(
+        StringBuilder data,
+        int expectedId)
+    {
+        if (data.Length == 0)
+        {
+            return null;
+        }
+
+        JsonDocument envelope;
+        try
+        {
+            envelope = ParseJson(Encoding.UTF8.GetBytes(data.ToString()));
+        }
+        catch (JsonException)
         {
             throw Invalid("Playwright MCP returned an invalid event stream.");
         }
 
-        return JsonDocument.Parse(
-            data,
+        JsonElement root = envelope.RootElement;
+        if (root.ValueKind == JsonValueKind.Object
+            && root.TryGetProperty("id", out JsonElement id)
+            && id.ValueKind == JsonValueKind.Number
+            && id.TryGetInt32(out int actualId)
+            && actualId == expectedId)
+        {
+            return envelope;
+        }
+
+        envelope.Dispose();
+        return null;
+    }
+
+    private static JsonDocument ParseJson(ReadOnlyMemory<byte> body) =>
+        JsonDocument.Parse(
+            body,
             new JsonDocumentOptions
             {
                 AllowTrailingCommas = false,
@@ -345,7 +431,6 @@ public sealed class PlaywrightMcpFplFormCollector
                 MaxDepth = 64,
                 AllowDuplicateProperties = false,
             });
-    }
 
     private static JsonElement RequireResult(JsonElement root, int expectedId)
     {

@@ -96,6 +96,29 @@ public sealed class FplFormForecastImporterTests
     }
 
     [Fact]
+    public async Task Collector_accepts_direct_json_streamable_http_responses()
+    {
+        byte[] evidence = CreateForecastEvidence(6.25m);
+        var handler = new PlaywrightMcpHandler(
+            evidence,
+            useJsonResponses: true);
+        using var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("http://playwright-mcp:8931/mcp"),
+        };
+        var collector = new PlaywrightMcpFplFormCollector(httpClient);
+
+        byte[] captured = await collector.CaptureAsync(
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(evidence, captured);
+        Assert.Equal(
+            ["initialize", "notifications/initialized", "browser_run_code_unsafe",
+                "browser_close", "DELETE"],
+            handler.Operations);
+    }
+
+    [Fact]
     public async Task Changed_forecast_creates_a_new_immutable_capture()
     {
         using var files = new TemporaryDatabaseFiles();
@@ -556,7 +579,8 @@ public sealed class FplFormForecastImporterTests
 
     private sealed class PlaywrightMcpHandler(
         byte[] evidence,
-        string serverName = "Playwright") : HttpMessageHandler
+        string serverName = "Playwright",
+        bool useJsonResponses = false) : HttpMessageHandler
     {
         public List<string> Operations { get; } = [];
 
@@ -652,7 +676,7 @@ public sealed class FplFormForecastImporterTests
                 });
         }
 
-        private static HttpResponseMessage EventResponse(
+        private HttpResponseMessage EventResponse(
             int id,
             object result,
             bool includeSession = false)
@@ -667,9 +691,13 @@ public sealed class FplFormForecastImporterTests
             var response = new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent(
-                    $"event: message\ndata: {envelope}\n",
+                    useJsonResponses
+                        ? envelope
+                        : $"event: message\ndata: {envelope}\n",
                     Encoding.UTF8,
-                    "text/event-stream"),
+                    useJsonResponses
+                        ? "application/json"
+                        : "text/event-stream"),
             };
             if (includeSession)
             {
