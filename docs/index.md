@@ -67,6 +67,7 @@ still require owner authentication.
 - [Cross-season player state v1](research/cross-season-player-state-v1.md) — stable-code prior-season performance and durability state with current-health precedence.
 - [Cross-season feature ablation v1](research/cross-season-feature-ablation-v1.md) — identical-fold incumbent comparison for prior-season performance and durability candidates.
 - [Historical preseason evaluation v1](research/historical-preseason-evaluation-v1.md) — fixed expanding-origin development and locked-holdout evidence for a provisional archive-trained GW1 bridge.
+- [Provisional preseason player forecast v1](research/preseason-player-forecast-v1.md) — exact-evaluation-identity fit of the selected archive model to current GW1 players without changing served advice.
 - [Temporal histogram-tree challenger v1](research/temporal-tree-v1.md) — fixed nonlinear comparison on the ridge evaluator's identical expanding-origin folds.
 - [FPL Form temporal feature v1](research/fpl-form-temporal-feature-v1.md) — exact-cutoff, strict-direct-identity bridge from retained public forecasts into model-ready player features.
 - [FPL Form feature ablation v1](research/fpl-form-feature-ablation-v1.md) — same-cohort official-only versus public-forecast ridge/tree comparison with source-complete temporal folds.
