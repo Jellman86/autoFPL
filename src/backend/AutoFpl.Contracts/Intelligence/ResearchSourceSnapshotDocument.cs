@@ -49,6 +49,8 @@ public sealed record ResearchSourceClaimExtractionDocument(
     [property: JsonPropertyName("extractionVersion")] string ExtractionVersion,
     [property: JsonPropertyName("candidateCount")] int CandidateCount,
     [property: JsonPropertyName("startClaimCount")] int StartClaimCount,
+    [property: JsonPropertyName("unresolvedStartCount")]
+        int UnresolvedStartCount,
     [property: JsonPropertyName("availabilityCandidateCount")]
         int AvailabilityCandidateCount,
     [property: JsonPropertyName("availabilityClaimCount")]

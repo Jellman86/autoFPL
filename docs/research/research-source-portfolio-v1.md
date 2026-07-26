@@ -75,5 +75,8 @@ consensus page. Captures are private, compressed, immutable, content-deduplicate
 and tied to the latest cutoff-eligible official target. The read API exposes
 metadata and limitations, never retained source text.
 
-Extraction into player claims, outcome scoring, source reliability and forecast
-influence remain future slices.
+Deterministic extraction now populates only quarantined FFScout start and
+availability claims plus dependent strAIghtred start-probability claims. The
+two start sources share player/target duplicate clusters so consensus is never
+counted as an extra independent vote. Premier League injury extraction, outcome
+scoring, source reliability and any forecast influence remain future slices.

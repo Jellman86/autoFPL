@@ -261,8 +261,7 @@ replay; the API returns only source class, dependence group, timing, revision,
 size and hash metadata. Repeated identical content is idempotent. Every source
 remains `shadow-only` and cannot alter claims, predictions or selections.
 
-Extract identity-checked categorical start and availability claims from one
-retained FFScout snapshot explicitly:
+Extract identity-checked claims from one supported retained snapshot explicitly:
 
 ```text
 dotnet AutoFpl.Api.dll \
@@ -279,8 +278,14 @@ claim probability, excludes the distinct `Banned` section, and reports
 unmatched or ambiguous identities without writing claims for them. Repeating
 the command is idempotent. Imported claims remain `quarantined`; extraction
 confidence records parser and identity certainty, not football truth.
-Official-injury and consensus snapshots still have no extractor and fail
-closed.
+
+strAIghtred consensus v1 accepts one bounded fixture block containing one to
+eleven player/percentage pairs. It retains the displayed upstream-source count
+in the supporting span, requires a unique team-scoped official name and writes
+the supplied percentage as a quarantined start probability. Its duplicate
+cluster is the same `start × season × Gameweek × player` identity used by
+FFScout, preventing dependent agreement from masquerading as an independent
+vote. Premier League injury snapshots still have no extractor and fail closed.
 
 See the [source portfolio](../research/research-source-portfolio-v1.md).
 

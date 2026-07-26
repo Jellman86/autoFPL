@@ -246,6 +246,91 @@ public sealed class ResearchSourceSnapshotTests
     }
 
     [Fact]
+    public async Task Straightred_extractor_retains_dependent_consensus_probabilities()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = await CreateDatabaseAsync(files.DatabasePath);
+        var snapshotStore = new ResearchSourceSnapshotStore(
+            options,
+            new FixedTimeProvider(RetrievalTime));
+        ResearchSourceDefinition source =
+            ResearchSourceRegistry.Get("straightred-lineup-consensus");
+        ResearchSourceSnapshotDocument snapshot = await snapshotStore.PersistAsync(
+            source,
+            new SpiderScrapeResult(
+                source.CanonicalUri,
+                200,
+                """
+                strAIghtred - Premier League Predicted Lineups
+                Built for FPL managers. Powered by multiple prediction sources.
+                🔵 Home vs Away · 2 sources
+                Test Player
+                100%
+                Carvalho
+                50%
+                3-5-2
+                ### Recently Updated
+                """,
+                "untrusted_remote_content"),
+            TestContext.Current.CancellationToken);
+        var extractor = new ResearchSourceClaimExtractor(
+            snapshotStore,
+            new EvidenceClaimStore(options, TimeProvider.System));
+
+        ResearchSourceClaimExtractionDocument extraction =
+            await extractor.ExtractAsync(
+                snapshot.SnapshotId,
+                TestContext.Current.CancellationToken);
+        ResearchSourceClaimExtractionDocument duplicate =
+            await extractor.ExtractAsync(
+                snapshot.SnapshotId,
+                TestContext.Current.CancellationToken);
+
+        Assert.Equal(extraction, duplicate);
+        Assert.Equal(
+            ResearchSourceClaimExtractor.StraightredExtractionVersion,
+            extraction.ExtractionVersion);
+        Assert.Equal(2, extraction.CandidateCount);
+        Assert.Equal(2, extraction.StartClaimCount);
+        Assert.Equal(0, extraction.UnresolvedStartCount);
+        Assert.Equal(0, extraction.AvailabilityCandidateCount);
+        Assert.Equal(2, extraction.ClaimCount);
+        Assert.Empty(extraction.UnresolvedPlayerCodes);
+
+        EvidenceClaimSetDocument claims =
+            await new EvidenceClaimStore(options, TimeProvider.System)
+                .GetForGameweekAsync(
+                    "2026-27",
+                    1,
+                    RetrievalTime,
+                    TestContext.Current.CancellationToken);
+        Assert.Equal(2, claims.Claims.Count);
+        Assert.All(
+            claims.Claims,
+            claim =>
+            {
+                Assert.Equal("straightred-lineup-consensus", claim.SourceKey);
+                Assert.Equal("start", claim.ClaimType);
+                Assert.Equal("starts", claim.StartStatus);
+                Assert.Equal("model-forecast", claim.Directness);
+                Assert.Equal(
+                    ResearchSourceClaimExtractor.StraightredExtractionVersion,
+                    claim.ExtractionVersion);
+                Assert.NotNull(claim.DuplicateClusterKey);
+            });
+        Assert.Equal(
+            [0.5m, 1m],
+            claims.Claims
+                .Select(claim => claim.ForecastProbability!.Value)
+                .Order()
+                .ToArray());
+        Assert.Contains(
+            claims.Claims,
+            claim => claim.SourceSpan
+                == "Home consensus (2 sources): Test Player 100%");
+    }
+
+    [Fact]
     public async Task Inventory_api_exposes_diverse_registry_and_metadata_but_not_source_text()
     {
         using var files = new TemporaryDatabaseFiles();

@@ -22,8 +22,10 @@
 - **Serving:** only inventory, timing, size, revision and hash metadata. Raw
   third-party text is not returned by the API or committed to Git.
 - **Quality status:** unknown. Source classes and dependence groups are
-  explicit; all snapshots remain `shadow-only` until identity extraction,
-  outcome scoring and same-fold ablation are complete.
+  explicit. FFScout start/availability and strAIghtred consensus extraction
+  produce only identity-checked `quarantined` claims; snapshots remain
+  `shadow-only` and no derived value can influence a forecast until outcome
+  scoring and same-fold ablation are complete.
 - **Failure behavior:** unknown source keys, wrong MCP identity, redirects to a
   different resource, non-200 results, missing trust markers, oversized or
   malformed responses and missing official target identity fail closed without
