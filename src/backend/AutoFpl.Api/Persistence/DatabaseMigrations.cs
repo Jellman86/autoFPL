@@ -4,7 +4,7 @@ internal sealed record DatabaseMigration(int Version, string Name, string Sql);
 
 internal static class DatabaseMigrations
 {
-    public const int CurrentVersion = 7;
+    public const int CurrentVersion = 8;
 
     public static IReadOnlyList<DatabaseMigration> All { get; } =
     [
@@ -404,6 +404,162 @@ internal static class DatabaseMigrations
 
             CREATE INDEX official_fpl_players_code_idx
                 ON official_fpl_players (capture_id, code);
+            """),
+        new(
+            8,
+            "fpl-form-playwright-evidence",
+            """
+            CREATE TABLE fpl_form_forecast_captures_v2 (
+                capture_id INTEGER PRIMARY KEY,
+                schema_version TEXT NOT NULL
+                    CHECK (schema_version IN ('1.0', '1.1')),
+                source_key TEXT NOT NULL
+                    CHECK (source_key = 'fpl-form-public-forecast/v1'),
+                source_url TEXT NOT NULL
+                    CHECK (
+                        source_url =
+                        'https://www.fplform.com/fpl-predicted-points.php'
+                    ),
+                season_code TEXT NOT NULL CHECK (length(season_code) BETWEEN 4 AND 16),
+                gameweek INTEGER NOT NULL CHECK (gameweek BETWEEN 1 AND 38),
+                retrieved_at_utc TEXT NOT NULL,
+                available_at_utc TEXT NOT NULL,
+                content_sha256 TEXT NOT NULL CHECK (length(content_sha256) = 64),
+                transport TEXT NOT NULL
+                    CHECK (
+                        transport IN (
+                            'direct-http/v1',
+                            'playwright-mcp/v1'
+                        )
+                    ),
+                extraction_version TEXT NOT NULL
+                    CHECK (length(extraction_version) BETWEEN 1 AND 100),
+                provider_payload_sha256 TEXT
+                    CHECK (
+                        provider_payload_sha256 IS NULL
+                        OR length(provider_payload_sha256) = 64
+                    ),
+                evidence_brotli BLOB NOT NULL,
+                player_count INTEGER NOT NULL CHECK (player_count BETWEEN 1 AND 2000),
+                fixture_prediction_count INTEGER NOT NULL
+                    CHECK (fixture_prediction_count BETWEEN 1 AND 4000),
+                appearance_probability_count INTEGER NOT NULL
+                    CHECK (
+                        appearance_probability_count BETWEEN 0
+                        AND fixture_prediction_count
+                    ),
+                created_at_utc TEXT NOT NULL,
+                UNIQUE (content_sha256),
+                UNIQUE (capture_id, gameweek)
+            );
+
+            CREATE TABLE fpl_form_fixture_predictions_v2 (
+                capture_id INTEGER NOT NULL,
+                source_player_id INTEGER NOT NULL CHECK (source_player_id > 0),
+                fixture_id INTEGER NOT NULL CHECK (fixture_id > 0),
+                gameweek INTEGER NOT NULL CHECK (gameweek BETWEEN 1 AND 38),
+                player_name TEXT NOT NULL CHECK (length(player_name) BETWEEN 1 AND 150),
+                team_name TEXT NOT NULL CHECK (length(team_name) BETWEEN 1 AND 100),
+                position TEXT NOT NULL
+                    CHECK (
+                        position IN (
+                            'goalkeeper',
+                            'defender',
+                            'midfielder',
+                            'forward'
+                        )
+                    ),
+                kickoff_local TEXT NOT NULL
+                    CHECK (length(kickoff_local) BETWEEN 1 AND 32),
+                predicted_points TEXT NOT NULL,
+                appearance_probability TEXT,
+                PRIMARY KEY (capture_id, source_player_id, fixture_id),
+                FOREIGN KEY (capture_id, gameweek)
+                    REFERENCES fpl_form_forecast_captures_v2(
+                        capture_id,
+                        gameweek
+                    ) ON DELETE RESTRICT
+            );
+
+            INSERT INTO fpl_form_forecast_captures_v2 (
+                capture_id,
+                schema_version,
+                source_key,
+                source_url,
+                season_code,
+                gameweek,
+                retrieved_at_utc,
+                available_at_utc,
+                content_sha256,
+                transport,
+                extraction_version,
+                provider_payload_sha256,
+                evidence_brotli,
+                player_count,
+                fixture_prediction_count,
+                appearance_probability_count,
+                created_at_utc
+            )
+            SELECT
+                capture_id,
+                schema_version,
+                source_key,
+                source_url,
+                season_code,
+                gameweek,
+                retrieved_at_utc,
+                available_at_utc,
+                content_sha256,
+                'direct-http/v1',
+                'fpl-form-full-html/v1',
+                NULL,
+                html_brotli,
+                player_count,
+                fixture_prediction_count,
+                appearance_probability_count,
+                created_at_utc
+            FROM fpl_form_forecast_captures;
+
+            INSERT INTO fpl_form_fixture_predictions_v2 (
+                capture_id,
+                source_player_id,
+                fixture_id,
+                gameweek,
+                player_name,
+                team_name,
+                position,
+                kickoff_local,
+                predicted_points,
+                appearance_probability
+            )
+            SELECT
+                capture_id,
+                source_player_id,
+                fixture_id,
+                gameweek,
+                player_name,
+                team_name,
+                position,
+                kickoff_local,
+                predicted_points,
+                appearance_probability
+            FROM fpl_form_fixture_predictions;
+
+            DROP TABLE fpl_form_fixture_predictions;
+            DROP TABLE fpl_form_forecast_captures;
+
+            ALTER TABLE fpl_form_forecast_captures_v2
+                RENAME TO fpl_form_forecast_captures;
+            ALTER TABLE fpl_form_fixture_predictions_v2
+                RENAME TO fpl_form_fixture_predictions;
+
+            CREATE INDEX fpl_form_forecast_captures_latest_idx
+                ON fpl_form_forecast_captures (
+                    season_code,
+                    gameweek,
+                    available_at_utc DESC,
+                    capture_id DESC
+                );
             """),
     ];
 }

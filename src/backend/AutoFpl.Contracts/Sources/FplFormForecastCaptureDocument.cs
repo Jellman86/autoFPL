@@ -13,6 +13,9 @@ public sealed record FplFormForecastCaptureDocument(
     [property: JsonPropertyName("retrievedAtUtc")] DateTimeOffset RetrievedAtUtc,
     [property: JsonPropertyName("availableAtUtc")] DateTimeOffset AvailableAtUtc,
     [property: JsonPropertyName("contentSha256")] string ContentSha256,
+    [property: JsonPropertyName("transport")] string Transport,
+    [property: JsonPropertyName("extractionVersion")] string ExtractionVersion,
+    [property: JsonPropertyName("providerPayloadSha256")] string? ProviderPayloadSha256,
     [property: JsonPropertyName("playerCount")] int PlayerCount,
     [property: JsonPropertyName("fixturePredictionCount")] int FixturePredictionCount,
     [property: JsonPropertyName("appearanceProbabilityCount")] int AppearanceProbabilityCount);

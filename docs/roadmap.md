@@ -480,11 +480,11 @@ The next development slices are:
    machine-readable reports;
 3. retain the point, probability-of-60-minutes, expected-minutes and empirical
    distribution reports as real folds accumulate;
-4. operate the bounded FPL Form public predicted-points adapter once its
-   2026/27 active forecast is available, preserve retrieval and availability
-   times, prove player/fixture identity coverage and score its conditional
-   published values as an external incumbent before using any value as a
-   feature;
+4. operate the Playwright-MCP-backed bounded FPL Form public predicted-points
+   adapter once its 2026/27 active forecast is available, preserve retrieval,
+   availability, transport and extraction identities, prove player/fixture
+   identity coverage and score its conditional published values as an external
+   incumbent before using any value as a feature;
 5. keep exercising the implemented official-photo decision room and
    cutoff-aware dossiers against live captures as prior outcomes accumulate;
 6. feed the implemented point-in-time player/team temporal feature table into
@@ -521,5 +521,8 @@ AI-orchestrator project ahead of those slices.
   snapshot, forecast or approval state.
 - Public-source collection remains bounded, non-abusive and outside private,
   login or paid access.
+- Dynamic pages, bounded article extraction and search reuse Quark's existing
+  Playwright MCP, Spider MCP and SearXNG services respectively; autoFPL does not
+  deploy a parallel scraping/browser stack.
 - Every interface sees the same versioned evidence; AI cannot manufacture a
   more favourable answer by bypassing the analytical pipeline.
