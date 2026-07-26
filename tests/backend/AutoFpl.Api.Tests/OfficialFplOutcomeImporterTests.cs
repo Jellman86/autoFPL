@@ -4,8 +4,10 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 
+using AutoFpl.Api.Intelligence;
 using AutoFpl.Api.Persistence;
 using AutoFpl.Api.Sources;
+using AutoFpl.Contracts.Intelligence;
 using AutoFpl.Contracts.Sources;
 
 using Microsoft.AspNetCore.Hosting;
@@ -208,6 +210,66 @@ public sealed class OfficialFplOutcomeImporterTests
             CreateLivePayload(firstPlayerPoints: 11),
             new DateTimeOffset(2026, 8, 30, 9, 0, 0, TimeSpan.Zero),
             TestContext.Current.CancellationToken);
+        var evidenceStore = new EvidenceClaimStore(
+            options,
+            new FixedTimeProvider(
+                new DateTimeOffset(2026, 8, 26, 11, 0, 0, TimeSpan.Zero)));
+        const string dependentCluster =
+            "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd";
+        await evidenceStore.ImportAsync(
+            new(
+                "1.0",
+                "ffscout-predicted-lineups",
+                "https://example.test/ffscout/ada",
+                "Lineup editor",
+                new DateTimeOffset(2026, 8, 25, 9, 30, 0, TimeSpan.Zero),
+                new DateTimeOffset(2026, 8, 25, 10, 0, 0, TimeSpan.Zero),
+                new DateTimeOffset(2026, 8, 25, 10, 0, 0, TimeSpan.Zero),
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                1,
+                "2026-27",
+                2,
+                1,
+                "start",
+                null,
+                "starts",
+                1m,
+                null,
+                null,
+                "model-forecast",
+                "Ada Keeper is included in the predicted XI.",
+                "human",
+                "ffscout-test/v1",
+                0.98m,
+                dependentCluster),
+            TestContext.Current.CancellationToken);
+        await evidenceStore.ImportAsync(
+            new(
+                "1.0",
+                "straightred-lineup-consensus",
+                "https://example.test/straightred/ada",
+                null,
+                null,
+                new DateTimeOffset(2026, 8, 26, 10, 0, 0, TimeSpan.Zero),
+                new DateTimeOffset(2026, 8, 26, 10, 0, 0, TimeSpan.Zero),
+                "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                1,
+                "2026-27",
+                2,
+                1,
+                "start",
+                null,
+                "starts",
+                0.8m,
+                null,
+                null,
+                "model-forecast",
+                "Four of five tracked predictions include Ada Keeper.",
+                "deterministic",
+                "straightred-test/v1",
+                1m,
+                dependentCluster),
+            TestContext.Current.CancellationToken);
 
         var store = new OfficialFplPlayerDossierStore(options, captureStore);
         OfficialFplPlayerDossierDocument? dossier = await store.GetAsync(
@@ -217,7 +279,7 @@ public sealed class OfficialFplOutcomeImporterTests
             TestContext.Current.CancellationToken);
 
         Assert.NotNull(dossier);
-        Assert.Equal("1.1", dossier.SchemaVersion);
+        Assert.Equal("1.2", dossier.SchemaVersion);
         Assert.Equal("2026-27", dossier.SeasonCode);
         Assert.Equal(2, dossier.TargetGameweek);
         Assert.Equal(
@@ -273,6 +335,26 @@ public sealed class OfficialFplOutcomeImporterTests
         Assert.Equal("South City", upcoming.OpponentName);
         Assert.False(upcoming.IsHome);
         Assert.False(upcoming.Started);
+
+        Assert.Equal("quarantined-not-used", dossier.ResearchEvidence.Status);
+        Assert.False(dossier.ResearchEvidence.InfluencesForecast);
+        Assert.Equal(2, dossier.ResearchEvidence.ClaimCount);
+        Assert.Equal(2, dossier.ResearchEvidence.SourceCount);
+        Assert.Equal(1, dossier.ResearchEvidence.DependentClusterCount);
+        Assert.False(dossier.ResearchEvidence.HasContradictions);
+        Assert.All(
+            dossier.ResearchEvidence.Claims,
+            claim => Assert.True(claim.IsDependent));
+        OfficialFplPlayerResearchClaimDocument newestClaim =
+            dossier.ResearchEvidence.Claims[0];
+        Assert.Equal("straightred-lineup-consensus", newestClaim.SourceKey);
+        Assert.Equal("start", newestClaim.ClaimType);
+        Assert.Equal("starts", newestClaim.StartStatus);
+        Assert.Equal(0.8m, newestClaim.ForecastProbability);
+        Assert.Equal(273_600, newestClaim.LeadTimeSeconds);
+        Assert.Equal(
+            "Four of five tracked predictions include Ada Keeper.",
+            newestClaim.SourceSpan);
 
         await using WebApplicationFactory<Program> factory =
             CreateFactory(files.DatabasePath);

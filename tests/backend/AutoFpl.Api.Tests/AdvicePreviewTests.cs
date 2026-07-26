@@ -32,6 +32,9 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
         Assert.Contains("Ask about this exact selection", body, StringComparison.Ordinal);
         Assert.Contains("Player dossier", body, StringComparison.Ordinal);
         Assert.Contains("Recent form", body, StringComparison.Ordinal);
+        Assert.Contains("Research tape", body, StringComparison.Ordinal);
+        Assert.Contains("Quarantined · not used", body, StringComparison.Ordinal);
+        Assert.Contains("does not change", body, StringComparison.Ordinal);
         Assert.Contains("Select any player for the full dossier", body, StringComparison.Ordinal);
         Assert.Contains("Official data footing", body, StringComparison.Ordinal);
         Assert.Contains("Capture to deadline provenance", body, StringComparison.Ordinal);

@@ -116,9 +116,18 @@ public sealed class OfficialFplPlayerDossierStore
                 targetGameweek,
                 Math.Min(38, targetGameweek + UpcomingGameweekWindow - 1),
                 cancellationToken);
+        IReadOnlyList<EvidenceRow> evidenceRows = await ReadEvidenceRowsAsync(
+            connection,
+            seasonCode,
+            targetGameweek,
+            replay.DeadlineUtc,
+            identity.PlayerCode,
+            cancellationToken);
+        OfficialFplPlayerResearchEvidenceDocument researchEvidence =
+            CreateResearchEvidence(evidenceRows, replay.DeadlineUtc);
 
         return new(
-            "1.1",
+            "1.2",
             seasonCode,
             targetGameweek,
             replay.DeadlineUtc,
@@ -146,7 +155,8 @@ public sealed class OfficialFplPlayerDossierStore
                     "published-challenger-not-promoted")
                 : null,
             outcomes,
-            upcoming);
+            upcoming,
+            researchEvidence);
     }
 
     private static async Task<PlayerIdentityRow?> ReadIdentityAsync(
@@ -419,6 +429,139 @@ public sealed class OfficialFplPlayerDossierStore
         return results;
     }
 
+    private static async Task<IReadOnlyList<EvidenceRow>> ReadEvidenceRowsAsync(
+        SqliteConnection connection,
+        string seasonCode,
+        int targetGameweek,
+        DateTimeOffset cutoffUtc,
+        int playerCode,
+        CancellationToken cancellationToken)
+    {
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText =
+            """
+            SELECT
+                claim.claim_id,
+                claim.source_key,
+                claim.canonical_url,
+                claim.author,
+                claim.available_at_utc,
+                claim.claim_type,
+                claim.availability_status,
+                claim.start_status,
+                claim.forecast_probability,
+                claim.expected_minutes,
+                claim.role,
+                claim.directness,
+                claim.source_span,
+                claim.extraction_version,
+                claim.extraction_confidence,
+                claim.duplicate_cluster_key
+            FROM evidence_claims AS claim
+            INNER JOIN official_fpl_players AS claim_identity
+                ON claim_identity.capture_id = claim.identity_capture_id
+               AND claim_identity.player_id = claim.player_id
+            WHERE claim.status = 'quarantined'
+              AND claim.season_code = $seasonCode
+              AND claim.gameweek = $targetGameweek
+              AND claim.available_at_utc <= $cutoffUtc
+              AND claim_identity.code = $playerCode
+            ORDER BY claim.available_at_utc DESC, claim.claim_id DESC;
+            """;
+        command.Parameters.AddWithValue("$seasonCode", seasonCode);
+        command.Parameters.AddWithValue("$targetGameweek", targetGameweek);
+        command.Parameters.AddWithValue("$cutoffUtc", FormatEvidenceUtc(cutoffUtc));
+        command.Parameters.AddWithValue("$playerCode", playerCode);
+
+        var results = new List<EvidenceRow>();
+        await using SqliteDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            results.Add(
+                new(
+                    reader.GetInt64(0),
+                    reader.GetString(1),
+                    reader.GetString(2),
+                    reader.IsDBNull(3) ? null : reader.GetString(3),
+                    ParseEvidenceUtc(reader.GetString(4)),
+                    reader.GetString(5),
+                    reader.IsDBNull(6) ? null : reader.GetString(6),
+                    reader.IsDBNull(7) ? null : reader.GetString(7),
+                    ReadNullableDecimal(reader, 8),
+                    ReadNullableInt32(reader, 9),
+                    reader.IsDBNull(10) ? null : reader.GetString(10),
+                    reader.GetString(11),
+                    reader.GetString(12),
+                    reader.GetString(13),
+                    reader.GetDecimal(14),
+                    reader.IsDBNull(15) ? null : reader.GetString(15)));
+        }
+
+        return results;
+    }
+
+    private static OfficialFplPlayerResearchEvidenceDocument CreateResearchEvidence(
+        IReadOnlyList<EvidenceRow> rows,
+        DateTimeOffset cutoffUtc)
+    {
+        HashSet<string> dependentClusters = rows
+            .Where(row => row.DuplicateClusterKey is not null)
+            .GroupBy(row => row.DuplicateClusterKey!, StringComparer.Ordinal)
+            .Where(group => group.Count() > 1)
+            .Select(group => group.Key)
+            .ToHashSet(StringComparer.Ordinal);
+        bool hasAvailabilityContradiction = rows
+            .Where(row => row.AvailabilityStatus is not null)
+            .Select(row => row.AvailabilityStatus!)
+            .Distinct(StringComparer.Ordinal)
+            .Skip(1)
+            .Any();
+        bool hasStartContradiction = rows
+            .Where(row => row.StartStatus is not null)
+            .Select(row => row.StartStatus!)
+            .Distinct(StringComparer.Ordinal)
+            .Skip(1)
+            .Any();
+        OfficialFplPlayerResearchClaimDocument[] claims = rows
+            .Select(row =>
+                new OfficialFplPlayerResearchClaimDocument(
+                    row.ClaimId,
+                    row.SourceKey,
+                    row.CanonicalUrl,
+                    row.Author,
+                    row.AvailableAtUtc,
+                    Math.Max(
+                        0L,
+                        (long)Math.Floor(
+                            (cutoffUtc - row.AvailableAtUtc).TotalSeconds)),
+                    row.ClaimType,
+                    row.AvailabilityStatus,
+                    row.StartStatus,
+                    row.ForecastProbability,
+                    row.ExpectedMinutes,
+                    row.Role,
+                    row.Directness,
+                    row.SourceSpan,
+                    row.ExtractionVersion,
+                    row.ExtractionConfidence,
+                    row.DuplicateClusterKey,
+                    row.DuplicateClusterKey is not null
+                        && dependentClusters.Contains(row.DuplicateClusterKey)))
+            .ToArray();
+
+        return new(
+            "quarantined-not-used",
+            false,
+            claims.Length,
+            claims
+                .Select(claim => claim.SourceKey)
+                .Distinct(StringComparer.Ordinal)
+                .Count(),
+            dependentClusters.Count,
+            hasAvailabilityContradiction || hasStartContradiction,
+            claims);
+    }
+
     public static string? CreatePhotoUrl(string? photoIdentifier)
     {
         if (string.IsNullOrEmpty(photoIdentifier))
@@ -446,12 +589,23 @@ public sealed class OfficialFplPlayerDossierStore
             .ToUniversalTime()
             .ToString("yyyy-MM-dd'T'HH:mm:ss.fffffff'Z'", CultureInfo.InvariantCulture);
 
+    private static string FormatEvidenceUtc(DateTimeOffset value) =>
+        value
+            .ToUniversalTime()
+            .ToString("O", CultureInfo.InvariantCulture);
+
     private static DateTimeOffset ParseUtc(string value) =>
         DateTimeOffset.ParseExact(
             value,
             "yyyy-MM-dd'T'HH:mm:ss.fffffff'Z'",
             CultureInfo.InvariantCulture,
             DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+
+    private static DateTimeOffset ParseEvidenceUtc(string value) =>
+        DateTimeOffset.Parse(
+            value,
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.RoundtripKind);
 
     private static int? ReadNullableInt32(
         SqliteDataReader reader,
@@ -512,4 +666,22 @@ public sealed class OfficialFplPlayerDossierStore
         decimal? ExpectedAssists,
         decimal? ExpectedGoalInvolvements,
         decimal? ExpectedGoalsConceded);
+
+    private sealed record EvidenceRow(
+        long ClaimId,
+        string SourceKey,
+        string CanonicalUrl,
+        string? Author,
+        DateTimeOffset AvailableAtUtc,
+        string ClaimType,
+        string? AvailabilityStatus,
+        string? StartStatus,
+        decimal? ForecastProbability,
+        int? ExpectedMinutes,
+        string? Role,
+        string Directness,
+        string SourceSpan,
+        string ExtractionVersion,
+        decimal ExtractionConfidence,
+        string? DuplicateClusterKey);
 }

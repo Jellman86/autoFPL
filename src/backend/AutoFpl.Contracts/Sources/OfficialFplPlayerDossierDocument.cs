@@ -15,7 +15,9 @@ public sealed record OfficialFplPlayerDossierDocument(
     [property: JsonPropertyName("recentOutcomes")]
         IReadOnlyList<OfficialFplPlayerOutcomeDocument> RecentOutcomes,
     [property: JsonPropertyName("upcomingFixtures")]
-        IReadOnlyList<OfficialFplPlayerFixtureDocument> UpcomingFixtures);
+        IReadOnlyList<OfficialFplPlayerFixtureDocument> UpcomingFixtures,
+    [property: JsonPropertyName("researchEvidence")]
+        OfficialFplPlayerResearchEvidenceDocument ResearchEvidence);
 
 public sealed record OfficialFplPlayerIdentityDocument(
     [property: JsonPropertyName("playerId")] int PlayerId,
@@ -85,3 +87,33 @@ public sealed record OfficialFplPlayerFixtureDocument(
     [property: JsonPropertyName("isHome")] bool IsHome,
     [property: JsonPropertyName("started")] bool Started,
     [property: JsonPropertyName("finished")] bool Finished);
+
+public sealed record OfficialFplPlayerResearchEvidenceDocument(
+    [property: JsonPropertyName("status")] string Status,
+    [property: JsonPropertyName("influencesForecast")] bool InfluencesForecast,
+    [property: JsonPropertyName("claimCount")] int ClaimCount,
+    [property: JsonPropertyName("sourceCount")] int SourceCount,
+    [property: JsonPropertyName("dependentClusterCount")] int DependentClusterCount,
+    [property: JsonPropertyName("hasContradictions")] bool HasContradictions,
+    [property: JsonPropertyName("claims")]
+        IReadOnlyList<OfficialFplPlayerResearchClaimDocument> Claims);
+
+public sealed record OfficialFplPlayerResearchClaimDocument(
+    [property: JsonPropertyName("claimId")] long ClaimId,
+    [property: JsonPropertyName("sourceKey")] string SourceKey,
+    [property: JsonPropertyName("canonicalUrl")] string CanonicalUrl,
+    [property: JsonPropertyName("author")] string? Author,
+    [property: JsonPropertyName("availableAtUtc")] DateTimeOffset AvailableAtUtc,
+    [property: JsonPropertyName("leadTimeSeconds")] long LeadTimeSeconds,
+    [property: JsonPropertyName("claimType")] string ClaimType,
+    [property: JsonPropertyName("availabilityStatus")] string? AvailabilityStatus,
+    [property: JsonPropertyName("startStatus")] string? StartStatus,
+    [property: JsonPropertyName("forecastProbability")] decimal? ForecastProbability,
+    [property: JsonPropertyName("expectedMinutes")] int? ExpectedMinutes,
+    [property: JsonPropertyName("role")] string? Role,
+    [property: JsonPropertyName("directness")] string Directness,
+    [property: JsonPropertyName("sourceSpan")] string SourceSpan,
+    [property: JsonPropertyName("extractionVersion")] string ExtractionVersion,
+    [property: JsonPropertyName("extractionConfidence")] decimal ExtractionConfidence,
+    [property: JsonPropertyName("duplicateClusterKey")] string? DuplicateClusterKey,
+    [property: JsonPropertyName("isDependent")] bool IsDependent);

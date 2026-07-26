@@ -129,8 +129,10 @@ season.
 7. Feed the full player distributions into a correlated CPU reference
    simulation, multi-Gameweek optimiser and only then a parity-tested GPU
    backend.
-8. Expose material evidence movement, reliability uncertainty, conflicts and
-   limitations in the player dossier and AI tools.
+8. **Player-dossier presentation implemented:** expose cutoff-safe source
+   claims, source counts, categorical conflicts and linked evidence clusters as
+   a quarantined research tape. Reliability learning, material forecast
+   movement and the same boundary in AI tools remain.
 
 ## Research basis
 
