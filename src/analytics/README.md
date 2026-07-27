@@ -104,6 +104,11 @@ historical holdout was opened, its result is an exploratory candidate screen
 only; the exact model must face genuinely new 2026/27 folds before product use.
 See the
 [historical joint participation specification](../../docs/research/historical-joint-participation-evaluation-v1.md).
+The first real screen produced zero coherence violations and improved start
+and 60-minute Brier/log loss in seven of eight folds, but appearance regressed
+on aggregate Brier, log loss and the fold gate. The full joint model is
+therefore rejected; a raw-appearance plus conditional-child factorization is
+next.
 
 ## Provisional preseason participation forecast v1
 
