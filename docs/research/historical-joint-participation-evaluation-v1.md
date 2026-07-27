@@ -71,6 +71,35 @@ It must also produce zero coherence violations. Passing marks only
 `isPromoted`, `canReplaceCurrentRawProbabilities` and `productImportReady`
 false.
 
+## First retained result
+
+The real screen used the same 6,252 player-Gameweek rows across Gameweeks
+31–38 as the retained raw report and produced zero coherence violations.
+
+| Target | Raw Brier | Joint Brier | Brier change | Raw log loss | Joint log loss | Non-worse folds | Gate |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| Appearance | 0.084772 | 0.085054 | +0.000282 | 0.277871 | 0.278517 | 3/8 | Not supported |
+| Start | 0.081821 | 0.081033 | -0.000788 | 0.260154 | 0.257732 | 7/8 | Supported screen |
+| 60+ minutes | 0.083342 | 0.082580 | -0.000762 | 0.261876 | 0.259586 | 7/8 | Supported screen |
+
+The joint distribution's multiclass Brier score was 0.255300 and log loss was
+0.492793. Its mean state probabilities closely tracked observed state rates.
+Calibration remained within tolerance and no position crossed the material
+regression threshold.
+
+The child targets improved both aggregate proper scores and seven of eight
+folds, but appearance regressed on Brier, log loss and the majority-fold
+check. The combined screen therefore rejects the full five-state model for the
+current artifact. This result motivates a narrower coherent factorization:
+retain the supported raw appearance model, learn start and 60-minute
+probabilities conditional on appearance, then multiply each conditional by
+raw appearance probability.
+
+The retained machine-readable report is
+[`historical-joint-participation-2025-26-v1.json`](results/historical-joint-participation-2025-26-v1.json).
+Its file SHA-256 is
+`28a2dc6fbf60306eb1474b471b95f829dba8f30346fb25a41e0d0476e8b7941c`.
+
 ## Reproduce
 
 Run against an application-native database backup and the retained raw report:
@@ -95,8 +124,11 @@ current official availability fusion. The five-state target also models
 Gameweek-level outcomes rather than fixture-specific states in a double
 Gameweek.
 
-If the historical screen is poor, reject this candidate. If it is useful, fix
-the exact contract before any new-season outcomes are inspected, then score it
-alongside raw classifiers on genuinely new 2026/27 folds. Availability fusion
-and evaluated sparse/new-player coverage remain independent product-import
-gates.
+The full joint candidate failed because its appearance marginal regressed,
+despite useful start and 60-minute gains. It must not replace the current raw
+artifact. The next candidate should preserve raw appearance exactly and fit
+`P(start | appearance)` and `P(60+ | appearance)`, producing each coherent
+child marginal by multiplication. Its exact contract must be fixed before
+new-season outcomes are inspected, then scored on genuinely new 2026/27
+folds. Availability fusion and evaluated sparse/new-player coverage remain
+independent product-import gates.

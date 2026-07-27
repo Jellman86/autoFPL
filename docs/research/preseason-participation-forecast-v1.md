@@ -94,8 +94,11 @@ changes remain cross-season risks.
 
 The fixed Euclidean coherence projection removed every historical violation
 but failed its secondary predictive-quality diagnostic, so it must not alter
-this artifact. The next coherence candidate is a fixed five-state joint model
-or equivalent coherent factorization registered before new 2026/27 folds.
+this artifact. A fixed five-state joint model then improved start and
+60-minute proper scores but regressed appearance, so it also must not alter the
+artifact. The next coherence candidate preserves the supported raw appearance
+model and fits start and 60-minute probabilities conditional on appearance,
+registered before new 2026/27 folds.
 Separately, the current-official-availability fusion rule must be defined and
 evaluated, and promoted/new-player history coverage must be closed using the
 existing Quark research stack or a bounded prior-league source. Only then may
