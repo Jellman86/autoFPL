@@ -48,6 +48,12 @@ exceeds appearance probability, the player is explicitly marked incoherent.
 A later coherent joint-state challenger must pass an identical out-of-time
 gate before replacing these raw outputs.
 
+The artifact's product-import readiness is fail-closed. It remains blocked
+while current official availability is not fused, any raw probabilities
+violate event nesting or any player requires an unevaluated missing-history
+fallback. This readiness flag is separate from research artifact generation:
+the output remains useful for diagnosing those exact gaps.
+
 ## Availability and limitations
 
 The historical archive lacks decision-time injury state. Current official

@@ -48,7 +48,7 @@ from .temporal_tree import TREE_CONFIGURATION
 
 SCHEMA_VERSION = "1.0"
 ARTIFACT_TYPE = "historical-preseason-participation-player-forecast"
-ARTIFACT_VERSION = "preseason-participation-player-forecast-v1"
+ARTIFACT_VERSION = "preseason-participation-player-forecast-v1.1"
 STATUS = "provisional-preseason-participation-challenger"
 EVALUATION_DATA_IDENTITY = (
     "a6d3c3c2c9a64c123ef69584c46aa7200fc6f467eab7858b4e88dd0e12cb5113"
@@ -218,6 +218,17 @@ def build_preseason_participation_forecast(
             player["probabilityCoherenceStatus"] == "coherent"
             for player in players
         )
+        import_blockers = [
+            "current-official-availability-not-fused",
+        ]
+        if coherent != len(players):
+            import_blockers.append(
+                "independent-probabilities-violate-event-nesting"
+            )
+        if matched != len(players):
+            import_blockers.append(
+                "missing-prior-identity-requires-evaluated-fallback"
+            )
         artifact: Dict[str, Any] = {
             "schemaVersion": SCHEMA_VERSION,
             "artifactType": ARTIFACT_TYPE,
@@ -264,6 +275,11 @@ def build_preseason_participation_forecast(
             "priorSeasonIdentityMissingCount": len(players) - matched,
             "probabilityCoherentPlayerCount": coherent,
             "probabilityIncoherentPlayerCount": len(players) - coherent,
+            "productImportReadiness": {
+                "status": "blocked",
+                "isReady": False,
+                "blockers": import_blockers,
+            },
             "players": players,
             "limitations": [
                 "The three probabilities passed a within-season locked "

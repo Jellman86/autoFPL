@@ -41,6 +41,19 @@ class PreseasonParticipationForecastTests(unittest.TestCase):
         )
         self.assertFalse(artifact["isPromoted"])
         self.assertFalse(artifact["influencesAdvice"])
+        self.assertEqual(
+            "blocked",
+            artifact["productImportReadiness"]["status"],
+        )
+        self.assertFalse(artifact["productImportReadiness"]["isReady"])
+        self.assertIn(
+            "current-official-availability-not-fused",
+            artifact["productImportReadiness"]["blockers"],
+        )
+        self.assertIn(
+            "missing-prior-identity-requires-evaluated-fallback",
+            artifact["productImportReadiness"]["blockers"],
+        )
         self.assertEqual(5, artifact["playerCount"])
         self.assertEqual(6, artifact["officialPlayerCount"])
         self.assertEqual(1, artifact["ineligiblePlayerCount"])
