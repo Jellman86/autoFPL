@@ -65,6 +65,32 @@ position and official status. Do not select a variant before the fixed
 minimum-fold requirement is met. Later official captures form new immutable
 forecast revisions; they do not rewrite an earlier cutoff.
 
+## First registered artifact
+
+The first v1.2 Quark artifact retained the exact v1.1 official capture,
+decision cutoff and 557-player cohort. The raw variant still had 17 incoherent
+players; both factorized variants were coherent for all 557.
+
+The official ceiling changed 32 players:
+
+| Official state | Captured players | Appearance capped |
+| --- | ---: | ---: |
+| Doubtful at 75% | 18 | 5 |
+| Injured at 0% | 24 | 24 |
+| Suspended at 0% | 3 | 3 |
+
+No available player was changed. Mean appearance moved from 0.520447 to
+0.505113; mean start moved from 0.380548 in the coherent factorization to
+0.371343 after the ceiling; and mean 60+ moved from 0.354548 to 0.345873.
+These are descriptive changes, not evidence of improved accuracy.
+
+The complete per-player artifact is retained as
+[`preseason-participation-forecast-2026-27-gw1-v1.2.json`](results/preseason-participation-forecast-2026-27-gw1-v1.2.json)
+so future outcomes can score the exact probabilities. Its file SHA-256 is
+`524c02c095fc7f62f4962fa54301c749bcd0550a09ff7d95c55225271f4110c2`;
+its internal run identity is
+`4f3a4fa8829eee7bf0ad58e8fca316a75332b8281dc53a1d8f50ce5ee5553e5c`.
+
 ## Product boundary
 
 The ceiling resolves how current official evidence will be represented, but
