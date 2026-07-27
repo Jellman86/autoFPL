@@ -133,6 +133,16 @@ The first real screen preserved appearance and improved aggregate start and
 The fixed gate therefore rejects the combined candidate. Raw, joint and
 factorized variants are now frozen for prospective 2026/27 comparison.
 
+## Current official availability ceiling v1
+
+The current participation artifact carries a prospective comparison variant
+that treats official chance as an appearance ceiling, then re-derives start
+and 60-minute marginals from the frozen conditional rates. It does not
+multiply two unproven independent probabilities, does not alter the raw
+fields and cannot influence advice before real 2026/27 scoring. Unknown or
+inconsistent official state fails closed. See the
+[availability ceiling specification](../../docs/research/current-official-availability-ceiling-v1.md).
+
 ## Provisional preseason participation forecast v1
 
 The current-player generator fits only the three supported classifiers and
@@ -148,15 +158,15 @@ PYTHONPATH=src/analytics python3 \
 ```
 
 It requires the exact retained evaluation identities, joins prior history by
-stable official code, keeps current official availability separate and reports
-any event-nesting incoherence rather than silently clipping independently
-evaluated probabilities. The artifact is deterministic, read-only, refuses
-overwrite, carries a fail-closed product-import readiness decision and cannot
-influence advice. See the
+stable official code and reports raw event-nesting incoherence. Artifact v1.2
+also retains coherent-factorized and official-ceiling-factorized comparison
+variants without replacing the raw fields. The artifact is deterministic,
+read-only, refuses overwrite, carries a fail-closed product-import readiness
+decision and cannot influence advice. See the
 [provisional participation forecast specification](../../docs/research/preseason-participation-forecast-v1.md).
-Its first real current-player run is retained there and remains blocked from
-product import by probability coherence, official-availability fusion and
-promoted/new-player coverage gaps.
+Its first v1.1 current-player run is retained there. Product import remains
+blocked by unsupported coherence candidates, unscored prospective
+availability evidence and promoted/new-player coverage gaps.
 
 ## Provisional preseason player forecast v1
 

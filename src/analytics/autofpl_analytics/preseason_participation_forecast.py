@@ -7,12 +7,22 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any, DefaultDict, Dict, Mapping, Optional, Sequence
 
+from .current_official_availability import (
+    RULE_VERSION as AVAILABILITY_RULE_VERSION,
+    constrain_factorized_participation,
+    official_appearance_ceiling,
+)
 from .cross_season_player_state import (
     PRIOR_SEASON,
     _load_archive,
     _load_current_players,
     _load_history,
     _load_target,
+)
+from .historical_conditional_participation_evaluation import (
+    MODEL_PREFIX as CONDITIONAL_MODEL_PREFIX,
+    _conditional_training_samples,
+    _factorized_probability,
 )
 from .historical_participation_evaluation import (
     BINARY_TARGETS,
@@ -48,13 +58,19 @@ from .temporal_tree import TREE_CONFIGURATION
 
 SCHEMA_VERSION = "1.0"
 ARTIFACT_TYPE = "historical-preseason-participation-player-forecast"
-ARTIFACT_VERSION = "preseason-participation-player-forecast-v1.1"
+ARTIFACT_VERSION = "preseason-participation-player-forecast-v1.2"
 STATUS = "provisional-preseason-participation-challenger"
 EVALUATION_DATA_IDENTITY = (
     "a6d3c3c2c9a64c123ef69584c46aa7200fc6f467eab7858b4e88dd0e12cb5113"
 )
 EVALUATION_RUN_IDENTITY = (
     "c39a19a93b0233e0130fe278af63b0278a4170c937db571ff056861c92451063"
+)
+CONDITIONAL_EVALUATION_DATA_IDENTITY = (
+    "d1fb994f707249b3f9a98f5ac7baaecdd4ad38720df4f466a89f2ec992658fff"
+)
+CONDITIONAL_EVALUATION_RUN_IDENTITY = (
+    "cfea27ebb7c8187fcb3ad6c6e66f903d61a82ebed023905aaee39d245a6e6f1b"
 )
 MINUTES_BASELINE = "minutes-player-last"
 TARGET_OUTPUTS = {
@@ -137,16 +153,20 @@ def build_preseason_participation_forecast(
             for player in current_players
         ]
 
+        samples = {
+            target_name: _build_samples(
+                connection,
+                capture,
+                target_name=target_name,
+            )
+            for target_name in BINARY_TARGETS
+        }
         predictions: Dict[str, Dict[int, float]] = {}
         model_documents: Dict[str, Any] = {}
         training_gameweeks: Optional[int] = None
         training_rows: Optional[int] = None
         for target_name in BINARY_TARGETS:
-            samples_by_gameweek = _build_samples(
-                connection,
-                capture,
-                target_name=target_name,
-            )
+            samples_by_gameweek = samples[target_name]
             training = _flatten(samples_by_gameweek)
             if training_gameweeks is None:
                 training_gameweeks = len(samples_by_gameweek)
@@ -185,6 +205,43 @@ def build_preseason_participation_forecast(
                 "evaluationRunIdentitySha256": EVALUATION_RUN_IDENTITY,
             }
 
+        conditional_predictions: Dict[str, Dict[int, float]] = {}
+        conditional_model_documents: Dict[str, Any] = {}
+        training_gameweek_numbers = sorted(samples["appearance"])
+        for target_name in ("start", "played-60"):
+            training = _conditional_training_samples(
+                samples,
+                target_name,
+                training_gameweek_numbers,
+            )
+            target_predictions, diagnostics = _predict_classifier(
+                training,
+                target_samples,
+                (
+                    f"{CONDITIONAL_MODEL_PREFIX}-{target_name}"
+                    "-given-appearance"
+                ),
+            )
+            conditional_predictions[target_name] = _by_player(
+                target_predictions
+            )
+            conditional_model_documents[target_name] = {
+                "modelKey": (
+                    f"{CONDITIONAL_MODEL_PREFIX}-{target_name}"
+                    "-given-appearance"
+                ),
+                "diagnostics": diagnostics,
+                "historicalScreenStatus": (
+                    "rejected-start-majority-fold-gate"
+                ),
+                "evaluationDataIdentitySha256": (
+                    CONDITIONAL_EVALUATION_DATA_IDENTITY
+                ),
+                "evaluationRunIdentitySha256": (
+                    CONDITIONAL_EVALUATION_RUN_IDENTITY
+                ),
+            }
+
         minutes_by_gameweek = _build_samples(
             connection,
             capture,
@@ -206,6 +263,7 @@ def build_preseason_participation_forecast(
                 player,
                 histories.get(int(player["playerCode"]), {}),
                 predictions,
+                conditional_predictions,
                 minutes_fallback,
             )
             for player in current_players
@@ -218,8 +276,22 @@ def build_preseason_participation_forecast(
             player["probabilityCoherenceStatus"] == "coherent"
             for player in players
         )
+        factorized_coherent = sum(
+            player["variants"]["coherentFactorized"][
+                "probabilityCoherenceStatus"
+            ]
+            == "coherent"
+            for player in players
+        )
+        availability_adjusted = sum(
+            player["variants"]["officialCeilingFactorized"][
+                "wasAppearanceCapped"
+            ]
+            for player in players
+        )
         import_blockers = [
-            "current-official-availability-not-fused",
+            "coherence-challengers-not-supported-on-fixed-historical-gate",
+            "official-availability-ceiling-prospectively-unscored",
         ]
         if coherent != len(players):
             import_blockers.append(
@@ -250,6 +322,11 @@ def build_preseason_participation_forecast(
                 "playersSha256": capture.players_sha256,
                 "gameweeksSha256": capture.gameweeks_sha256,
                 "models": model_documents,
+                "conditionalModels": conditional_model_documents,
+                "conditionalEvaluationStatus": (
+                    "rejected-start-majority-fold-gate"
+                ),
+                "availabilityRuleVersion": AVAILABILITY_RULE_VERSION,
                 "minutesBaseline": {
                     "modelKey": MINUTES_BASELINE,
                     "status": (
@@ -267,6 +344,57 @@ def build_preseason_participation_forecast(
             "probabilityStatus": (
                 "within-season-supported-provisional-preseason-bridge"
             ),
+            "probabilityVariants": {
+                "rawIndependent": {
+                    "status": "incumbent-provisional-research-artifact",
+                    "isPromoted": False,
+                    "influencesAdvice": False,
+                    "evaluationDataIdentitySha256": (
+                        EVALUATION_DATA_IDENTITY
+                    ),
+                    "evaluationRunIdentitySha256": (
+                        EVALUATION_RUN_IDENTITY
+                    ),
+                },
+                "coherentFactorized": {
+                    "status": "rejected-start-majority-fold-gate",
+                    "isPromoted": False,
+                    "influencesAdvice": False,
+                    "evaluationDataIdentitySha256": (
+                        CONDITIONAL_EVALUATION_DATA_IDENTITY
+                    ),
+                    "evaluationRunIdentitySha256": (
+                        CONDITIONAL_EVALUATION_RUN_IDENTITY
+                    ),
+                },
+                "officialCeilingFactorized": {
+                    "status": "registered-prospective-unscored",
+                    "isPromoted": False,
+                    "influencesAdvice": False,
+                    "availabilityRuleVersion": (
+                        AVAILABILITY_RULE_VERSION
+                    ),
+                },
+            },
+            "prospectiveEvaluation": {
+                "status": "registered-awaiting-2026-27-outcomes",
+                "targets": list(BINARY_TARGETS),
+                "variants": [
+                    "rawIndependent",
+                    "coherentFactorized",
+                    "officialCeilingFactorized",
+                ],
+                "properScores": [
+                    "brier-score",
+                    "log-loss",
+                    "calibration-error-10",
+                ],
+                "slices": ["gameweek", "position", "official-status"],
+                "selectionRule": (
+                    "no-variant-selection-before-outcomes-and-fixed-"
+                    "minimum-fold-gate"
+                ),
+            },
             "minutesStatus": "transparent-baseline-not-challenger",
             "playerCount": len(players),
             "officialPlayerCount": len(official_players),
@@ -275,6 +403,15 @@ def build_preseason_participation_forecast(
             "priorSeasonIdentityMissingCount": len(players) - matched,
             "probabilityCoherentPlayerCount": coherent,
             "probabilityIncoherentPlayerCount": len(players) - coherent,
+            "factorizedProbabilityCoherentPlayerCount": (
+                factorized_coherent
+            ),
+            "factorizedProbabilityIncoherentPlayerCount": (
+                len(players) - factorized_coherent
+            ),
+            "officialAvailabilityAdjustedPlayerCount": (
+                availability_adjusted
+            ),
             "productImportReadiness": {
                 "status": "blocked",
                 "isReady": False,
@@ -288,9 +425,9 @@ def build_preseason_participation_forecast(
                 "projected onto a nested probability space; any current "
                 "appearance/start or appearance/60-minute inconsistency is "
                 "reported per player.",
-                "The historical archive has no decision-time injury state; "
-                "current official availability is authoritative and remains "
-                "separate from the raw probabilities.",
+                "The rejected coherent factorization and separately labelled "
+                "official-availability ceiling are comparison variants only "
+                "and cannot influence advice before prospective scoring.",
                 "Expected minutes uses the retained player-last baseline, "
                 "with a full-archive position mean only when stable prior "
                 "identity is missing.",
@@ -358,6 +495,7 @@ def _player_document(
     player: Mapping[str, Any],
     history: Mapping[int, Mapping[str, float]],
     predictions: Mapping[str, Mapping[int, float]],
+    conditional_predictions: Mapping[str, Mapping[int, float]],
     minutes_fallback: Mapping[str, float],
 ) -> Dict[str, Any]:
     player_id = int(player["playerId"])
@@ -370,9 +508,46 @@ def _player_document(
     else:
         expected_minutes = minutes_fallback[str(player["position"])]
         minutes_identity = "position-mean-missing-prior-identity"
-    probability_values = {
-        output: _round(predictions[target][player_id])
+    raw_probability_values = {
+        output: predictions[target][player_id]
         for target, output in TARGET_OUTPUTS.items()
+    }
+    probability_values = {
+        output: _round(value)
+        for output, value in raw_probability_values.items()
+    }
+    start_conditional = conditional_predictions["start"][player_id]
+    sixty_conditional = conditional_predictions["played-60"][player_id]
+    factorized_values = {
+        "appearanceProbability": raw_probability_values[
+            "appearanceProbability"
+        ],
+        "startProbability": _factorized_probability(
+            raw_probability_values["appearanceProbability"],
+            start_conditional,
+        ),
+        "played60Probability": _factorized_probability(
+            raw_probability_values["appearanceProbability"],
+            sixty_conditional,
+        ),
+    }
+    availability = official_appearance_ceiling(
+        str(player["status"]),
+        player["chanceNextRound"],
+    )
+    constrained_values = constrain_factorized_participation(
+        raw_probability_values["appearanceProbability"],
+        start_conditional,
+        sixty_conditional,
+        availability["appearanceProbabilityCeiling"],
+    )
+    rounded_factorized = {
+        output: _round(value)
+        for output, value in factorized_values.items()
+    }
+    rounded_constrained = {
+        output: _round(value)
+        for output, value in constrained_values.items()
     }
     is_coherent = (
         probability_values["startProbability"]
@@ -389,7 +564,9 @@ def _player_document(
         "teamName": str(player["teamName"]),
         "officialStatus": str(player["status"]),
         "officialChanceOfPlayingNextRound": player["chanceNextRound"],
-        "availabilityStatus": "authoritative-current-official-not-modelled",
+        "availabilityStatus": (
+            "prospective-official-ceiling-variant-not-serving"
+        ),
         "priorSeasonIdentityStatus": (
             "stable-code-match" if history else "no-prior-season-match"
         ),
@@ -400,6 +577,47 @@ def _player_document(
             if is_coherent
             else "raw-independent-models-violate-event-nesting"
         ),
+        "variants": {
+            "rawIndependent": {
+                **probability_values,
+                "historicalEvaluationStatus": (
+                    "supported-provisional-preseason-bridge"
+                ),
+                "probabilityCoherenceStatus": (
+                    "coherent"
+                    if is_coherent
+                    else "violates-event-nesting"
+                ),
+                "influencesAdvice": False,
+            },
+            "coherentFactorized": {
+                **rounded_factorized,
+                "conditionalStartGivenAppearance": _round(
+                    start_conditional
+                ),
+                "conditionalPlayed60GivenAppearance": _round(
+                    sixty_conditional
+                ),
+                "historicalEvaluationStatus": (
+                    "rejected-start-majority-fold-gate"
+                ),
+                "probabilityCoherenceStatus": "coherent",
+                "influencesAdvice": False,
+            },
+            "officialCeilingFactorized": {
+                **rounded_constrained,
+                "availability": availability,
+                "wasAppearanceCapped": (
+                    constrained_values["appearanceProbability"]
+                    < factorized_values["appearanceProbability"]
+                ),
+                "evaluationStatus": (
+                    "registered-prospective-unscored"
+                ),
+                "probabilityCoherenceStatus": "coherent",
+                "influencesAdvice": False,
+            },
+        },
         "expectedMinutes": _round(expected_minutes),
         "expectedMinutesModelKey": MINUTES_BASELINE,
         "expectedMinutesIdentity": minutes_identity,
