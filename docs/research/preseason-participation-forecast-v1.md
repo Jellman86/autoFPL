@@ -2,11 +2,12 @@
 
 ## Purpose
 
-This artifact fits the three historical participation classifiers that passed
+Artifact v1.2 fits the three historical participation classifiers that passed
 the retained 2025/26 locked holdout to every eligible current GW1 player. It
-also carries the retained transparent exact-minutes baseline. It is comparison
-evidence for the next product import; it is not a promoted forecast and cannot
-influence advice.
+also carries the frozen coherent conditional challenger, a prospective
+current-official-availability ceiling variant and the retained transparent
+exact-minutes baseline. It is comparison evidence for the next product import;
+it is not a promoted forecast and cannot influence advice.
 
 ## Fixed identities
 
@@ -35,6 +36,14 @@ For every eligible current player the artifact provides:
 - prior-season identity coverage; and
 - an explicit probability-coherence status.
 
+Each player now retains three separately labelled variants: raw independent
+probabilities, coherent factorized probabilities and official-ceiling
+factorized probabilities. The factorized variant is retained despite rejection
+so it can be compared fairly on genuinely new outcomes; it does not replace
+the raw fields. The official ceiling uses the exact decision-time status and
+chance, preserves conditional child rates and is registered as prospective
+and unscored.
+
 The classifiers retain the exact fixed histogram configuration that improved
 locked-holdout Brier score by 21.5706%, 21.7959% and 18.6653%, respectively.
 The exact-minutes histogram tree is not fitted because it failed its gate.
@@ -45,18 +54,20 @@ accordingly.
 The three classifiers were evaluated independently. The generator does not
 silently clip or reorder their values: if start or 60-minute probability
 exceeds appearance probability, the player is explicitly marked incoherent.
-A later coherent joint-state challenger must pass an identical out-of-time
-gate before replacing these raw outputs.
+Projection, joint-state and conditional coherence challengers all failed at
+least one fixed gate and cannot replace these raw outputs. The latter two are
+retained only as frozen prospective variants.
 
 The artifact's product-import readiness is fail-closed. It remains blocked
-while current official availability is not fused, any raw probabilities
-violate event nesting or any player requires an unevaluated missing-history
-fallback. This readiness flag is separate from research artifact generation:
-the output remains useful for diagnosing those exact gaps.
+while no coherence challenger is supported, the official-availability ceiling
+has no prospective outcome folds or any player requires an unevaluated
+missing-history fallback. This readiness flag is separate from research
+artifact generation: the output remains useful for diagnosing those exact
+gaps.
 
 ## First current-player run
 
-The first Quark run used official capture `6` at
+The first v1.1 Quark run used official capture `6` at
 `2026-07-26T18:17:34.7193696Z` and produced 557 eligible players from 558
 official rows. It matched 453 players to stable prior-season identity and
 reported 104 missing identities. Coventry, Hull and Ipswich each account for
@@ -87,10 +98,10 @@ machine-readable summary is
 ## Availability and limitations
 
 The historical archive lacks decision-time injury state. Current official
-availability is therefore authoritative and remains separate from the raw
-model values; the generator does not pretend an old fit has incorporated
-current injury news. Transfers, promoted clubs, new players and tactical
-changes remain cross-season risks.
+availability therefore remains separate from the raw model values. Artifact
+v1.2 also emits a clearly labelled official-ceiling factorized variant without
+pretending the old fit incorporated current injury news. Transfers, promoted
+clubs, new players and tactical changes remain cross-season risks.
 
 The fixed Euclidean coherence projection removed every historical violation
 but failed its secondary predictive-quality diagnostic, so it must not alter
@@ -104,7 +115,10 @@ aggregate, but start was non-worse in only four of eight folds and failed the
 fixed gate. It therefore must not alter this artifact. The raw, joint and
 factorized variants are frozen for genuinely new 2026/27 comparison; no
 further model may be selected on the opened holdout.
-Separately, the current-official-availability fusion rule must be defined and
-evaluated, and promoted/new-player history coverage must be closed using the
-existing Quark research stack or a bounded prior-league source. Only then may
-a versioned backend import and player-dossier presentation be added.
+The fixed
+[current official availability ceiling](current-official-availability-ceiling-v1.md)
+is now implemented as a prospective comparison variant. It must accumulate
+real outcome folds before promotion. Promoted/new-player history coverage must
+also be closed using the existing Quark research stack or a bounded
+prior-league source. Only then may a versioned backend import and player-
+dossier presentation be added.

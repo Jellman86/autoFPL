@@ -71,6 +71,7 @@ still require owner authentication.
 - [Historical participation coherence evaluation v1](research/historical-participation-coherence-evaluation-v1.md) — fixed Euclidean probability-nesting projection on identical historical folds, explicitly limited to a secondary diagnostic.
 - [Historical joint participation evaluation v1](research/historical-joint-participation-evaluation-v1.md) — five-state coherent classifier screened against immutable raw metrics, explicitly requiring new-season evidence for promotion.
 - [Provisional preseason participation forecast v1](research/preseason-participation-forecast-v1.md) — exact-evaluation-identity current-player appearance, start and 60-minute probabilities with baseline-labelled minutes and explicit coherence.
+- [Current official availability ceiling v1](research/current-official-availability-ceiling-v1.md) — fail-closed official status/chance constraints and a registered prospective comparison variant.
 - [Provisional preseason player forecast v1](research/preseason-player-forecast-v1.md) — exact-evaluation-identity fit of the selected archive model to current GW1 players without changing served advice.
 - [Temporal histogram-tree challenger v1](research/temporal-tree-v1.md) — fixed nonlinear comparison on the ridge evaluator's identical expanding-origin folds.
 - [FPL Form temporal feature v1](research/fpl-form-temporal-feature-v1.md) — exact-cutoff, strict-direct-identity bridge from retained public forecasts into model-ready player features.
