@@ -68,6 +68,7 @@ still require owner authentication.
 - [Cross-season feature ablation v1](research/cross-season-feature-ablation-v1.md) — identical-fold incumbent comparison for prior-season performance and durability candidates.
 - [Historical preseason evaluation v1](research/historical-preseason-evaluation-v1.md) — fixed expanding-origin development and locked-holdout evidence for a provisional archive-trained GW1 bridge.
 - [Historical participation evaluation v1](research/historical-participation-evaluation-v1.md) — fixed locked-holdout appearance, start, 60-minute and uncapped-minutes challengers with proper probability and calibration scores.
+- [Historical participation coherence evaluation v1](research/historical-participation-coherence-evaluation-v1.md) — fixed Euclidean probability-nesting projection on identical historical folds, explicitly limited to a secondary diagnostic.
 - [Provisional preseason participation forecast v1](research/preseason-participation-forecast-v1.md) — exact-evaluation-identity current-player appearance, start and 60-minute probabilities with baseline-labelled minutes and explicit coherence.
 - [Provisional preseason player forecast v1](research/preseason-player-forecast-v1.md) — exact-evaluation-identity fit of the selected archive model to current GW1 players without changing served advice.
 - [Temporal histogram-tree challenger v1](research/temporal-tree-v1.md) — fixed nonlinear comparison on the ridge evaluator's identical expanding-origin folds.

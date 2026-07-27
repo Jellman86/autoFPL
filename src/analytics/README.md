@@ -58,6 +58,28 @@ The first retained result supports provisional appearance, start and
 60-minute classifiers, while rejecting the exact-minutes tree in favour of
 the player-last baseline.
 
+## Historical participation coherence diagnostic v1
+
+The coherence evaluator applies one fixed equal-weight Euclidean projection to
+the independently fitted appearance, start and 60-minute probabilities on the
+same historical folds:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.historical_participation_coherence_evaluation \
+  --database /path/to/autofpl.db \
+  --season 2025-26 \
+  --output /path/to/historical-participation-coherence.json
+```
+
+It requires appearance probability to be at least start and 60-minute
+probability, leaves already coherent vectors unchanged and compares raw with
+projected Brier, log-loss, calibration, fold and position results. Because the
+underlying holdout had already been opened before this correction was
+motivated, the output is always a secondary diagnostic rather than a new
+promotion test and can never authorize product import. See the
+[historical participation coherence specification](../../docs/research/historical-participation-coherence-evaluation-v1.md).
+
 ## Provisional preseason participation forecast v1
 
 The current-player generator fits only the three supported classifiers and
