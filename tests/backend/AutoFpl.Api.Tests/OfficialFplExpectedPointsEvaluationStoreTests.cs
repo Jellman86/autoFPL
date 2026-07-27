@@ -20,6 +20,7 @@ public sealed class OfficialFplExpectedPointsEvaluationStoreTests
         using var files = new TemporaryDatabaseFiles();
         DatabaseOptions options = await CreateDatabaseAsync(files.DatabasePath);
         var store = new OfficialFplExpectedPointsEvaluationStore(options);
+        SqliteConnection.ClearAllPools();
         byte[] before = await File.ReadAllBytesAsync(
             files.DatabasePath,
             TestContext.Current.CancellationToken);
@@ -315,6 +316,7 @@ public sealed class OfficialFplExpectedPointsEvaluationStoreTests
 
         public void Dispose()
         {
+            SqliteConnection.ClearAllPools();
             if (Directory.Exists(_directory))
             {
                 Directory.Delete(_directory, recursive: true);

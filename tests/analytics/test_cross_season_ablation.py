@@ -150,9 +150,14 @@ class CrossSeasonAblationTests(unittest.TestCase):
                 )
         self.assertEqual("complete", written["status"])
         self.assertEqual(1, second)
+        error_lines = [
+            line
+            for line in errors.getvalue().splitlines()
+            if line.strip()
+        ]
         self.assertEqual(
             "output.already-exists",
-            json.loads(errors.getvalue())["errorCode"],
+            json.loads(error_lines[-1])["errorCode"],
         )
 
     @contextmanager

@@ -716,10 +716,10 @@ The next development slices are:
 
 1. resolve the implemented current participation artifact's observed import
    blockers before adding backend or dossier fields: keep the rejected
-   Euclidean coherence projection out of the current artifact, implement a
-   fixed five-feasible-state joint participation challenger or equivalent
-   coherent factorization and register it before genuinely new current-season
-   temporal folds; define a separately labelled
+   Euclidean coherence projection out of the current artifact, run the
+   implemented fixed five-feasible-state joint participation challenger as an
+   exploratory screen and register the unchanged model before genuinely new
+   current-season temporal folds; define a separately labelled
    current-official-availability fusion rule and add evaluated
    promoted/new-player coverage using the existing Quark research stack or a
    bounded prior-league source; keep exact minutes on the retained player-last
