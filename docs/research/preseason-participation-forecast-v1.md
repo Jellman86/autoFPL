@@ -54,6 +54,36 @@ violate event nesting or any player requires an unevaluated missing-history
 fallback. This readiness flag is separate from research artifact generation:
 the output remains useful for diagnosing those exact gaps.
 
+## First current-player run
+
+The first Quark run used official capture `6` at
+`2026-07-26T18:17:34.7193696Z` and produced 557 eligible players from 558
+official rows. It matched 453 players to stable prior-season identity and
+reported 104 missing identities. Coventry, Hull and Ipswich each account for
+26 of those gaps, so the selected minutes fallback would assign most of three
+complete promoted squads only a position mean.
+
+The raw probability ranges were finite and non-degenerate:
+
+| Output | Minimum | Mean | Maximum |
+| --- | ---: | ---: | ---: |
+| Appearance | 0.012013 | 0.520447 | 0.947284 |
+| Start | 0.005280 | 0.383612 | 0.941033 |
+| 60+ minutes | 0.004912 | 0.356796 | 0.931499 |
+| Baseline minutes | 0.000000 | 33.802954 | 90.000000 |
+
+However, 17 players violated event nesting. The largest start-minus-appearance
+gap was 0.294891 and the largest 60-minute-minus-appearance gap was 0.277102.
+Separately, 27 players had current official chance zero while six retained raw
+history-only appearance probability of at least 0.50. These are expected
+diagnostics of models trained without decision-time injury state, but they
+make raw product use unsafe.
+
+The artifact correctly returned product import `blocked` for all three
+reasons. No backend import or dossier exposure was added. The retained
+machine-readable summary is
+[`preseason-participation-forecast-2026-27-gw1-v1.json`](results/preseason-participation-forecast-2026-27-gw1-v1.json).
+
 ## Availability and limitations
 
 The historical archive lacks decision-time injury state. Current official
@@ -62,7 +92,8 @@ model values; the generator does not pretend an old fit has incorporated
 current injury news. Transfers, promoted clubs, new players and tactical
 changes remain cross-season risks.
 
-The next step is to run the artifact on Quark's exact safe archive backup,
-inspect coverage, ranges, coherence and current-health conflicts, then add a
-versioned backend import and player-dossier presentation without changing
-served advice.
+The next step is to evaluate a coherent projection or joint-state model on the
+identical historical holdout, define a separately labelled current-official
+availability fusion rule and close promoted/new-player history coverage using
+the existing Quark research stack or a bounded prior-league source. Only then
+may a versioned backend import and player-dossier presentation be added.

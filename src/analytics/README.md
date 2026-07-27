@@ -79,6 +79,9 @@ evaluated probabilities. The artifact is deterministic, read-only, refuses
 overwrite, carries a fail-closed product-import readiness decision and cannot
 influence advice. See the
 [provisional participation forecast specification](../../docs/research/preseason-participation-forecast-v1.md).
+Its first real current-player run is retained there and remains blocked from
+product import by probability coherence, official-availability fusion and
+promoted/new-player coverage gaps.
 
 ## Provisional preseason player forecast v1
 
