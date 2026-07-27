@@ -128,6 +128,10 @@ PYTHONPATH=src/analytics python3 \
 The historical screen is exploratory because its model family was chosen
 after the holdout was opened. See the
 [historical conditional participation specification](../../docs/research/historical-conditional-participation-evaluation-v1.md).
+The first real screen preserved appearance and improved aggregate start and
+60-minute Brier/log loss, but start was non-worse in only four of eight folds.
+The fixed gate therefore rejects the combined candidate. Raw, joint and
+factorized variants are now frozen for prospective 2026/27 comparison.
 
 ## Provisional preseason participation forecast v1
 
