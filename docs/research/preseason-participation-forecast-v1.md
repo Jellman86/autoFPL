@@ -99,7 +99,11 @@ this artifact. A fixed five-state joint model then improved start and
 artifact. The next coherence candidate preserves the supported raw appearance
 model and fits start and 60-minute probabilities conditional on appearance,
 registered before new 2026/27 folds. That fixed conditional evaluator is now
-implemented; its reused-holdout screen may reject it but cannot promote it.
+implemented; it preserved appearance and improved both child targets in
+aggregate, but start was non-worse in only four of eight folds and failed the
+fixed gate. It therefore must not alter this artifact. The raw, joint and
+factorized variants are frozen for genuinely new 2026/27 comparison; no
+further model may be selected on the opened holdout.
 Separately, the current-official-availability fusion rule must be defined and
 evaluated, and promoted/new-player history coverage must be closed using the
 existing Quark research stack or a bounded prior-league source. Only then may

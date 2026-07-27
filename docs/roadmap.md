@@ -719,9 +719,12 @@ The next development slices are:
    Euclidean projection and full five-state joint model out of the current
    artifact; run the implemented coherent factorization that preserves the
    supported raw appearance model and learns start and 60-minute probability
-   conditional on appearance, then retain its result and freeze it before
-   genuinely new current-season temporal folds; define a separately labelled
-   current-official-availability fusion rule and add evaluated
+   conditional on appearance; keep that rejected factorization out after its
+   start probability was non-worse in only four of eight folds, freeze raw,
+   joint and factorized variants for genuinely new current-season temporal
+   folds and stop selecting coherence methods on the opened holdout; define a
+   separately labelled current-official-availability ceiling and prospective
+   evaluation contract, then add evaluated
    promoted/new-player coverage using the existing Quark research stack or a
    bounded prior-league source; keep exact minutes on the retained player-last
    baseline, evaluate a two-stage or hierarchical minutes challenger and add

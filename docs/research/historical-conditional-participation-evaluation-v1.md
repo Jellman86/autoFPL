@@ -57,6 +57,34 @@ Passing marks only
 `isPromoted`, `canReplaceCurrentRawProbabilities` and `productImportReady`
 false.
 
+## First retained result
+
+The real screen used 6,252 player-Gameweek rows across Gameweeks 31–38,
+reproduced raw appearance exactly and produced zero coherence violations.
+
+| Target | Raw Brier | Factorized Brier | Brier change | Raw log loss | Factorized log loss | Non-worse folds | Gate |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| Appearance | 0.084772 | 0.084772 | 0.000000 | 0.277871 | 0.277871 | 8/8 | Supported screen |
+| Start | 0.081821 | 0.081659 | -0.000162 | 0.260154 | 0.258314 | 4/8 | Not supported |
+| 60+ minutes | 0.083342 | 0.082830 | -0.000512 | 0.261876 | 0.259271 | 6/8 | Supported screen |
+
+Start improved both aggregate proper scores, calibration remained within
+tolerance and no position crossed the material-regression threshold. However,
+its Brier score was non-worse in exactly half—not a majority—of folds. The
+combined screen therefore rejects the factorization under the fixed gate.
+
+This is useful rather than wasted evidence. It shows that appearance can be
+preserved while coherent child marginals improve in aggregate, but the start
+gain is not temporally consistent enough on the opened holdout. The raw,
+five-state and factorized variants should now be frozen and compared
+prospectively. No fourth coherence candidate should be selected on these same
+outcomes.
+
+The retained machine-readable report is
+[`historical-conditional-participation-2025-26-v1.json`](results/historical-conditional-participation-2025-26-v1.json).
+Its file SHA-256 is
+`555e42b50d947ffa1ab96de2b9ec85b751e684f7e47f8fca09a7bd2be3ba0438`.
+
 ## Reproduce
 
 Run against an application-native database backup and the retained raw report:
@@ -76,10 +104,11 @@ evidence fails closed.
 
 ## Decision boundary
 
-The screen can reject this fixed factorization before the season. It cannot
-promote it because the model family was selected after the holdout was
-inspected. If the result is promising, preserve this exact contract and score
-it alongside the raw classifiers on genuinely new 2026/27 folds.
+The screen rejects this fixed factorization because start failed the
+majority-fold gate. It cannot be promoted or replace the current raw artifact.
+Preserve this exact contract and score it alongside the raw and five-state
+classifiers on genuinely new 2026/27 folds. Do not use the opened holdout to
+select another coherence transformation.
 
 Current official availability fusion and evaluated history coverage for
 promoted or new players remain independent product-import gates. Exact minutes
