@@ -76,8 +76,12 @@ It requires the exact retained evaluation identities, joins prior history by
 stable official code, keeps current official availability separate and reports
 any event-nesting incoherence rather than silently clipping independently
 evaluated probabilities. The artifact is deterministic, read-only, refuses
-overwrite and cannot influence advice. See the
+overwrite, carries a fail-closed product-import readiness decision and cannot
+influence advice. See the
 [provisional participation forecast specification](../../docs/research/preseason-participation-forecast-v1.md).
+Its first real current-player run is retained there and remains blocked from
+product import by probability coherence, official-availability fusion and
+promoted/new-player coverage gaps.
 
 ## Provisional preseason player forecast v1
 

@@ -1,0 +1,119 @@
+{
+  "schemaVersion": "1.0",
+  "resultType": "retained-current-artifact-summary",
+  "artifactVersion": "preseason-participation-player-forecast-v1.1",
+  "status": "provisional-preseason-participation-challenger",
+  "isPromoted": false,
+  "influencesAdvice": false,
+  "seasonCode": "2026-27",
+  "gameweek": 1,
+  "officialCaptureId": 6,
+  "decisionCutoffUtc": "2026-07-26T18:17:34.7193696Z",
+  "playerCoverage": {
+    "officialPlayerCount": 558,
+    "eligiblePlayerCount": 557,
+    "ineligiblePlayerCount": 1,
+    "priorSeasonIdentityMatchCount": 453,
+    "priorSeasonIdentityMissingCount": 104
+  },
+  "probabilityCoherence": {
+    "coherentPlayerCount": 540,
+    "incoherentPlayerCount": 17,
+    "maximumStartMinusAppearance": 0.294891,
+    "maximumPlayed60MinusAppearance": 0.277102
+  },
+  "officialAvailabilityConflict": {
+    "officialChanceZeroPlayerCount": 27,
+    "rawAppearanceAtLeast50PlayerCount": 6,
+    "rawAppearanceAtLeast50PlayerIds": [
+      239,
+      145,
+      48,
+      359,
+      402,
+      6
+    ]
+  },
+  "ranges": {
+    "appearanceProbability": {
+      "minimum": 0.012013,
+      "mean": 0.520447,
+      "maximum": 0.947284
+    },
+    "startProbability": {
+      "minimum": 0.00528,
+      "mean": 0.383612,
+      "maximum": 0.941033
+    },
+    "played60Probability": {
+      "minimum": 0.004912,
+      "mean": 0.356796,
+      "maximum": 0.931499
+    },
+    "expectedMinutes": {
+      "minimum": 0.0,
+      "mean": 33.802954,
+      "maximum": 90.0
+    }
+  },
+  "officialStatusSlices": {
+    "available": {
+      "count": 512,
+      "meanAppearanceProbability": 0.536756,
+      "meanStartProbability": 0.398073,
+      "meanPlayed60Probability": 0.370341,
+      "meanExpectedMinutes": 35.724257
+    },
+    "doubtful": {
+      "count": 18,
+      "meanAppearanceProbability": 0.392618,
+      "meanStartProbability": 0.282477,
+      "meanPlayed60Probability": 0.262541,
+      "meanExpectedMinutes": 19.115851
+    },
+    "injured": {
+      "count": 24,
+      "meanAppearanceProbability": 0.263136,
+      "meanStartProbability": 0.152112,
+      "meanPlayed60Probability": 0.141626,
+      "meanExpectedMinutes": 5.514187
+    },
+    "suspended": {
+      "count": 3,
+      "meanAppearanceProbability": 0.56249,
+      "meanStartProbability": 0.374359,
+      "meanPlayed60Probability": 0.332023,
+      "meanExpectedMinutes": 20.333333
+    }
+  },
+  "missingIdentityByTeam": {
+    "Coventry City": 26,
+    "Hull City": 26,
+    "Ipswich Town": 26,
+    "Liverpool": 5,
+    "Brighton": 3,
+    "Chelsea": 3,
+    "Newcastle": 3,
+    "Aston Villa": 2,
+    "Nott'm Forest": 2,
+    "Arsenal": 1,
+    "Bournemouth": 1,
+    "Brentford": 1,
+    "Crystal Palace": 1,
+    "Everton": 1,
+    "Leeds": 1,
+    "Man City": 1,
+    "Sunderland": 1
+  },
+  "productImportReadiness": {
+    "status": "blocked",
+    "isReady": false,
+    "blockers": [
+      "current-official-availability-not-fused",
+      "independent-probabilities-violate-event-nesting",
+      "missing-prior-identity-requires-evaluated-fallback"
+    ]
+  },
+  "dataIdentitySha256": "870b47ababd47a4c35333a290f32e26c003e67e680d2246c0e8b7251810ac243",
+  "completeArtifactRunIdentitySha256": "6d3c095d3ebe5c609f2c16cc15b3c85abaa7a3d8b40503d8b17333392a781c13"
+}
