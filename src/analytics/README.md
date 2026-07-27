@@ -84,6 +84,27 @@ fixed predictive-quality gate: appearance Brier and log loss regressed, while
 60-minute Brier was non-worse in only three of eight folds. The projection is
 therefore rejected for the current artifact.
 
+## Historical joint participation evaluation v1
+
+The next evaluator fits one five-state classifier and derives coherent
+appearance, start and 60-minute marginals from its probability distribution:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.historical_joint_participation_evaluation \
+  --database /path/to/autofpl.db \
+  --raw-report ../../docs/research/results/historical-participation-coherence-2025-26-v1.json \
+  --season 2025-26 \
+  --output /path/to/historical-joint-participation.json
+```
+
+It verifies and reuses the retained raw comparator identities instead of
+refitting 24 unchanged classifiers. Because this model was designed after the
+historical holdout was opened, its result is an exploratory candidate screen
+only; the exact model must face genuinely new 2026/27 folds before product use.
+See the
+[historical joint participation specification](../../docs/research/historical-joint-participation-evaluation-v1.md).
+
 ## Provisional preseason participation forecast v1
 
 The current-player generator fits only the three supported classifiers and
