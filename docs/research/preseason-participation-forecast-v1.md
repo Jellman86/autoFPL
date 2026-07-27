@@ -98,7 +98,8 @@ this artifact. A fixed five-state joint model then improved start and
 60-minute proper scores but regressed appearance, so it also must not alter the
 artifact. The next coherence candidate preserves the supported raw appearance
 model and fits start and 60-minute probabilities conditional on appearance,
-registered before new 2026/27 folds.
+registered before new 2026/27 folds. That fixed conditional evaluator is now
+implemented; its reused-holdout screen may reject it but cannot promote it.
 Separately, the current-official-availability fusion rule must be defined and
 evaluated, and promoted/new-player history coverage must be closed using the
 existing Quark research stack or a bounded prior-league source. Only then may
