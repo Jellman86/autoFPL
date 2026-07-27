@@ -82,6 +82,31 @@ violation and all three target gates pass. The report always sets
 `isPromoted`, `canReplaceCurrentRawProbabilities` and `productImportReady` to
 false.
 
+## First retained result
+
+The real run used the same pinned 2025/26 archive and Gameweek 31–38 folds as
+the retained participation evaluation. The raw classifiers produced 55
+player-fold nesting violations. The largest violation was 0.241265 and the
+largest projection adjustment was 0.154826. Projection removed all 55
+violations.
+
+| Target | Raw Brier | Projected Brier | Brier change | Raw log loss | Projected log loss | Non-worse folds | Gate |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| Appearance | 0.084772 | 0.084859 | +0.000087 | 0.277871 | 0.278079 | 6/8 | Not supported |
+| Start | 0.081821 | 0.081719 | -0.000102 | 0.260154 | 0.259871 | 5/8 | Supported diagnostic |
+| 60+ minutes | 0.083342 | 0.083290 | -0.000052 | 0.261876 | 0.261725 | 3/8 | Not supported |
+
+Calibration remained within tolerance and no position exceeded the material
+regression threshold. However, appearance regressed on both aggregate proper
+scores, and the 60-minute forecast was non-worse in only three of eight folds.
+The combined diagnostic therefore rejects this projection for current-product
+use despite its perfect logical coherence.
+
+The retained machine-readable report is
+[`historical-participation-coherence-2025-26-v1.json`](results/historical-participation-coherence-2025-26-v1.json).
+Its file SHA-256 is
+`7a37d686a539287eb7672d13a066368307bcd333ca36f8c71e3f3d5c8f29011b`.
+
 ## Reproduce
 
 Run the deterministic read-only command against an application-native backup:
@@ -105,9 +130,12 @@ experiment cannot evaluate the separate current-official-availability fusion
 rule. It also cannot establish calibration for promoted clubs, transfers or
 players without prior-season identity.
 
-If the secondary diagnostic supports the projection, it may justify carrying
-that exact transform as a registered challenger into genuinely new 2026/27
-temporal folds. Only those future folds can support replacing the raw current
-probabilities. Availability fusion and evaluated sparse/new-player fallbacks
-must pass their own gates before a participation artifact can influence
-served advice.
+The secondary diagnostic did not support the projection, so it must not be
+applied to the current artifact. The next coherence candidate should model the
+five feasible joint states—no appearance, and the four start/60-minute
+combinations conditional on appearance—or use an equivalently coherent
+factorization. Its exact contract must be fixed before genuinely new 2026/27
+temporal folds are scored. Only those future folds can support replacing the
+raw current probabilities. Availability fusion and evaluated
+sparse/new-player fallbacks must pass their own gates before a participation
+artifact can influence served advice.
