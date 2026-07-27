@@ -92,8 +92,11 @@ model values; the generator does not pretend an old fit has incorporated
 current injury news. Transfers, promoted clubs, new players and tactical
 changes remain cross-season risks.
 
-The next step is to evaluate a coherent projection or joint-state model on the
-identical historical holdout, define a separately labelled current-official
-availability fusion rule and close promoted/new-player history coverage using
-the existing Quark research stack or a bounded prior-league source. Only then
-may a versioned backend import and player-dossier presentation be added.
+The fixed Euclidean coherence projection removed every historical violation
+but failed its secondary predictive-quality diagnostic, so it must not alter
+this artifact. The next coherence candidate is a fixed five-state joint model
+or equivalent coherent factorization registered before new 2026/27 folds.
+Separately, the current-official-availability fusion rule must be defined and
+evaluated, and promoted/new-player history coverage must be closed using the
+existing Quark research stack or a bounded prior-league source. Only then may
+a versioned backend import and player-dossier presentation be added.

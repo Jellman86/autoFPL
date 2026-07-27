@@ -79,6 +79,10 @@ underlying holdout had already been opened before this correction was
 motivated, the output is always a secondary diagnostic rather than a new
 promotion test and can never authorize product import. See the
 [historical participation coherence specification](../../docs/research/historical-participation-coherence-evaluation-v1.md).
+The first real run removed all 55 historical nesting violations but failed the
+fixed predictive-quality gate: appearance Brier and log loss regressed, while
+60-minute Brier was non-worse in only three of eight folds. The projection is
+therefore rejected for the current artifact.
 
 ## Provisional preseason participation forecast v1
 
