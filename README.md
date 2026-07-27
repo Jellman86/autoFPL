@@ -15,7 +15,11 @@ pre-selected rolling-three baseline on the pinned 2025/26 archive. That result
 now feeds a deterministic GW1 player-artifact generator tied to the exact
 evaluated archive and current official capture. The fitted means are comparison
 evidence only: current availability is explicit, no distribution is invented,
-and the model does not silently replace Baseline v0. A strict operator import
+and the model does not silently replace Baseline v0. A companion deterministic
+artifact now fits the three locked-holdout-supported appearance, start and
+60-minute classifiers to current players while retaining explicitly
+baseline-labelled minutes and reporting probability-nesting conflicts. A
+strict operator import
 persists the artifact immutably, a read-only OpenAPI route exposes it and each
 player dossier presents the comparison with its evidence boundary.
 

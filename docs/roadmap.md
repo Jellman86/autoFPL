@@ -714,19 +714,22 @@ v1.0 hardens the proven product rather than introducing its first UI:
 
 The next development slices are:
 
-1. fit the three locked-holdout-supported appearance, start and 60-minute
-   classifiers to current players; keep exact minutes on the retained
-   player-last baseline, evaluate a two-stage or hierarchical minutes
-   challenger on the identical folds, and add the empirical point-distribution
-   loop before any raw preseason point mean may influence advice;
+1. run the implemented current-player appearance, start and 60-minute
+   artifact on Quark, inspect range, identity, health-conflict and probability
+   coherence slices, then add its versioned backend import and dossier fields;
+   keep exact minutes on the retained player-last baseline, evaluate a
+   two-stage or hierarchical minutes challenger on the identical folds, and
+   add the empirical point-distribution loop before any raw preseason point
+   mean may influence advice;
 2. run the implemented identical-fold cross-season feature ablation as real
    current-season folds accumulate, then promote only stable out-of-time gains
    from prior-season match performance, minutes, starts, underlying events and
    participation-derived durability; archived final health remains excluded
    from the candidate and current official availability always dominates it;
-3. extend the implemented provisional all-player artifact with the supported
-   appearance/start/60-minute probabilities, explicitly baseline-labelled
-   minutes and only distribution components that pass their rolling gates;
+3. join the implemented provisional point and participation artifacts by exact
+   capture/player identity, with supported appearance/start/60-minute
+   probabilities, explicitly baseline-labelled minutes and only distribution
+   components that pass their rolling gates;
 4. operate the implemented bounded background Spider refresh across the fixed
    official-availability, specialist-lineup and dependent-consensus inventory,
    using the decision-room club board to audit FFScout gaps; then add

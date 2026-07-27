@@ -58,6 +58,27 @@ The first retained result supports provisional appearance, start and
 60-minute classifiers, while rejecting the exact-minutes tree in favour of
 the player-last baseline.
 
+## Provisional preseason participation forecast v1
+
+The current-player generator fits only the three supported classifiers and
+retains baseline-labelled exact minutes:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.preseason_participation_forecast \
+  --database /path/to/autofpl.db \
+  --season 2026-27 \
+  --gameweek 1 \
+  --output /path/to/gw1-preseason-participation.json
+```
+
+It requires the exact retained evaluation identities, joins prior history by
+stable official code, keeps current official availability separate and reports
+any event-nesting incoherence rather than silently clipping independently
+evaluated probabilities. The artifact is deterministic, read-only, refuses
+overwrite and cannot influence advice. See the
+[provisional participation forecast specification](../../docs/research/preseason-participation-forecast-v1.md).
+
 ## Provisional preseason player forecast v1
 
 After the locked holdout supports the fixed candidate, the current-player
