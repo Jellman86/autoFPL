@@ -724,8 +724,8 @@ The next development slices are:
    joint and factorized variants for genuinely new current-season temporal
    folds and stop selecting coherence methods on the opened holdout; define a
    separately labelled implemented current-official-availability ceiling and
-   prospective three-variant evaluation contract, run its current artifact and
-   score it only after real outcomes, then add evaluated
+   prospective three-variant evaluation contract, preserve the first complete
+   current artifact and score it only after real outcomes, then add evaluated
    promoted/new-player coverage using the existing Quark research stack or a
    bounded prior-league source; keep exact minutes on the retained player-last
    baseline, evaluate a two-stage or hierarchical minutes challenger and add

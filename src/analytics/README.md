@@ -167,6 +167,9 @@ decision and cannot influence advice. See the
 Its first v1.1 current-player run is retained there. Product import remains
 blocked by unsupported coherence candidates, unscored prospective
 availability evidence and promoted/new-player coverage gaps.
+The complete first v1.2 per-player artifact is retained before outcomes; its
+official ceiling changed 32 of 557 players while both factorized variants
+remained coherent for every player.
 
 ## Provisional preseason player forecast v1
 

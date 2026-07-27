@@ -95,6 +95,29 @@ reasons. No backend import or dossier exposure was added. The retained
 machine-readable summary is
 [`preseason-participation-forecast-2026-27-gw1-v1.json`](results/preseason-participation-forecast-2026-27-gw1-v1.json).
 
+## First v1.2 prospective-variant run
+
+The v1.2 Quark run held the capture, cutoff and 557-player cohort constant.
+Raw probabilities and the 17 raw incoherences were reproduced. Both
+factorized variants were coherent for all 557 players.
+
+The official ceiling adjusted 32 players: all 24 injured players, all three
+suspended players and five of 18 players listed as 75% doubtful. Available
+players were unchanged. Mean probabilities were:
+
+| Variant | Appearance | Start | 60+ minutes |
+| --- | ---: | ---: | ---: |
+| Raw independent | 0.520447 | 0.383612 | 0.356796 |
+| Coherent factorized | 0.520447 | 0.380548 | 0.354548 |
+| Official-ceiling factorized | 0.505113 | 0.371343 | 0.345873 |
+
+The complete per-player artifact is
+[`preseason-participation-forecast-2026-27-gw1-v1.2.json`](results/preseason-participation-forecast-2026-27-gw1-v1.2.json).
+It is retained before outcomes so later scoring cannot substitute different
+predictions. Its file SHA-256 is
+`524c02c095fc7f62f4962fa54301c749bcd0550a09ff7d95c55225271f4110c2`.
+Product import remains blocked and no backend or advice state was changed.
+
 ## Availability and limitations
 
 The historical archive lacks decision-time injury state. Current official
