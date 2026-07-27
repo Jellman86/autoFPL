@@ -110,6 +110,25 @@ on aggregate Brier, log loss and the fold gate. The full joint model is
 therefore rejected; a raw-appearance plus conditional-child factorization is
 next.
 
+## Historical conditional participation evaluation v1
+
+The conditional challenger preserves the fixed raw appearance classifier,
+fits start and 60-minute classifiers only on historical appearance-positive
+rows and multiplies each conditional probability by raw appearance. This
+guarantees coherent child marginals without sacrificing appearance:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.historical_conditional_participation_evaluation \
+  --database /path/to/autofpl.db \
+  --raw-report ../../docs/research/results/historical-participation-coherence-2025-26-v1.json \
+  --output /path/to/historical-conditional-participation.json
+```
+
+The historical screen is exploratory because its model family was chosen
+after the holdout was opened. See the
+[historical conditional participation specification](../../docs/research/historical-conditional-participation-evaluation-v1.md).
+
 ## Provisional preseason participation forecast v1
 
 The current-player generator fits only the three supported classifiers and
