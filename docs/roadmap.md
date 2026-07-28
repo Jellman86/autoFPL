@@ -725,12 +725,13 @@ The next development slices are:
    folds and stop selecting coherence methods on the opened holdout; define a
    separately labelled implemented current-official-availability ceiling and
    prospective three-variant evaluation contract, preserve the first complete
-   current artifact and score it only after real outcomes, then add evaluated
-   promoted/new-player coverage using the existing Quark research stack or a
-   bounded prior-league source; keep exact minutes on the retained player-last
-   baseline, evaluate a two-stage or hierarchical minutes challenger and add
-   the empirical point-distribution loop before any raw preseason value may
-   influence advice;
+   current artifact and score it only after real outcomes; use the implemented
+   exact-code coverage audit to drive a bounded Quark source adapter for the
+   78 promoted-club and 26 other new/transferred player gaps, then add that
+   history only after identical-fold evaluation; keep exact minutes on the
+   retained player-last baseline, evaluate a two-stage or hierarchical minutes
+   challenger and add the empirical point-distribution loop before any raw
+   preseason value may influence advice;
 2. run the implemented identical-fold cross-season feature ablation as real
    current-season folds accumulate, then promote only stable out-of-time gains
    from prior-season match performance, minutes, starts, underlying events and

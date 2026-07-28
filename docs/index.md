@@ -65,6 +65,7 @@ still require owner authentication.
 - [Official underlying feature ablation v1](research/official-underlying-feature-ablation-v1.md) — same-fold ridge/tree comparison of the unchanged official contract with fixed xG/xA/xGC, ICT/BPS and defensive additions.
 - [Temporal ridge challenger v1](research/temporal-ridge-v1.md) — fold-local regularised total-points challenger over the cutoff-safe temporal feature table.
 - [Cross-season player state v1](research/cross-season-player-state-v1.md) — stable-code prior-season performance and durability state with current-health precedence.
+- [Prior-competition player-history coverage v1](research/prior-competition-player-history-coverage-v1.md) — exact-code audit and bounded source-intake target for promoted, transferred and new-player history gaps.
 - [Cross-season feature ablation v1](research/cross-season-feature-ablation-v1.md) — identical-fold incumbent comparison for prior-season performance and durability candidates.
 - [Historical preseason evaluation v1](research/historical-preseason-evaluation-v1.md) — fixed expanding-origin development and locked-holdout evidence for a provisional archive-trained GW1 bridge.
 - [Historical participation evaluation v1](research/historical-participation-evaluation-v1.md) — fixed locked-holdout appearance, start, 60-minute and uncapped-minutes challengers with proper probability and calibration scores.
