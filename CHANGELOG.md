@@ -24,6 +24,13 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **FBref prior-competition evidence is now deterministically inspectable.**
+  The bounded v1 parser extracts 944 player-team rows, 894 stable player IDs,
+  aggregate appearances/starts/minutes and fixed match-log URLs from the first
+  retained snapshot. A read-only API/CLI reports 60 exact same-current-team
+  full-name proposals across the 85 promoted-club players and leaves the other
+  25 unresolved for review; no fuzzy match or extracted field can influence a
+  forecast.
 - **Prior-competition evidence now has a bounded Byparr capture path.** A
   manual-only fixed registry entry sends only FBref's 2025/26 Championship
   playing-time URL to the private Riker service, accepts only its reviewed

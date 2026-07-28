@@ -728,9 +728,12 @@ The next development slices are:
    current artifact and score it only after real outcomes; use the implemented
    exact-code coverage audit and fixed-URL Riker Byparr capture of FBref's
    2025/26 Championship playing-time page to drive the 78 promoted-club and 26
-   other new/transferred player gaps; next parse stable FBref identities and
-   per-match chronology with an explicit reviewed official-code bridge, then
-   add that history only after identical-fold evaluation; keep exact minutes on the
+   other new/transferred player gaps; use the implemented bounded extractor's
+   944 rows, 894 stable FBref identities, 60 conservative exact match proposals
+   and 25-player promoted-club review queue to create an explicit reviewed
+   official-code bridge; next capture only those reviewed players' fixed
+   match-log URLs and parse match chronology, then add that history only after
+   identical-fold evaluation; keep exact minutes on the
    retained player-last baseline, evaluate a two-stage or hierarchical minutes
    challenger and add the empirical point-distribution loop before any raw
    preseason value may influence advice;
