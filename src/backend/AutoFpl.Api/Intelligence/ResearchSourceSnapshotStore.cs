@@ -12,8 +12,7 @@ namespace AutoFpl.Api.Intelligence;
 
 public sealed class ResearchSourceSnapshotStore
 {
-    public const string TransportVersion =
-        "spider-mcp/de35b3a9dd740542070fa2ee0e70bc804dde07ee";
+    public const string TransportVersion = SpiderMcpClient.TransportVersion;
 
     private readonly DatabaseOptions _options;
     private readonly TimeProvider _timeProvider;
@@ -27,10 +26,40 @@ public sealed class ResearchSourceSnapshotStore
             timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
     }
 
-    public async Task<ResearchSourceSnapshotDocument> PersistAsync(
+    public Task<ResearchSourceSnapshotDocument> PersistAsync(
         ResearchSourceDefinition source,
         SpiderScrapeResult scrape,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default) =>
+        PersistCaptureAsync(
+            source,
+            new ResearchSourceCapture(
+                scrape.FinalUri,
+                scrape.StatusCode,
+                scrape.Content,
+                scrape.ContentTrust,
+                SpiderMcpClient.TransportKey,
+                SpiderMcpClient.TransportVersion),
+            cancellationToken);
+
+    public Task<ResearchSourceSnapshotDocument> PersistAsync(
+        ResearchSourceDefinition source,
+        ByparrCaptureResult capture,
+        CancellationToken cancellationToken = default) =>
+        PersistCaptureAsync(
+            source,
+            new ResearchSourceCapture(
+                capture.FinalUri,
+                capture.StatusCode,
+                capture.Content,
+                capture.ContentTrust,
+                ByparrClient.TransportKey,
+                capture.TransportVersion),
+            cancellationToken);
+
+    private async Task<ResearchSourceSnapshotDocument> PersistCaptureAsync(
+        ResearchSourceDefinition source,
+        ResearchSourceCapture scrape,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(scrape);
@@ -107,7 +136,7 @@ public sealed class ResearchSourceSnapshotStore
                     $canonicalUrl,
                     $finalUrl,
                     $dependenceGroup,
-                    'spider-mcp',
+                    $transportKey,
                     $transportVersion,
                     $seasonCode,
                     $gameweek,
@@ -135,8 +164,11 @@ public sealed class ResearchSourceSnapshotStore
                 "$dependenceGroup",
                 source.DependenceGroup);
             command.Parameters.AddWithValue(
+                "$transportKey",
+                scrape.TransportKey);
+            command.Parameters.AddWithValue(
                 "$transportVersion",
-                TransportVersion);
+                scrape.TransportVersion);
             command.Parameters.AddWithValue("$seasonCode", target.SeasonCode);
             command.Parameters.AddWithValue("$gameweek", target.Gameweek);
             command.Parameters.AddWithValue(
@@ -169,6 +201,14 @@ public sealed class ResearchSourceSnapshotStore
         await transaction.CommitAsync(cancellationToken);
         return snapshot;
     }
+
+    private sealed record ResearchSourceCapture(
+        Uri FinalUri,
+        int StatusCode,
+        string Content,
+        string ContentTrust,
+        string TransportKey,
+        string TransportVersion);
 
     public async Task<ResearchSourceInventoryDocument> GetInventoryAsync(
         CancellationToken cancellationToken = default)

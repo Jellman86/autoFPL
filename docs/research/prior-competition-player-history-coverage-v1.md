@@ -18,14 +18,20 @@ must be explicitly mapped from a source-specific player ID to exactly one
 current official `player.code`. Ambiguous, duplicate and missing mappings remain
 unresolved; fuzzy name matching cannot silently close a gap.
 
-The required capture boundary reuses Quark's existing Spider, Playwright and
-research egress services. A typed adapter must retain:
+The first required capture boundary reuses the proven Byparr 2.1.0 service on
+Riker through a private LAN port and its existing Gluetun egress. autoFPL's
+typed adapter admits only the registered 2025/26 Championship playing-time URL,
+its reviewed FBref canonical redirect and a required page marker. It retains:
 
 - source, competition and season identity;
 - canonical URL, source revision, content hash and collector-code revision;
 - publication, retrieval and availability times;
 - source player ID/name/team and the reviewed official-code mapping; and
 - match identity, kickoff, opponent, minutes and starting status.
+
+The aggregate page capture is implemented and supplies source player IDs,
+appearances, starts and minutes. Per-match parsing, reviewed official-code
+mapping and match-order history remain the next slice.
 
 Goals, assists, shots, expected goals/assists, saves and cards are optional
 source fields with explicit coverage. Missing values remain null rather than

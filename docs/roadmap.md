@@ -726,9 +726,11 @@ The next development slices are:
    separately labelled implemented current-official-availability ceiling and
    prospective three-variant evaluation contract, preserve the first complete
    current artifact and score it only after real outcomes; use the implemented
-   exact-code coverage audit to drive a bounded Quark source adapter for the
-   78 promoted-club and 26 other new/transferred player gaps, then add that
-   history only after identical-fold evaluation; keep exact minutes on the
+   exact-code coverage audit and fixed-URL Riker Byparr capture of FBref's
+   2025/26 Championship playing-time page to drive the 78 promoted-club and 26
+   other new/transferred player gaps; next parse stable FBref identities and
+   per-match chronology with an explicit reviewed official-code bridge, then
+   add that history only after identical-fold evaluation; keep exact minutes on the
    retained player-last baseline, evaluate a two-stage or hierarchical minutes
    challenger and add the empirical point-distribution loop before any raw
    preseason value may influence advice;
@@ -791,8 +793,10 @@ AI-orchestrator project ahead of those slices.
   are now an explicit shadow-research workstream. The immutable claim-ledger
   foundation is implemented; source admission, extraction and scoring remain.
   Each source remains a challenger until an out-of-time ablation shows gain.
-  A hardened Byparr connector [#57](https://github.com/Jellman86/autoFPL/issues/57)
-  is used only when it improves admitted source coverage.
+  The fixed-URL Byparr connector
+  [#57](https://github.com/Jellman86/autoFPL/issues/57) is implemented for the
+  FBref prior-competition capture and remains restricted to sources where it
+  improves measured coverage.
 - Accelerator investigation [#30](https://github.com/Jellman86/autoFPL/issues/30)
   is activated by the representative Monte Carlo workload and deployed hardware,
   not by unused device availability.
