@@ -485,6 +485,87 @@ public sealed class ResearchSourceSnapshotTests
     }
 
     [Fact]
+    public void Fbref_match_opportunity_features_preserve_counts_and_missingness()
+    {
+        FbrefTeamScheduleDocument schedule =
+            CreateFbrefTeamScheduleDocument();
+        FbrefPlayerMatchOpportunityDocument opportunity =
+            FbrefPlayerMatchOpportunityExtractor.Build(
+                CreateFbrefPlayerMatchLogDocument(schedule),
+                schedule);
+        var targetIdentity = new ResearchOfficialPlayerIdentity(
+            999,
+            opportunity.OfficialPlayerCode,
+            "Hull City",
+            "Semi",
+            "Ajayi",
+            "Ajayi");
+        ResearchSourceSnapshotDocument playerSnapshot =
+            CreateResearchSnapshot(
+                opportunity.PlayerMatchLogSnapshotId,
+                "fbref-player-match-log-d6192210-2025-26",
+                opportunity.PlayerMatchLogContentSha256,
+                RetrievalTime);
+        ResearchSourceSnapshotDocument scheduleSnapshot =
+            CreateResearchSnapshot(
+                opportunity.TeamScheduleSnapshotId,
+                schedule.SourceKey,
+                opportunity.TeamScheduleContentSha256,
+                RetrievalTime.AddMinutes(1));
+
+        FbrefMatchOpportunityPlayerFeatureDocument feature =
+            FbrefMatchOpportunityFeatureTableReader.CreateReady(
+                opportunity,
+                targetIdentity,
+                playerSnapshot,
+                scheduleSnapshot);
+
+        Assert.Equal("shadow-feature-ready", feature.FeatureStatus);
+        Assert.Equal(999, feature.OfficialPlayerId);
+        Assert.Equal(
+            scheduleSnapshot.AvailableAtUtc,
+            feature.AvailableAtUtc);
+        Assert.NotNull(feature.Season);
+        Assert.Equal(8, feature.Season.ScheduledMatchCount);
+        Assert.Equal(3, feature.Season.ObservedPlayerRowCount);
+        Assert.Equal(2, feature.Season.AppearanceCount);
+        Assert.Equal(1, feature.Season.StartCount);
+        Assert.Equal(1, feature.Season.UnusedBenchCount);
+        Assert.Equal(5, feature.Season.NoPlayerRowCount);
+        Assert.Equal(120, feature.Season.ObservedMinutes);
+        FbrefMatchOpportunityFeatureWindowDocument lastThree =
+            Assert.Single(
+                feature.RollingWindows,
+                window => window.WindowSize == 3);
+        Assert.Equal(1, lastThree.ObservedPlayerRowCount);
+        Assert.Equal(1, lastThree.AppearanceCount);
+        Assert.Equal(2, lastThree.NoPlayerRowCount);
+        Assert.Equal(30, lastThree.ObservedMinutes);
+
+        FbrefMatchOpportunityPlayerFeatureDocument missing =
+            FbrefMatchOpportunityFeatureTableReader.CreateMissing(
+                new(
+                    opportunity.SourcePlayerId,
+                    opportunity.PlayerName,
+                    opportunity.SourceTeamId,
+                    opportunity.TeamName,
+                    opportunity.OfficialPlayerId,
+                    opportunity.OfficialPlayerCode,
+                    playerSnapshot.SourceKey,
+                    "missing",
+                    null,
+                    null,
+                    null,
+                    null),
+                targetIdentity,
+                null,
+                scheduleSnapshot);
+        Assert.Equal("missing-player-log", missing.FeatureStatus);
+        Assert.Null(missing.Season);
+        Assert.Empty(missing.RollingWindows);
+    }
+
+    [Fact]
     public void Fbref_player_match_opportunities_reject_inconsistent_stable_match()
     {
         FbrefTeamScheduleDocument schedule =
@@ -1918,6 +1999,34 @@ public sealed class ResearchSourceSnapshotTests
             new string('b', 64),
             100,
             RetrievalTime);
+
+    private static ResearchSourceSnapshotDocument CreateResearchSnapshot(
+        long snapshotId,
+        string sourceKey,
+        string contentSha256,
+        DateTimeOffset availableAtUtc) =>
+        new(
+            snapshotId,
+            "1.0",
+            "shadow-only",
+            sourceKey,
+            "public-statistics",
+            "https://fbref.com/",
+            "https://fbref.com/",
+            "fbref",
+            ByparrClient.TransportKey,
+            "byparr/2.1.0",
+            "2026-27",
+            1,
+            new DateTimeOffset(2026, 8, 21, 17, 30, 0, TimeSpan.Zero),
+            14,
+            availableAtUtc,
+            availableAtUtc,
+            true,
+            1,
+            contentSha256,
+            100,
+            availableAtUtc);
 
     private static FbrefPlayerMatchLogDocument
         CreateFbrefPlayerMatchLogDocument(

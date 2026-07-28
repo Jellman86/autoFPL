@@ -741,8 +741,11 @@ The next development slices are:
    explicit-snapshot join to retain `no-player-row` as null evidence with
    before/within/after observed-range context and form last-3/6/8 count
    summaries; use the implemented cohort readiness report to keep incomplete
-   player-log or team-schedule coverage blocked; next add that history only
-   after identical-fold evaluation;
+   player-log or team-schedule coverage blocked; use the implemented
+   cutoff-bound shadow feature table to freeze raw season and last-3/6/8 counts
+   for all 60 identities without dropping missing rows; treat this current
+   cohort as a prospective test and add that history to served forecasts only
+   after comparable identical-fold out-of-time evaluation;
    keep exact minutes on the
    retained player-last baseline, evaluate a two-stage or hierarchical minutes
    challenger and add the empirical point-distribution loop before any raw
