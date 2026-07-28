@@ -93,6 +93,75 @@ public sealed class ResearchSourceSnapshotTests
     }
 
     [Fact]
+    public async Task Byparr_capture_uses_only_the_registered_url_and_retains_transport_provenance()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = await CreateDatabaseAsync(files.DatabasePath);
+        ResearchSourceDefinition source = ResearchSourceRegistry.Get(
+            "fbref-championship-playing-time-2025-26");
+        var byparrHandler = new ByparrHandler(
+            source,
+            """
+            <html><head><title>Championship Playing Time | FBref.com</title></head>
+            <body>retained prior-season evidence</body></html>
+            """);
+        using var byparrHttpClient = new HttpClient(byparrHandler)
+        {
+            BaseAddress = new Uri("http://192.168.213.101:8191/"),
+        };
+        using var spiderHttpClient = new HttpClient(
+            new SpiderMcpHandler("unused"))
+        {
+            BaseAddress = new Uri("http://spider-mcp:8080/mcp"),
+        };
+        var importer = new ResearchSourceSnapshotImporter(
+            new SpiderMcpClient(spiderHttpClient),
+            new ByparrClient(byparrHttpClient),
+            new ResearchSourceSnapshotStore(
+                options,
+                new FixedTimeProvider(RetrievalTime)));
+
+        ResearchSourceSnapshotDocument snapshot = await importer.ImportAsync(
+            source.SourceKey,
+            TestContext.Current.CancellationToken);
+
+        Assert.False(source.PollAutomatically);
+        Assert.Equal("byparr", snapshot.TransportKey);
+        Assert.Equal("byparr/2.1.0", snapshot.TransportVersion);
+        Assert.Equal(source.CanonicalUri.AbsoluteUri, snapshot.CanonicalUrl);
+        Assert.Equal(
+            "https://fbref.com/en/comps/10/playingtime/Championship-Stats",
+            snapshot.FinalUrl);
+        Assert.Equal(1, byparrHandler.RequestCount);
+        Assert.False(byparrHandler.SawProxyOverrideHeader);
+    }
+
+    [Theory]
+    [InlineData(
+        "https://example.com/copied-page",
+        "<title>Championship Playing Time | FBref.com</title>")]
+    [InlineData(
+        "https://fbref.com/en/comps/10/playingtime/Championship-Stats",
+        "<title>Just a moment...</title>")]
+    public async Task Byparr_capture_rejects_unregistered_redirects_and_challenge_pages(
+        string finalUrl,
+        string content)
+    {
+        ResearchSourceDefinition source = ResearchSourceRegistry.Get(
+            "fbref-championship-playing-time-2025-26");
+        using var httpClient = new HttpClient(
+            new ByparrHandler(source, content, finalUrl))
+        {
+            BaseAddress = new Uri("http://192.168.213.101:8191/"),
+        };
+
+        await Assert.ThrowsAsync<ResearchSourceSnapshotException>(
+            async () => await new ByparrClient(httpClient).CaptureAsync(
+                source,
+                TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
     public async Task Ffscout_extractor_uses_official_photo_code_and_is_idempotent()
     {
         using var files = new TemporaryDatabaseFiles();
@@ -582,7 +651,7 @@ public sealed class ResearchSourceSnapshotTests
                 TestContext.Current.CancellationToken);
 
         Assert.NotNull(inventory);
-        Assert.Equal(3, inventory.Sources.Count);
+        Assert.Equal(4, inventory.Sources.Count);
         Assert.Contains(
             inventory.Sources,
             item => item.SourceClass == "official-availability-aggregation");
@@ -592,6 +661,9 @@ public sealed class ResearchSourceSnapshotTests
         Assert.Contains(
             inventory.Sources,
             item => item.SourceClass == "derived-predicted-lineup-consensus");
+        Assert.Contains(
+            inventory.Sources,
+            item => item.SourceClass == "prior-competition-playing-time");
         ResearchSourceSnapshotDocument latest =
             Assert.Single(inventory.LatestSnapshots);
         Assert.Equal("premier-league-injuries", latest.SourceKey);
@@ -998,6 +1070,66 @@ public sealed class ResearchSourceSnapshotTests
                     Encoding.UTF8,
                     "application/json"),
             };
+    }
+
+    private sealed class ByparrHandler(
+        ResearchSourceDefinition source,
+        string content,
+        string? finalUrl = null) : HttpMessageHandler
+    {
+        public int RequestCount { get; private set; }
+
+        public bool SawProxyOverrideHeader { get; private set; }
+
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            RequestCount++;
+            Assert.Equal(HttpMethod.Post, request.Method);
+            Assert.Equal("/v1", request.RequestUri!.AbsolutePath);
+            SawProxyOverrideHeader = request.Headers.Any(
+                header => header.Key.StartsWith(
+                    "X-Proxy-",
+                    StringComparison.OrdinalIgnoreCase));
+            using JsonDocument body = JsonDocument.Parse(
+                await request.Content!.ReadAsByteArrayAsync(cancellationToken));
+            Assert.Equal(
+                "request.get",
+                body.RootElement.GetProperty("cmd").GetString());
+            Assert.Equal(
+                source.CanonicalUri.AbsoluteUri,
+                body.RootElement.GetProperty("url").GetString());
+            Assert.Equal(
+                60,
+                body.RootElement.GetProperty("max_timeout").GetInt32());
+
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(
+                    JsonSerializer.Serialize(
+                        new
+                        {
+                            status = "ok",
+                            message = "Success",
+                            solution = new
+                            {
+                                url = finalUrl
+                                    ?? "https://fbref.com/en/comps/10/playingtime/Championship-Stats",
+                                status = 200,
+                                cookies = Array.Empty<object>(),
+                                userAgent = "test",
+                                headers = new { },
+                                response = content,
+                            },
+                            startTimestamp = 1,
+                            endTimestamp = 2,
+                            version = "2.1.0",
+                        }),
+                    Encoding.UTF8,
+                    "application/json"),
+            };
+        }
     }
 
     private sealed class TemporaryDatabaseFiles : IDisposable

@@ -45,7 +45,8 @@ public sealed class ResearchSourcePoller : BackgroundService
 
     internal async Task RefreshOnceAsync(CancellationToken cancellationToken)
     {
-        foreach (ResearchSourceDefinition source in ResearchSourceRegistry.All)
+        foreach (ResearchSourceDefinition source in ResearchSourceRegistry.All.Where(
+                     definition => definition.PollAutomatically))
         {
             try
             {

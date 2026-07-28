@@ -24,6 +24,13 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **Prior-competition evidence now has a bounded Byparr capture path.** A
+  manual-only fixed registry entry sends only FBref's 2025/26 Championship
+  playing-time URL to the private Riker service, accepts only its reviewed
+  canonical redirect and content marker, bounds the response, retains
+  compressed immutable HTML with `byparr/<version>` provenance and remains
+  shadow-only pending deterministic parsing, reviewed identity mapping and
+  identical-fold evaluation.
 - **The first complete prospective availability artifact is retained before outcomes.** On the unchanged 557-player GW1 cohort, both factorized variants were coherent for every player and the official ceiling adjusted 32: 24 injured, three suspended and five listed at 75% doubtful. The full per-player probabilities are immutable comparison evidence only; product import and advice remain blocked.
 - **Current participation artifacts now register an official-availability ceiling prospectively.** Artifact v1.2 retains raw independent, frozen coherent-factorized and official-ceiling-factorized probabilities for every eligible player. The fixed status/chance mapping fails closed, treats official chance as a ceiling rather than an unsupported independent multiplier, preserves coherent child rates and remains non-serving until real 2026/27 outcome folds score all variants.
 - **The conditional participation screen improves aggregate child scores but fails its fixed fold gate.** It reproduced appearance exactly, produced zero coherence violations and improved aggregate start and 60-minute Brier/log loss; 60 minutes was non-worse in six of eight folds, but start was non-worse in only four. The combined candidate is rejected, all three coherence variants are frozen for prospective comparison and no further method will be selected on the opened holdout.

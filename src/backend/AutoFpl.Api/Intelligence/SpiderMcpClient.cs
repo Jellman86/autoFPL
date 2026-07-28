@@ -26,6 +26,10 @@ public sealed class ResearchSourceSnapshotException : Exception
 
 public sealed class SpiderMcpClient
 {
+    public const string TransportKey = "spider-mcp";
+    public const string TransportVersion =
+        "spider-mcp/de35b3a9dd740542070fa2ee0e70bc804dde07ee";
+
     private const string ProtocolVersion = "2025-03-26";
     private const string SessionHeader = "Mcp-Session-Id";
     private const int MaximumMcpResponseBytes = 512 * 1024;
@@ -366,7 +370,7 @@ public sealed class SpiderMcpClient
             || !root.TryGetProperty("url", out JsonElement url)
             || url.ValueKind != JsonValueKind.String
             || !Uri.TryCreate(url.GetString(), UriKind.Absolute, out Uri? finalUri)
-            || !SameCanonicalResource(source.CanonicalUri, finalUri)
+            || !source.AllowsFinalUri(finalUri)
             || !root.TryGetProperty("status_code", out JsonElement statusCode)
             || statusCode.ValueKind != JsonValueKind.Number
             || !statusCode.TryGetInt32(out int parsedStatusCode)
@@ -399,17 +403,6 @@ public sealed class SpiderMcpClient
             value,
             contentTrust.GetString()!);
     }
-
-    private static bool SameCanonicalResource(Uri expected, Uri actual) =>
-        StringComparer.OrdinalIgnoreCase.Equals(expected.Scheme, actual.Scheme)
-        && StringComparer.OrdinalIgnoreCase.Equals(expected.Host, actual.Host)
-        && expected.Port == actual.Port
-        && StringComparer.Ordinal.Equals(
-            expected.AbsolutePath.TrimEnd('/'),
-            actual.AbsolutePath.TrimEnd('/'))
-        && StringComparer.Ordinal.Equals(expected.Query, actual.Query)
-        && string.IsNullOrEmpty(actual.UserInfo)
-        && string.IsNullOrEmpty(actual.Fragment);
 
     private static async Task<byte[]> ReadBoundedAsync(
         HttpContent content,

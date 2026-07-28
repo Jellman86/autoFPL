@@ -52,6 +52,7 @@ still require owner authentication.
 - [Official FPL read-only API v1](data/sources/official-fpl-api-v1.md) — fixed-origin player, Gameweek, team, fixture and outcome capture semantics.
 - [FPL Form public forecast v1](data/sources/fpl-form-public-forecast-v1.md) — fixed-origin conditional predicted-points capture and evaluation boundary.
 - [Public research shadow sources v1](data/sources/public-research-shadow-sources-v1.md) — fixed-registry Spider capture, timing, retention and fail-closed boundary for diverse public evidence.
+- [FBref Championship playing time v1](data/sources/fbref-championship-playing-time-v1.md) — fixed-URL Byparr capture boundary for 2025/26 promoted-player appearances, starts and minutes.
 
 ## Research and evidence
 

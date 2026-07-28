@@ -266,7 +266,7 @@ public sealed class FplFormForecastImporterTests
         Assert.True(reader.IsDBNull(3));
         Assert.Equal(2, reader.GetInt32(4));
         Assert.Equal(1, reader.GetInt64(5));
-        Assert.Equal(20, reader.GetInt64(6));
+        Assert.Equal(21, reader.GetInt64(6));
     }
 
     private static DatabaseOptions CreateOptions(string databasePath)
@@ -307,6 +307,10 @@ public sealed class FplFormForecastImporterTests
                 (5, 'official-fpl-gameweek-outcome', '2026-01-01T00:00:00Z'),
                 (6, 'fpl-form-forecast-capture', '2026-01-01T00:00:00Z'),
                 (7, 'official-fpl-player-photo', '2026-01-01T00:00:00Z');
+
+            CREATE TABLE official_fpl_captures (
+                capture_id INTEGER PRIMARY KEY
+            );
 
             CREATE TABLE official_fpl_player_outcomes (
                 outcome_capture_id INTEGER NOT NULL,

@@ -396,6 +396,38 @@ builder.Services
             MaxConnectionsPerServer = 1,
             PooledConnectionLifetime = TimeSpan.FromMinutes(10),
         });
+builder.Services
+    .AddHttpClient<ByparrClient>(
+        (serviceProvider, client) =>
+        {
+            string configured =
+                serviceProvider.GetRequiredService<IConfiguration>()[
+                    "AutoFpl:Research:ByparrUrl"]
+                ?? "http://byparr:8191/";
+            if (!Uri.TryCreate(configured, UriKind.Absolute, out Uri? endpoint)
+                || endpoint.Scheme is not ("http" or "https")
+                || !string.IsNullOrEmpty(endpoint.UserInfo)
+                || !string.IsNullOrEmpty(endpoint.Query)
+                || !string.IsNullOrEmpty(endpoint.Fragment)
+                || !StringComparer.Ordinal.Equals(endpoint.AbsolutePath, "/"))
+            {
+                throw new InvalidOperationException(
+                    "AutoFpl:Research:ByparrUrl must be an absolute HTTP(S) origin.");
+            }
+
+            client.BaseAddress = endpoint;
+            client.Timeout = TimeSpan.FromSeconds(90);
+        })
+    .ConfigurePrimaryHttpMessageHandler(
+        () => new SocketsHttpHandler
+        {
+            AllowAutoRedirect = false,
+            AutomaticDecompression = DecompressionMethods.None,
+            ConnectTimeout = TimeSpan.FromSeconds(5),
+            MaxConnectionsPerServer = 1,
+            PooledConnectionLifetime = TimeSpan.FromMinutes(10),
+            UseProxy = false,
+        });
 builder.Services.AddTransient<FplFormForecastImporter>();
 builder.Services.AddTransient<ResearchSourceSnapshotImporter>();
 builder.Services.AddTransient<ResearchSourceClaimExtractor>();
