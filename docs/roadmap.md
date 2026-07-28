@@ -770,11 +770,13 @@ and replay-pair readiness are also automated in bounded poll cycles; the first
 real 2026/27 pair remains pending the first completed Gameweek. A fixed
 two-season expanding-origin screen is also complete: the historical tree
 improves aggregate MAE slightly over its matched current-season-only ablation,
-but wins only three of eight folds and remains a shadow candidate. The active
-order is:
+but wins only three of eight folds and remains a shadow candidate. Its frozen
+2026/27 GW1 read-only forecast generator is now implemented against exact
+capture `15`; it remains outside advice. The active order is:
 
-1. emit a separately labelled read-only 2026/27 two-season shadow forecast
-   without changing Baseline v0 advice;
+1. persist and expose the separately labelled two-season shadow beside the
+   existing Baseline and provisional player comparison, without changing
+   selection scoring;
 2. score both forecasts on the first automatically paired 2026/27 result, then
    register subsequent prospective folds without tuning on them;
 3. join only the point, participation and minutes components that pass their

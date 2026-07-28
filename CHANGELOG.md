@@ -24,6 +24,13 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **The frozen two-season tree now emits a real 2026/27 GW1 shadow
+  forecast.** The read-only generator requires both exact evaluated archives
+  to predate the current official capture, reuses the unchanged feature/model
+  contract and compares every eligible raw point mean with the exact Baseline
+  v0 artifact. Current availability and four stable-code history states remain
+  explicit; the output has no distribution, cannot influence advice and is
+  retained only for prospective scoring.
 - **Two complete seasons now feed one leakage-safe expanding-origin
   evaluator.** The read-only command joins players only through exact official
   codes, separates prior- and current-season history, preserves legacy

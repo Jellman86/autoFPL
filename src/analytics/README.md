@@ -58,6 +58,24 @@ official player code only. The result is a retrospective shadow-candidate
 screen, never a promotion decision. See the
 [multi-season specification](../../docs/research/multi-season-expanding-origin-v1.md).
 
+## Multi-season preseason shadow forecast v1
+
+The frozen leading two-season tree can emit a current GW1 comparison artifact
+without changing served advice:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.multi_season_player_forecast \
+  --database /path/to/autofpl.db \
+  --output /path/to/two-season-shadow.json
+```
+
+Both evaluated archives must have been available by the exact official target
+cutoff. The artifact reports raw point means beside Baseline v0, preserves
+official availability and exact-code identity gaps, has no calibrated
+distribution and cannot influence selection. See the
+[shadow forecast specification](../../docs/research/multi-season-preseason-shadow-forecast-v1.md).
+
 ## Historical participation evaluation v1
 
 The companion evaluator tests fixed appearance, start, 60-minute and uncapped

@@ -23,6 +23,8 @@ second exact-code expanding-origin screen now compares 2024/25 plus 2025/26
 training with matched current-season-only ridge and tree models. The
 multi-season tree has a small aggregate advantage but not robust fold or
 position dominance, so it remains a frozen prospective shadow specification.
+An exact-capture read-only GW1 generator now emits its raw point means beside
+Baseline v0 without influencing advice.
 The existing strict operator import
 persists the artifact immutably, a read-only OpenAPI route exposes it and each
 player dossier presents the comparison with its evidence boundary.
