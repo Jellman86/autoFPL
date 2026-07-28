@@ -349,6 +349,31 @@ attempts. A failed player does not roll back successful captures; the JSON
 result reports `complete`, `partial`, `failed` or `no-op` and exits non-zero
 when any attempt failed.
 
+Capture each fixed promoted-club Championship schedule through the same generic
+research-source operator:
+
+```text
+dotnet AutoFpl.Api.dll \
+  --capture-research-source fbref-team-schedule-f7e3dfe9-2025-26
+dotnet AutoFpl.Api.dll \
+  --capture-research-source fbref-team-schedule-bd8769d1-2025-26
+dotnet AutoFpl.Api.dll \
+  --capture-research-source fbref-team-schedule-b74092de-2025-26
+```
+
+Extract and audit one retained schedule without exposing raw HTML:
+
+```text
+dotnet AutoFpl.Api.dll \
+  --extract-fbref-team-schedule <snapshot-id>
+
+GET /api/v1/research/snapshots/{snapshotId}/fbref-team-schedule
+```
+
+The parser returns only stable match IDs and bounded schedule facts. The rows
+define match opportunities for a later missing-aware join; these commands do
+not infer player absence or create model features.
+
 Set
 `AutoFpl__Research__ByparrUrl` to Riker's private-LAN origin when the default
 container-local name is not available.

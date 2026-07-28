@@ -35,7 +35,10 @@ exact same-current-team/full-name matches among the 85 promoted-club players.
 Bridge v1 freezes those mappings against snapshot 27's content hash and
 revalidates both source and official identity on every extraction. The
 remaining 25 official identities stay unresolved. Point-in-time match-log
-capture and parsing for only the reviewed allowlist remain the next slices.
+capture, bounded coverage reporting and deterministic parsing for the reviewed
+allowlist are implemented. Three fixed promoted-club Championship schedule
+sources now define the complete match-opportunity sequence needed for an
+honest missing-aware join.
 
 Goals, assists, shots, expected goals/assists, saves and cards are optional
 source fields with explicit coverage. Missing values remain null rather than

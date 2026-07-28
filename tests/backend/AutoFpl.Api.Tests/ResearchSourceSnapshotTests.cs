@@ -328,6 +328,70 @@ public sealed class ResearchSourceSnapshotTests
     }
 
     [Fact]
+    public void Fbref_team_schedule_sources_are_fixed_and_manual()
+    {
+        ResearchSourceDefinition[] sources = ResearchSourceRegistry.All
+            .Where(source => StringComparer.Ordinal.Equals(
+                source.SourceClass,
+                "prior-competition-team-schedule"))
+            .ToArray();
+
+        Assert.Equal(3, sources.Length);
+        Assert.Equal(
+            [
+                "fbref-team-schedule-f7e3dfe9-2025-26",
+                "fbref-team-schedule-bd8769d1-2025-26",
+                "fbref-team-schedule-b74092de-2025-26",
+            ],
+            sources.Select(source => source.SourceKey));
+        Assert.All(
+            sources,
+            source =>
+            {
+                Assert.Equal("fbref.com", source.CanonicalUri.Host);
+                Assert.Contains(
+                    "/2025-2026/matchlogs/c10/schedule/",
+                    source.CanonicalUri.AbsolutePath,
+                    StringComparison.Ordinal);
+                Assert.Equal(ByparrClient.TransportKey, source.TransportKey);
+                Assert.False(source.PollAutomatically);
+            });
+    }
+
+    [Fact]
+    public void Fbref_team_schedule_parser_retains_exact_match_opportunities()
+    {
+        string content = CreateFbrefTeamScheduleHtml();
+
+        IReadOnlyList<FbrefTeamScheduleRowDocument> matches =
+            FbrefTeamScheduleExtractor.Parse(content);
+
+        Assert.Equal(46, matches.Count);
+        Assert.Equal("00000001", matches[0].SourceMatchId);
+        Assert.Equal(new DateOnly(2025, 8, 1), matches[0].MatchDate);
+        Assert.Equal(
+            DateTimeOffset.FromUnixTimeSeconds(1_754_046_000),
+            matches[0].KickoffUtc);
+        Assert.Equal("matchweek 1", matches[0].Round.ToLowerInvariant());
+        Assert.Equal("home", matches[0].Venue);
+        Assert.Equal("W", matches[0].Result);
+        Assert.Equal(2, matches[0].GoalsFor);
+        Assert.Equal(1, matches[0].GoalsAgainst);
+        Assert.Equal("aaaaaaaa", matches[0].SourceOpponentId);
+        Assert.Equal("Test Opponent", matches[0].OpponentName);
+    }
+
+    [Fact]
+    public void Fbref_team_schedule_parser_rejects_duplicate_matches()
+    {
+        string content = CreateFbrefTeamScheduleHtml(
+            duplicateFinalMatch: true);
+
+        Assert.Throws<ResearchSourceSnapshotException>(
+            () => FbrefTeamScheduleExtractor.Parse(content));
+    }
+
+    [Fact]
     public async Task Fbref_match_log_capture_is_reviewed_allowlisted_and_immutable()
     {
         using var files = new TemporaryDatabaseFiles();
@@ -1223,7 +1287,7 @@ public sealed class ResearchSourceSnapshotTests
                 TestContext.Current.CancellationToken);
 
         Assert.NotNull(inventory);
-        Assert.Equal(4, inventory.Sources.Count);
+        Assert.Equal(7, inventory.Sources.Count);
         Assert.Contains(
             inventory.Sources,
             item => item.SourceClass == "official-availability-aggregation");
@@ -1236,6 +1300,11 @@ public sealed class ResearchSourceSnapshotTests
         Assert.Contains(
             inventory.Sources,
             item => item.SourceClass == "prior-competition-playing-time");
+        Assert.Equal(
+            3,
+            inventory.Sources.Count(
+                item => item.SourceClass
+                    == "prior-competition-team-schedule"));
         ResearchSourceSnapshotDocument latest =
             Assert.Single(inventory.LatestSnapshots);
         Assert.Equal("premier-league-injuries", latest.SourceKey);
@@ -1548,6 +1617,42 @@ public sealed class ResearchSourceSnapshotTests
             snapshotId is null ? null : 1,
             snapshotId is null ? null : RetrievalTime,
             snapshotId is null ? null : new string('a', 64));
+
+    private static string CreateFbrefTeamScheduleHtml(
+        bool duplicateFinalMatch = false)
+    {
+        var table = new StringBuilder(
+            """
+            <html><body><table id="matchlogs_for"><tbody>
+            <tr class="thead"><th data-stat="date">Date</th></tr>
+            """);
+        var firstDate = new DateOnly(2025, 8, 1);
+        const long firstEpoch = 1_754_046_000;
+        for (int index = 0; index < 46; index++)
+        {
+            int matchNumber =
+                duplicateFinalMatch && index == 45 ? 1 : index + 1;
+            string matchId = matchNumber.ToString("x8");
+            DateOnly matchDate = firstDate.AddDays(index);
+            long epoch = firstEpoch + index * 86_400L;
+            table.Append(
+                $"""
+                <tr>
+                  <th data-stat="date"><a href="/en/matches/{matchId}/Test-Match">{matchDate:yyyy-MM-dd}</a></th>
+                  <td data-stat="start_time"><span data-venue-epoch="{epoch}">12:00</span></td>
+                  <td data-stat="round">Matchweek {index + 1}</td>
+                  <td data-stat="venue">Home</td>
+                  <td data-stat="result">W</td>
+                  <td data-stat="goals_for">2</td>
+                  <td data-stat="goals_against">1</td>
+                  <td data-stat="opponent"><a href="/en/squads/aaaaaaaa/Test-Opponent">Test Opponent</a></td>
+                  <td data-stat="match_report"><a href="/en/matches/{matchId}/Test-Match">Match Report</a></td>
+                </tr>
+                """);
+        }
+        table.Append("</tbody></table></body></html>");
+        return table.ToString();
+    }
 
     private static string CreateFbrefPlayingTimeHtml(
         bool duplicateCommentedTable = false,
