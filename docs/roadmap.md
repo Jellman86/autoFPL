@@ -767,12 +767,15 @@ builder and pinned two-season archive are now implemented and tested. The
 2024/25-to-2025/26 audit finds 534 exact stable-code matches; roster turnover
 stays explicit and no name fallback is allowed. Final official outcome capture
 and replay-pair readiness are also automated in bounded poll cycles; the first
-real 2026/27 pair remains pending the first completed Gameweek. The active
+real 2026/27 pair remains pending the first completed Gameweek. A fixed
+two-season expanding-origin screen is also complete: the historical tree
+improves aggregate MAE slightly over its matched current-season-only ablation,
+but wins only three of eight folds and remains a shadow candidate. The active
 order is:
 
-1. build the two-season expanding-origin feature table and compare the existing
-   baseline, ridge and histogram-tree candidates on identical folds;
-2. score the first automatically paired 2026/27 result when it arrives, then
+1. emit a separately labelled read-only 2026/27 two-season shadow forecast
+   without changing Baseline v0 advice;
+2. score both forecasts on the first automatically paired 2026/27 result, then
    register subsequent prospective folds without tuning on them;
 3. join only the point, participation and minutes components that pass their
    registered gates, then publish the first calibrated player distributions;

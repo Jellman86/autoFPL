@@ -69,6 +69,7 @@ still require owner authentication.
 - [Prior-competition player-history coverage v1](research/prior-competition-player-history-coverage-v1.md) — exact-code audit and bounded source-intake target for promoted, transferred and new-player history gaps.
 - [Cross-season feature ablation v1](research/cross-season-feature-ablation-v1.md) — identical-fold incumbent comparison for prior-season performance and durability candidates.
 - [Historical preseason evaluation v1](research/historical-preseason-evaluation-v1.md) — fixed expanding-origin development and locked-holdout evidence for a provisional archive-trained GW1 bridge.
+- [Multi-season expanding-origin evaluation v1](research/multi-season-expanding-origin-v1.md) — exact-code 2024/25 plus 2025/26 feature table and matched current-only versus multi-season ridge/tree ablation.
 - [Historical participation evaluation v1](research/historical-participation-evaluation-v1.md) — fixed locked-holdout appearance, start, 60-minute and uncapped-minutes challengers with proper probability and calibration scores.
 - [Historical participation coherence evaluation v1](research/historical-participation-coherence-evaluation-v1.md) — fixed Euclidean probability-nesting projection on identical historical folds, explicitly limited to a secondary diagnostic.
 - [Historical joint participation evaluation v1](research/historical-joint-participation-evaluation-v1.md) — five-state coherent classifier screened against immutable raw metrics, explicitly requiring new-season evidence for promotion.

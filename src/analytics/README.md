@@ -36,6 +36,28 @@ challenger; it cannot promote or silently replace Baseline v0.
 The design, limitations and first retained result are recorded in the
 [historical preseason specification](../../docs/research/historical-preseason-evaluation-v1.md).
 
+## Multi-season expanding-origin evaluation v1
+
+The multi-season evaluator asks whether carrying exact-code 2024/25 history
+improves the fixed 2025/26 ridge and histogram-tree candidates. It compares
+multi-season and current-season-only variants on the same late-season target
+players:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.multi_season_evaluation \
+  --database /path/to/autofpl.db \
+  --season 2024-25 \
+  --season 2025-26 \
+  --output /path/to/multi-season-report.json
+```
+
+Legacy defensive metrics remain explicitly missing with observed-count
+features, transforms fit inside each fold and cross-season identity is exact
+official player code only. The result is a retrospective shadow-candidate
+screen, never a promotion decision. See the
+[multi-season specification](../../docs/research/multi-season-expanding-origin-v1.md).
+
 ## Historical participation evaluation v1
 
 The companion evaluator tests fixed appearance, start, 60-minute and uncapped
