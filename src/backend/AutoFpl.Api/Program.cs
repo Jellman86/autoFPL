@@ -147,6 +147,26 @@ if (requestedFbrefPlayerMatchLogExtraction
         "Usage: --extract-fbref-player-match-log <snapshot-id>");
     return 2;
 }
+bool requestedFbrefMatchLogBatchCapture =
+    args.Length > 0
+    && StringComparer.Ordinal.Equals(
+        args[0],
+        "--capture-fbref-reviewed-match-logs");
+int fbrefMatchLogBatchLimit = 0;
+bool runFbrefMatchLogBatchCapture =
+    requestedFbrefMatchLogBatchCapture
+    && args.Length == 2
+    && int.TryParse(args[1], out fbrefMatchLogBatchLimit)
+    && fbrefMatchLogBatchLimit
+        is >= FbrefMatchLogBatchCapture.MinimumCaptureLimit
+        and <= FbrefMatchLogBatchCapture.MaximumCaptureLimit;
+if (requestedFbrefMatchLogBatchCapture
+    && !runFbrefMatchLogBatchCapture)
+{
+    await Console.Error.WriteLineAsync(
+        "Usage: --capture-fbref-reviewed-match-logs <limit 1-5>");
+    return 2;
+}
 bool requestedEvidenceClaimEvaluation =
     args.Length > 0
     && StringComparer.Ordinal.Equals(
@@ -239,6 +259,7 @@ bool runNonWebCommand =
     || runFbrefPlayingTimeExtraction
     || runFbrefPlayerMatchLogCapture
     || runFbrefPlayerMatchLogExtraction
+    || runFbrefMatchLogBatchCapture
     || runEvidenceClaimEvaluation
     || runFplFormForecastEvaluation
     || runOfficialExpectedPointsEvaluation
@@ -491,6 +512,8 @@ builder.Services.AddTransient<ResearchSourceClaimExtractor>();
 builder.Services.AddTransient<FbrefPlayingTimeExtractor>();
 builder.Services.AddTransient<FbrefPlayerMatchLogImporter>();
 builder.Services.AddTransient<FbrefPlayerMatchLogExtractor>();
+builder.Services.AddTransient<FbrefMatchLogCoverageReader>();
+builder.Services.AddTransient<FbrefMatchLogBatchCapture>();
 if (fplFormPollingOptions.Enabled)
 {
     builder.Services.AddHostedService<FplFormForecastPoller>();
@@ -780,6 +803,27 @@ if (runFbrefPlayerMatchLogExtraction)
                 extraction,
                 new JsonSerializerOptions(JsonSerializerDefaults.Web)));
         return 0;
+    }
+    catch (ResearchSourceSnapshotException exception)
+    {
+        await Console.Error.WriteLineAsync(exception.Message);
+        return 2;
+    }
+}
+
+if (runFbrefMatchLogBatchCapture)
+{
+    try
+    {
+        FbrefMatchLogBatchCaptureDocument batch =
+            await app.Services
+                .GetRequiredService<FbrefMatchLogBatchCapture>()
+                .RunAsync(fbrefMatchLogBatchLimit);
+        await Console.Out.WriteLineAsync(
+            JsonSerializer.Serialize(
+                batch,
+                new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+        return batch.FailedCount == 0 ? 0 : 2;
     }
     catch (ResearchSourceSnapshotException exception)
     {
@@ -1249,6 +1293,33 @@ app.MapGet(
     .WithTags("Research")
     .Produces<FbrefPlayerMatchLogDocument>()
     .Produces(StatusCodes.Status404NotFound)
+    .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+app.MapGet(
+    "/api/v1/research/fbref-player-match-log-coverage",
+    async (
+        FbrefMatchLogCoverageReader reader,
+        CancellationToken cancellationToken) =>
+    {
+        try
+        {
+            return Results.Ok(await reader.GetAsync(cancellationToken));
+        }
+        catch (ResearchSourceSnapshotException)
+        {
+            return Results.Problem(
+                statusCode: StatusCodes.Status422UnprocessableEntity,
+                title: "Reviewed FBref match-log coverage could not be read.");
+        }
+    })
+    .WithName("GetFbrefPlayerMatchLogCoverage")
+    .WithSummary(
+        "Read capture coverage for every reviewed FBref player identity.")
+    .WithDescription(
+        "Reports captured and missing immutable match-log snapshots by player and "
+        + "promoted club. It exposes metadata only, accepts no URL and does not start "
+        + "collection or influence forecasts.")
+    .WithTags("Research")
+    .Produces<FbrefMatchLogCoverageDocument>()
     .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 app.MapGet(
     "/api/v1/data/historical-fpl/{seasonCode}",

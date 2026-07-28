@@ -24,6 +24,13 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **Reviewed FBref match-log collection now has bounded coverage operations.**
+  A read-only API reports captured and missing immutable snapshots for all 60
+  bridge-v1 players by promoted club. A URL-free operator batch captures only
+  missing players sequentially, caps each run at one to five new snapshots and
+  at most twice that many attempts, skips existing coverage and isolates
+  per-player failures while retaining partial progress. Collection remains
+  manual, private and non-serving.
 - **Reviewed FBref match chronology is now deterministically inspectable.** A
   versioned parser revalidates each retained page against bridge v1 and emits
   only bounded dated match rows: competition, round, venue, result, stable
