@@ -136,6 +136,14 @@ Deterministic last-3, last-6 and last-8 summaries expose scheduled, observed,
 appearance, start, unused-bench, missing-row and observed-minute counts with an
 explicit complete/missing status. They remain shadow feature candidates.
 
+The read-only
+`/api/v1/research/fbref-player-match-opportunity-coverage` route pairs captured
+player-log metadata with the exact latest registered team-schedule snapshot for
+all 60 reviewed identities. `source-pair-ready` means only that both immutable
+inputs exist. Missing schedules or player logs keep the cohort readiness status
+blocked; the route never claims that a join has passed validation or that a
+candidate has predictive value.
+
 ## Coverage operations
 
 The read-only

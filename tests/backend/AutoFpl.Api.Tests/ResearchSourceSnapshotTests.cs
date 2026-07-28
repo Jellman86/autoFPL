@@ -505,6 +505,93 @@ public sealed class ResearchSourceSnapshotTests
     }
 
     [Fact]
+    public void Fbref_match_opportunity_coverage_reports_source_pair_readiness()
+    {
+        FbrefMatchLogPlayerCoverageDocument[] players =
+            FbrefPlayerIdentityBridge.All
+                .Select(
+                    (entry, index) =>
+                    {
+                        long? snapshotId = index < 15 ? 50 + index : null;
+                        return new FbrefMatchLogPlayerCoverageDocument(
+                            entry.SourcePlayerId,
+                            entry.SourcePlayerName,
+                            entry.SourceTeamId,
+                            entry.TeamName,
+                            index + 1,
+                            entry.OfficialPlayerCode,
+                            $"{FbrefPlayerMatchLogImporter.SourceKeyPrefix}"
+                                + $"{entry.SourcePlayerId}"
+                                + $"{FbrefPlayerMatchLogImporter.SourceKeySuffix}",
+                            snapshotId is null ? "missing" : "captured",
+                            snapshotId,
+                            snapshotId is null ? null : 1,
+                            snapshotId is null ? null : RetrievalTime,
+                            snapshotId is null
+                                ? null
+                                : new string('a', 64));
+                    })
+                .ToArray();
+        var matchLogs = new FbrefMatchLogCoverageDocument(
+            "1.0",
+            FbrefPlayerIdentityBridge.Version,
+            FbrefPlayerIdentityBridge.ReviewedSnapshotId,
+            players.Length,
+            15,
+            45,
+            [],
+            players);
+        ResearchSourceSnapshotDocument[] schedules =
+            FbrefTeamScheduleSources.All
+                .Select(
+                    (source, index) => CreateScheduleSnapshot(
+                        source,
+                        47 + index))
+                .ToArray();
+        var inventory = new ResearchSourceInventoryDocument(
+            "1.0",
+            [],
+            schedules,
+            []);
+
+        FbrefMatchOpportunityCoverageDocument coverage =
+            FbrefMatchOpportunityCoverageReader.Build(
+                matchLogs,
+                inventory);
+
+        Assert.Equal(
+            "blocked-incomplete-player-logs",
+            coverage.ReadinessStatus);
+        Assert.Equal(60, coverage.ReviewedPlayerCount);
+        Assert.Equal(15, coverage.CapturedPlayerLogCount);
+        Assert.Equal(45, coverage.MissingPlayerLogCount);
+        Assert.Equal(3, coverage.CapturedTeamScheduleCount);
+        Assert.Equal(0, coverage.MissingTeamScheduleCount);
+        Assert.Equal(15, coverage.SourcePairReadyPlayerCount);
+        Assert.Equal(3, coverage.Teams.Count);
+        Assert.All(
+            coverage.Teams,
+            team => Assert.Equal("captured", team.ScheduleCaptureStatus));
+        Assert.Equal(
+            15,
+            coverage.Players.Count(player =>
+                player.SourcePairStatus == "source-pair-ready"));
+
+        FbrefMatchOpportunityCoverageDocument missingSchedule =
+            FbrefMatchOpportunityCoverageReader.Build(
+                matchLogs,
+                inventory with
+                {
+                    LatestSnapshots = schedules[1..],
+                });
+        Assert.Equal(
+            "blocked-incomplete-team-schedules",
+            missingSchedule.ReadinessStatus);
+        Assert.Equal(2, missingSchedule.CapturedTeamScheduleCount);
+        Assert.Equal(1, missingSchedule.MissingTeamScheduleCount);
+    }
+
+    [Fact]
     public async Task Fbref_match_log_capture_is_reviewed_allowlisted_and_immutable()
     {
         using var files = new TemporaryDatabaseFiles();
@@ -1805,6 +1892,32 @@ public sealed class ResearchSourceSnapshotTests
             matches.Length,
             matches);
     }
+
+    private static ResearchSourceSnapshotDocument CreateScheduleSnapshot(
+        FbrefTeamScheduleSource source,
+        long snapshotId) =>
+        new(
+            snapshotId,
+            "1.0",
+            "shadow-only",
+            source.SourceKey,
+            source.Definition.SourceClass,
+            source.Definition.CanonicalUri.AbsoluteUri,
+            source.Definition.CanonicalUri.AbsoluteUri,
+            source.Definition.DependenceGroup,
+            ByparrClient.TransportKey,
+            "byparr/2.1.0",
+            "2026-27",
+            1,
+            new DateTimeOffset(2026, 8, 21, 17, 30, 0, TimeSpan.Zero),
+            13,
+            RetrievalTime,
+            RetrievalTime,
+            true,
+            1,
+            new string('b', 64),
+            100,
+            RetrievalTime);
 
     private static FbrefPlayerMatchLogDocument
         CreateFbrefPlayerMatchLogDocument(

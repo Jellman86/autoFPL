@@ -557,6 +557,7 @@ builder.Services.AddTransient<FbrefPlayerMatchLogImporter>();
 builder.Services.AddTransient<FbrefPlayerMatchLogExtractor>();
 builder.Services.AddTransient<FbrefPlayerMatchOpportunityExtractor>();
 builder.Services.AddTransient<FbrefMatchLogCoverageReader>();
+builder.Services.AddTransient<FbrefMatchOpportunityCoverageReader>();
 builder.Services.AddTransient<FbrefMatchLogBatchCapture>();
 if (fplFormPollingOptions.Enabled)
 {
@@ -1432,6 +1433,33 @@ app.MapGet(
     .WithTags("Research")
     .Produces<FbrefPlayerMatchOpportunityDocument>()
     .Produces(StatusCodes.Status404NotFound)
+    .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+app.MapGet(
+    "/api/v1/research/fbref-player-match-opportunity-coverage",
+    async (
+        FbrefMatchOpportunityCoverageReader reader,
+        CancellationToken cancellationToken) =>
+    {
+        try
+        {
+            return Results.Ok(await reader.GetAsync(cancellationToken));
+        }
+        catch (ResearchSourceSnapshotException)
+        {
+            return Results.Problem(
+                statusCode: StatusCodes.Status422UnprocessableEntity,
+                title: "FBref match-opportunity readiness could not be read.");
+        }
+    })
+    .WithName("GetFbrefPlayerMatchOpportunityCoverage")
+    .WithSummary(
+        "Read player-log and team-schedule source-pair readiness for the reviewed cohort.")
+    .WithDescription(
+        "Reports exact immutable snapshot pairs for all 60 reviewed identities. "
+        + "A ready source pair is not a validated feature or evidence of predictive "
+        + "gain; incomplete capture keeps shadow evaluation blocked.")
+    .WithTags("Research")
+    .Produces<FbrefMatchOpportunityCoverageDocument>()
     .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 app.MapGet(
     "/api/v1/research/snapshots/{snapshotId:long}/fbref-player-match-log",
