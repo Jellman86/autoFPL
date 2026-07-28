@@ -129,6 +129,24 @@ if (requestedFbrefPlayerMatchLogCapture
         "Usage: --capture-fbref-player-match-log <official-player-code>");
     return 2;
 }
+bool requestedFbrefPlayerMatchLogExtraction =
+    args.Length > 0
+    && StringComparer.Ordinal.Equals(
+        args[0],
+        "--extract-fbref-player-match-log");
+long fbrefPlayerMatchLogSnapshotId = 0;
+bool runFbrefPlayerMatchLogExtraction =
+    requestedFbrefPlayerMatchLogExtraction
+    && args.Length == 2
+    && long.TryParse(args[1], out fbrefPlayerMatchLogSnapshotId)
+    && fbrefPlayerMatchLogSnapshotId > 0;
+if (requestedFbrefPlayerMatchLogExtraction
+    && !runFbrefPlayerMatchLogExtraction)
+{
+    await Console.Error.WriteLineAsync(
+        "Usage: --extract-fbref-player-match-log <snapshot-id>");
+    return 2;
+}
 bool requestedEvidenceClaimEvaluation =
     args.Length > 0
     && StringComparer.Ordinal.Equals(
@@ -220,6 +238,7 @@ bool runNonWebCommand =
     || runResearchSourceClaimExtraction
     || runFbrefPlayingTimeExtraction
     || runFbrefPlayerMatchLogCapture
+    || runFbrefPlayerMatchLogExtraction
     || runEvidenceClaimEvaluation
     || runFplFormForecastEvaluation
     || runOfficialExpectedPointsEvaluation
@@ -471,6 +490,7 @@ builder.Services.AddTransient<ResearchSourceSnapshotImporter>();
 builder.Services.AddTransient<ResearchSourceClaimExtractor>();
 builder.Services.AddTransient<FbrefPlayingTimeExtractor>();
 builder.Services.AddTransient<FbrefPlayerMatchLogImporter>();
+builder.Services.AddTransient<FbrefPlayerMatchLogExtractor>();
 if (fplFormPollingOptions.Enabled)
 {
     builder.Services.AddHostedService<FplFormForecastPoller>();
@@ -731,6 +751,33 @@ if (runFbrefPlayerMatchLogCapture)
         await Console.Out.WriteLineAsync(
             JsonSerializer.Serialize(
                 snapshot,
+                new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+        return 0;
+    }
+    catch (ResearchSourceSnapshotException exception)
+    {
+        await Console.Error.WriteLineAsync(exception.Message);
+        return 2;
+    }
+}
+
+if (runFbrefPlayerMatchLogExtraction)
+{
+    try
+    {
+        FbrefPlayerMatchLogDocument? extraction =
+            await app.Services
+                .GetRequiredService<FbrefPlayerMatchLogExtractor>()
+                .GetAsync(fbrefPlayerMatchLogSnapshotId);
+        if (extraction is null)
+        {
+            await Console.Error.WriteLineAsync(
+                $"Research source snapshot {fbrefPlayerMatchLogSnapshotId} was not found.");
+            return 2;
+        }
+        await Console.Out.WriteLineAsync(
+            JsonSerializer.Serialize(
+                extraction,
                 new JsonSerializerOptions(JsonSerializerDefaults.Web)));
         return 0;
     }
@@ -1167,6 +1214,40 @@ app.MapGet(
         + "result cannot influence forecasts.")
     .WithTags("Research")
     .Produces<FbrefPlayingTimeDocument>()
+    .Produces(StatusCodes.Status404NotFound)
+    .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+app.MapGet(
+    "/api/v1/research/snapshots/{snapshotId:long}/fbref-player-match-log",
+    async (
+        long snapshotId,
+        FbrefPlayerMatchLogExtractor extractor,
+        CancellationToken cancellationToken) =>
+    {
+        try
+        {
+            FbrefPlayerMatchLogDocument? extraction =
+                await extractor.GetAsync(snapshotId, cancellationToken);
+            return extraction is null
+                ? Results.NotFound()
+                : Results.Ok(extraction);
+        }
+        catch (ResearchSourceSnapshotException)
+        {
+            return Results.Problem(
+                statusCode: StatusCodes.Status422UnprocessableEntity,
+                title: "The retained FBref player match log could not be extracted.");
+        }
+    })
+    .WithName("GetFbrefPlayerMatchLog")
+    .WithSummary(
+        "Extract bounded prior-season match chronology for one reviewed player.")
+    .WithDescription(
+        "The deterministic parser exposes dated competition, opponent, start, minutes "
+        + "and bounded performance rows only after revalidating the source against the "
+        + "snapshot-bound FBref identity bridge. Raw HTML remains private and no row "
+        + "can influence forecasts.")
+    .WithTags("Research")
+    .Produces<FbrefPlayerMatchLogDocument>()
     .Produces(StatusCodes.Status404NotFound)
     .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 app.MapGet(
