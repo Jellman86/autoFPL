@@ -1072,6 +1072,28 @@ app.MapGet(
     .Produces<PlayerGameweekForecastDocument>()
     .Produces(StatusCodes.Status404NotFound);
 app.MapGet(
+    "/api/v1/forecasts/{forecastArtifactId:long:min(1)}/player-pool",
+    async (
+        long forecastArtifactId,
+        PlayerGameweekForecastArtifactStore store,
+        CancellationToken cancellationToken) =>
+    {
+        PlayerGameweekForecastDocument? forecast =
+            await store.GetForBaselineArtifactAsync(
+                forecastArtifactId,
+                cancellationToken);
+        return forecast is null ? Results.NotFound() : Results.Ok(forecast);
+    })
+    .WithName("GetPlayerPoolForForecast")
+    .WithSummary(
+        "Read every eligible player forecast linked to one Baseline forecast artifact.")
+    .WithDescription(
+        "This exact-capture player pool is the authoritative source for legal user squad "
+        + "revisions and like-for-like model comparison.")
+    .WithTags("Forecasts")
+    .Produces<PlayerGameweekForecastDocument>()
+    .Produces(StatusCodes.Status404NotFound);
+app.MapGet(
     "/api/v1/forecasts/preseason-challenger/latest",
     async (
         PreseasonPlayerForecastStore store,
@@ -1218,6 +1240,29 @@ app.MapPost(
     .Produces(StatusCodes.Status404NotFound)
     .ProducesProblem(StatusCodes.Status409Conflict)
     .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+app.MapGet(
+    "/api/v1/selections/{selectionRevisionId:long:min(1)}/comparison",
+    async (
+        long selectionRevisionId,
+        SelectionRevisionStore store,
+        CancellationToken cancellationToken) =>
+    {
+        SelectionComparisonDocument? comparison =
+            await store.GetComparisonAsync(
+                selectionRevisionId,
+                cancellationToken);
+        return comparison is null ? Results.NotFound() : Results.Ok(comparison);
+    })
+    .WithName("GetSelectionComparison")
+    .WithSummary(
+        "Compare a user selection with the model squad on the same immutable forecast.")
+    .WithDescription(
+        "Both selections use the same player point estimates and decision cutoff. "
+        + "The delta is not a calibrated probability or realised score.")
+    .WithTags("Selections")
+    .Produces<SelectionComparisonDocument>()
+    .Produces(StatusCodes.Status404NotFound)
+    .ProducesProblem(StatusCodes.Status409Conflict);
 app.MapPut(
     "/api/v1/selections/{selectionRevisionId:long:min(1)}/lock",
     async (

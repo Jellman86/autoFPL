@@ -98,7 +98,10 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
         Assert.Contains("id=\"selection-workflow\"", body, StringComparison.Ordinal);
         Assert.Contains("id=\"my-squad\"", body, StringComparison.Ordinal);
         Assert.Contains("Use prediction as draft", body, StringComparison.Ordinal);
-        Assert.Contains("Edit your selection", body, StringComparison.Ordinal);
+        Assert.Contains("Build your Gameweek squad", body, StringComparison.Ordinal);
+        Assert.Contains("Exact-snapshot player pool", body, StringComparison.Ordinal);
+        Assert.Contains("Squad check", body, StringComparison.Ordinal);
+        Assert.Contains("Choose a replacement", body, StringComparison.Ordinal);
         Assert.Contains("Save new draft", body, StringComparison.Ordinal);
         Assert.Contains("Lock this selection?", body, StringComparison.Ordinal);
         Assert.Contains("does not submit or change", body, StringComparison.Ordinal);

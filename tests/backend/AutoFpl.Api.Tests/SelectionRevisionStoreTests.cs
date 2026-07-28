@@ -7,6 +7,7 @@ using System.Text.Json;
 using AutoFpl.Api.Persistence;
 using AutoFpl.Api.Selections;
 using AutoFpl.Contracts.Advice;
+using AutoFpl.Contracts.Forecasts;
 using AutoFpl.Contracts.Selections;
 using AutoFpl.Domain.Lineups;
 
@@ -184,6 +185,48 @@ public sealed class SelectionRevisionStoreTests
     }
 
     [Fact]
+    public async Task Editing_can_replace_a_model_player_and_compare_on_the_same_forecast()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = await CreateDatabaseAsync(files.DatabasePath);
+        await SeedForecastAsync(options, artifactId: 10);
+        var store = new SelectionRevisionStore(
+            options,
+            new FixedTimeProvider(BeforeDeadline));
+        SelectionRevisionDocument draft =
+            (await store.CreateDraftFromForecastAsync(
+                10,
+                TestContext.Current.CancellationToken))!;
+        var changedSquad = new LockedSelectionDocument(
+            [1, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14],
+            8,
+            13,
+            2,
+            [6, 16, 15]);
+
+        SelectionRevisionDocument edited =
+            (await store.CreateEditedRevisionAsync(
+                draft.SelectionRevisionId,
+                changedSquad,
+                TestContext.Current.CancellationToken))!;
+        SelectionComparisonDocument comparison =
+            (await store.GetComparisonAsync(
+                edited.SelectionRevisionId,
+                TestContext.Current.CancellationToken))!;
+
+        Assert.Contains(16, edited.Selection.OutfieldSubstitutePlayerIds);
+        Assert.Equal([16], comparison.PlayersAdded);
+        Assert.Equal([7], comparison.PlayersRemoved);
+        Assert.Equal(10, comparison.ForecastArtifactId);
+        Assert.Equal(110, comparison.PlayerForecastArtifactId);
+        Assert.Equal(
+            comparison.User.ProjectedPoints - comparison.Model.ProjectedPoints,
+            comparison.ProjectedPointsDelta);
+        Assert.Equal(15, comparison.User.SquadPlayerIds.Count);
+        Assert.Equal(250, comparison.User.RemainingBudgetTenths);
+    }
+
+    [Fact]
     public async Task Editing_rejects_an_infeasible_formation()
     {
         using var files = new TemporaryDatabaseFiles();
@@ -210,6 +253,41 @@ public sealed class SelectionRevisionStoreTests
                     invalid,
                     TestContext.Current.CancellationToken));
         Assert.Equal("lineup.formation.invalid", exception.Code);
+    }
+
+    [Fact]
+    public async Task Editing_fails_closed_when_player_pool_cutoff_does_not_match()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = await CreateDatabaseAsync(files.DatabasePath);
+        await SeedForecastAsync(
+            options,
+            artifactId: 10,
+            playerForecastCutoffUtc: BeforeDeadline);
+        var store = new SelectionRevisionStore(
+            options,
+            new FixedTimeProvider(BeforeDeadline));
+        SelectionRevisionDocument draft =
+            (await store.CreateDraftFromForecastAsync(
+                10,
+                TestContext.Current.CancellationToken))!;
+        var selection = new LockedSelectionDocument(
+            [1, 3, 4, 6, 8, 9, 10, 11, 12, 13, 14],
+            8,
+            13,
+            2,
+            [5, 7, 15]);
+
+        InvalidOperationException exception =
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                () => store.CreateEditedRevisionAsync(
+                    draft.SelectionRevisionId,
+                    selection,
+                    TestContext.Current.CancellationToken));
+
+        Assert.Equal(
+            "The player forecast artifact does not match the selection forecast.",
+            exception.Message);
     }
 
     [Fact]
@@ -309,7 +387,7 @@ public sealed class SelectionRevisionStoreTests
                 captainPlayerId = 8,
                 viceCaptainPlayerId = 13,
                 replacementGoalkeeperPlayerId = 2,
-                outfieldSubstitutePlayerIds = new[] { 5, 7, 15 },
+                outfieldSubstitutePlayerIds = new[] { 5, 16, 15 },
             },
             TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.Created, editedResponse.StatusCode);
@@ -321,6 +399,21 @@ public sealed class SelectionRevisionStoreTests
         Assert.Equal(
             draft.SelectionRevisionId,
             edited.SupersedesSelectionRevisionId);
+        Assert.Contains(16, edited.Selection.OutfieldSubstitutePlayerIds);
+
+        PlayerGameweekForecastDocument pool =
+            (await client.GetFromJsonAsync<PlayerGameweekForecastDocument>(
+                "/api/v1/forecasts/10/player-pool",
+                TestContext.Current.CancellationToken))!;
+        Assert.Equal(110, pool.ForecastArtifactId);
+        Assert.Equal(20, pool.Players.Count);
+
+        SelectionComparisonDocument comparison =
+            (await client.GetFromJsonAsync<SelectionComparisonDocument>(
+                $"/api/v1/selections/{edited.SelectionRevisionId}/comparison",
+                TestContext.Current.CancellationToken))!;
+        Assert.Equal([16], comparison.PlayersAdded);
+        Assert.Equal([7], comparison.PlayersRemoved);
     }
 
     [Fact]
@@ -378,14 +471,27 @@ public sealed class SelectionRevisionStoreTests
         DatabaseOptions options,
         long artifactId,
         long captureId = 1,
-        int captainPlayerId = 8)
+        int captainPlayerId = 8,
+        DateTimeOffset? playerForecastCutoffUtc = null)
     {
-        GameweekAdviceDocument advice = CreateAdvice(captainPlayerId);
+        DateTimeOffset captureAvailableAt = BeforeDeadline.AddHours(captureId);
+        GameweekAdviceDocument advice = CreateAdvice(
+            captainPlayerId,
+            captureAvailableAt);
+        PlayerGameweekForecastDocument playerForecast =
+            CreatePlayerForecast(
+                captureId,
+                playerForecastCutoffUtc ?? captureAvailableAt);
         string documentJson = JsonSerializer.Serialize(
             advice,
             new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        string playerForecastJson = JsonSerializer.Serialize(
+            playerForecast,
+            new JsonSerializerOptions(JsonSerializerDefaults.Web));
         string artifactHash = Convert.ToHexStringLower(
             SHA256.HashData(Encoding.UTF8.GetBytes(documentJson)));
+        string playerForecastHash = Convert.ToHexStringLower(
+            SHA256.HashData(Encoding.UTF8.GetBytes(playerForecastJson)));
         await using var connection = new SqliteConnection(options.ConnectionString);
         await connection.OpenAsync(TestContext.Current.CancellationToken);
         await using SqliteCommand command = connection.CreateCommand();
@@ -428,7 +534,7 @@ public sealed class SelectionRevisionStoreTests
                 X'5B5D',
                 1,
                 1,
-                15,
+                20,
                 0,
                 1,
                 $deadlineUtc,
@@ -454,6 +560,31 @@ public sealed class SelectionRevisionStoreTests
                 $artifactHash,
                 $availableAtUtc
             );
+
+            INSERT INTO player_gameweek_forecast_artifacts (
+                forecast_artifact_id,
+                schema_version,
+                model_key,
+                official_capture_id,
+                season_code,
+                gameweek,
+                decision_cutoff_utc,
+                document_json,
+                content_sha256,
+                created_at_utc
+            )
+            VALUES (
+                $playerForecastArtifactId,
+                '1.0',
+                'official-market-baseline-v0-player-table',
+                $captureId,
+                '2026-27',
+                1,
+                $availableAtUtc,
+                $playerForecastJson,
+                $playerForecastHash,
+                $availableAtUtc
+            );
             """;
         command.Parameters.AddWithValue("$captureId", captureId);
         command.Parameters.AddWithValue("$artifactId", artifactId);
@@ -471,10 +602,76 @@ public sealed class SelectionRevisionStoreTests
             new string(captureId == 1 ? 'b' : 'd', 64));
         command.Parameters.AddWithValue("$documentJson", documentJson);
         command.Parameters.AddWithValue("$artifactHash", artifactHash);
+        command.Parameters.AddWithValue(
+            "$playerForecastArtifactId",
+            artifactId + 100);
+        command.Parameters.AddWithValue(
+            "$playerForecastJson",
+            playerForecastJson);
+        command.Parameters.AddWithValue(
+            "$playerForecastHash",
+            playerForecastHash);
         await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
     }
 
-    private static GameweekAdviceDocument CreateAdvice(int captainPlayerId)
+    private static PlayerGameweekForecastDocument CreatePlayerForecast(
+        long captureId,
+        DateTimeOffset decisionCutoffUtc)
+    {
+        string[] positions =
+        [
+            "goalkeeper", "goalkeeper",
+            "defender", "defender", "defender", "defender", "defender",
+            "midfielder", "midfielder", "midfielder", "midfielder", "midfielder",
+            "forward", "forward", "forward",
+            "defender", "midfielder", "forward", "goalkeeper", "defender",
+        ];
+        PlayerGameweekForecastPlayerDocument[] players =
+        [
+            .. positions.Select(
+                (position, index) =>
+                {
+                    int playerId = index + 1;
+                    return new PlayerGameweekForecastPlayerDocument(
+                        playerId,
+                        $"Player {playerId}",
+                        playerId <= 15 ? $"T{playerId % 5}" : $"X{playerId}",
+                        position,
+                        50,
+                        "a",
+                        null,
+                        1,
+                        "OPP",
+                        true,
+                        playerId,
+                        Math.Max(0, playerId - 2),
+                        playerId + 2,
+                        80,
+                        null,
+                        null,
+                        ["Forecast reason."],
+                        ["Forecast risk."],
+                        null,
+                        $"/players/{playerId}");
+                }),
+        ];
+        return new(
+            "1.0",
+            "provisional-unvalidated",
+            "official-market-baseline-v0-player-table",
+            "2026-27",
+            1,
+            Deadline,
+            decisionCutoffUtc,
+            captureId,
+            "interval-only-uncalibrated",
+            players,
+            ["Test limitation."]);
+    }
+
+    private static GameweekAdviceDocument CreateAdvice(
+        int captainPlayerId,
+        DateTimeOffset decisionCutoffUtc)
     {
         string[] positions =
         [
@@ -523,11 +720,11 @@ public sealed class SelectionRevisionStoreTests
             false,
             null,
             null,
-            BeforeDeadline,
+            decisionCutoffUtc,
             null,
             1,
             Deadline,
-            BeforeDeadline,
+            decisionCutoffUtc,
             "Baseline v0",
             "A persisted forecast.",
             new("Recommended", "Maximum expected points", 55, players),

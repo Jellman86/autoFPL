@@ -24,6 +24,15 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **My Squad is now a full decision workspace backed by an exact forecast
+  contract.** A user revision may replace any of the model's original 15 with
+  an eligible player from the same immutable official capture; the backend
+  revalidates budget, club, composition, formation, captaincy and bench rules
+  and exposes an authoritative same-capture model comparison. The responsive
+  builder provides player search, official portrait cards, live constraint and
+  budget feedback, captain/bench controls, reset, immutable save and explicit
+  lock actions. Player cards still open the separate full evidence page, and no
+  action is sent to an FPL account.
 - **Reviewed FBref match-log collection now has bounded coverage operations.**
   A read-only API reports captured and missing immutable snapshots for all 60
   bridge-v1 players by promoted club. A URL-free operator batch captures only

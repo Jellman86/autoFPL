@@ -191,7 +191,7 @@
             id="edit-selection"
             type="button"
             disabled>
-            Edit selection
+            Open squad builder
           </button>
           <button class="selection-secondary" id="create-selection-draft" type="button">
             Use prediction as draft
@@ -200,6 +200,176 @@
             Lock this selection
           </button>
         </div>
+      </div>
+    </section>
+
+    <section
+      class="squad-builder-page"
+      id="squad-builder-page"
+      aria-labelledby="squad-builder-title"
+      hidden>
+      <header class="builder-header">
+        <div>
+          <p class="eyebrow">My squad · decision workspace</p>
+          <h1 id="squad-builder-title">Build your Gameweek squad</h1>
+          <p id="builder-intro">
+            Start from the model, make your changes, and compare both squads
+            against the same forecast evidence.
+          </p>
+        </div>
+        <div class="builder-header-actions">
+          <span class="selection-state" id="builder-state">Not started</span>
+          <button
+            class="selection-secondary"
+            id="builder-return-model"
+            type="button">
+            View model squad
+          </button>
+        </div>
+      </header>
+
+      <div class="builder-empty" id="builder-empty">
+        <span class="builder-empty-mark" aria-hidden="true">15</span>
+        <div>
+          <p class="eyebrow">A clean starting point</p>
+          <h2>Use the prediction, then make it yours.</h2>
+          <p>
+            The first draft preserves the model’s exact squad, XI, bench and
+            captaincy. Every save after that becomes a new immutable revision.
+          </p>
+        </div>
+        <button class="selection-primary" id="builder-create-draft" type="button">
+          Start from model squad
+        </button>
+      </div>
+
+      <div class="builder-workspace" id="builder-workspace" hidden>
+        <section class="builder-scoreboard" aria-label="Squad comparison">
+          <div>
+            <span>Your projection</span>
+            <strong><span id="builder-user-points">—</span> pts</strong>
+            <small id="builder-comparison-note">Loading same-snapshot comparison</small>
+          </div>
+          <div>
+            <span>Model projection</span>
+            <strong><span id="builder-model-points">—</span> pts</strong>
+            <small id="builder-model-reference">Baseline</small>
+          </div>
+          <div data-delta="neutral" id="builder-delta-card">
+            <span>Difference</span>
+            <strong id="builder-points-delta">—</strong>
+            <small>Point estimate, not certainty</small>
+          </div>
+          <div>
+            <span>Budget</span>
+            <strong id="builder-budget">—</strong>
+            <small id="builder-budget-left">— remaining</small>
+          </div>
+        </section>
+
+        <div class="builder-grid">
+          <section class="builder-pitch-panel" aria-labelledby="builder-pitch-title">
+            <div class="section-heading builder-section-heading">
+              <div>
+                <p class="eyebrow">Revision workspace</p>
+                <h2 id="builder-pitch-title">Starting XI</h2>
+              </div>
+              <p>Select <strong>Change</strong> on a card, then choose a replacement.</p>
+            </div>
+            <div class="pitch builder-pitch" aria-label="Your editable formation">
+              <div class="halfway-line" aria-hidden="true"></div>
+              <div class="centre-circle" aria-hidden="true"></div>
+              <div class="penalty-box top" aria-hidden="true"></div>
+              <div class="penalty-box bottom" aria-hidden="true"></div>
+              <div id="builder-formation" class="formation"></div>
+            </div>
+            <div class="bench-shell builder-bench-shell">
+              <div class="bench-heading">
+                <h3>Bench</h3>
+                <span>Drag-free, explicit priority</span>
+              </div>
+              <div id="builder-bench" class="bench"></div>
+            </div>
+          </section>
+
+          <aside class="builder-control-rail" aria-label="Squad controls">
+            <section class="constraint-card">
+              <div class="constraint-heading">
+                <div>
+                  <p class="eyebrow">FPL rules</p>
+                  <h2>Squad check</h2>
+                </div>
+                <span id="builder-validity" data-valid="false">Checking</span>
+              </div>
+              <ul class="constraint-list" id="builder-constraints"></ul>
+              <p class="builder-feedback" id="builder-feedback" aria-live="polite"></p>
+            </section>
+
+            <section class="builder-controls">
+              <p class="eyebrow">Matchday decisions</p>
+              <h2>Captain &amp; bench</h2>
+              <div class="builder-selects">
+                <label for="builder-captain">
+                  Captain
+                  <select id="builder-captain"></select>
+                </label>
+                <label for="builder-vice-captain">
+                  Vice-captain
+                  <select id="builder-vice-captain"></select>
+                </label>
+              </div>
+              <ol class="builder-bench-order" id="builder-bench-order"></ol>
+            </section>
+          </aside>
+        </div>
+
+        <section class="player-market" aria-labelledby="player-market-title">
+          <div class="player-market-heading">
+            <div>
+              <p class="eyebrow">Exact-snapshot player pool</p>
+              <h2 id="player-market-title">Choose a replacement</h2>
+              <p id="player-market-context">
+                Select Change on one of your player cards to see eligible alternatives.
+              </p>
+            </div>
+            <label class="player-search" for="player-market-search">
+              <span>Search players</span>
+              <input
+                id="player-market-search"
+                type="search"
+                placeholder="Name or club"
+                autocomplete="off">
+            </label>
+          </div>
+          <div class="position-filters" id="player-market-filters" aria-label="Filter player position">
+            <button type="button" data-market-position="all" aria-pressed="true">All</button>
+            <button type="button" data-market-position="goalkeeper" aria-pressed="false">Goalkeepers</button>
+            <button type="button" data-market-position="defender" aria-pressed="false">Defenders</button>
+            <button type="button" data-market-position="midfielder" aria-pressed="false">Midfielders</button>
+            <button type="button" data-market-position="forward" aria-pressed="false">Forwards</button>
+          </div>
+          <div class="player-market-list" id="player-market-list">
+            <p class="empty-state">The player pool is loading.</p>
+          </div>
+        </section>
+
+        <footer class="builder-action-bar">
+          <div>
+            <strong id="builder-revision-label">Draft</strong>
+            <span id="builder-save-state">No unsaved changes</span>
+          </div>
+          <div>
+            <button class="selection-secondary" id="builder-reset" type="button">
+              Reset changes
+            </button>
+            <button class="selection-primary" id="builder-save" type="button">
+              Save new draft
+            </button>
+            <button class="selection-primary builder-lock" id="builder-lock" type="button">
+              Lock selection
+            </button>
+          </div>
+        </footer>
       </div>
     </section>
 
@@ -578,60 +748,5 @@
     </form>
   </dialog>
 
-  <dialog class="lock-dialog edit-dialog" id="edit-dialog" aria-labelledby="edit-dialog-title">
-    <form method="dialog">
-      <p class="eyebrow">New immutable revision</p>
-      <h2 id="edit-dialog-title">Edit your selection</h2>
-      <p>
-        Swap players between the XI and bench, set captaincy, and order the
-        outfield substitutes. Saving creates a new unlocked revision.
-      </p>
-
-      <fieldset class="edit-swap">
-        <legend>Swap XI and bench</legend>
-        <label>
-          Starter
-          <select id="edit-swap-out"></select>
-        </label>
-        <label>
-          Bench player
-          <select id="edit-swap-in"></select>
-        </label>
-        <button class="selection-secondary" id="apply-selection-swap" type="button">
-          Apply swap
-        </button>
-      </fieldset>
-
-      <fieldset class="edit-captaincy">
-        <legend>Captaincy</legend>
-        <label>
-          Captain
-          <select id="edit-captain"></select>
-        </label>
-        <label>
-          Vice-captain
-          <select id="edit-vice-captain"></select>
-        </label>
-      </fieldset>
-
-      <fieldset class="edit-bench">
-        <legend>Bench priority</legend>
-        <p class="edit-goalkeeper" id="edit-goalkeeper"></p>
-        <ol id="edit-bench-order"></ol>
-      </fieldset>
-
-      <p class="edit-feedback" id="edit-feedback" aria-live="polite"></p>
-      <div class="lock-dialog-note">
-        This changes only autoFPL. It does not submit or change anything in
-        your Fantasy Premier League account.
-      </div>
-      <div class="lock-dialog-actions">
-        <button class="selection-secondary" value="cancel">Cancel</button>
-        <button class="selection-primary" id="save-selection-revision" type="button">
-          Save new draft
-        </button>
-      </div>
-    </form>
-  </dialog>
 </body>
 </html>

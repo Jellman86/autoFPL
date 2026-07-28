@@ -5,6 +5,7 @@ using System.Text.Json;
 
 using AutoFpl.Api.Persistence;
 using AutoFpl.Contracts.Advice;
+using AutoFpl.Contracts.Forecasts;
 using AutoFpl.Contracts.Selections;
 using AutoFpl.Domain.Selections;
 using AutoFpl.Domain.Squads;
@@ -305,8 +306,17 @@ public sealed class SelectionRevisionStore
                 "The selection revision forecast lineage is invalid.");
         }
 
+        ForecastPlayerPool playerPool = await ReadPlayerPoolAsync(
+            connection,
+            transaction,
+            source.ForecastArtifactId,
+            cancellationToken)
+            ?? throw new SelectionWorkflowException(
+                "selection.player_forecast.unavailable",
+                "selectionRevisionId");
+        EnsurePlayerPoolLineage(source, playerPool);
         LockedSelectionDocument selection = ValidateSelection(
-            source.Advice,
+            playerPool.Forecast,
             requestedSelection);
         string selectionJson = JsonSerializer.Serialize(selection, JsonOptions);
         string selectionHash = Hash(selectionJson);
@@ -385,6 +395,99 @@ public sealed class SelectionRevisionStore
                 "The edited selection revision could not be read back.");
         await transaction.CommitAsync(cancellationToken);
         return Materialize(edited, now);
+    }
+
+    public async Task<SelectionComparisonDocument?> GetComparisonAsync(
+        long selectionRevisionId,
+        CancellationToken cancellationToken = default)
+    {
+        if (selectionRevisionId <= 0)
+        {
+            return null;
+        }
+
+        await using SqliteConnection connection =
+            new(_options.ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+        await using SqliteTransaction transaction =
+            connection.BeginTransaction(deferred: true);
+        SelectionRevisionRow? row = await ReadRowAsync(
+            connection,
+            transaction,
+            selectionRevisionId,
+            cancellationToken);
+        if (row is null)
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            return null;
+        }
+
+        ForecastSelectionSource source = await ReadForecastSourceAsync(
+            connection,
+            transaction,
+            row.ForecastArtifactId,
+            cancellationToken)
+            ?? throw new InvalidOperationException(
+                "The selection revision forecast artifact is unavailable.");
+        if (!StringComparer.Ordinal.Equals(
+                source.ForecastArtifactContentHash,
+                row.ForecastArtifactContentHash)
+            || !StringComparer.Ordinal.Equals(source.SeasonCode, row.SeasonCode)
+            || source.Gameweek != row.Gameweek
+            || source.DeadlineUtc != row.DeadlineUtc)
+        {
+            throw new InvalidOperationException(
+                "The selection revision forecast lineage is invalid.");
+        }
+        ForecastPlayerPool playerPool = await ReadPlayerPoolAsync(
+            connection,
+            transaction,
+            row.ForecastArtifactId,
+            cancellationToken)
+            ?? throw new SelectionWorkflowException(
+                "selection.player_forecast.unavailable",
+                "selectionRevisionId");
+        EnsurePlayerPoolLineage(source, playerPool);
+        if (!StringComparer.Ordinal.Equals(
+                Hash(row.SelectionJson),
+                row.SelectionContentHash))
+        {
+            throw new InvalidOperationException(
+                "The stored selection revision content hash is invalid.");
+        }
+        LockedSelectionDocument userSelection =
+            JsonSerializer.Deserialize<LockedSelectionDocument>(
+                row.SelectionJson,
+                JsonOptions)
+            ?? throw new InvalidOperationException(
+                "The stored selection revision is invalid.");
+        userSelection = ValidateSelection(playerPool.Forecast, userSelection);
+        LockedSelectionDocument modelSelection =
+            ValidateSelection(playerPool.Forecast, ToLockedSelection(source.Advice));
+        SelectionProjectionDocument model =
+            Project(modelSelection, playerPool.Forecast);
+        SelectionProjectionDocument user =
+            Project(userSelection, playerPool.Forecast);
+        HashSet<int> modelIds = [.. model.SquadPlayerIds];
+        HashSet<int> userIds = [.. user.SquadPlayerIds];
+
+        await transaction.CommitAsync(cancellationToken);
+        return new(
+            "1.0",
+            row.SelectionRevisionId,
+            row.ForecastArtifactId,
+            playerPool.ArtifactId,
+            playerPool.ContentHash,
+            playerPool.Forecast.DistributionStatus,
+            model,
+            user,
+            user.ProjectedPoints - model.ProjectedPoints,
+            [.. userIds.Except(modelIds).Order()],
+            [.. modelIds.Except(userIds).Order()],
+            [
+                "Projected points are a point-estimate comparison from one immutable forecast capture, not realised Gameweek points.",
+                "The current player intervals are uncalibrated and are not combined into a squad-level probability distribution.",
+            ]);
     }
 
     public async Task<SelectionRevisionDocument?> GetAsync(
@@ -574,20 +677,47 @@ public sealed class SelectionRevisionStore
     }
 
     private static LockedSelectionDocument ValidateSelection(
-        GameweekAdviceDocument advice,
+        PlayerGameweekForecastDocument playerForecast,
         LockedSelectionDocument requestedSelection)
     {
-        // Edits cannot change the forecast squad, so club and price constraints
-        // are invariant. Rebuild only the identity and position shape needed by
-        // the existing lineup and bench validators.
+        Dictionary<int, PlayerGameweekForecastPlayerDocument> forecastPlayers =
+            playerForecast.Players.ToDictionary(player => player.PlayerId);
+        string[] clubNames =
+        [
+            .. playerForecast.Players
+                .Select(player => player.ClubShortName)
+                .Distinct(StringComparer.Ordinal)
+                .Order(StringComparer.Ordinal),
+        ];
+        Dictionary<string, int> clubIds = clubNames
+            .Select((name, index) => new { name, id = index + 1 })
+            .ToDictionary(item => item.name, item => item.id, StringComparer.Ordinal);
+        int[] requestedPlayerIds =
+        [
+            .. requestedSelection.StartingPlayerIds,
+            requestedSelection.ReplacementGoalkeeperPlayerId,
+            .. requestedSelection.OutfieldSubstitutePlayerIds,
+        ];
+        if (requestedPlayerIds.Any(playerId => !forecastPlayers.ContainsKey(playerId)))
+        {
+            throw new SelectionWorkflowException(
+                "selection.player.not_in_forecast",
+                "selection");
+        }
+
         SquadPlayer[] players =
         [
-            .. advice.Selection.Players.Select(
-                (player, index) => SquadPlayer.Create(
-                    player.PlayerId,
-                    index + 1,
-                    player.Position,
-                    priceTenths: 1)),
+            .. requestedPlayerIds.Select(
+                playerId =>
+                {
+                    PlayerGameweekForecastPlayerDocument player =
+                        forecastPlayers[playerId];
+                    return SquadPlayer.Create(
+                        player.PlayerId,
+                        clubIds[player.ClubShortName],
+                        player.Position,
+                        player.PriceTenths);
+                }),
         ];
         Squad squad = Squad.Create(budgetTenths: 1000, players);
         GameweekSelection selection = GameweekSelection.Create(
@@ -603,6 +733,110 @@ public sealed class SelectionRevisionStore
             selection.Lineup.ViceCaptainPlayerId,
             selection.ReplacementGoalkeeperPlayerId,
             selection.OutfieldSubstitutePlayerIds);
+    }
+
+    private static SelectionProjectionDocument Project(
+        LockedSelectionDocument selection,
+        PlayerGameweekForecastDocument forecast)
+    {
+        Dictionary<int, PlayerGameweekForecastPlayerDocument> players =
+            forecast.Players.ToDictionary(player => player.PlayerId);
+        int[] squadPlayerIds =
+        [
+            .. selection.StartingPlayerIds,
+            selection.ReplacementGoalkeeperPlayerId,
+            .. selection.OutfieldSubstitutePlayerIds,
+        ];
+        decimal startingPoints = selection.StartingPlayerIds
+            .Sum(playerId => players[playerId].ExpectedPoints);
+        decimal captainBonus =
+            players[selection.CaptainPlayerId].ExpectedPoints;
+        int cost = squadPlayerIds.Sum(playerId => players[playerId].PriceTenths);
+        return new(
+            startingPoints + captainBonus,
+            startingPoints,
+            captainBonus,
+            cost,
+            1000 - cost,
+            squadPlayerIds);
+    }
+
+    private static void EnsurePlayerPoolLineage(
+        ForecastSelectionSource source,
+        ForecastPlayerPool playerPool)
+    {
+        PlayerGameweekForecastDocument forecast = playerPool.Forecast;
+        if (!StringComparer.Ordinal.Equals(forecast.SeasonCode, source.SeasonCode)
+            || forecast.Gameweek != source.Gameweek
+            || forecast.DeadlineUtc != source.DeadlineUtc
+            || forecast.DecisionCutoffUtc != source.Advice.DecisionCutoffUtc)
+        {
+            throw new InvalidOperationException(
+                "The player forecast artifact does not match the selection forecast.");
+        }
+    }
+
+    private static async Task<ForecastPlayerPool?> ReadPlayerPoolAsync(
+        SqliteConnection connection,
+        SqliteTransaction transaction,
+        long baselineForecastArtifactId,
+        CancellationToken cancellationToken)
+    {
+        await using SqliteCommand command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            """
+            SELECT
+                player_artifact.forecast_artifact_id,
+                player_artifact.document_json,
+                player_artifact.content_sha256
+            FROM baseline_forecast_artifacts AS baseline_artifact
+            INNER JOIN player_gameweek_forecast_artifacts AS player_artifact
+                ON player_artifact.official_capture_id = baseline_artifact.capture_id
+            WHERE baseline_artifact.artifact_id = $baselineForecastArtifactId
+              AND player_artifact.model_key =
+                  'official-market-baseline-v0-player-table';
+            """;
+        command.Parameters.AddWithValue(
+            "$baselineForecastArtifactId",
+            baselineForecastArtifactId);
+        await using SqliteDataReader reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+        if (!await reader.ReadAsync(cancellationToken))
+        {
+            return null;
+        }
+
+        long artifactId = reader.GetInt64(0);
+        string documentJson = reader.GetString(1);
+        string contentHash = reader.GetString(2);
+        if (!StringComparer.Ordinal.Equals(Hash(documentJson), contentHash))
+        {
+            throw new InvalidOperationException(
+                "The player forecast artifact content hash is invalid.");
+        }
+        PlayerGameweekForecastDocument forecast =
+            JsonSerializer.Deserialize<PlayerGameweekForecastDocument>(
+                documentJson,
+                JsonOptions)
+            ?? throw new InvalidOperationException(
+                "The player forecast artifact document is invalid.");
+        if (!StringComparer.Ordinal.Equals(
+                forecast.ModelKey,
+                "official-market-baseline-v0-player-table")
+            || !StringComparer.Ordinal.Equals(
+                forecast.Status,
+                "provisional-unvalidated")
+            || !StringComparer.Ordinal.Equals(
+                forecast.DistributionStatus,
+                "interval-only-uncalibrated")
+            || forecast.Players.Count == 0)
+        {
+            throw new InvalidOperationException(
+                "The player forecast artifact has the wrong identity.");
+        }
+
+        return new(artifactId, contentHash, forecast);
     }
 
     private static async Task<SelectionRevisionRow?> ReadLatestRowAsync(
@@ -746,6 +980,11 @@ public sealed class SelectionRevisionStore
         string SelectionJson,
         string SelectionContentHash,
         GameweekAdviceDocument Advice);
+
+    private sealed record ForecastPlayerPool(
+        long ArtifactId,
+        string ContentHash,
+        PlayerGameweekForecastDocument Forecast);
 
     private sealed record SelectionRevisionRow(
         long SelectionRevisionId,

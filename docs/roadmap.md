@@ -455,7 +455,11 @@ The decision room now includes:
 - an immutable, capture-linked Baseline v0 expected-points artefact;
 - an immutable user-owned forecast draft with an explicit one-time pre-deadline
   lock and computed locked, expired or frozen status;
-- a same-artifact projected-points comparison between the model and user squad;
+- a dedicated 15-player My Squad workspace with exact-capture player search,
+  live budget, club, composition and formation feedback, captaincy and bench
+  controls, immutable revision saving and explicit locking;
+- a server-authoritative same-artifact projected-points comparison between the
+  model and user squad;
 - deterministic explanation and risk sections;
 - alternative-strategy summaries; and
 - an explicit, unavailable-until-grounded AI composer.
@@ -757,25 +761,23 @@ v1.0 hardens the proven product rather than introducing its first UI:
 
 ## Immediate implementation order
 
-The next development slices are deliberately product-sized:
+The next development slices are deliberately product-sized. The responsive
+shell, full player page, full-squad revision contract and dedicated My Squad
+builder are now implemented and browser-tested, so the active order is:
 
-1. finish and browser-test the sidebar, breadcrumbs, full player page and
-   model-versus-user squad comparison;
-2. replace the transitional My squad panel/dialog with the dedicated
-   15-player builder, legal-constraint feedback and same-artifact comparison;
-3. import and audit 2024/25 alongside the pinned 2025/26 archive, including a
+1. import and audit 2024/25 alongside the pinned 2025/26 archive, including a
    fail-closed cross-season identity coverage report;
-4. run the first 2026/27 final-outcome pairing, then automate the bounded
+2. run the first 2026/27 final-outcome pairing, then automate the bounded
    post-Gameweek score-and-evaluate workflow;
-5. build the two-season expanding-origin feature table and compare the existing
+3. build the two-season expanding-origin feature table and compare the existing
    baseline, ridge and histogram-tree candidates on identical folds;
-6. join only the point, participation and minutes components that pass their
+4. join only the point, participation and minutes components that pass their
    registered gates, then publish the first calibrated player distributions;
-7. add CPU-reference scenario scoring and compare the model, safer,
+5. add CPU-reference scenario scoring and compare the model, safer,
    higher-ceiling and user-authored squads in the interface;
-8. connect the grounded AI surface through read-only MCP first, followed by an
+6. connect the grounded AI surface through read-only MCP first, followed by an
    owner-configured OpenAI-compatible provider; and
-9. add owner authentication and sanitized dashboard sharing before exposing
+7. add owner authentication and sanitized dashboard sharing before exposing
    any configuration or consequential action outside the trusted instance.
 
 Specialist lineups, public forecasts, named experts and social evidence remain
