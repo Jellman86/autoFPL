@@ -18,6 +18,10 @@ public sealed class FbrefMatchLogCoverageReader
     }
 
     public async Task<FbrefMatchLogCoverageDocument> GetAsync(
+        CancellationToken cancellationToken = default) =>
+        (await GetContextAsync(cancellationToken)).Coverage;
+
+    internal async Task<FbrefMatchLogCoverageContext> GetContextAsync(
         CancellationToken cancellationToken = default)
     {
         FbrefPlayingTimeDocument playingTime =
@@ -36,7 +40,7 @@ public sealed class FbrefMatchLogCoverageReader
 
         ResearchSourceInventoryDocument inventory =
             await _snapshotStore.GetInventoryAsync(cancellationToken);
-        return Build(playingTime, inventory);
+        return new(Build(playingTime, inventory), playingTime);
     }
 
     internal static FbrefMatchLogCoverageDocument Build(
@@ -125,3 +129,7 @@ public sealed class FbrefMatchLogCoverageReader
             players);
     }
 }
+
+internal sealed record FbrefMatchLogCoverageContext(
+    FbrefMatchLogCoverageDocument Coverage,
+    FbrefPlayingTimeDocument PlayingTime);
