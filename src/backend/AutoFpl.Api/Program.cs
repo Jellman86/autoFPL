@@ -1780,6 +1780,29 @@ app.MapGet(
     .Produces<OfficialFplOutcomeCaptureDocument>()
     .Produces(StatusCodes.Status404NotFound);
 app.MapGet(
+    "/api/v1/data/official-fpl/outcomes/readiness",
+    async (
+        OfficialFplCaptureStore captureStore,
+        OfficialFplOutcomeStore outcomeStore,
+        CancellationToken cancellationToken) =>
+    {
+        OfficialFplOutcomeReadinessDocument? readiness =
+            await outcomeStore.GetReadinessAsync(
+                captureStore,
+                cancellationToken);
+        return readiness is null ? Results.NotFound() : Results.Ok(readiness);
+    })
+    .WithName("GetOfficialFplOutcomeReadiness")
+    .WithSummary("Read automatic final-outcome capture and replay-pairing readiness.")
+    .WithDescription(
+        "Reports completed Gameweeks with captured immutable outcomes, complete "
+        + "pre-deadline replay pairs and explicit missing or identity-blocked gaps. "
+        + "The enabled official poller imports at most three outcome endpoints per "
+        + "cycle and rechecks the latest completed Gameweek for corrections.")
+    .WithTags("Data")
+    .Produces<OfficialFplOutcomeReadinessDocument>()
+    .Produces(StatusCodes.Status404NotFound);
+app.MapGet(
     "/api/v1/data/official-fpl/replays/{seasonCode}/{gameweek:int:min(1):max(38)}/outcome",
     async (
         string seasonCode,

@@ -212,6 +212,34 @@ public sealed class FplFormForecastPollingTests
                 interval));
     }
 
+    [Fact]
+    public void Final_outcome_candidates_catch_up_oldest_gaps_then_recheck_latest()
+    {
+        Assert.Empty(
+            OfficialFplPoller.SelectOutcomeCandidates(
+                null,
+                new HashSet<int>(),
+                OfficialFplPoller.MaximumOutcomeImportsPerPoll));
+        Assert.Equal(
+            [1, 2, 3],
+            OfficialFplPoller.SelectOutcomeCandidates(
+                5,
+                new HashSet<int>([5]),
+                OfficialFplPoller.MaximumOutcomeImportsPerPoll));
+        Assert.Equal(
+            [1, 2, 5],
+            OfficialFplPoller.SelectOutcomeCandidates(
+                5,
+                new HashSet<int>([3, 4, 5]),
+                OfficialFplPoller.MaximumOutcomeImportsPerPoll));
+        Assert.Equal(
+            [5],
+            OfficialFplPoller.SelectOutcomeCandidates(
+                5,
+                new HashSet<int>([1, 2, 3, 4, 5]),
+                OfficialFplPoller.MaximumOutcomeImportsPerPoll));
+    }
+
     private static IConfiguration Configuration(string interval) =>
         new ConfigurationBuilder()
             .AddInMemoryCollection(

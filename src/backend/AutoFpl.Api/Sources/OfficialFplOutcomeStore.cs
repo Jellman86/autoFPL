@@ -200,6 +200,92 @@ public sealed class OfficialFplOutcomeStore
             : null;
     }
 
+    public async Task<OfficialFplOutcomeReadinessDocument?> GetReadinessAsync(
+        OfficialFplCaptureStore captureStore,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(captureStore);
+        OfficialFplCaptureDocument? latestCapture =
+            await captureStore.GetLatestAsync(cancellationToken);
+        if (latestCapture is null)
+        {
+            return null;
+        }
+
+        var captured = new List<int>();
+        var paired = new List<int>();
+        var missingOutcomes = new List<int>();
+        var missingReplays = new List<int>();
+        var incompletePairs = new List<int>();
+        if (latestCapture.LatestCompletedGameweek is int latestGameweek)
+        {
+            for (int gameweek = 1; gameweek <= latestGameweek; gameweek++)
+            {
+                OfficialFplOutcomeCaptureDocument? outcome =
+                    await GetLatestAsync(
+                        latestCapture.SeasonCode,
+                        gameweek,
+                        cancellationToken);
+                OfficialFplReplayDocument? replay =
+                    await captureStore.GetLatestPreDeadlineReplayAsync(
+                        latestCapture.SeasonCode,
+                        gameweek,
+                        cancellationToken);
+                if (outcome is null)
+                {
+                    missingOutcomes.Add(gameweek);
+                }
+                else
+                {
+                    captured.Add(gameweek);
+                }
+
+                if (replay is null)
+                {
+                    missingReplays.Add(gameweek);
+                }
+                else if (outcome is not null)
+                {
+                    OfficialFplReplayOutcomeDocument? pair =
+                        await GetReplayOutcomeAsync(
+                            captureStore,
+                            latestCapture.SeasonCode,
+                            gameweek,
+                            cancellationToken);
+                    if (pair is null)
+                    {
+                        incompletePairs.Add(gameweek);
+                    }
+                    else
+                    {
+                        paired.Add(gameweek);
+                    }
+                }
+            }
+        }
+
+        string status = latestCapture.LatestCompletedGameweek is null
+            ? "waiting-for-final-gameweek"
+            : missingOutcomes.Count > 0
+                ? "outcome-capture-pending"
+                : missingReplays.Count > 0 || incompletePairs.Count > 0
+                    ? "pairing-blocked"
+                    : "ready";
+        return new(
+            "1.0",
+            status,
+            latestCapture.SeasonCode,
+            latestCapture.CaptureId,
+            latestCapture.AvailableAtUtc,
+            latestCapture.LatestCompletedGameweek,
+            captured,
+            paired,
+            missingOutcomes,
+            missingReplays,
+            incompletePairs,
+            OfficialFplPoller.MaximumOutcomeImportsPerPoll);
+    }
+
     private static async Task<OfficialFplOutcomeContext?> ReadContextAsync(
         SqliteConnection connection,
         SqliteTransaction transaction,

@@ -107,6 +107,20 @@ public sealed class OfficialFplOutcomeImporterTests
         Assert.Equal(preDeadline.CaptureId, pair.Replay.SelectedCaptureId);
         Assert.Equal(first, pair.Outcome);
         Assert.Equal(4, pair.MatchedPlayerCount);
+        OfficialFplOutcomeReadinessDocument? readiness =
+            await outcomeStore.GetReadinessAsync(
+                captureStore,
+                TestContext.Current.CancellationToken);
+        Assert.NotNull(readiness);
+        Assert.Equal("ready", readiness.Status);
+        Assert.Equal([1], readiness.CapturedOutcomeGameweeks);
+        Assert.Equal([1], readiness.PairedGameweeks);
+        Assert.Empty(readiness.MissingOutcomeGameweeks);
+        Assert.Empty(readiness.MissingReplayGameweeks);
+        Assert.Empty(readiness.IncompletePairGameweeks);
+        Assert.Equal(
+            OfficialFplPoller.MaximumOutcomeImportsPerPoll,
+            readiness.MaximumOutcomeImportsPerPoll);
         await AssertOutcomeRowsAsync(files.DatabasePath, 1, 4);
 
         await using WebApplicationFactory<Program> factory =
@@ -120,8 +134,15 @@ public sealed class OfficialFplOutcomeImporterTests
             await api.GetFromJsonAsync<OfficialFplReplayOutcomeDocument>(
                 "/api/v1/data/official-fpl/replays/2026-27/1/outcome",
                 TestContext.Current.CancellationToken);
+        OfficialFplOutcomeReadinessDocument? servedReadiness =
+            await api.GetFromJsonAsync<OfficialFplOutcomeReadinessDocument>(
+                "/api/v1/data/official-fpl/outcomes/readiness",
+                TestContext.Current.CancellationToken);
         Assert.Equal(first, servedOutcome);
         Assert.Equal(pair, servedPair);
+        Assert.Equal(
+            JsonSerializer.Serialize(readiness),
+            JsonSerializer.Serialize(servedReadiness));
     }
 
     [Fact]
@@ -446,6 +467,13 @@ public sealed class OfficialFplOutcomeImporterTests
                 "2026-27",
                 1,
                 TestContext.Current.CancellationToken));
+        OfficialFplOutcomeReadinessDocument? readiness =
+            await outcomeStore.GetReadinessAsync(
+                captureStore,
+                TestContext.Current.CancellationToken);
+        Assert.NotNull(readiness);
+        Assert.Equal("waiting-for-final-gameweek", readiness.Status);
+        Assert.Null(readiness.LatestCompletedGameweek);
         await AssertOutcomeRowsAsync(files.DatabasePath, 0, 0);
     }
 
