@@ -434,6 +434,77 @@ public sealed class ResearchSourceSnapshotTests
     }
 
     [Fact]
+    public void Fbref_player_match_opportunities_preserve_missing_rows_and_windows()
+    {
+        FbrefTeamScheduleDocument schedule =
+            CreateFbrefTeamScheduleDocument();
+        FbrefPlayerMatchLogDocument player =
+            CreateFbrefPlayerMatchLogDocument(schedule);
+
+        FbrefPlayerMatchOpportunityDocument artifact =
+            FbrefPlayerMatchOpportunityExtractor.Build(player, schedule);
+
+        Assert.Equal(
+            FbrefPlayerMatchOpportunityExtractor.ExtractionVersion,
+            artifact.ExtractionVersion);
+        Assert.Equal(8, artifact.ScheduledMatchCount);
+        Assert.Equal(3, artifact.ObservedPlayerRowCount);
+        Assert.Equal(1, artifact.ExcludedOtherCompetitionRowCount);
+        Assert.Equal(5, artifact.NoPlayerRowCount);
+        Assert.Equal(
+            "before-first-observed",
+            artifact.Opportunities[0].ObservedRangeStatus);
+        Assert.Equal(
+            "within-observed-range",
+            artifact.Opportunities[2].ObservedRangeStatus);
+        Assert.Equal(
+            "after-last-observed",
+            artifact.Opportunities[6].ObservedRangeStatus);
+        Assert.Equal(
+            "no-player-row",
+            artifact.Opportunities[2].PlayerEvidenceStatus);
+        Assert.Null(artifact.Opportunities[2].Minutes);
+        Assert.Equal(
+            "unused-bench",
+            artifact.Opportunities[3].PlayerEvidenceStatus);
+        Assert.Equal(0, artifact.Opportunities[3].Minutes);
+        FbrefPlayerMatchOpportunityWindowDocument lastThree =
+            Assert.Single(
+                artifact.RollingWindows,
+                window => window.WindowSize == 3);
+        Assert.Equal(
+            "complete-with-missing-player-rows",
+            lastThree.WindowStatus);
+        Assert.Equal(3, lastThree.ScheduledMatchCount);
+        Assert.Equal(1, lastThree.ObservedPlayerRowCount);
+        Assert.Equal(1, lastThree.AppearanceCount);
+        Assert.Equal(0, lastThree.StartCount);
+        Assert.Equal(0, lastThree.UnusedBenchCount);
+        Assert.Equal(2, lastThree.NoPlayerRowCount);
+        Assert.Equal(30, lastThree.ObservedMinutes);
+    }
+
+    [Fact]
+    public void Fbref_player_match_opportunities_reject_inconsistent_stable_match()
+    {
+        FbrefTeamScheduleDocument schedule =
+            CreateFbrefTeamScheduleDocument();
+        FbrefPlayerMatchLogDocument player =
+            CreateFbrefPlayerMatchLogDocument(schedule);
+        FbrefPlayerMatchLogRowDocument changed =
+            player.Matches[0] with { SourceOpponentId = "bbbbbbbb" };
+        player = player with
+        {
+            Matches = [changed, .. player.Matches.Skip(1)],
+        };
+
+        Assert.Throws<ResearchSourceSnapshotException>(
+            () => FbrefPlayerMatchOpportunityExtractor.Build(
+                player,
+                schedule));
+    }
+
+    [Fact]
     public async Task Fbref_match_log_capture_is_reviewed_allowlisted_and_immutable()
     {
         using var files = new TemporaryDatabaseFiles();
@@ -1696,6 +1767,119 @@ public sealed class ResearchSourceSnapshotTests
         }
         table.Append("</tbody></table></body></html>");
         return table.ToString();
+    }
+
+    private static FbrefTeamScheduleDocument
+        CreateFbrefTeamScheduleDocument()
+    {
+        var firstDate = new DateOnly(2025, 8, 1);
+        FbrefTeamScheduleRowDocument[] matches = Enumerable.Range(1, 8)
+            .Select(
+                index => new FbrefTeamScheduleRowDocument(
+                    index.ToString("x8"),
+                    firstDate.AddDays(index - 1),
+                    new DateTimeOffset(
+                        firstDate.AddDays(index - 1),
+                        new TimeOnly(12, 0),
+                        TimeSpan.Zero),
+                    $"Matchweek {index}",
+                    index % 2 == 0 ? "away" : "home",
+                    "W",
+                    2,
+                    1,
+                    "aaaaaaaa",
+                    "Test Opponent"))
+            .ToArray();
+        return new(
+            "1.0",
+            48,
+            "fbref-team-schedule-bd8769d1-2025-26",
+            FbrefTeamScheduleExtractor.ExtractionVersion,
+            new string('b', 64),
+            13,
+            RetrievalTime.AddMinutes(1),
+            "bd8769d1",
+            "Hull City",
+            "Championship",
+            "2025-26",
+            matches.Length,
+            matches);
+    }
+
+    private static FbrefPlayerMatchLogDocument
+        CreateFbrefPlayerMatchLogDocument(
+            FbrefTeamScheduleDocument schedule)
+    {
+        int[] observedIndexes = [2, 4, 6];
+        FbrefPlayerMatchLogRowDocument[] championshipRows =
+            observedIndexes.Select(
+                index =>
+                {
+                    FbrefTeamScheduleRowDocument match =
+                        schedule.Matches[index - 1];
+                    int minutes = index == 4 ? 0 : index == 2 ? 90 : 30;
+                    return new FbrefPlayerMatchLogRowDocument(
+                        match.SourceMatchId,
+                        match.MatchDate,
+                        "Championship",
+                        match.Round,
+                        match.Venue,
+                        "W 2–1",
+                        schedule.SourceTeamId,
+                        schedule.TeamName,
+                        match.SourceOpponentId,
+                        match.OpponentName,
+                        index == 2,
+                        minutes,
+                        0,
+                        0,
+                        0,
+                        0);
+                })
+                .ToArray();
+        var cupRow = new FbrefPlayerMatchLogRowDocument(
+            "ffffffff",
+            new DateOnly(2026, 1, 10),
+            "FA Cup",
+            "Third round",
+            "home",
+            "W 1–0",
+            schedule.SourceTeamId,
+            schedule.TeamName,
+            "cccccccc",
+            "Cup Opponent",
+            true,
+            90,
+            0,
+            0,
+            0,
+            0);
+        return new(
+            "1.0",
+            31,
+            "fbref-player-match-log-d6192210-2025-26",
+            FbrefPlayerMatchLogExtractor.ExtractionVersion,
+            FbrefPlayerIdentityBridge.Version,
+            new string('a', 64),
+            13,
+            RetrievalTime,
+            "d6192210",
+            "Semi Ajayi",
+            schedule.SourceTeamId,
+            schedule.TeamName,
+            101,
+            146426,
+            schedule.TeamName,
+            schedule.CompetitionSeason,
+            "source-revision-mismatch",
+            4,
+            3,
+            210,
+            4,
+            3,
+            2,
+            120,
+            [.. championshipRows, cupRow]);
     }
 
     private static string CreateFbrefPlayingTimeHtml(

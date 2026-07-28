@@ -737,9 +737,10 @@ The next development slices are:
    the 60-player capture cohort, and use the implemented deterministic parser
    to retain bounded match chronology; use the three implemented fixed
    promoted-club schedule sources and deterministic stable-match-ID parser to
-   define every prior-season match opportunity; next left-join player rows to
-   those schedules, form explicitly missing-aware rolling features and add
-   that history only after identical-fold evaluation;
+   define every prior-season match opportunity; use the implemented
+   explicit-snapshot join to retain `no-player-row` as null evidence with
+   before/within/after observed-range context and form last-3/6/8 count
+   summaries; next add that history only after identical-fold evaluation;
    keep exact minutes on the
    retained player-last baseline, evaluate a two-stage or hierarchical minutes
    challenger and add the empirical point-distribution loop before any raw

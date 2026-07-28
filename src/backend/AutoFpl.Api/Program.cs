@@ -129,6 +129,28 @@ if (requestedFbrefTeamScheduleExtraction
         "Usage: --extract-fbref-team-schedule <snapshot-id>");
     return 2;
 }
+bool requestedFbrefPlayerMatchOpportunityExtraction =
+    args.Length > 0
+    && StringComparer.Ordinal.Equals(
+        args[0],
+        "--extract-fbref-player-match-opportunities");
+long fbrefOpportunityPlayerSnapshotId = 0;
+long fbrefOpportunityScheduleSnapshotId = 0;
+bool runFbrefPlayerMatchOpportunityExtraction =
+    requestedFbrefPlayerMatchOpportunityExtraction
+    && args.Length == 3
+    && long.TryParse(args[1], out fbrefOpportunityPlayerSnapshotId)
+    && fbrefOpportunityPlayerSnapshotId > 0
+    && long.TryParse(args[2], out fbrefOpportunityScheduleSnapshotId)
+    && fbrefOpportunityScheduleSnapshotId > 0;
+if (requestedFbrefPlayerMatchOpportunityExtraction
+    && !runFbrefPlayerMatchOpportunityExtraction)
+{
+    await Console.Error.WriteLineAsync(
+        "Usage: --extract-fbref-player-match-opportunities "
+        + "<player-match-log-snapshot-id> <team-schedule-snapshot-id>");
+    return 2;
+}
 bool requestedFbrefPlayerMatchLogCapture =
     args.Length > 0
     && StringComparer.Ordinal.Equals(
@@ -276,6 +298,7 @@ bool runNonWebCommand =
     || runResearchSourceClaimExtraction
     || runFbrefPlayingTimeExtraction
     || runFbrefTeamScheduleExtraction
+    || runFbrefPlayerMatchOpportunityExtraction
     || runFbrefPlayerMatchLogCapture
     || runFbrefPlayerMatchLogExtraction
     || runFbrefMatchLogBatchCapture
@@ -532,6 +555,7 @@ builder.Services.AddTransient<FbrefPlayingTimeExtractor>();
 builder.Services.AddTransient<FbrefTeamScheduleExtractor>();
 builder.Services.AddTransient<FbrefPlayerMatchLogImporter>();
 builder.Services.AddTransient<FbrefPlayerMatchLogExtractor>();
+builder.Services.AddTransient<FbrefPlayerMatchOpportunityExtractor>();
 builder.Services.AddTransient<FbrefMatchLogCoverageReader>();
 builder.Services.AddTransient<FbrefMatchLogBatchCapture>();
 if (fplFormPollingOptions.Enabled)
@@ -795,6 +819,35 @@ if (runFbrefTeamScheduleExtraction)
         {
             await Console.Error.WriteLineAsync(
                 $"Research source snapshot {fbrefTeamScheduleSnapshotId} was not found.");
+            return 2;
+        }
+        await Console.Out.WriteLineAsync(
+            JsonSerializer.Serialize(
+                extraction,
+                new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+        return 0;
+    }
+    catch (ResearchSourceSnapshotException exception)
+    {
+        await Console.Error.WriteLineAsync(exception.Message);
+        return 2;
+    }
+}
+
+if (runFbrefPlayerMatchOpportunityExtraction)
+{
+    try
+    {
+        FbrefPlayerMatchOpportunityDocument? extraction =
+            await app.Services
+                .GetRequiredService<FbrefPlayerMatchOpportunityExtractor>()
+                .GetAsync(
+                    fbrefOpportunityPlayerSnapshotId,
+                    fbrefOpportunityScheduleSnapshotId);
+        if (extraction is null)
+        {
+            await Console.Error.WriteLineAsync(
+                "One or both FBref source snapshots were not found.");
             return 2;
         }
         await Console.Out.WriteLineAsync(
@@ -1340,6 +1393,44 @@ app.MapGet(
         + "influence forecasts.")
     .WithTags("Research")
     .Produces<FbrefTeamScheduleDocument>()
+    .Produces(StatusCodes.Status404NotFound)
+    .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+app.MapGet(
+    "/api/v1/research/fbref-player-match-opportunities",
+    async (
+        long playerMatchLogSnapshotId,
+        long teamScheduleSnapshotId,
+        FbrefPlayerMatchOpportunityExtractor extractor,
+        CancellationToken cancellationToken) =>
+    {
+        try
+        {
+            FbrefPlayerMatchOpportunityDocument? extraction =
+                await extractor.GetAsync(
+                    playerMatchLogSnapshotId,
+                    teamScheduleSnapshotId,
+                    cancellationToken);
+            return extraction is null
+                ? Results.NotFound()
+                : Results.Ok(extraction);
+        }
+        catch (ResearchSourceSnapshotException)
+        {
+            return Results.Problem(
+                statusCode: StatusCodes.Status422UnprocessableEntity,
+                title: "The FBref player and schedule snapshots could not be joined.");
+        }
+    })
+    .WithName("GetFbrefPlayerMatchOpportunities")
+    .WithSummary(
+        "Join one reviewed player chronology to every prior-season team match.")
+    .WithDescription(
+        "Requires explicit immutable player-log and team-schedule snapshot IDs. "
+        + "Stable match IDs define the join; absent player rows retain null minutes "
+        + "and explicit missingness. Last-3, last-6 and last-8 summaries remain "
+        + "shadow feature candidates and cannot influence forecasts.")
+    .WithTags("Research")
+    .Produces<FbrefPlayerMatchOpportunityDocument>()
     .Produces(StatusCodes.Status404NotFound)
     .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 app.MapGet(
