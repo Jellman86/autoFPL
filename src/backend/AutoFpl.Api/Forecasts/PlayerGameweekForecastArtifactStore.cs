@@ -190,6 +190,45 @@ public sealed class PlayerGameweekForecastArtifactStore
             : null;
     }
 
+    public async Task<PlayerGameweekForecastDocument?> GetForBaselineArtifactAsync(
+        long baselineForecastArtifactId,
+        CancellationToken cancellationToken = default)
+    {
+        if (baselineForecastArtifactId <= 0)
+        {
+            return null;
+        }
+
+        await using var connection = new SqliteConnection(_options.ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText =
+            """
+            SELECT
+                player_artifact.forecast_artifact_id,
+                player_artifact.document_json,
+                player_artifact.content_sha256
+            FROM baseline_forecast_artifacts AS baseline_artifact
+            INNER JOIN player_gameweek_forecast_artifacts AS player_artifact
+                ON player_artifact.official_capture_id = baseline_artifact.capture_id
+            WHERE baseline_artifact.artifact_id = $baselineForecastArtifactId
+              AND player_artifact.model_key = $modelKey;
+            """;
+        command.Parameters.AddWithValue(
+            "$baselineForecastArtifactId",
+            baselineForecastArtifactId);
+        command.Parameters.AddWithValue("$modelKey", ModelKey);
+        await using SqliteDataReader reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+        return await reader.ReadAsync(cancellationToken)
+            ? Materialize(
+                new(
+                    reader.GetInt64(0),
+                    reader.GetString(1),
+                    reader.GetString(2)))
+            : null;
+    }
+
     private static async Task<ForecastArtifact?> ReadForCaptureAsync(
         SqliteConnection connection,
         SqliteTransaction transaction,

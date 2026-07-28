@@ -2,8 +2,13 @@ const positionOrder = ["forward", "midfielder", "defender", "goalkeeper"];
 let selectedPlayerId = null;
 let advice = null;
 let selectionRevision = null;
+let selectionComparison = null;
+let playerForecast = null;
 let displayedPlayers = [];
 let selectionEditDraft = null;
+let editingRevisionId = null;
+let selectedReplacementPlayerId = null;
+let marketPosition = "all";
 let lastSelectedCard = null;
 let dossierRequest = 0;
 let activeSquadView = "model";
@@ -190,7 +195,11 @@ function closeDossier(options = {}) {
     window.history.pushState({}, "", `${url.pathname}${url.search}${url.hash}`);
   }
   if (options.restoreScroll !== false) {
-    document.querySelector("#model-squad").scrollIntoView({ block: "start" });
+    if (activeSquadView === "owner") {
+      showSquadBuilder();
+    } else {
+      document.querySelector("#model-squad").scrollIntoView({ block: "start" });
+    }
   }
   lastSelectedCard?.focus({ preventScroll: true });
 }
@@ -204,6 +213,8 @@ function updatePlayerUrl(playerId) {
 function selectPlayer(playerId, options = {}) {
   selectedPlayerId = playerId;
   const player = displayedPlayers.find(
+    (candidate) => candidate.playerId === playerId,
+  ) ?? playerForecast?.players.find(
     (candidate) => candidate.playerId === playerId,
   );
   if (!player) return;
@@ -228,7 +239,9 @@ function selectPlayer(playerId, options = {}) {
     ? player.captaincy
     : player.lineupPlace === "bench"
       ? `bench ${player.benchOrder}`
-      : "starter";
+      : player.lineupPlace === "starting"
+        ? "starter"
+        : "player pool";
   badge.hidden = false;
 
   renderList("#player-reasons", player.reasons);
@@ -669,7 +682,13 @@ function playersForSelection(selection) {
       index + 2,
     ]),
   ]);
-  return advice.selection.players.map((player) => ({
+  const sourcePlayers = playerForecast?.players ?? advice.selection.players;
+  const squadIds = new Set([
+    ...selection.startingPlayerIds,
+    selection.replacementGoalkeeperPlayerId,
+    ...selection.outfieldSubstitutePlayerIds,
+  ]);
+  return sourcePlayers.filter((player) => squadIds.has(player.playerId)).map((player) => ({
     ...player,
     lineupPlace: starting.has(player.playerId) ? "starting" : "bench",
     benchOrder: benchOrder.get(player.playerId) ?? null,
@@ -799,7 +818,8 @@ function renderAdvice(adviceDocument) {
 
 function rawSelectionScore(selection) {
   const forecastByPlayer = new Map(
-    advice.selection.players.map((player) => [player.playerId, player.expectedPoints]),
+    (playerForecast?.players ?? advice.selection.players)
+      .map((player) => [player.playerId, player.expectedPoints]),
   );
   const starterTotal = selection.startingPlayerIds.reduce(
     (total, playerId) => total + (forecastByPlayer.get(playerId) ?? 0),
@@ -836,13 +856,38 @@ function updateOwnerComparison(revision) {
     return;
   }
 
-  const ownerPoints = scoreSelection(revision.selection);
-  const modelPoints = advice.selection.expectedPoints;
+  const ownerPoints = selectionComparison?.selectionRevisionId === revision.selectionRevisionId
+    ? selectionComparison.user.projectedPoints
+    : scoreSelection(revision.selection);
+  const modelPoints = selectionComparison?.selectionRevisionId === revision.selectionRevisionId
+    ? selectionComparison.model.projectedPoints
+    : advice.selection.expectedPoints;
   const difference = ownerPoints - modelPoints;
   description.textContent =
     `Revision ${revision.revision} scored against forecast #${revision.forecastArtifactId}.`;
   result.textContent =
     `${ownerPoints.toFixed(1)} pts · ${difference >= 0 ? "+" : ""}${difference.toFixed(1)} vs model`;
+}
+
+async function loadSelectionComparison(revision) {
+  selectionComparison = null;
+  if (!revision) return;
+  try {
+    const response = await fetch(
+      `/api/v1/selections/${revision.selectionRevisionId}/comparison`,
+      { headers: { Accept: "application/json" } },
+    );
+    if (!response.ok) {
+      throw new Error(`Comparison request failed with ${response.status}`);
+    }
+    selectionComparison = await response.json();
+    updateOwnerComparison(revision);
+    renderBuilderScoreboard();
+  } catch (error) {
+    document.querySelector("#builder-comparison-note").textContent =
+      "Same-snapshot comparison is temporarily unavailable";
+    console.error(error);
+  }
 }
 
 function setSelectionRail(status) {
@@ -863,6 +908,9 @@ function setSelectionFeedback(message, state = null) {
 }
 
 function renderSelectionState(revision, feedback = "") {
+  if (selectionRevision?.selectionRevisionId !== revision?.selectionRevisionId) {
+    selectionComparison = null;
+  }
   selectionRevision = revision;
   updateOwnerComparison(revision);
   const panel = document.querySelector("#selection-workflow");
@@ -911,11 +959,11 @@ function renderSelectionState(revision, feedback = "") {
     create.disabled = !hasForecast || deadlinePassed;
     setSelectionRail("");
     setSelectionFeedback(feedback);
+    syncBuilderState();
     return;
   }
 
   panel.dataset.state = revision.status;
-  renderSquadPlayers(playersForSelection(revision.selection), true);
   state.textContent = revision.status;
   revisionLabel.textContent = `r${revision.revision} · #${revision.selectionRevisionId}`;
   forecast.textContent =
@@ -946,10 +994,31 @@ function renderSelectionState(revision, feedback = "") {
       "autoFPL preserves the draft as history but will not treat it as your approved Gameweek selection.";
   }
   setSelectionFeedback(feedback, revision.status);
+  syncBuilderState();
+  loadSelectionComparison(revision);
 }
 
 function playerForEdit(playerId) {
-  return advice.selection.players.find((player) => player.playerId === playerId);
+  return (playerForecast?.players ?? advice.selection.players)
+    .find((player) => player.playerId === playerId);
+}
+
+function selectionSquadIds(selection) {
+  return [
+    ...selection.startingPlayerIds,
+    selection.replacementGoalkeeperPlayerId,
+    ...selection.outfieldSubstitutePlayerIds,
+  ];
+}
+
+function cloneSelection(selection) {
+  return {
+    startingPlayerIds: [...selection.startingPlayerIds],
+    captainPlayerId: selection.captainPlayerId,
+    viceCaptainPlayerId: selection.viceCaptainPlayerId,
+    replacementGoalkeeperPlayerId: selection.replacementGoalkeeperPlayerId,
+    outfieldSubstitutePlayerIds: [...selection.outfieldSubstitutePlayerIds],
+  };
 }
 
 function editPlayerLabel(playerId) {
@@ -969,143 +1038,418 @@ function fillPlayerSelect(select, playerIds, selectedPlayerId) {
   );
 }
 
-function renderSelectionEditor() {
-  fillPlayerSelect(
-    document.querySelector("#edit-swap-out"),
-    selectionEditDraft.startingPlayerIds,
-    selectionEditDraft.startingPlayerIds[0],
+function createBuilderCard(player) {
+  const item = document.createElement("article");
+  item.className = "builder-player";
+  item.dataset.selected = String(player.playerId === selectedReplacementPlayerId);
+  const card = createPlayerCard(player);
+  const change = document.createElement("button");
+  change.type = "button";
+  change.className = "builder-change-player";
+  change.textContent =
+    player.playerId === selectedReplacementPlayerId ? "Choosing replacement" : "Change";
+  change.setAttribute("aria-pressed", String(player.playerId === selectedReplacementPlayerId));
+  change.addEventListener("click", () => {
+    selectedReplacementPlayerId =
+      selectedReplacementPlayerId === player.playerId ? null : player.playerId;
+    marketPosition = selectedReplacementPlayerId ? player.position : "all";
+    renderBuilder();
+    document.querySelector("#player-market-title").scrollIntoView({
+      block: "start",
+      behavior: "smooth",
+    });
+  });
+  item.append(card, change);
+  return item;
+}
+
+function renderBuilderPitch(players) {
+  activeSquadView = "owner";
+  displayedPlayers = players;
+  const starters = players.filter((player) => player.lineupPlace === "starting");
+  const formation = document.querySelector("#builder-formation");
+  formation.replaceChildren();
+  positionOrder.forEach((position) => {
+    const row = document.createElement("div");
+    row.className = "formation-row";
+    row.dataset.position = position;
+    starters
+      .filter((player) => player.position === position)
+      .forEach((player) => row.append(createBuilderCard(player)));
+    formation.append(row);
+  });
+  const bench = document.querySelector("#builder-bench");
+  bench.replaceChildren(
+    ...players
+      .filter((player) => player.lineupPlace === "bench")
+      .sort((left, right) => left.benchOrder - right.benchOrder)
+      .map(createBuilderCard),
   );
-  const benchIds = [
-    selectionEditDraft.replacementGoalkeeperPlayerId,
-    ...selectionEditDraft.outfieldSubstitutePlayerIds,
+}
+
+function validateBuilderDraft() {
+  if (!selectionEditDraft || !playerForecast) {
+    return { valid: false, cost: 0, checks: [] };
+  }
+  const ids = selectionSquadIds(selectionEditDraft);
+  const players = ids.map(playerForEdit).filter(Boolean);
+  const positionCounts = Object.fromEntries(
+    ["goalkeeper", "defender", "midfielder", "forward"].map((position) => [
+      position,
+      players.filter((player) => player.position === position).length,
+    ]),
+  );
+  const starters = selectionEditDraft.startingPlayerIds.map(playerForEdit);
+  const starterCounts = Object.fromEntries(
+    ["goalkeeper", "defender", "midfielder", "forward"].map((position) => [
+      position,
+      starters.filter((player) => player?.position === position).length,
+    ]),
+  );
+  const clubCounts = players.reduce((counts, player) => {
+    counts[player.clubShortName] = (counts[player.clubShortName] ?? 0) + 1;
+    return counts;
+  }, {});
+  const cost = players.reduce((total, player) => total + player.priceTenths, 0);
+  const checks = [
+    {
+      label: "15 unique players",
+      pass: ids.length === 15 && new Set(ids).size === 15 && players.length === 15,
+    },
+    {
+      label: "2 GK · 5 DEF · 5 MID · 3 FWD",
+      pass:
+        positionCounts.goalkeeper === 2
+        && positionCounts.defender === 5
+        && positionCounts.midfielder === 5
+        && positionCounts.forward === 3,
+    },
+    {
+      label: "Valid starting formation",
+      pass:
+        starters.length === 11
+        && starterCounts.goalkeeper === 1
+        && starterCounts.defender >= 3
+        && starterCounts.defender <= 5
+        && starterCounts.midfielder >= 2
+        && starterCounts.midfielder <= 5
+        && starterCounts.forward >= 1
+        && starterCounts.forward <= 3,
+    },
+    {
+      label: "No more than 3 per club",
+      pass: Object.values(clubCounts).every((count) => count <= 3),
+    },
+    { label: "Within £100.0m budget", pass: cost <= 1000 },
+    {
+      label: "Captain and vice are different starters",
+      pass:
+        selectionEditDraft.captainPlayerId !== selectionEditDraft.viceCaptainPlayerId
+        && selectionEditDraft.startingPlayerIds.includes(selectionEditDraft.captainPlayerId)
+        && selectionEditDraft.startingPlayerIds.includes(selectionEditDraft.viceCaptainPlayerId),
+    },
   ];
-  fillPlayerSelect(
-    document.querySelector("#edit-swap-in"),
-    benchIds,
-    benchIds[0],
+  return { valid: checks.every((check) => check.pass), cost, checks };
+}
+
+function renderBuilderConstraints(validation) {
+  document.querySelector("#builder-constraints").replaceChildren(
+    ...validation.checks.map((check) => {
+      const item = document.createElement("li");
+      item.dataset.pass = String(check.pass);
+      const status = document.createElement("span");
+      status.textContent = check.pass ? "Pass" : "Fix";
+      const label = document.createElement("strong");
+      label.textContent = check.label;
+      item.append(status, label);
+      return item;
+    }),
   );
+  const validity = document.querySelector("#builder-validity");
+  validity.dataset.valid = String(validation.valid);
+  validity.textContent = validation.valid ? "Legal squad" : "Needs attention";
+}
+
+function renderBuilderControls() {
   fillPlayerSelect(
-    document.querySelector("#edit-captain"),
+    document.querySelector("#builder-captain"),
     selectionEditDraft.startingPlayerIds,
     selectionEditDraft.captainPlayerId,
   );
   fillPlayerSelect(
-    document.querySelector("#edit-vice-captain"),
+    document.querySelector("#builder-vice-captain"),
     selectionEditDraft.startingPlayerIds,
     selectionEditDraft.viceCaptainPlayerId,
   );
-  document.querySelector("#edit-goalkeeper").textContent =
-    `Goalkeeper reserve · ${editPlayerLabel(selectionEditDraft.replacementGoalkeeperPlayerId)}`;
-
-  const bench = document.querySelector("#edit-bench-order");
-  bench.replaceChildren(
-    ...selectionEditDraft.outfieldSubstitutePlayerIds.map((playerId, index) => {
+  const goalkeeper = document.createElement("li");
+  goalkeeper.className = "fixed";
+  const goalkeeperRank = document.createElement("span");
+  goalkeeperRank.textContent = "GK";
+  const goalkeeperLabel = document.createElement("strong");
+  goalkeeperLabel.textContent =
+    editPlayerLabel(selectionEditDraft.replacementGoalkeeperPlayerId);
+  goalkeeper.append(goalkeeperRank, goalkeeperLabel);
+  const outfield = selectionEditDraft.outfieldSubstitutePlayerIds.map(
+    (playerId, index) => {
       const item = document.createElement("li");
-      const label = document.createElement("span");
-      label.textContent = `${index + 1}. ${editPlayerLabel(playerId)}`;
+      const rank = document.createElement("span");
+      rank.textContent = String(index + 1);
+      const label = document.createElement("strong");
+      label.textContent = editPlayerLabel(playerId);
       const actions = document.createElement("span");
-      actions.className = "edit-order-actions";
-      const up = document.createElement("button");
-      up.type = "button";
-      up.textContent = "↑";
-      up.disabled = index === 0;
-      up.setAttribute("aria-label", `Move ${playerForEdit(playerId).name} earlier`);
-      up.addEventListener("click", () => moveBenchPlayer(index, -1));
-      const down = document.createElement("button");
-      down.type = "button";
-      down.textContent = "↓";
-      down.disabled =
-        index === selectionEditDraft.outfieldSubstitutePlayerIds.length - 1;
-      down.setAttribute("aria-label", `Move ${playerForEdit(playerId).name} later`);
-      down.addEventListener("click", () => moveBenchPlayer(index, 1));
-      actions.append(up, down);
-      item.append(label, actions);
+      actions.className = "builder-order-actions";
+      for (const [direction, symbol, word] of [
+        [-1, "↑", "earlier"],
+        [1, "↓", "later"],
+      ]) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = symbol;
+        button.disabled =
+          (direction < 0 && index === 0)
+          || (direction > 0
+            && index === selectionEditDraft.outfieldSubstitutePlayerIds.length - 1);
+        button.setAttribute("aria-label", `Move ${playerForEdit(playerId).name} ${word}`);
+        button.addEventListener("click", () => moveBuilderBenchPlayer(index, direction));
+        actions.append(button);
+      }
+      item.append(rank, label, actions);
       return item;
-    }),
+    },
+  );
+  document.querySelector("#builder-bench-order").replaceChildren(
+    goalkeeper,
+    ...outfield,
   );
 }
 
-function setEditFeedback(message, isError = false) {
-  const feedback = document.querySelector("#edit-feedback");
-  feedback.textContent = message;
-  feedback.dataset.error = String(isError);
+function renderBuilderScoreboard(validation = validateBuilderDraft()) {
+  if (!selectionEditDraft) return;
+  const userPoints = rawSelectionScore(selectionEditDraft);
+  const modelPoints =
+    selectionComparison?.model.projectedPoints ?? advice.selection.expectedPoints;
+  const delta = userPoints - modelPoints;
+  document.querySelector("#builder-user-points").textContent = userPoints.toFixed(1);
+  document.querySelector("#builder-model-points").textContent = modelPoints.toFixed(1);
+  document.querySelector("#builder-points-delta").textContent =
+    `${delta >= 0 ? "+" : ""}${delta.toFixed(1)} pts`;
+  const deltaCard = document.querySelector("#builder-delta-card");
+  deltaCard.dataset.delta = delta > 0 ? "positive" : delta < 0 ? "negative" : "neutral";
+  document.querySelector("#builder-budget").textContent =
+    `£${(validation.cost / 10).toFixed(1)}m`;
+  document.querySelector("#builder-budget-left").textContent =
+    `£${((1000 - validation.cost) / 10).toFixed(1)}m remaining`;
+  document.querySelector("#builder-comparison-note").textContent =
+    selectionComparison
+      ? `Same forecast #${selectionComparison.forecastArtifactId}`
+      : "Live estimate from the exact player pool";
+  document.querySelector("#builder-model-reference").textContent =
+    advice ? `${advice.modelLabel} · GW${advice.gameweek}` : "Baseline";
 }
 
-function moveBenchPlayer(index, direction) {
+function renderPlayerMarket() {
+  const list = document.querySelector("#player-market-list");
+  if (!playerForecast) {
+    renderEmpty(list, "The exact-snapshot player pool is unavailable.");
+    return;
+  }
+  const selected = selectedReplacementPlayerId
+    ? playerForEdit(selectedReplacementPlayerId)
+    : null;
+  const query = document.querySelector("#player-market-search").value
+    .trim()
+    .toLocaleLowerCase();
+  const squadIds = new Set(selectionSquadIds(selectionEditDraft));
+  const effectivePosition = selected?.position
+    ?? (marketPosition === "all" ? null : marketPosition);
+  const candidates = playerForecast.players
+    .filter((player) => !squadIds.has(player.playerId))
+    .filter((player) => !effectivePosition || player.position === effectivePosition)
+    .filter(
+      (player) =>
+        !query
+        || player.name.toLocaleLowerCase().includes(query)
+        || player.clubShortName.toLocaleLowerCase().includes(query),
+    )
+    .sort((left, right) => right.expectedPoints - left.expectedPoints)
+    .slice(0, 60);
+  document.querySelector("#player-market-context").textContent = selected
+    ? `Replacing ${selected.name}. Only ${selected.position}s are shown so the squad shape stays valid.`
+    : "Choose Change on a squad card, or browse the exact forecast player pool.";
+  list.replaceChildren();
+  if (candidates.length === 0) {
+    renderEmpty(list, "No eligible players match this search.");
+    return;
+  }
+  for (const player of candidates) {
+    const row = document.createElement("article");
+    row.className = "market-player";
+    const portrait = createPortrait(player.name, player.photoUrl, "market-portrait");
+    const identity = document.createElement("div");
+    identity.className = "market-identity";
+    const name = document.createElement("strong");
+    name.textContent = player.name;
+    const meta = document.createElement("span");
+    meta.textContent =
+      `${player.clubShortName} · ${player.position.slice(0, 3).toUpperCase()} · £${(player.priceTenths / 10).toFixed(1)}m`;
+    identity.append(name, meta);
+    const projection = document.createElement("div");
+    projection.className = "market-projection";
+    const points = document.createElement("strong");
+    points.textContent = player.expectedPoints.toFixed(1);
+    const pointsLabel = document.createElement("span");
+    pointsLabel.textContent = "xPts";
+    projection.append(points, pointsLabel);
+    const evidence = document.createElement("button");
+    evidence.type = "button";
+    evidence.className = "market-evidence";
+    evidence.textContent = "Evidence";
+    evidence.addEventListener("click", () => {
+      lastSelectedCard = evidence;
+      selectPlayer(player.playerId, { updateHistory: true, openPage: true });
+    });
+    const replace = document.createElement("button");
+    replace.type = "button";
+    replace.className = "market-replace";
+    replace.textContent = selected ? "Add to squad" : "Choose a squad slot";
+    replace.disabled = !selected;
+    replace.addEventListener("click", () => replaceDraftPlayer(player.playerId));
+    row.append(portrait, identity, projection, evidence, replace);
+    list.append(row);
+  }
+}
+
+function replaceDraftPlayer(incomingPlayerId) {
+  if (!selectedReplacementPlayerId || !selectionEditDraft) return;
+  const outgoingPlayerId = selectedReplacementPlayerId;
+  const starterIndex =
+    selectionEditDraft.startingPlayerIds.indexOf(outgoingPlayerId);
+  if (starterIndex >= 0) {
+    selectionEditDraft.startingPlayerIds[starterIndex] = incomingPlayerId;
+  } else if (
+    selectionEditDraft.replacementGoalkeeperPlayerId === outgoingPlayerId
+  ) {
+    selectionEditDraft.replacementGoalkeeperPlayerId = incomingPlayerId;
+  } else {
+    const benchIndex =
+      selectionEditDraft.outfieldSubstitutePlayerIds.indexOf(outgoingPlayerId);
+    selectionEditDraft.outfieldSubstitutePlayerIds[benchIndex] = incomingPlayerId;
+  }
+  if (selectionEditDraft.captainPlayerId === outgoingPlayerId) {
+    selectionEditDraft.captainPlayerId = incomingPlayerId;
+  }
+  if (selectionEditDraft.viceCaptainPlayerId === outgoingPlayerId) {
+    selectionEditDraft.viceCaptainPlayerId = incomingPlayerId;
+  }
+  const incoming = playerForEdit(incomingPlayerId);
+  const outgoing = playerForEdit(outgoingPlayerId);
+  selectedReplacementPlayerId = null;
+  marketPosition = "all";
+  document.querySelector("#builder-feedback").textContent =
+    `${incoming.name} replaced ${outgoing.name}. Review the rules and projection before saving.`;
+  renderBuilder();
+}
+
+function moveBuilderBenchPlayer(index, direction) {
   const target = index + direction;
   const order = selectionEditDraft.outfieldSubstitutePlayerIds;
   [order[index], order[target]] = [order[target], order[index]];
-  renderSelectionEditor();
-  setEditFeedback("Bench priority updated. Save to create the revision.");
+  document.querySelector("#builder-feedback").textContent =
+    "Bench priority changed. Save to preserve this revision.";
+  renderBuilder();
 }
 
-function applySelectionSwap() {
-  const outgoing = Number(document.querySelector("#edit-swap-out").value);
-  const incoming = Number(document.querySelector("#edit-swap-in").value);
-  const outgoingPlayer = playerForEdit(outgoing);
-  const incomingPlayer = playerForEdit(incoming);
-  const outgoingIsGoalkeeper = outgoingPlayer.position === "goalkeeper";
-  const incomingIsGoalkeeper = incomingPlayer.position === "goalkeeper";
-  if (outgoingIsGoalkeeper !== incomingIsGoalkeeper) {
-    setEditFeedback(
-      "A goalkeeper can only swap with the reserve goalkeeper.",
-      true,
-    );
-    return;
-  }
-
-  const starterIndex = selectionEditDraft.startingPlayerIds.indexOf(outgoing);
-  selectionEditDraft.startingPlayerIds[starterIndex] = incoming;
-  if (incomingIsGoalkeeper) {
-    selectionEditDraft.replacementGoalkeeperPlayerId = outgoing;
-  } else {
-    const benchIndex =
-      selectionEditDraft.outfieldSubstitutePlayerIds.indexOf(incoming);
-    selectionEditDraft.outfieldSubstitutePlayerIds[benchIndex] = outgoing;
-  }
-  if (selectionEditDraft.captainPlayerId === outgoing) {
-    selectionEditDraft.captainPlayerId = incoming;
-  }
-  if (selectionEditDraft.viceCaptainPlayerId === outgoing) {
-    selectionEditDraft.viceCaptainPlayerId = incoming;
-  }
-  renderSelectionEditor();
-  setEditFeedback(
-    `${outgoingPlayer.name} and ${incomingPlayer.name} swapped. Save to validate the formation.`,
-  );
+function renderBuilder() {
+  if (!selectionEditDraft || !selectionRevision) return;
+  const players = playersForSelection(selectionEditDraft);
+  const validation = validateBuilderDraft();
+  renderBuilderPitch(players);
+  renderBuilderControls();
+  renderBuilderConstraints(validation);
+  renderBuilderScoreboard(validation);
+  renderPlayerMarket();
+  document.querySelector("#builder-state").textContent = selectionRevision.status;
+  document.querySelector("#builder-revision-label").textContent =
+    `Revision ${selectionRevision.revision} · #${selectionRevision.selectionRevisionId}`;
+  const unchanged =
+    JSON.stringify(selectionEditDraft) === JSON.stringify(selectionRevision.selection);
+  document.querySelector("#builder-save-state").textContent =
+    unchanged ? "No unsaved changes" : "Unsaved changes";
+  document.querySelector("#builder-save").disabled =
+    !validation.valid || unchanged || !["draft", "locked"].includes(selectionRevision.status);
+  document.querySelector("#builder-reset").disabled = unchanged;
+  document.querySelector("#builder-lock").disabled =
+    !selectionRevision.canLock || !unchanged;
 }
 
-function openSelectionEditDialog() {
-  if (!selectionRevision || !["draft", "locked"].includes(selectionRevision.status)) {
+function syncBuilderState() {
+  const empty = document.querySelector("#builder-empty");
+  const workspace = document.querySelector("#builder-workspace");
+  const hasEditableRevision =
+    selectionRevision && ["draft", "locked"].includes(selectionRevision.status);
+  empty.hidden = Boolean(selectionRevision);
+  workspace.hidden = !selectionRevision;
+  document.querySelector("#builder-create-draft").disabled =
+    !advice?.forecastArtifactId || Boolean(selectionRevision);
+  if (!selectionRevision) {
+    selectionEditDraft = null;
+    editingRevisionId = null;
+    document.querySelector("#builder-state").textContent = "Not started";
     return;
   }
-  selectionEditDraft = {
-    startingPlayerIds: [...selectionRevision.selection.startingPlayerIds],
-    captainPlayerId: selectionRevision.selection.captainPlayerId,
-    viceCaptainPlayerId: selectionRevision.selection.viceCaptainPlayerId,
-    replacementGoalkeeperPlayerId:
-      selectionRevision.selection.replacementGoalkeeperPlayerId,
-    outfieldSubstitutePlayerIds: [
-      ...selectionRevision.selection.outfieldSubstitutePlayerIds,
-    ],
-  };
-  renderSelectionEditor();
-  setEditFeedback("No changes saved yet.");
-  document.querySelector("#edit-dialog").showModal();
+  if (editingRevisionId !== selectionRevision.selectionRevisionId) {
+    selectionEditDraft = cloneSelection(selectionRevision.selection);
+    editingRevisionId = selectionRevision.selectionRevisionId;
+    selectedReplacementPlayerId = null;
+  }
+  document.querySelector("#builder-intro").textContent = hasEditableRevision
+    ? "Edit any of the 15 slots, then save a new immutable draft before locking your choice."
+    : "This deadline selection is preserved for review. It can no longer be changed.";
+  renderBuilder();
+}
+
+function showSquadBuilder(options = {}) {
+  if (options.updateHistory !== false && window.location.hash !== "#my-squad") {
+    window.history.pushState({}, "", "#my-squad");
+  }
+  document.body.classList.add("builder-page-active");
+  document.querySelector("#squad-builder-page").hidden = false;
+  setActiveNavigation("my-squad");
+  setBreadcrumb("My squad");
+  syncBuilderState();
+  window.scrollTo({ top: 0, behavior: "auto" });
+}
+
+function showModelSquad(options = {}) {
+  if (options.updateHistory !== false && window.location.hash !== "#model-squad") {
+    window.history.pushState({}, "", "#model-squad");
+  }
+  document.body.classList.remove("builder-page-active");
+  document.querySelector("#squad-builder-page").hidden = true;
+  activeSquadView = "model";
+  renderSquadPlayers(advice.selection.players);
+  setActiveNavigation("model-squad");
+  setBreadcrumb("Model squad");
+  document.querySelector("#model-squad").scrollIntoView({ block: "start" });
+}
+
+function resetBuilderDraft() {
+  if (!selectionRevision) return;
+  selectionEditDraft = cloneSelection(selectionRevision.selection);
+  selectedReplacementPlayerId = null;
+  document.querySelector("#builder-feedback").textContent =
+    "Unsaved changes discarded.";
+  renderBuilder();
 }
 
 async function saveSelectionRevision() {
-  selectionEditDraft.captainPlayerId =
-    Number(document.querySelector("#edit-captain").value);
-  selectionEditDraft.viceCaptainPlayerId =
-    Number(document.querySelector("#edit-vice-captain").value);
-  if (selectionEditDraft.captainPlayerId === selectionEditDraft.viceCaptainPlayerId) {
-    setEditFeedback("Captain and vice-captain must be different.", true);
-    return;
-  }
-  const save = document.querySelector("#save-selection-revision");
+  const validation = validateBuilderDraft();
+  if (!validation.valid || !selectionRevision) return;
+  const save = document.querySelector("#builder-save");
   save.disabled = true;
   save.textContent = "Saving…";
+  document.querySelector("#builder-feedback").textContent =
+    "Validating and preserving a new immutable revision.";
   try {
     const response = await fetch(
       `/api/v1/selections/${selectionRevision.selectionRevisionId}/revisions`,
@@ -1122,26 +1466,29 @@ async function saveSelectionRevision() {
       const problem = await response.json().catch(() => null);
       throw new Error(problem?.code ?? `revision request failed with ${response.status}`);
     }
-    const previousRevisionId = selectionRevision.selectionRevisionId;
     const revised = await response.json();
     renderSelectionState(
       revised,
-      revised.selectionRevisionId === previousRevisionId
-        ? "No changes detected. The current revision remains unchanged."
-        : "New draft saved. Review it, then lock this revision explicitly.",
+      "New draft saved. Review it, then lock this revision explicitly.",
     );
-    document.querySelector("#edit-dialog").close();
+    await loadSelectionComparison(revised);
+    document.querySelector("#builder-feedback").textContent =
+      "Draft saved. The comparison now reflects the authoritative revision.";
   } catch (error) {
-    setEditFeedback(
-      error.message === "lineup.formation.invalid"
-        ? "That swap creates an invalid FPL formation. Keep at least three defenders and one forward."
-        : "The revision was not saved. Reload the current selection before retrying.",
-      true,
-    );
+    const messages = {
+      "lineup.formation.invalid":
+        "The starting XI needs 1 goalkeeper, 3–5 defenders, 2–5 midfielders and 1–3 forwards.",
+      "squad.budget.exceeded": "This squad exceeds the £100.0m budget.",
+      "squad.club_limit.exceeded": "This squad has more than three players from one club.",
+      "selection.revision.stale": "A newer revision exists. Refresh before editing again.",
+    };
+    document.querySelector("#builder-feedback").textContent =
+      messages[error.message]
+      ?? "The revision was not saved. Your working changes remain on screen.";
     console.error(error);
   } finally {
-    save.disabled = false;
     save.textContent = "Save new draft";
+    renderBuilder();
   }
 }
 
@@ -1181,8 +1528,11 @@ async function loadSelectionState() {
 async function createSelectionDraft() {
   if (!advice?.forecastArtifactId) return;
   const create = document.querySelector("#create-selection-draft");
+  const builderCreate = document.querySelector("#builder-create-draft");
   create.disabled = true;
+  builderCreate.disabled = true;
   create.textContent = "Creating draft…";
+  builderCreate.textContent = "Creating draft…";
   setSelectionFeedback("Preserving the forecast selection as an immutable draft.");
   try {
     const response = await fetch("/api/v1/selections/drafts", {
@@ -1196,10 +1546,12 @@ async function createSelectionDraft() {
     if (!response.ok) {
       throw new Error(`Draft request failed with ${response.status}`);
     }
+    const revision = await response.json();
     renderSelectionState(
-      await response.json(),
+      revision,
       "Draft created. Review the squad, then lock it when you are satisfied.",
     );
+    showSquadBuilder();
   } catch (error) {
     setSelectionFeedback(
       "The draft was not created. Refresh the forecast and try again.",
@@ -1209,6 +1561,7 @@ async function createSelectionDraft() {
     console.error(error);
   } finally {
     create.textContent = "Use prediction as draft";
+    builderCreate.textContent = "Start from model squad";
   }
 }
 
@@ -1265,7 +1618,13 @@ async function loadAdvice() {
     });
     if (!response.ok) throw new Error(`Advice request failed with ${response.status}`);
     renderAdvice(await response.json());
+    await loadPlayerForecast();
     await loadSelectionState();
+    if (window.location.hash === "#my-squad") {
+      showSquadBuilder({ updateHistory: false });
+    } else if (window.location.hash === "#model-squad") {
+      showModelSquad({ updateHistory: false });
+    }
   } catch (error) {
     document.querySelector("#evidence-status").textContent = "Evidence unavailable";
     document.querySelector("#recommendation-summary").textContent =
@@ -1275,6 +1634,19 @@ async function loadAdvice() {
     refresh.disabled = false;
     refresh.textContent = "Refresh prediction";
   }
+}
+
+async function loadPlayerForecast() {
+  playerForecast = null;
+  if (!advice?.forecastArtifactId) return;
+  const response = await fetch(
+    `/api/v1/forecasts/${advice.forecastArtifactId}/player-pool`,
+    { headers: { Accept: "application/json" } },
+  );
+  if (!response.ok) {
+    throw new Error(`Player pool request failed with ${response.status}`);
+  }
+  playerForecast = await response.json();
 }
 
 function setOfficialDataState(state, label, title, summary) {
@@ -1663,6 +2035,10 @@ window.addEventListener("popstate", () => {
     });
   } else if (document.body.classList.contains("player-page")) {
     closeDossier({ updateHistory: false, restoreScroll: false });
+  } else if (window.location.hash === "#my-squad") {
+    showSquadBuilder({ updateHistory: false });
+  } else if (window.location.hash === "#model-squad") {
+    showModelSquad({ updateHistory: false });
   }
 });
 document.querySelector("#menu-button").addEventListener("click", () => setSidebarOpen(true));
@@ -1678,15 +2054,13 @@ document.querySelectorAll("[data-nav-section]").forEach((link) => {
     }
     if (section === "model-squad" && advice) {
       event.preventDefault();
-      renderSquadPlayers(advice.selection.players);
-      document.querySelector("#model-squad").scrollIntoView({ block: "start" });
-      setBreadcrumb("Model squad");
-    } else if (section === "my-squad" && selectionRevision) {
+      showModelSquad();
+    } else if (section === "my-squad") {
       event.preventDefault();
-      renderSquadPlayers(playersForSelection(selectionRevision.selection), true);
-      document.querySelector("#model-squad").scrollIntoView({ block: "start" });
-      setBreadcrumb("My squad");
+      showSquadBuilder();
     } else {
+      document.body.classList.remove("builder-page-active");
+      document.querySelector("#squad-builder-page").hidden = true;
       setBreadcrumb(link.textContent.trim());
     }
   });
@@ -1699,26 +2073,54 @@ document.querySelector("#create-selection-draft").addEventListener(
 );
 document.querySelector("#edit-selection").addEventListener(
   "click",
-  openSelectionEditDialog,
+  showSquadBuilder,
 );
-document.querySelector("#apply-selection-swap").addEventListener(
+document.querySelector("#builder-create-draft").addEventListener(
   "click",
-  applySelectionSwap,
+  createSelectionDraft,
 );
-document.querySelector("#edit-captain").addEventListener("change", (event) => {
+document.querySelector("#builder-captain").addEventListener("change", (event) => {
   if (selectionEditDraft) {
     selectionEditDraft.captainPlayerId = Number(event.target.value);
+    renderBuilder();
   }
 });
-document.querySelector("#edit-vice-captain").addEventListener("change", (event) => {
+document.querySelector("#builder-vice-captain").addEventListener("change", (event) => {
   if (selectionEditDraft) {
     selectionEditDraft.viceCaptainPlayerId = Number(event.target.value);
+    renderBuilder();
   }
 });
-document.querySelector("#save-selection-revision").addEventListener(
+document.querySelector("#builder-save").addEventListener(
   "click",
   saveSelectionRevision,
 );
+document.querySelector("#builder-reset").addEventListener("click", resetBuilderDraft);
+document.querySelector("#builder-lock").addEventListener(
+  "click",
+  openSelectionLockDialog,
+);
+document.querySelector("#builder-return-model").addEventListener(
+  "click",
+  showModelSquad,
+);
+document.querySelector("#player-market-search").addEventListener(
+  "input",
+  renderPlayerMarket,
+);
+document.querySelectorAll("[data-market-position]").forEach((button) => {
+  button.addEventListener("click", () => {
+    marketPosition = button.dataset.marketPosition;
+    selectedReplacementPlayerId = null;
+    document.querySelectorAll("[data-market-position]").forEach((candidate) => {
+      candidate.setAttribute(
+        "aria-pressed",
+        String(candidate === button),
+      );
+    });
+    renderBuilder();
+  });
+});
 document.querySelector("#lock-selection").addEventListener(
   "click",
   openSelectionLockDialog,
