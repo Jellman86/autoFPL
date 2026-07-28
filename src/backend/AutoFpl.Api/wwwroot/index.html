@@ -4,36 +4,110 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <meta name="description" content="autoFPL evidence-grounded Fantasy Premier League decision room">
-  <title>autoFPL · Gameweek decision room</title>
+  <meta name="description" content="Evidence-grounded Fantasy Premier League squad planning">
+  <title>autoFPL · Squad planner</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/app.css">
   <script src="/app.js" defer></script>
 </head>
 <body>
-  <a class="skip-link" href="#decision-room">Skip to the decision room</a>
-  <header class="masthead">
-    <a class="wordmark" href="/" aria-label="autoFPL home">
-      <span class="wordmark-mark">aF</span>
-      <span>autoFPL</span>
-    </a>
-    <div class="header-actions">
-      <button class="refresh-prediction" id="refresh-prediction" type="button">
-        Refresh prediction
-      </button>
-      <div class="run-state">
-        <span class="status-dot" aria-hidden="true"></span>
-        <span id="evidence-status">Loading evidence</span>
+  <a class="skip-link" href="#decision-room">Skip to squad planning</a>
+  <div class="app-shell">
+    <button class="sidebar-backdrop" id="sidebar-backdrop" type="button" aria-label="Close navigation"></button>
+    <aside class="sidebar" id="sidebar" aria-label="Primary navigation">
+      <div class="sidebar-brand">
+        <a class="wordmark" href="/" aria-label="autoFPL home">
+          <span class="wordmark-mark">aF</span>
+          <span>
+            <strong>autoFPL</strong>
+            <small>Squad planner</small>
+          </span>
+        </a>
+        <button class="sidebar-close" id="sidebar-close" type="button" aria-label="Close navigation">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M18 6 6 18M6 6l12 12"></path>
+          </svg>
+        </button>
       </div>
-    </div>
-  </header>
+
+      <nav class="sidebar-nav">
+        <p>Plan</p>
+        <a class="active" href="#overview" data-nav-section="overview" aria-current="page">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"></path>
+          </svg>
+          Overview
+        </a>
+        <a href="#model-squad" data-nav-section="model-squad">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M8 21v-2a4 4 0 0 1 4-4h0a4 4 0 0 1 4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 11a3 3 0 0 1 3-3M20 11a3 3 0 0 0-3-3"></path>
+          </svg>
+          Model squad
+        </a>
+        <a href="#my-squad" data-nav-section="my-squad">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"></path>
+          </svg>
+          My squad
+        </a>
+
+        <p>Evidence</p>
+        <a href="#data-sources" data-nav-section="data-sources">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <ellipse cx="12" cy="5" rx="8" ry="3"></ellipse>
+            <path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"></path>
+          </svg>
+          Data sources
+        </a>
+        <a href="#research-coverage" data-nav-section="research-coverage">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m20 20-4-4M11 8v6M8 11h6"></path>
+          </svg>
+          Research
+        </a>
+      </nav>
+
+      <div class="sidebar-status">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span>
+          <strong id="sidebar-evidence-status">Loading evidence</strong>
+          <small>Forecast service</small>
+        </span>
+      </div>
+    </aside>
+
+    <div class="app-content">
+      <header class="masthead">
+        <button class="menu-button" id="menu-button" type="button" aria-label="Open navigation" aria-expanded="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 7h16M4 12h16M4 17h16"></path>
+          </svg>
+        </button>
+        <nav class="breadcrumbs" aria-label="Breadcrumb">
+          <ol>
+            <li><a href="/" id="breadcrumb-parent">Squad planner</a></li>
+            <li aria-current="page" id="breadcrumb-current">Overview</li>
+          </ol>
+        </nav>
+        <div class="header-actions">
+          <button class="refresh-prediction" id="refresh-prediction" type="button">
+            Refresh prediction
+          </button>
+          <div class="run-state">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span id="evidence-status">Loading evidence</span>
+          </div>
+        </div>
+      </header>
 
   <main id="decision-room">
     <section class="decision-header" aria-labelledby="page-title">
       <div>
-        <p class="eyebrow" id="gameweek-label">Gameweek decision room</p>
-        <h1 id="page-title">Choose with the evidence visible.</h1>
+        <p class="eyebrow" id="gameweek-label">Gameweek squad plan</p>
+        <h1 id="page-title">Your Gameweek plan</h1>
         <p class="lede" id="recommendation-summary">
-          Loading the first autoFPL recommendation preview.
+          Loading the latest squad prediction and its evidence.
         </p>
       </div>
       <dl class="run-meta">
@@ -60,15 +134,16 @@
       </dl>
     </section>
 
+    <div id="my-squad" class="section-anchor" aria-hidden="true"></div>
     <section
       class="selection-workflow"
       id="selection-workflow"
       data-state="loading"
       aria-labelledby="selection-workflow-title">
       <div class="selection-workflow-copy">
-        <p class="eyebrow">Your decision</p>
+        <p class="eyebrow">My squad</p>
         <div class="selection-title-row">
-          <h2 id="selection-workflow-title">Checking your selection.</h2>
+          <h2 id="selection-workflow-title">Checking your saved squad.</h2>
           <span class="selection-state" id="selection-state">Loading</span>
         </div>
         <p id="selection-workflow-summary">
@@ -128,6 +203,7 @@
       </div>
     </section>
 
+    <div id="data-sources" class="section-anchor" aria-hidden="true"></div>
     <section
       class="source-tape"
       id="official-data"
@@ -255,7 +331,7 @@
       </p>
     </section>
 
-    <div class="workspace">
+    <div class="workspace" id="model-squad">
       <section class="formation-shell" aria-labelledby="formation-title">
         <div class="section-heading">
           <div>
@@ -264,7 +340,7 @@
           </div>
           <div class="formation-heading-copy">
             <p class="formation-note" id="selection-objective"></p>
-            <span class="card-hint">Select any player for the full dossier</span>
+            <span class="card-hint">Open a player to see the full evidence page</span>
           </div>
         </div>
 
@@ -293,19 +369,24 @@
         tabindex="-1">
       </button>
 
-      <aside
+      <section
         class="evidence-panel"
         id="player-dossier"
         aria-labelledby="player-name"
         aria-live="polite"
         tabindex="-1">
-        <div class="dossier-handle" aria-hidden="true"></div>
+        <a class="player-page-back" id="player-page-back" href="#model-squad">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m15 18-6-6 6-6"></path>
+          </svg>
+          Back to squad
+        </a>
         <div class="dossier-hero">
           <div class="dossier-portrait" id="dossier-portrait" aria-hidden="true">
             <span id="dossier-initials">—</span>
           </div>
           <div class="dossier-title">
-            <p class="eyebrow">Player dossier</p>
+            <p class="eyebrow">Player evidence</p>
             <div class="player-heading">
               <div>
                 <h2 id="player-name">Select a player</h2>
@@ -314,10 +395,7 @@
               <span id="player-badge" class="player-badge" hidden></span>
             </div>
           </div>
-          <button class="dossier-close" id="dossier-close" type="button">
-            <span aria-hidden="true">×</span>
-            <span class="visually-hidden">Close player dossier</span>
-          </button>
+          <button class="dossier-close visually-hidden" id="dossier-close" type="button">Back to squad</button>
         </div>
 
         <p class="dossier-state" id="dossier-state">
@@ -438,7 +516,7 @@
             <span id="forecast-callout-copy">Loading the latest evidence boundary.</span>
           </div>
         </div>
-      </aside>
+      </section>
     </div>
 
     <section class="alternatives" aria-labelledby="alternatives-title">
@@ -470,10 +548,12 @@
     </section>
   </main>
 
-  <footer>
-    <span>Human-approved decisions only.</span>
-    <span>Facts, forecasts and AI judgement stay separate.</span>
-  </footer>
+      <footer>
+        <span>Human-approved decisions only.</span>
+        <span>Facts, forecasts and AI judgement stay separate.</span>
+      </footer>
+    </div>
+  </div>
 
   <dialog class="lock-dialog" id="lock-dialog" aria-labelledby="lock-dialog-title">
     <form method="dialog">
