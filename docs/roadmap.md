@@ -735,8 +735,11 @@ The next development slices are:
    operator boundary to capture only those reviewed players' fixed match-log
    URLs, use the implemented coverage API and bounded batch operator to expand
    the 60-player capture cohort, and use the implemented deterministic parser
-   to retain bounded match chronology; next form explicitly missing-aware
-   rolling features and add that history only after identical-fold evaluation;
+   to retain bounded match chronology; use the three implemented fixed
+   promoted-club schedule sources and deterministic stable-match-ID parser to
+   define every prior-season match opportunity; next left-join player rows to
+   those schedules, form explicitly missing-aware rolling features and add
+   that history only after identical-fold evaluation;
    keep exact minutes on the
    retained player-last baseline, evaluate a two-stage or hierarchical minutes
    challenger and add the empirical point-distribution loop before any raw

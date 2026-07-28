@@ -16,7 +16,9 @@ returns the retained page HTML.
 
 The aggregate page does not itself supply match-order temporal form. Reviewed
 match-log capture and deterministic chronology extraction now provide that
-separate evidence boundary, but no field influences a forecast until
+separate evidence boundary. Three fixed team schedules provide the complete
+Championship match opportunities needed to distinguish an omitted player row
+from a match that never occurred. No field influences a forecast until
 identical-fold evaluation shows predictive gain.
 
 The reviewed-player capture boundary is now implemented. The operator supplies
@@ -51,6 +53,12 @@ only the extractor-provided `/summary/` path and FBref's observed redirect
 without that segment, and requires both the match-log title and
 `matchlogs_all` table marker. A changed bridge snapshot, unresolved official
 code, arbitrary path or non-FBref origin fails closed.
+
+The three registered team-schedule sources use fixed 2025/26 Championship
+schedule URLs for Coventry City, Hull City and Ipswich Town. They accept no
+caller URL, require the team-specific page title and `matchlogs_for` table,
+use Byparr through the same private origin and remain manual completed-season
+captures.
 
 ## Timing, identity and limitations
 
@@ -102,6 +110,21 @@ retrieved pages. The CLI command
 `/api/v1/research/snapshots/{snapshotId}/fbref-player-match-log` route expose
 the same typed document without raw HTML. Extraction alone cannot influence a
 forecast.
+
+Team-schedule parser v1 emits the stable FBref match ID, date, exact UTC
+kickoff, round, venue, result, score and stable opponent ID for 46–55 ordered
+Championship and promotion-playoff matches. It rejects duplicate or
+out-of-order IDs, inconsistent date/report links, missing kickoffs, incomplete
+results and unsupported counts. The CLI command
+`--extract-fbref-team-schedule <snapshot-id>` and read-only
+`/api/v1/research/snapshots/{snapshotId}/fbref-team-schedule` route expose the
+typed schedule without raw HTML.
+
+These rows define opportunities, not player state. A later missing-aware
+artifact must left-join each reviewed player chronology to the matching team
+schedule by stable match ID. A missing player row then remains an explicit
+unknown/absence observation according to a separately versioned rule; it is
+never silently discarded or assumed to be zero minutes by this source parser.
 
 ## Coverage operations
 

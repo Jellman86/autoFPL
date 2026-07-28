@@ -111,6 +111,24 @@ if (requestedFbrefPlayingTimeExtraction
         "Usage: --extract-fbref-playing-time <snapshot-id>");
     return 2;
 }
+bool requestedFbrefTeamScheduleExtraction =
+    args.Length > 0
+    && StringComparer.Ordinal.Equals(
+        args[0],
+        "--extract-fbref-team-schedule");
+long fbrefTeamScheduleSnapshotId = 0;
+bool runFbrefTeamScheduleExtraction =
+    requestedFbrefTeamScheduleExtraction
+    && args.Length == 2
+    && long.TryParse(args[1], out fbrefTeamScheduleSnapshotId)
+    && fbrefTeamScheduleSnapshotId > 0;
+if (requestedFbrefTeamScheduleExtraction
+    && !runFbrefTeamScheduleExtraction)
+{
+    await Console.Error.WriteLineAsync(
+        "Usage: --extract-fbref-team-schedule <snapshot-id>");
+    return 2;
+}
 bool requestedFbrefPlayerMatchLogCapture =
     args.Length > 0
     && StringComparer.Ordinal.Equals(
@@ -257,6 +275,7 @@ bool runNonWebCommand =
     || runResearchSourceCapture
     || runResearchSourceClaimExtraction
     || runFbrefPlayingTimeExtraction
+    || runFbrefTeamScheduleExtraction
     || runFbrefPlayerMatchLogCapture
     || runFbrefPlayerMatchLogExtraction
     || runFbrefMatchLogBatchCapture
@@ -510,6 +529,7 @@ builder.Services.AddTransient<FplFormForecastImporter>();
 builder.Services.AddTransient<ResearchSourceSnapshotImporter>();
 builder.Services.AddTransient<ResearchSourceClaimExtractor>();
 builder.Services.AddTransient<FbrefPlayingTimeExtractor>();
+builder.Services.AddTransient<FbrefTeamScheduleExtractor>();
 builder.Services.AddTransient<FbrefPlayerMatchLogImporter>();
 builder.Services.AddTransient<FbrefPlayerMatchLogExtractor>();
 builder.Services.AddTransient<FbrefMatchLogCoverageReader>();
@@ -748,6 +768,33 @@ if (runFbrefPlayingTimeExtraction)
         {
             await Console.Error.WriteLineAsync(
                 $"Research source snapshot {fbrefPlayingTimeSnapshotId} was not found.");
+            return 2;
+        }
+        await Console.Out.WriteLineAsync(
+            JsonSerializer.Serialize(
+                extraction,
+                new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+        return 0;
+    }
+    catch (ResearchSourceSnapshotException exception)
+    {
+        await Console.Error.WriteLineAsync(exception.Message);
+        return 2;
+    }
+}
+
+if (runFbrefTeamScheduleExtraction)
+{
+    try
+    {
+        FbrefTeamScheduleDocument? extraction =
+            await app.Services
+                .GetRequiredService<FbrefTeamScheduleExtractor>()
+                .GetAsync(fbrefTeamScheduleSnapshotId);
+        if (extraction is null)
+        {
+            await Console.Error.WriteLineAsync(
+                $"Research source snapshot {fbrefTeamScheduleSnapshotId} was not found.");
             return 2;
         }
         await Console.Out.WriteLineAsync(
@@ -1219,7 +1266,8 @@ app.MapGet(
         "Read the fixed shadow-source inventory and latest immutable capture metadata.")
     .WithDescription(
         "The inventory deliberately spans official availability, specialist predicted "
-        + "lineups and prior-competition playing time. Latest FFScout coverage reports "
+        + "lineups, prior-competition playing time and fixed team schedules. Latest "
+        + "FFScout coverage reports "
         + "only exact snapshot-linked start classifications; partial and missing clubs "
         + "remain unknown. Captures remain shadow-only and expose no third-party article "
         + "text or forecast influence.")
@@ -1258,6 +1306,40 @@ app.MapGet(
         + "result cannot influence forecasts.")
     .WithTags("Research")
     .Produces<FbrefPlayingTimeDocument>()
+    .Produces(StatusCodes.Status404NotFound)
+    .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+app.MapGet(
+    "/api/v1/research/snapshots/{snapshotId:long}/fbref-team-schedule",
+    async (
+        long snapshotId,
+        FbrefTeamScheduleExtractor extractor,
+        CancellationToken cancellationToken) =>
+    {
+        try
+        {
+            FbrefTeamScheduleDocument? extraction =
+                await extractor.GetAsync(snapshotId, cancellationToken);
+            return extraction is null
+                ? Results.NotFound()
+                : Results.Ok(extraction);
+        }
+        catch (ResearchSourceSnapshotException)
+        {
+            return Results.Problem(
+                statusCode: StatusCodes.Status422UnprocessableEntity,
+                title: "The retained FBref team schedule could not be extracted.");
+        }
+    })
+    .WithName("GetFbrefTeamSchedule")
+    .WithSummary(
+        "Extract one promoted club's prior-season Championship match schedule.")
+    .WithDescription(
+        "The deterministic parser exposes exact match IDs, dates, kickoffs, opponents "
+        + "and results from one fixed source. These rows define match opportunities "
+        + "for missing-aware player-history joins; they do not infer availability or "
+        + "influence forecasts.")
+    .WithTags("Research")
+    .Produces<FbrefTeamScheduleDocument>()
     .Produces(StatusCodes.Status404NotFound)
     .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 app.MapGet(

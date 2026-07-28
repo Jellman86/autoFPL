@@ -126,6 +126,7 @@ public static class ResearchSourceRegistry
             ],
             ["Championship Playing Time | FBref.com"],
             PollAutomatically: false),
+        .. FbrefTeamScheduleSources.All.Select(source => source.Definition),
     ];
 
     public static IReadOnlyList<ResearchSourceDefinition> All => Definitions;
