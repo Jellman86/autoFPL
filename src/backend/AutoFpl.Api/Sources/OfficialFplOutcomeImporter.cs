@@ -48,6 +48,18 @@ public sealed class OfficialFplOutcomeImporter
     {
         OfficialFplCaptureDocument referenceCapture =
             await _referenceImporter.ImportLatestAsync(cancellationToken);
+        return await ImportForReferenceAsync(
+            referenceCapture,
+            gameweek,
+            cancellationToken);
+    }
+
+    public async Task<OfficialFplOutcomeCaptureDocument> ImportForReferenceAsync(
+        OfficialFplCaptureDocument referenceCapture,
+        int gameweek,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(referenceCapture);
         OfficialFplOutcomeContext context =
             await _captureStore.GetOutcomeContextAsync(
                 referenceCapture.CaptureId,

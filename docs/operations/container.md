@@ -2,7 +2,7 @@
 
 ## Purpose and current boundary
 
-The container is a private development application for the Gameweek decision room, deterministic FPL rules, authoritative SQLite decision snapshots and operator-triggered official FPL reference/outcome capture. Collection uses fixed public read-only URL templates and no credentials. The application has no autonomous actions or account-write client. Its snapshot write route is an internal development boundary and must not be exposed beyond the trusted private environment before authentication and authorisation exist.
+The container is a private development application for the Gameweek decision room, deterministic FPL rules, authoritative SQLite decision snapshots and bounded official FPL reference/outcome capture. Collection uses fixed public read-only URL templates and no credentials. The application has no autonomous FPL account actions or account-write client. Its snapshot write route is an internal development boundary and must not be exposed beyond the trusted private environment before authentication and authorisation exist.
 
 Routes:
 
@@ -26,6 +26,7 @@ Routes:
 | `GET` | `/api/v1/data/official-fpl/replays/{seasonCode}/{gameweek}/pre-deadline` | Selects the newest immutable capture that was available no later than the deadline recorded in that capture |
 | `GET` | `/api/v1/data/official-fpl/replays/{seasonCode}/{gameweek}/players/{playerId}` | Returns cutoff-correct player identity, an official portrait URL, prior outcomes and upcoming fixtures |
 | `GET` | `/api/v1/data/official-fpl/outcomes/{seasonCode}/{gameweek}/latest` | Returns the latest immutable final per-player outcome capture metadata, or 404 |
+| `GET` | `/api/v1/data/official-fpl/outcomes/readiness` | Reports automatic final-outcome capture and complete pre-deadline replay-pair coverage |
 | `GET` | `/api/v1/data/official-fpl/replays/{seasonCode}/{gameweek}/outcome` | Pairs a cutoff-safe replay with the latest final outcome only when every replay player matches |
 | `POST` | `/api/v1/decision-snapshots` | Persists validated squad/selection state and creates an immutable cutoff-correct snapshot |
 | `GET` | `/api/v1/decision-snapshots/{snapshotId}` | Reads one immutable snapshot after creation or restart |
@@ -119,7 +120,14 @@ through `1440` to run the same fixed-origin import automatically. Each attempt
 is persisted even when an unchanged payload reuses its earliest immutable
 capture, so restarts wait the remaining configured interval. Bounded provider
 or transport failure leaves the web application and prior captures available.
-Leave the setting absent to retain operator-only collection.
+After each successful reference refresh, the same poll cycle checks the latest
+declared completed Gameweek, fills the oldest outcome gaps first and imports at
+most three fixed `event/<gameweek>/live` resources. Once gaps are filled, it
+rechecks the latest completed Gameweek so provider corrections create a new
+immutable outcome only when content changes. Per-Gameweek failure is isolated,
+and the readiness route keeps missing outcomes, missing pre-deadline replays
+and incomplete identity pairs explicit. Leave the setting absent to retain
+operator-only collection.
 
 The web process does not expose an import route, accept a source URL or send
 cookies/credentials. The metadata GET route does not return raw provider

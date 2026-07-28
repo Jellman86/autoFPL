@@ -24,6 +24,13 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **Final Gameweek outcomes now have a bounded automatic capture path.** Each
+  enabled official-reference poll fills the oldest completed outcome gaps
+  first, imports at most three fixed official live endpoints and rechecks the
+  latest completed Gameweek for corrections without repeating the reference
+  download. Failures are isolated per Gameweek, immutable content remains
+  idempotent, and a read-only readiness API distinguishes captured outcomes,
+  complete pre-deadline pairs, missing replays and identity-blocked pairs.
 - **The historical evidence window now spans two complete seasons.** The same
   fixed, commit-pinned importer now admits 2024/25 alongside 2025/26, preserves
   unavailable legacy defensive metrics as null and excludes the temporary
