@@ -9,8 +9,9 @@ public sealed class FbrefMatchLogBatchCapture
 
     private readonly Func<
         CancellationToken,
-        Task<FbrefMatchLogCoverageDocument>> _readCoverage;
+        Task<FbrefMatchLogCoverageContext>> _readContext;
     private readonly Func<
+        FbrefPlayingTimeDocument,
         int,
         CancellationToken,
         Task<ResearchSourceSnapshotDocument>> _import;
@@ -21,21 +22,22 @@ public sealed class FbrefMatchLogBatchCapture
     {
         ArgumentNullException.ThrowIfNull(coverageReader);
         ArgumentNullException.ThrowIfNull(importer);
-        _readCoverage = coverageReader.GetAsync;
+        _readContext = coverageReader.GetContextAsync;
         _import = importer.ImportAsync;
     }
 
     internal FbrefMatchLogBatchCapture(
         Func<
             CancellationToken,
-            Task<FbrefMatchLogCoverageDocument>> readCoverage,
+            Task<FbrefMatchLogCoverageContext>> readContext,
         Func<
+            FbrefPlayingTimeDocument,
             int,
             CancellationToken,
             Task<ResearchSourceSnapshotDocument>> import)
     {
-        _readCoverage = readCoverage
-            ?? throw new ArgumentNullException(nameof(readCoverage));
+        _readContext = readContext
+            ?? throw new ArgumentNullException(nameof(readContext));
         _import = import ?? throw new ArgumentNullException(nameof(import));
     }
 
@@ -49,8 +51,9 @@ public sealed class FbrefMatchLogBatchCapture
                 $"The match-log capture limit must be between {MinimumCaptureLimit} and {MaximumCaptureLimit}.");
         }
 
-        FbrefMatchLogCoverageDocument coverage =
-            await _readCoverage(cancellationToken);
+        FbrefMatchLogCoverageContext context =
+            await _readContext(cancellationToken);
+        FbrefMatchLogCoverageDocument coverage = context.Coverage;
         var results = new List<FbrefMatchLogBatchCaptureResultDocument>();
         int capturedCount = 0;
         int maximumAttempts = Math.Min(
@@ -72,6 +75,7 @@ public sealed class FbrefMatchLogBatchCapture
             {
                 ResearchSourceSnapshotDocument snapshot =
                     await _import(
+                        context.PlayingTime,
                         player.OfficialPlayerCode,
                         cancellationToken);
                 capturedCount++;

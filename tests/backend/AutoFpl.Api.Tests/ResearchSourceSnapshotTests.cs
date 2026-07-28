@@ -630,11 +630,39 @@ public sealed class ResearchSourceSnapshotTests
             3,
             [],
             players);
+        var playingTime = new FbrefPlayingTimeDocument(
+            "1.0",
+            FbrefPlayerIdentityBridge.ReviewedSnapshotId,
+            FbrefPlayingTimeExtractor.SourceKey,
+            FbrefPlayingTimeExtractor.ExtractionVersion,
+            FbrefPlayerIdentityBridge.Version,
+            FbrefPlayerIdentityBridge.ReviewedContentSha256,
+            13,
+            RetrievalTime,
+            "Championship",
+            "2025-26",
+            players.Length,
+            players.Length,
+            players.Length,
+            players.Length,
+            0,
+            [],
+            []);
+        var context = new FbrefMatchLogCoverageContext(
+            coverage,
+            playingTime);
+        int contextReadCount = 0;
+        var importedDocuments = new List<FbrefPlayingTimeDocument>();
         var attemptedCodes = new List<int>();
         var batch = new FbrefMatchLogBatchCapture(
-            _ => Task.FromResult(coverage),
-            (code, _) =>
+            _ =>
             {
+                contextReadCount++;
+                return Task.FromResult(context);
+            },
+            (document, code, _) =>
+            {
+                importedDocuments.Add(document);
                 attemptedCodes.Add(code);
                 if (code == 2)
                 {
@@ -676,7 +704,11 @@ public sealed class ResearchSourceSnapshotTests
             1,
             TestContext.Current.CancellationToken);
 
+        Assert.Equal(1, contextReadCount);
         Assert.Equal([2, 3], attemptedCodes);
+        Assert.All(
+            importedDocuments,
+            document => Assert.Same(playingTime, document));
         Assert.Equal(1, result.AlreadyCapturedCount);
         Assert.Equal(2, result.AttemptedCount);
         Assert.Equal(1, result.CapturedCount);

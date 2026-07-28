@@ -39,6 +39,22 @@ public sealed class FbrefPlayerMatchLogImporter
                 cancellationToken)
             ?? throw Invalid(
                 "The reviewed FBref playing-time snapshot is not available.");
+        return await ImportAsync(
+            playingTime,
+            officialPlayerCode,
+            cancellationToken);
+    }
+
+    internal async Task<ResearchSourceSnapshotDocument> ImportAsync(
+        FbrefPlayingTimeDocument playingTime,
+        int officialPlayerCode,
+        CancellationToken cancellationToken = default)
+    {
+        if (officialPlayerCode <= 0)
+        {
+            throw Invalid("The official player code must be positive.");
+        }
+
         FbrefPlayingTimePlayerDocument player = ResolveReviewedPlayer(
             playingTime,
             officialPlayerCode);
