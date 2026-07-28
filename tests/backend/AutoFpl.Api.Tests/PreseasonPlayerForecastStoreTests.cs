@@ -77,7 +77,7 @@ public sealed class PreseasonPlayerForecastStoreTests
             1,
             TestContext.Current.CancellationToken);
         Assert.NotNull(dossier);
-        Assert.Equal("1.3", dossier.SchemaVersion);
+        Assert.Equal("1.4", dossier.SchemaVersion);
         Assert.NotNull(dossier.PreseasonChallenger);
         Assert.Equal(
             imported.ModelKey,

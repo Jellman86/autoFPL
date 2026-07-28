@@ -12,6 +12,7 @@ Routes:
 | `GET` | `/api/v1/advice/demo` | Returns the latest persisted Baseline v0 artifact, or the typed synthetic acceptance fixture when no qualifying capture exists |
 | `GET` | `/api/v1/forecasts/player-gameweek/latest` | Returns the latest immutable provisional Baseline v0 artifact for every eligible official player |
 | `GET` | `/api/v1/forecasts/preseason-challenger/latest` | Returns the latest immutable holdout-supported GW1 point-mean challenger; it cannot influence advice |
+| `GET` | `/api/v1/forecasts/multi-season-shadow/latest` | Returns the latest immutable two-season GW1 shadow comparison; Baseline v0 still drives advice |
 | `GET` | `/api/v1/data/fpl-form-forecast/latest` | Returns provenance and counts for the latest immutable public FPL Form forecast capture |
 | `GET` | `/api/v1/data/fpl-form-forecast/status` | Distinguishes not checked, provider waiting, collection failure and retained forecast states |
 | `GET` | `/api/v1/data/fpl-form-forecast/{captureId}/identity-coverage` | Reports deterministic cutoff-correct official player/fixture coverage for one immutable forecast capture |
@@ -98,6 +99,28 @@ The command is the only write boundary. The web process exposes a read-only
 latest-artifact route, and the cutoff-aware dossier shows the per-player point
 mean and comparison warnings. The artifact has no calibrated distribution and
 cannot alter advice, a selection revision or Baseline v0.
+
+## Two-season preseason shadow
+
+Generate the fixed 2026/27 GW1 artifact with the analytics command documented
+in `src/analytics/README.md`, copy the JSON into the container's private data
+volume and run:
+
+```text
+dotnet AutoFpl.Api.dll \
+  --import-multi-season-player-forecast <json-file>
+```
+
+Migration 25 uses a separate immutable table and validates the exact two
+evaluated archives, their decision-time availability, the current official
+capture, Baseline v0 player values, stable-code history states and all
+per-player point differences. The strict 2 MiB JSON boundary rejects unknown
+fields. Identical content is idempotent and conflicting content for the same
+official capture fails closed.
+
+The latest route and player dossier expose the shadow only as comparison
+evidence. Its retrospective status, weak cross-season ablation result, lack of
+a calibrated distribution and `influencesAdvice: false` remain explicit.
 
 ## Official FPL capture
 

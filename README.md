@@ -24,10 +24,10 @@ training with matched current-season-only ridge and tree models. The
 multi-season tree has a small aggregate advantage but not robust fold or
 position dominance, so it remains a frozen prospective shadow specification.
 An exact-capture read-only GW1 generator now emits its raw point means beside
-Baseline v0 without influencing advice.
-The existing strict operator import
-persists the artifact immutably, a read-only OpenAPI route exposes it and each
-player dossier presents the comparison with its evidence boundary.
+Baseline v0 without influencing advice. A dedicated immutable import and
+OpenAPI route expose that shadow separately, including in player dossiers.
+The earlier one-season challenger remains a distinct immutable artifact with
+its own read-only route and dossier comparison.
 
 The [delivery roadmap](docs/roadmap.md) defines the dependency-ordered route from the current foundation through v0.1 single-Gameweek advice, transfer and chip planning, and the v1.0 human-approved advisor. See the [documentation index](docs/index.md) and [changelog](CHANGELOG.md) for maintained guidance and implemented changes.
 

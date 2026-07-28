@@ -300,6 +300,22 @@ if (requestedPreseasonPlayerForecastImport
         "Usage: --import-preseason-player-forecast <json-file>");
     return 2;
 }
+bool requestedMultiSeasonPlayerForecastImport =
+    args.Length > 0
+    && StringComparer.Ordinal.Equals(
+        args[0],
+        "--import-multi-season-player-forecast");
+bool runMultiSeasonPlayerForecastImport =
+    requestedMultiSeasonPlayerForecastImport
+    && args.Length == 2
+    && !string.IsNullOrWhiteSpace(args[1]);
+if (requestedMultiSeasonPlayerForecastImport
+    && !runMultiSeasonPlayerForecastImport)
+{
+    await Console.Error.WriteLineAsync(
+        "Usage: --import-multi-season-player-forecast <json-file>");
+    return 2;
+}
 
 bool runNonWebCommand =
     runIntegrityCheck
@@ -320,7 +336,8 @@ bool runNonWebCommand =
     || runFplFormForecastEvaluation
     || runOfficialExpectedPointsEvaluation
     || runOfficialFplOutcomeImport
-    || runPreseasonPlayerForecastImport;
+    || runPreseasonPlayerForecastImport
+    || runMultiSeasonPlayerForecastImport;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(
     runNonWebCommand ? [] : args);
@@ -386,6 +403,11 @@ builder.Services.AddSingleton(serviceProvider =>
         serviceProvider.GetRequiredService<DatabaseOptions>(),
         serviceProvider.GetRequiredService<TimeProvider>()));
 builder.Services.AddSingleton<PreseasonPlayerForecastImporter>();
+builder.Services.AddSingleton(serviceProvider =>
+    new MultiSeasonPlayerForecastStore(
+        serviceProvider.GetRequiredService<DatabaseOptions>(),
+        serviceProvider.GetRequiredService<TimeProvider>()));
+builder.Services.AddSingleton<MultiSeasonPlayerForecastImporter>();
 builder.Services.AddSingleton(serviceProvider =>
     new SelectionRevisionStore(
         serviceProvider.GetRequiredService<DatabaseOptions>(),
@@ -761,6 +783,31 @@ if (runPreseasonPlayerForecastImport)
     }
 }
 
+if (runMultiSeasonPlayerForecastImport)
+{
+    try
+    {
+        MultiSeasonPlayerForecastDocument forecast =
+            await app.Services
+                .GetRequiredService<MultiSeasonPlayerForecastImporter>()
+                .ImportFileAsync(args[1]);
+        await Console.Out.WriteLineAsync(
+            JsonSerializer.Serialize(
+                forecast,
+                new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+        return 0;
+    }
+    catch (Exception exception)
+        when (exception is MultiSeasonPlayerForecastValidationException
+            or FileNotFoundException
+            or InvalidDataException
+            or JsonException)
+    {
+        await Console.Error.WriteLineAsync(exception.Message);
+        return 2;
+    }
+}
+
 if (runResearchSourceCapture)
 {
     try
@@ -1126,6 +1173,27 @@ app.MapGet(
         + "appearance probability or expected-minutes model is implied.")
     .WithTags("Forecasts")
     .Produces<PreseasonPlayerForecastDocument>()
+    .Produces(StatusCodes.Status404NotFound);
+app.MapGet(
+    "/api/v1/forecasts/multi-season-shadow/latest",
+    async (
+        MultiSeasonPlayerForecastStore store,
+        CancellationToken cancellationToken) =>
+    {
+        MultiSeasonPlayerForecastDocument? forecast =
+            await store.GetLatestAsync(cancellationToken);
+        return forecast is null ? Results.NotFound() : Results.Ok(forecast);
+    })
+    .WithName("GetLatestMultiSeasonPlayerForecast")
+    .WithSummary(
+        "Read the latest immutable two-season player shadow forecast.")
+    .WithDescription(
+        "The retrospectively selected point means are prospective comparison "
+        + "evidence only. Baseline v0 still drives advice; the shadow has no "
+        + "calibrated distribution, appearance probability or expected-minutes "
+        + "model.")
+    .WithTags("Forecasts")
+    .Produces<MultiSeasonPlayerForecastDocument>()
     .Produces(StatusCodes.Status404NotFound);
 app.MapGet(
     "/api/v1/selections/current",
