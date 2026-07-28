@@ -162,6 +162,84 @@ public sealed class ResearchSourceSnapshotTests
     }
 
     [Fact]
+    public void Fbref_playing_time_parser_is_bounded_and_identity_bridge_is_exact()
+    {
+        string content = CreateFbrefPlayingTimeHtml(
+            duplicateCommentedTable: true);
+
+        IReadOnlyList<FbrefPlayingTimeExtractor.FbrefPlayingTimeRow> rows =
+            FbrefPlayingTimeExtractor.Parse(content);
+        var snapshot = new ResearchSourceSnapshotDocument(
+            27,
+            "1.0",
+            "shadow-only",
+            FbrefPlayingTimeExtractor.SourceKey,
+            "prior-competition-playing-time",
+            "https://fbref.com/source",
+            "https://fbref.com/final",
+            "sports-reference-fbref",
+            "byparr",
+            "byparr/2.1.0",
+            "2026-27",
+            1,
+            new DateTimeOffset(2026, 8, 1, 12, 0, 0, TimeSpan.Zero),
+            13,
+            RetrievalTime,
+            RetrievalTime,
+            true,
+            1,
+            new string('a', 64),
+            content.Length,
+            RetrievalTime);
+        ResearchOfficialPlayerIdentity[] identities =
+        [
+            new(101, 1001, "Coventry City", "Test", "Player", "Player"),
+            new(102, 1002, "Coventry City", "Missing", "Current", "Current"),
+            new(201, 2001, "Hull City", "Hull", "Match", "Match"),
+            new(301, 3001, "Ipswich Town", "Ipswich", "Match", "Match"),
+        ];
+
+        FbrefPlayingTimeDocument extraction =
+            FbrefPlayingTimeExtractor.BuildDocument(
+                snapshot,
+                rows,
+                identities);
+
+        Assert.Equal(500, extraction.RowCount);
+        Assert.Equal(500, extraction.SourcePlayerCount);
+        Assert.Equal(3, extraction.ExactCurrentTeamMatchCount);
+        Assert.Equal(
+            FbrefPlayingTimeExtractor.ExtractionVersion,
+            extraction.ExtractionVersion);
+        FbrefPlayingTimePlayerDocument player = Assert.Single(
+            extraction.Players,
+            candidate => candidate.OfficialPlayerCode == 1001);
+        Assert.Equal("00000001", player.SourcePlayerId);
+        Assert.Equal(46, player.Appearances);
+        Assert.Equal(40, player.Starts);
+        Assert.Equal(3600, player.Minutes);
+        Assert.Equal("exact-current-team", player.IdentityStatus);
+        FbrefPlayingTimeTeamCoverageDocument coventry = Assert.Single(
+            extraction.CurrentTeamCoverage,
+            team => team.TeamName == "Coventry City");
+        Assert.Equal(2, coventry.OfficialPlayerCount);
+        Assert.Equal(15, coventry.SourceRowCount);
+        Assert.Equal(1, coventry.ExactMatchCount);
+        Assert.Equal([1002], coventry.UnmatchedOfficialPlayerCodes);
+        Assert.Equal(14, coventry.UnmatchedSourcePlayerIds.Count);
+    }
+
+    [Fact]
+    public void Fbref_playing_time_parser_rejects_duplicate_player_team_rows()
+    {
+        string content = CreateFbrefPlayingTimeHtml(
+            duplicatePlayerTeamRow: true);
+
+        Assert.Throws<ResearchSourceSnapshotException>(
+            () => FbrefPlayingTimeExtractor.Parse(content));
+    }
+
+    [Fact]
     public async Task Ffscout_extractor_uses_official_photo_code_and_is_idempotent()
     {
         using var files = new TemporaryDatabaseFiles();
@@ -957,6 +1035,67 @@ public sealed class ResearchSourceSnapshotTests
                 })
             .Build();
         return DatabaseOptions.FromConfiguration(configuration);
+    }
+
+    private static string CreateFbrefPlayingTimeHtml(
+        bool duplicateCommentedTable = false,
+        bool duplicatePlayerTeamRow = false)
+    {
+        var table = new StringBuilder(
+            """
+            <table id="stats_playing_time"><tbody>
+            """);
+        for (int index = 0; index < 500; index++)
+        {
+            string teamName;
+            string teamId;
+            string playerName;
+            if (index < 15)
+            {
+                teamName = "Coventry City";
+                teamId = "f7e3dfe9";
+                playerName = index == 0 ? "Test Player" : $"Coventry Source {index}";
+            }
+            else if (index < 30)
+            {
+                teamName = "Hull City";
+                teamId = "bd8769d1";
+                playerName = index == 15 ? "Hull Match" : $"Hull Source {index}";
+            }
+            else if (index < 45)
+            {
+                teamName = "Ipswich Town";
+                teamId = "b74092de";
+                playerName = index == 30 ? "Ipswich Match" : $"Ipswich Source {index}";
+            }
+            else
+            {
+                teamName = "Birmingham City";
+                teamId = "ec79b7c2";
+                playerName = $"Other Source {index}";
+            }
+
+            int identifierValue =
+                duplicatePlayerTeamRow && index == 1 ? 1 : index + 1;
+            string playerId = identifierValue.ToString("x8");
+            table.Append(
+                System.Globalization.CultureInfo.InvariantCulture,
+                $"""
+                 <tr>
+                 <th data-stat="player"><a href="/en/players/{playerId}/Player">{playerName}</a></th>
+                 <td data-stat="team"><a href="/en/squads/{teamId}/Team">{teamName}</a></td>
+                 <td data-stat="games">46</td>
+                 <td data-stat="minutes">3,600</td>
+                 <td data-stat="games_starts">40</td>
+                 <td data-stat="matches"><a href="/en/players/{playerId}/matchlogs/2025-2026/summary/Player-Match-Logs">Matches</a></td>
+                 </tr>
+                 """);
+        }
+        table.Append("</tbody></table>");
+        string value = table.ToString();
+        return duplicateCommentedTable
+            ? $"<html><body><!--{value}-->{value}</body></html>"
+            : $"<html><body>{value}</body></html>";
     }
 
     private sealed class FixedTimeProvider(DateTimeOffset value) : TimeProvider

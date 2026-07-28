@@ -9,12 +9,14 @@
 
 The source is a bounded prior-competition coverage candidate for current
 players whose 2025/26 history is absent from the official FPL archive. The
-first capture retains FBref's Championship aggregate playing-time page,
-including source player links/IDs, squad, appearances, starts and minutes.
+first capture retains FBref's Championship aggregate playing-time page. The
+deterministic v1 extractor emits source player/team IDs, squad, appearances,
+starts, minutes and each player's fixed 2025/26 summary match-log URL. It never
+returns the retained page HTML.
 
 It does not yet supply match-order temporal form. No field influences a
-forecast until a deterministic parser, explicit source-ID-to-official-code
-mapping and identical-fold evaluation are implemented.
+forecast until the source-ID-to-official-code bridge is reviewed, match
+chronology is retained and identical-fold evaluation shows predictive gain.
 
 ## Collection and provenance
 
@@ -41,11 +43,28 @@ matches described by the page. Match observations parsed later must retain
 their own kickoff times and precede every forecast target.
 
 FBref identity is not an official FPL identity. Player names are review
-evidence only: automatic fuzzy matching is forbidden, ambiguous or missing
-mappings remain unresolved, and a reviewed bridge must map one source player
-ID to one official `player.code`.
+evidence only. The extraction audit proposes a bridge only for an exact
+normalized full-name match within the same current promoted club. It labels all
+other rows unresolved, performs no fuzzy matching and cannot influence a
+forecast. A reviewed bridge must still map one source player ID to one official
+`player.code`.
+
+Snapshot 27 is the first retained production measurement. Extraction v1 found
+944 player-team rows and 894 stable FBref player IDs. The conservative audit
+proposed 60 exact current-team matches among 85 current promoted-club players:
+Coventry City 22/28, Hull City 18/29 and Ipswich Town 20/28. The other 25
+official identities remain an explicit review/collection queue.
 
 The page may be corrected after publication and its aggregates cannot establish
 recent match sequence, health or current-club role. Current official
 availability remains authoritative. Raw third-party content stays private and
 is not republished as a dataset.
+
+## Read boundary
+
+The operator command
+`--extract-fbref-playing-time <snapshot-id>` and read-only
+`/api/v1/research/snapshots/{snapshotId}/fbref-playing-time` route run the same
+versioned parser. Both fail closed on an unsupported source, post-deadline
+capture, malformed or duplicate IDs, invalid counts, missing target clubs or an
+unexpected population size.

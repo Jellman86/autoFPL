@@ -93,6 +93,24 @@ if (requestedResearchSourceClaimExtraction
         "Usage: --extract-research-source-claims <snapshot-id>");
     return 2;
 }
+bool requestedFbrefPlayingTimeExtraction =
+    args.Length > 0
+    && StringComparer.Ordinal.Equals(
+        args[0],
+        "--extract-fbref-playing-time");
+long fbrefPlayingTimeSnapshotId = 0;
+bool runFbrefPlayingTimeExtraction =
+    requestedFbrefPlayingTimeExtraction
+    && args.Length == 2
+    && long.TryParse(args[1], out fbrefPlayingTimeSnapshotId)
+    && fbrefPlayingTimeSnapshotId > 0;
+if (requestedFbrefPlayingTimeExtraction
+    && !runFbrefPlayingTimeExtraction)
+{
+    await Console.Error.WriteLineAsync(
+        "Usage: --extract-fbref-playing-time <snapshot-id>");
+    return 2;
+}
 bool requestedEvidenceClaimEvaluation =
     args.Length > 0
     && StringComparer.Ordinal.Equals(
@@ -182,6 +200,7 @@ bool runNonWebCommand =
     || runEvidenceClaimImport
     || runResearchSourceCapture
     || runResearchSourceClaimExtraction
+    || runFbrefPlayingTimeExtraction
     || runEvidenceClaimEvaluation
     || runFplFormForecastEvaluation
     || runOfficialExpectedPointsEvaluation
@@ -431,6 +450,7 @@ builder.Services
 builder.Services.AddTransient<FplFormForecastImporter>();
 builder.Services.AddTransient<ResearchSourceSnapshotImporter>();
 builder.Services.AddTransient<ResearchSourceClaimExtractor>();
+builder.Services.AddTransient<FbrefPlayingTimeExtractor>();
 if (fplFormPollingOptions.Enabled)
 {
     builder.Services.AddHostedService<FplFormForecastPoller>();
@@ -640,6 +660,33 @@ if (runResearchSourceClaimExtraction)
             await app.Services
                 .GetRequiredService<ResearchSourceClaimExtractor>()
                 .ExtractAsync(researchSnapshotId);
+        await Console.Out.WriteLineAsync(
+            JsonSerializer.Serialize(
+                extraction,
+                new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+        return 0;
+    }
+    catch (ResearchSourceSnapshotException exception)
+    {
+        await Console.Error.WriteLineAsync(exception.Message);
+        return 2;
+    }
+}
+
+if (runFbrefPlayingTimeExtraction)
+{
+    try
+    {
+        FbrefPlayingTimeDocument? extraction =
+            await app.Services
+                .GetRequiredService<FbrefPlayingTimeExtractor>()
+                .GetAsync(fbrefPlayingTimeSnapshotId);
+        if (extraction is null)
+        {
+            await Console.Error.WriteLineAsync(
+                $"Research source snapshot {fbrefPlayingTimeSnapshotId} was not found.");
+            return 2;
+        }
         await Console.Out.WriteLineAsync(
             JsonSerializer.Serialize(
                 extraction,
@@ -1039,13 +1086,47 @@ app.MapGet(
     .WithSummary(
         "Read the fixed shadow-source inventory and latest immutable capture metadata.")
     .WithDescription(
-        "The inventory deliberately spans official availability, a specialist predicted "
-        + "lineup and a dependent consensus. Latest FFScout coverage reports only exact "
-        + "snapshot-linked start classifications; partial and missing clubs remain unknown. "
-        + "Captures remain shadow-only and expose no third-party article text or forecast "
-        + "influence.")
+        "The inventory deliberately spans official availability, specialist predicted "
+        + "lineups and prior-competition playing time. Latest FFScout coverage reports "
+        + "only exact snapshot-linked start classifications; partial and missing clubs "
+        + "remain unknown. Captures remain shadow-only and expose no third-party article "
+        + "text or forecast influence.")
     .WithTags("Research")
     .Produces<ResearchSourceInventoryDocument>();
+app.MapGet(
+    "/api/v1/research/snapshots/{snapshotId:long}/fbref-playing-time",
+    async (
+        long snapshotId,
+        FbrefPlayingTimeExtractor extractor,
+        CancellationToken cancellationToken) =>
+    {
+        try
+        {
+            FbrefPlayingTimeDocument? extraction =
+                await extractor.GetAsync(snapshotId, cancellationToken);
+            return extraction is null
+                ? Results.NotFound()
+                : Results.Ok(extraction);
+        }
+        catch (ResearchSourceSnapshotException)
+        {
+            return Results.Problem(
+                statusCode: StatusCodes.Status422UnprocessableEntity,
+                title: "The retained FBref snapshot could not be extracted.");
+        }
+    })
+    .WithName("GetFbrefPlayingTime")
+    .WithSummary(
+        "Extract bounded prior-season appearances, starts and minutes from one snapshot.")
+    .WithDescription(
+        "The deterministic parser exposes stable FBref player and match-log identities. "
+        + "Only exact full-name matches within the same current promoted club are bridged "
+        + "to official player codes; unresolved identities remain explicit and the result "
+        + "cannot influence forecasts.")
+    .WithTags("Research")
+    .Produces<FbrefPlayingTimeDocument>()
+    .Produces(StatusCodes.Status404NotFound)
+    .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 app.MapGet(
     "/api/v1/data/historical-fpl/{seasonCode}",
     async (

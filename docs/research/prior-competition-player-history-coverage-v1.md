@@ -29,9 +29,12 @@ its reviewed FBref canonical redirect and a required page marker. It retains:
 - source player ID/name/team and the reviewed official-code mapping; and
 - match identity, kickoff, opponent, minutes and starting status.
 
-The aggregate page capture is implemented and supplies source player IDs,
-appearances, starts and minutes. Per-match parsing, reviewed official-code
-mapping and match-order history remain the next slice.
+The aggregate page capture and deterministic v1 extractor are implemented.
+Snapshot 27 yields 944 player-team rows, 894 stable source player IDs and 60
+exact same-current-team/full-name proposals among the 85 promoted-club
+players. These proposals are a measurable review queue, not an admitted
+identity bridge. Review of the remaining 25 official identities plus
+point-in-time match-log capture and parsing remain the next slices.
 
 Goals, assists, shots, expected goals/assists, saves and cards are optional
 source fields with explicit coverage. Missing values remain null rather than
