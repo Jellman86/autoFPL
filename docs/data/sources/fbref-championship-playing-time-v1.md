@@ -26,7 +26,9 @@ one official stable player code to
 `--capture-fbref-player-match-log <official-player-code>`. autoFPL accepts the
 code only when it resolves uniquely through bridge v1, reads that player's
 fixed match-log URL from the reviewed aggregate extraction and sends only that
-URL to Byparr. No HTTP caller or operator can supply a URL.
+URL to Byparr. No HTTP caller or operator can supply a URL. The same allowlist
+can be completed automatically through the bounded match-log poller described
+under coverage operations.
 
 ## Collection and provenance
 
@@ -176,5 +178,15 @@ the existing single-connection Byparr client, captures at most the requested
 number of new snapshots and makes no more than twice that many attempts so a
 single unavailable page does not block all later players. Existing coverage is
 skipped, failures are isolated with a stable failure code and partial success
-is retained. Repeated operation is deliberate and bounded rather than a
-background crawl.
+is retained.
+
+Set
+`AutoFpl__Research__FbrefMatchLogCaptureIntervalMinutes` to an integer from
+`60` through `1440` to run that same bounded batch automatically. The optional
+`AutoFpl__Research__FbrefMatchLogCaptureBatchSize` is restricted to `1` through
+`5` and defaults to `5`. Each interval makes one sequential bounded attempt,
+and retries missing or failed reviewed identities on the next interval. The
+metadata coverage route is the authoritative progress view; retained source
+content and capture failures are not written to application logs. Automatic
+capture does not admit unresolved identities or promote the resulting
+features.

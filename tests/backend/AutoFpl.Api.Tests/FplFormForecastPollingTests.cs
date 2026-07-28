@@ -92,6 +92,98 @@ public sealed class FplFormForecastPollingTests
     }
 
     [Fact]
+    public void Fbref_match_logs_use_a_bounded_interval_and_batch()
+    {
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    ["AutoFpl:Research:FbrefMatchLogCaptureIntervalMinutes"] =
+                        "360",
+                    ["AutoFpl:Research:FbrefMatchLogCaptureBatchSize"] = "3",
+                })
+            .Build();
+
+        FbrefMatchLogPollingOptions options =
+            FbrefMatchLogPollingOptions.FromConfiguration(configuration);
+
+        Assert.True(options.Enabled);
+        Assert.Equal(TimeSpan.FromHours(6), options.Interval);
+        Assert.Equal(3, options.BatchSize);
+    }
+
+    [Fact]
+    public void Fbref_match_log_polling_defaults_to_the_maximum_bounded_batch()
+    {
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    ["AutoFpl:Research:FbrefMatchLogCaptureIntervalMinutes"] =
+                        "60",
+                })
+            .Build();
+
+        FbrefMatchLogPollingOptions options =
+            FbrefMatchLogPollingOptions.FromConfiguration(configuration);
+
+        Assert.True(options.Enabled);
+        Assert.Equal(5, options.BatchSize);
+    }
+
+    [Fact]
+    public async Task Fbref_match_log_polling_isolates_a_failed_coverage_read()
+    {
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    ["AutoFpl:Research:FbrefMatchLogCaptureIntervalMinutes"] =
+                        "60",
+                })
+            .Build();
+        FbrefMatchLogPollingOptions options =
+            FbrefMatchLogPollingOptions.FromConfiguration(configuration);
+        var capture = new FbrefMatchLogBatchCapture(
+            _ => throw new ResearchSourceSnapshotException("expected"),
+            (_, _, _) => throw new InvalidOperationException("not reached"));
+        var poller = new FbrefMatchLogPoller(
+            capture,
+            options,
+            TimeProvider.System);
+
+        AutoFpl.Contracts.Intelligence.FbrefMatchLogBatchCaptureDocument? result =
+            await poller.CaptureOnceAsync(TestContext.Current.CancellationToken);
+
+        Assert.Null(result);
+    }
+
+    [Theory]
+    [InlineData("59", null)]
+    [InlineData("1441", null)]
+    [InlineData("60", "0")]
+    [InlineData("60", "6")]
+    [InlineData(null, "5")]
+    public void Invalid_fbref_match_log_polling_configuration_fails_startup(
+        string? interval,
+        string? batchSize)
+    {
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    ["AutoFpl:Research:FbrefMatchLogCaptureIntervalMinutes"] =
+                        interval,
+                    ["AutoFpl:Research:FbrefMatchLogCaptureBatchSize"] =
+                        batchSize,
+                })
+            .Build();
+
+        Assert.Throws<InvalidOperationException>(
+            () => FbrefMatchLogPollingOptions.FromConfiguration(configuration));
+    }
+
+    [Fact]
     public void Restarts_wait_for_the_remaining_interval()
     {
         var now = new DateTimeOffset(2026, 8, 1, 12, 0, 0, TimeSpan.Zero);

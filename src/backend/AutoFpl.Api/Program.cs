@@ -411,6 +411,9 @@ builder.Services.AddSingleton(officialFplPollingOptions);
 ResearchSourcePollingOptions researchSourcePollingOptions =
     ResearchSourcePollingOptions.FromConfiguration(builder.Configuration);
 builder.Services.AddSingleton(researchSourcePollingOptions);
+FbrefMatchLogPollingOptions fbrefMatchLogPollingOptions =
+    FbrefMatchLogPollingOptions.FromConfiguration(builder.Configuration);
+builder.Services.AddSingleton(fbrefMatchLogPollingOptions);
 builder.Services
     .AddHttpClient<OfficialFplImporter>(
         client =>
@@ -571,6 +574,10 @@ if (officialFplPollingOptions.Enabled)
 if (researchSourcePollingOptions.Enabled)
 {
     builder.Services.AddHostedService<ResearchSourcePoller>();
+}
+if (fbrefMatchLogPollingOptions.Enabled)
+{
+    builder.Services.AddHostedService<FbrefMatchLogPoller>();
 }
 builder.Services.AddExceptionHandler<DecisionSnapshotPersistenceExceptionHandler>();
 builder.Services.AddExceptionHandler<DecisionSnapshotValidationExceptionHandler>();

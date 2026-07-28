@@ -782,6 +782,9 @@ Specialist lineups, public forecasts, named experts and social evidence remain
 valuable challenger sources. Operate the existing bounded collectors and score
 each source alone, then run identical-fold feature ablations. A source enters
 the incumbent only if it increases out-of-time accuracy or decision utility.
+Reviewed FBref player-history capture is automatically schedulable in bounded
+batches; unresolved source identities remain a separate fail-closed review
+queue rather than being guessed from names.
 Do not add another standalone governance, universal contract, infrastructure
 or AI-orchestrator project ahead of these slices.
 
