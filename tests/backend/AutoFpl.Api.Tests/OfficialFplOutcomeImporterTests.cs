@@ -303,7 +303,7 @@ public sealed class OfficialFplOutcomeImporterTests
             TestContext.Current.CancellationToken);
 
         Assert.NotNull(dossier);
-        Assert.Equal("1.3", dossier.SchemaVersion);
+        Assert.Equal("1.4", dossier.SchemaVersion);
         Assert.Equal("2026-27", dossier.SeasonCode);
         Assert.Equal(2, dossier.TargetGameweek);
         Assert.Equal(

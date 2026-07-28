@@ -330,7 +330,7 @@ public sealed class HistoricalFplSeasonImporterTests
         await using SqliteDataReader reader =
             await read.ExecuteReaderAsync(TestContext.Current.CancellationToken);
         Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken));
-        Assert.Equal(24, reader.GetInt32(0));
+        Assert.Equal(DatabaseMigrations.CurrentVersion, reader.GetInt32(0));
         Assert.Equal(1, reader.GetInt32(1));
         Assert.Equal(1, reader.GetInt32(2));
         Assert.Equal(1, reader.GetInt32(3));

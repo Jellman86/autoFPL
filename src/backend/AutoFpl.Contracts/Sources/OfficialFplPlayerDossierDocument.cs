@@ -14,6 +14,8 @@ public sealed record OfficialFplPlayerDossierDocument(
         OfficialFplPublishedExpectedPointsDocument? PublishedExpectedPoints,
     [property: JsonPropertyName("preseasonChallenger")]
         OfficialFplPreseasonChallengerDocument? PreseasonChallenger,
+    [property: JsonPropertyName("multiSeasonShadow")]
+        OfficialFplMultiSeasonShadowDocument? MultiSeasonShadow,
     [property: JsonPropertyName("recentOutcomes")]
         IReadOnlyList<OfficialFplPlayerOutcomeDocument> RecentOutcomes,
     [property: JsonPropertyName("upcomingFixtures")]
@@ -55,6 +57,31 @@ public sealed record OfficialFplPreseasonChallengerDocument(
     [property: JsonPropertyName("distributionStatus")] string DistributionStatus,
     [property: JsonPropertyName("lockedHoldoutMaeImprovementFraction")]
         decimal LockedHoldoutMaeImprovementFraction,
+    [property: JsonPropertyName("influencesAdvice")] bool InfluencesAdvice,
+    [property: JsonPropertyName("forecastArtifactId")] long ForecastArtifactId,
+    [property: JsonPropertyName("forecastArtifactContentSha256")]
+        string ForecastArtifactContentSha256);
+
+public sealed record OfficialFplMultiSeasonShadowDocument(
+    [property: JsonPropertyName("modelKey")] string ModelKey,
+    [property: JsonPropertyName("status")] string Status,
+    [property: JsonPropertyName("expectedPoints")] decimal ExpectedPoints,
+    [property: JsonPropertyName("baselineV0ExpectedPoints")]
+        decimal BaselineV0ExpectedPoints,
+    [property: JsonPropertyName("differenceFromBaselineV0")]
+        decimal DifferenceFromBaselineV0,
+    [property: JsonPropertyName("availabilityStatus")] string AvailabilityStatus,
+    [property: JsonPropertyName("historicalIdentityStatus")]
+        string HistoricalIdentityStatus,
+    [property: JsonPropertyName("historicalSeasonCodes")]
+        IReadOnlyList<string> HistoricalSeasonCodes,
+    [property: JsonPropertyName("distributionStatus")] string DistributionStatus,
+    [property: JsonPropertyName("matchedCurrentSeasonTreeMaeImprovementFraction")]
+        decimal MatchedCurrentSeasonTreeMaeImprovementFraction,
+    [property: JsonPropertyName("matchedCurrentSeasonTreeFoldWins")]
+        int MatchedCurrentSeasonTreeFoldWins,
+    [property: JsonPropertyName("matchedCurrentSeasonTreeFoldCount")]
+        int MatchedCurrentSeasonTreeFoldCount,
     [property: JsonPropertyName("influencesAdvice")] bool InfluencesAdvice,
     [property: JsonPropertyName("forecastArtifactId")] long ForecastArtifactId,
     [property: JsonPropertyName("forecastArtifactContentSha256")]

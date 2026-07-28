@@ -24,6 +24,12 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **The two-season GW1 shadow is now an immutable, queryable product
+  artifact.** Migration 25 adds a dedicated append-only store, a strict
+  fail-closed operator import and
+  `GET /api/v1/forecasts/multi-season-shadow/latest`. Player dossiers expose
+  the separately labelled point comparison and its historical identity state;
+  `influencesAdvice` remains false and Baseline v0 selection is unchanged.
 - **The frozen two-season tree now emits a real 2026/27 GW1 shadow
   forecast.** The read-only generator requires both exact evaluated archives
   to predate the current official capture, reuses the unchanged feature/model

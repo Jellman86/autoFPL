@@ -771,21 +771,19 @@ real 2026/27 pair remains pending the first completed Gameweek. A fixed
 two-season expanding-origin screen is also complete: the historical tree
 improves aggregate MAE slightly over its matched current-season-only ablation,
 but wins only three of eight folds and remains a shadow candidate. Its frozen
-2026/27 GW1 read-only forecast generator is now implemented against exact
-capture `15`; it remains outside advice. The active order is:
+2026/27 GW1 forecast is generated against exact capture `15`, persisted in its
+own immutable artifact family and exposed through OpenAPI and player dossiers.
+It remains outside advice. The active order is:
 
-1. persist and expose the separately labelled two-season shadow beside the
-   existing Baseline and provisional player comparison, without changing
-   selection scoring;
-2. score both forecasts on the first automatically paired 2026/27 result, then
+1. score both forecasts on the first automatically paired 2026/27 result, then
    register subsequent prospective folds without tuning on them;
-3. join only the point, participation and minutes components that pass their
+2. join only the point, participation and minutes components that pass their
    registered gates, then publish the first calibrated player distributions;
-4. add CPU-reference scenario scoring and compare the model, safer,
+3. add CPU-reference scenario scoring and compare the model, safer,
    higher-ceiling and user-authored squads in the interface;
-5. connect the grounded AI surface through read-only MCP first, followed by an
+4. connect the grounded AI surface through read-only MCP first, followed by an
    owner-configured OpenAI-compatible provider; and
-6. add owner authentication and sanitized dashboard sharing before exposing
+5. add owner authentication and sanitized dashboard sharing before exposing
    any configuration or consequential action outside the trusted instance.
 
 Specialist lineups, public forecasts, named experts and social evidence remain

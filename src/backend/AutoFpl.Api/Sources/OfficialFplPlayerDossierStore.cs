@@ -135,9 +135,15 @@ public sealed class OfficialFplPlayerDossierStore
                 replay.SelectedCaptureId,
                 identity.PlayerId,
                 cancellationToken);
+        OfficialFplMultiSeasonShadowDocument? multiSeasonShadow =
+            await ReadMultiSeasonShadowAsync(
+                connection,
+                replay.SelectedCaptureId,
+                identity.PlayerId,
+                cancellationToken);
 
         return new(
-            "1.3",
+            "1.4",
             seasonCode,
             targetGameweek,
             replay.DeadlineUtc,
@@ -165,9 +171,72 @@ public sealed class OfficialFplPlayerDossierStore
                     "published-challenger-not-promoted")
                 : null,
             preseasonChallenger,
+            multiSeasonShadow,
             outcomes,
             upcoming,
             researchEvidence);
+    }
+
+    private static async Task<OfficialFplMultiSeasonShadowDocument?>
+        ReadMultiSeasonShadowAsync(
+            SqliteConnection connection,
+            long captureId,
+            int playerId,
+            CancellationToken cancellationToken)
+    {
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText =
+            """
+            SELECT forecast_artifact_id, document_json, content_sha256
+            FROM multi_season_player_forecast_artifacts
+            WHERE official_capture_id = $captureId
+            LIMIT 1;
+            """;
+        command.Parameters.AddWithValue("$captureId", captureId);
+        await using SqliteDataReader reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+        if (!await reader.ReadAsync(cancellationToken))
+        {
+            return null;
+        }
+
+        long artifactId = reader.GetInt64(0);
+        string documentJson = reader.GetString(1);
+        string contentSha256 = reader.GetString(2);
+        string calculatedHash = Convert.ToHexStringLower(
+            SHA256.HashData(Encoding.UTF8.GetBytes(documentJson)));
+        if (!StringComparer.Ordinal.Equals(contentSha256, calculatedHash))
+        {
+            throw new InvalidOperationException(
+                "The persisted multi-season shadow content hash is invalid.");
+        }
+
+        MultiSeasonPlayerForecastDocument document =
+            JsonSerializer.Deserialize<MultiSeasonPlayerForecastDocument>(
+                documentJson,
+                new JsonSerializerOptions(JsonSerializerDefaults.Web))
+            ?? throw new InvalidOperationException(
+                "The persisted multi-season shadow could not be read.");
+        MultiSeasonPlayerForecastPlayerDocument? player =
+            document.Players.SingleOrDefault(item => item.PlayerId == playerId);
+        return player is null
+            ? null
+            : new(
+                document.ModelKey,
+                document.Status,
+                player.ExpectedPoints,
+                player.BaselineV0ExpectedPoints,
+                player.DifferenceFromBaselineV0,
+                player.AvailabilityStatus,
+                player.HistoricalIdentityStatus,
+                player.HistoricalSeasonCodes,
+                document.DistributionStatus,
+                document.Comparison.MatchedCurrentSeasonTreeMaeImprovementFraction,
+                document.Comparison.MatchedCurrentSeasonTreeFoldWins,
+                document.Comparison.MatchedCurrentSeasonTreeFoldCount,
+                document.InfluencesAdvice,
+                artifactId,
+                contentSha256);
     }
 
     private static async Task<OfficialFplPreseasonChallengerDocument?>

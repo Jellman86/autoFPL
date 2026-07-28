@@ -50,13 +50,25 @@ calibrated interval, start probability or minutes distribution.
 The retained summary is
 [`multi-season-preseason-shadow-2026-27-gw1-v1.json`](results/multi-season-preseason-shadow-2026-27-gw1-v1.json).
 
-## Interpretation and next action
+## Persistence and interpretation
 
 The underlying retrospective screen improved tree MAE by only 0.2607% over
 the matched current-season-only tree, won three of eight folds and regressed
 two position slices. The current artifact is therefore useful comparison
 evidence, not a better squad claim.
 
-The next slice may persist and expose this exact artifact beside the existing
-preseason and Baseline values. Any UI must label it as a shadow and keep it out
-of selection scoring until prospective 2026/27 outcomes support promotion.
+Migration 25 persists this exact contract in a dedicated immutable artifact
+family. Operators import it with:
+
+```bash
+dotnet AutoFpl.Api.dll \
+  --import-multi-season-player-forecast /path/to/two-season-shadow.json
+```
+
+`GET /api/v1/forecasts/multi-season-shadow/latest` exposes the complete
+artifact. Each player dossier also includes a `multiSeasonShadow` comparison.
+Both surfaces retain the model status, evidence boundary, exact content hash
+and `influencesAdvice: false`.
+
+The UI must label it as a shadow and keep it out of selection scoring until
+prospective 2026/27 outcomes support promotion.

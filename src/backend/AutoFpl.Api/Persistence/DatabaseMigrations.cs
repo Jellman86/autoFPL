@@ -4,7 +4,7 @@ internal sealed record DatabaseMigration(int Version, string Name, string Sql);
 
 internal static class DatabaseMigrations
 {
-    public const int CurrentVersion = 24;
+    public const int CurrentVersion = 25;
 
     public static IReadOnlyList<DatabaseMigration> All { get; } =
     [
@@ -2088,6 +2088,77 @@ internal static class DatabaseMigrations
                 SELECT RAISE(
                     ABORT,
                     'preseason player forecast artifacts cannot be deleted'
+                );
+            END;
+            """),
+        new(
+            25,
+            "multi-season-player-forecast-artifact",
+            """
+            CREATE TABLE multi_season_player_forecast_artifacts (
+                forecast_artifact_id INTEGER PRIMARY KEY,
+                schema_version TEXT NOT NULL CHECK (schema_version = '1.0'),
+                artifact_type TEXT NOT NULL
+                    CHECK (
+                        artifact_type =
+                            'multi-season-preseason-shadow-player-gameweek-forecast'
+                    ),
+                status TEXT NOT NULL
+                    CHECK (
+                        status =
+                            'retrospective-screen-shadow-challenger'
+                    ),
+                model_key TEXT NOT NULL
+                    CHECK (model_key = 'multi-season-histogram-tree-v1'),
+                official_capture_id INTEGER NOT NULL
+                    REFERENCES official_fpl_captures(capture_id)
+                    ON DELETE RESTRICT,
+                older_historical_capture_id INTEGER NOT NULL
+                    REFERENCES historical_fpl_season_captures(capture_id)
+                    ON DELETE RESTRICT,
+                latest_historical_capture_id INTEGER NOT NULL
+                    REFERENCES historical_fpl_season_captures(capture_id)
+                    ON DELETE RESTRICT,
+                season_code TEXT NOT NULL CHECK (season_code = '2026-27'),
+                gameweek INTEGER NOT NULL CHECK (gameweek = 1),
+                decision_cutoff_utc TEXT NOT NULL,
+                producer_run_identity_sha256 TEXT NOT NULL
+                    CHECK (length(producer_run_identity_sha256) = 64),
+                document_json TEXT NOT NULL
+                    CHECK (length(document_json) BETWEEN 2 AND 2097152),
+                content_sha256 TEXT NOT NULL UNIQUE
+                    CHECK (length(content_sha256) = 64),
+                created_at_utc TEXT NOT NULL,
+                CHECK (
+                    older_historical_capture_id
+                        <> latest_historical_capture_id
+                ),
+                UNIQUE (official_capture_id, model_key)
+            );
+
+            CREATE INDEX multi_season_player_forecast_artifacts_latest_idx
+                ON multi_season_player_forecast_artifacts (
+                    season_code,
+                    gameweek,
+                    decision_cutoff_utc DESC,
+                    forecast_artifact_id DESC
+                );
+
+            CREATE TRIGGER multi_season_player_forecast_artifacts_immutable
+            BEFORE UPDATE ON multi_season_player_forecast_artifacts
+            BEGIN
+                SELECT RAISE(
+                    ABORT,
+                    'multi-season player forecast artifacts are immutable'
+                );
+            END;
+
+            CREATE TRIGGER multi_season_player_forecast_artifacts_no_delete
+            BEFORE DELETE ON multi_season_player_forecast_artifacts
+            BEGIN
+                SELECT RAISE(
+                    ABORT,
+                    'multi-season player forecast artifacts cannot be deleted'
                 );
             END;
             """),
