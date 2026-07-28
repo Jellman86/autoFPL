@@ -4,7 +4,7 @@ internal sealed record DatabaseMigration(int Version, string Name, string Sql);
 
 internal static class DatabaseMigrations
 {
-    public const int CurrentVersion = 23;
+    public const int CurrentVersion = 24;
 
     public static IReadOnlyList<DatabaseMigration> All { get; } =
     [
@@ -1836,6 +1836,259 @@ internal static class DatabaseMigrations
             BEFORE DELETE ON research_source_snapshots
             BEGIN
                 SELECT RAISE(ABORT, 'research source snapshots cannot be deleted');
+            END;
+            """),
+        new(
+            24,
+            "two-season-historical-fpl-archive",
+            """
+            PRAGMA defer_foreign_keys = ON;
+
+            CREATE TABLE historical_fpl_season_captures_v24 (
+                capture_id INTEGER PRIMARY KEY,
+                schema_version TEXT NOT NULL CHECK (schema_version = '1.0'),
+                source_key TEXT NOT NULL
+                    CHECK (source_key = 'vaastav-fpl-historical/v1'),
+                season_code TEXT NOT NULL
+                    CHECK (season_code IN ('2024-25', '2025-26')),
+                source_revision TEXT NOT NULL CHECK (length(source_revision) = 40),
+                players_url TEXT NOT NULL CHECK (length(players_url) BETWEEN 8 AND 2048),
+                gameweeks_url TEXT NOT NULL
+                    CHECK (length(gameweeks_url) BETWEEN 8 AND 2048),
+                published_at_utc TEXT NOT NULL,
+                retrieved_at_utc TEXT NOT NULL,
+                available_at_utc TEXT NOT NULL,
+                players_sha256 TEXT NOT NULL CHECK (length(players_sha256) = 64),
+                gameweeks_sha256 TEXT NOT NULL CHECK (length(gameweeks_sha256) = 64),
+                players_csv_brotli BLOB NOT NULL
+                    CHECK (length(players_csv_brotli) BETWEEN 1 AND 8388608),
+                gameweeks_csv_brotli BLOB NOT NULL
+                    CHECK (length(gameweeks_csv_brotli) BETWEEN 1 AND 8388608),
+                player_count INTEGER NOT NULL CHECK (player_count BETWEEN 1 AND 2000),
+                player_gameweek_count INTEGER NOT NULL
+                    CHECK (player_gameweek_count BETWEEN 1 AND 100000),
+                stable_code_count INTEGER NOT NULL
+                    CHECK (stable_code_count BETWEEN 1 AND 2000),
+                created_at_utc TEXT NOT NULL,
+                UNIQUE (source_key, season_code, source_revision),
+                UNIQUE (players_sha256, gameweeks_sha256),
+                CHECK (published_at_utc <= retrieved_at_utc),
+                CHECK (retrieved_at_utc <= available_at_utc),
+                CHECK (stable_code_count <= player_count)
+            );
+
+            INSERT INTO historical_fpl_season_captures_v24
+            SELECT * FROM historical_fpl_season_captures;
+
+            CREATE TABLE historical_fpl_players_v24 (
+                capture_id INTEGER NOT NULL
+                    REFERENCES historical_fpl_season_captures_v24(capture_id)
+                    ON DELETE RESTRICT,
+                season_element_id INTEGER NOT NULL CHECK (season_element_id > 0),
+                player_code INTEGER NOT NULL CHECK (player_code > 0),
+                first_name TEXT NOT NULL CHECK (length(first_name) BETWEEN 1 AND 100),
+                second_name TEXT NOT NULL CHECK (length(second_name) BETWEEN 1 AND 100),
+                web_name TEXT NOT NULL CHECK (length(web_name) BETWEEN 1 AND 100),
+                position TEXT NOT NULL
+                    CHECK (
+                        position IN (
+                            'goalkeeper',
+                            'defender',
+                            'midfielder',
+                            'forward'
+                        )
+                    ),
+                final_team_id INTEGER NOT NULL CHECK (final_team_id > 0),
+                final_status TEXT NOT NULL CHECK (length(final_status) BETWEEN 1 AND 8),
+                final_chance_next_round INTEGER
+                    CHECK (final_chance_next_round BETWEEN 0 AND 100),
+                final_news_sha256 TEXT NOT NULL CHECK (length(final_news_sha256) = 64),
+                final_news_added_utc TEXT,
+                PRIMARY KEY (capture_id, season_element_id),
+                UNIQUE (capture_id, player_code)
+            );
+
+            INSERT INTO historical_fpl_players_v24
+            SELECT * FROM historical_fpl_players;
+
+            CREATE TABLE historical_fpl_player_gameweeks_v24 (
+                capture_id INTEGER NOT NULL,
+                season_element_id INTEGER NOT NULL,
+                player_code INTEGER NOT NULL,
+                gameweek INTEGER NOT NULL CHECK (gameweek BETWEEN 1 AND 38),
+                fixture_id INTEGER NOT NULL CHECK (fixture_id > 0),
+                kickoff_utc TEXT NOT NULL,
+                team_name TEXT NOT NULL CHECK (length(team_name) BETWEEN 1 AND 100),
+                opponent_team_id INTEGER NOT NULL CHECK (opponent_team_id > 0),
+                was_home INTEGER NOT NULL CHECK (was_home IN (0, 1)),
+                minutes INTEGER NOT NULL CHECK (minutes BETWEEN 0 AND 180),
+                starts INTEGER NOT NULL CHECK (starts BETWEEN 0 AND 2),
+                total_points INTEGER NOT NULL CHECK (total_points BETWEEN -50 AND 100),
+                goals_scored INTEGER NOT NULL CHECK (goals_scored BETWEEN 0 AND 10),
+                assists INTEGER NOT NULL CHECK (assists BETWEEN 0 AND 10),
+                clean_sheets INTEGER NOT NULL CHECK (clean_sheets BETWEEN 0 AND 2),
+                goals_conceded INTEGER NOT NULL CHECK (goals_conceded BETWEEN 0 AND 20),
+                saves INTEGER NOT NULL CHECK (saves BETWEEN 0 AND 30),
+                bonus INTEGER NOT NULL CHECK (bonus BETWEEN 0 AND 6),
+                yellow_cards INTEGER NOT NULL CHECK (yellow_cards BETWEEN 0 AND 2),
+                red_cards INTEGER NOT NULL CHECK (red_cards BETWEEN 0 AND 2),
+                bps INTEGER NOT NULL CHECK (bps BETWEEN -100 AND 300),
+                influence TEXT NOT NULL,
+                creativity TEXT NOT NULL,
+                threat TEXT NOT NULL,
+                ict_index TEXT NOT NULL,
+                expected_goals TEXT NOT NULL,
+                expected_assists TEXT NOT NULL,
+                expected_goal_involvements TEXT NOT NULL,
+                expected_goals_conceded TEXT NOT NULL,
+                clearances_blocks_interceptions INTEGER
+                    CHECK (clearances_blocks_interceptions BETWEEN 0 AND 100),
+                defensive_contribution INTEGER
+                    CHECK (defensive_contribution BETWEEN 0 AND 100),
+                recoveries INTEGER CHECK (recoveries BETWEEN 0 AND 100),
+                tackles INTEGER CHECK (tackles BETWEEN 0 AND 100),
+                PRIMARY KEY (capture_id, season_element_id, gameweek, fixture_id),
+                FOREIGN KEY (capture_id, season_element_id)
+                    REFERENCES historical_fpl_players_v24(
+                        capture_id,
+                        season_element_id
+                    )
+                    ON DELETE RESTRICT,
+                FOREIGN KEY (capture_id, player_code)
+                    REFERENCES historical_fpl_players_v24(capture_id, player_code)
+                    ON DELETE RESTRICT
+            );
+
+            INSERT INTO historical_fpl_player_gameweeks_v24
+            SELECT * FROM historical_fpl_player_gameweeks;
+
+            CREATE TABLE preseason_player_forecast_artifacts_v24 (
+                forecast_artifact_id INTEGER PRIMARY KEY,
+                schema_version TEXT NOT NULL CHECK (schema_version = '1.0'),
+                artifact_type TEXT NOT NULL
+                    CHECK (
+                        artifact_type =
+                            'historical-preseason-player-gameweek-forecast'
+                    ),
+                status TEXT NOT NULL
+                    CHECK (status = 'provisional-preseason-challenger'),
+                model_key TEXT NOT NULL
+                    CHECK (model_key = 'historical-preseason-histogram-tree-v1'),
+                official_capture_id INTEGER NOT NULL
+                    REFERENCES official_fpl_captures(capture_id)
+                    ON DELETE RESTRICT,
+                historical_capture_id INTEGER NOT NULL
+                    REFERENCES historical_fpl_season_captures_v24(capture_id)
+                    ON DELETE RESTRICT,
+                season_code TEXT NOT NULL CHECK (season_code = '2026-27'),
+                gameweek INTEGER NOT NULL CHECK (gameweek = 1),
+                decision_cutoff_utc TEXT NOT NULL,
+                producer_run_identity_sha256 TEXT NOT NULL
+                    CHECK (length(producer_run_identity_sha256) = 64),
+                document_json TEXT NOT NULL
+                    CHECK (length(document_json) BETWEEN 2 AND 2097152),
+                content_sha256 TEXT NOT NULL UNIQUE
+                    CHECK (length(content_sha256) = 64),
+                created_at_utc TEXT NOT NULL,
+                UNIQUE (official_capture_id, model_key)
+            );
+
+            INSERT INTO preseason_player_forecast_artifacts_v24
+            SELECT * FROM preseason_player_forecast_artifacts;
+
+            DROP TRIGGER preseason_player_forecast_artifacts_immutable;
+            DROP TRIGGER preseason_player_forecast_artifacts_no_delete;
+            DROP TRIGGER historical_fpl_player_gameweeks_immutable;
+            DROP TRIGGER historical_fpl_player_gameweeks_no_delete;
+            DROP TRIGGER historical_fpl_players_immutable;
+            DROP TRIGGER historical_fpl_players_no_delete;
+            DROP TRIGGER historical_fpl_season_captures_immutable;
+            DROP TRIGGER historical_fpl_season_captures_no_delete;
+
+            DROP TABLE preseason_player_forecast_artifacts;
+            DROP TABLE historical_fpl_player_gameweeks;
+            DROP TABLE historical_fpl_players;
+            DROP TABLE historical_fpl_season_captures;
+
+            ALTER TABLE historical_fpl_season_captures_v24
+                RENAME TO historical_fpl_season_captures;
+            ALTER TABLE historical_fpl_players_v24
+                RENAME TO historical_fpl_players;
+            ALTER TABLE historical_fpl_player_gameweeks_v24
+                RENAME TO historical_fpl_player_gameweeks;
+            ALTER TABLE preseason_player_forecast_artifacts_v24
+                RENAME TO preseason_player_forecast_artifacts;
+
+            CREATE INDEX historical_fpl_players_code_idx
+                ON historical_fpl_players (player_code, capture_id);
+
+            CREATE INDEX historical_fpl_player_gameweeks_code_idx
+                ON historical_fpl_player_gameweeks (
+                    player_code,
+                    gameweek,
+                    kickoff_utc
+                );
+
+            CREATE INDEX preseason_player_forecast_artifacts_latest_idx
+                ON preseason_player_forecast_artifacts (
+                    season_code,
+                    gameweek,
+                    decision_cutoff_utc DESC,
+                    forecast_artifact_id DESC
+                );
+
+            CREATE TRIGGER historical_fpl_season_captures_immutable
+            BEFORE UPDATE ON historical_fpl_season_captures
+            BEGIN
+                SELECT RAISE(ABORT, 'historical FPL season captures are immutable');
+            END;
+
+            CREATE TRIGGER historical_fpl_season_captures_no_delete
+            BEFORE DELETE ON historical_fpl_season_captures
+            BEGIN
+                SELECT RAISE(ABORT, 'historical FPL season captures cannot be deleted');
+            END;
+
+            CREATE TRIGGER historical_fpl_players_immutable
+            BEFORE UPDATE ON historical_fpl_players
+            BEGIN
+                SELECT RAISE(ABORT, 'historical FPL players are immutable');
+            END;
+
+            CREATE TRIGGER historical_fpl_players_no_delete
+            BEFORE DELETE ON historical_fpl_players
+            BEGIN
+                SELECT RAISE(ABORT, 'historical FPL players cannot be deleted');
+            END;
+
+            CREATE TRIGGER historical_fpl_player_gameweeks_immutable
+            BEFORE UPDATE ON historical_fpl_player_gameweeks
+            BEGIN
+                SELECT RAISE(ABORT, 'historical FPL player Gameweeks are immutable');
+            END;
+
+            CREATE TRIGGER historical_fpl_player_gameweeks_no_delete
+            BEFORE DELETE ON historical_fpl_player_gameweeks
+            BEGIN
+                SELECT RAISE(ABORT, 'historical FPL player Gameweeks cannot be deleted');
+            END;
+
+            CREATE TRIGGER preseason_player_forecast_artifacts_immutable
+            BEFORE UPDATE ON preseason_player_forecast_artifacts
+            BEGIN
+                SELECT RAISE(
+                    ABORT,
+                    'preseason player forecast artifacts are immutable'
+                );
+            END;
+
+            CREATE TRIGGER preseason_player_forecast_artifacts_no_delete
+            BEFORE DELETE ON preseason_player_forecast_artifacts
+            BEGIN
+                SELECT RAISE(
+                    ABORT,
+                    'preseason player forecast artifacts cannot be deleted'
+                );
             END;
             """),
     ];

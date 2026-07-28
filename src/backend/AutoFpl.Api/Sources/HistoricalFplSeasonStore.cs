@@ -1,5 +1,7 @@
 using System.Globalization;
 using System.IO.Compression;
+using System.Security.Cryptography;
+using System.Text;
 
 using AutoFpl.Api.Persistence;
 using AutoFpl.Contracts.Sources;
@@ -20,8 +22,21 @@ public sealed class HistoricalFplSeasonStore
     internal async Task<HistoricalFplSeasonCaptureDocument> SaveAsync(
         HistoricalFplSeasonPayload payload,
         DateTimeOffset retrievedAtUtc,
+        CancellationToken cancellationToken = default) =>
+        await SaveAsync(
+            HistoricalFplSeasonRegistry.GetRequired(
+                HistoricalFplSeasonRegistry.DefaultSeasonCode),
+            payload,
+            retrievedAtUtc,
+            cancellationToken);
+
+    internal async Task<HistoricalFplSeasonCaptureDocument> SaveAsync(
+        HistoricalFplSeasonDefinition definition,
+        HistoricalFplSeasonPayload payload,
+        DateTimeOffset retrievedAtUtc,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(definition);
         ArgumentNullException.ThrowIfNull(payload);
         if (retrievedAtUtc.Offset != TimeSpan.Zero)
         {
@@ -37,6 +52,7 @@ public sealed class HistoricalFplSeasonStore
         long? existingId = await FindExistingCaptureIdAsync(
             connection,
             transaction,
+            definition,
             cancellationToken);
         if (existingId is not null)
         {
@@ -47,6 +63,7 @@ public sealed class HistoricalFplSeasonStore
         long captureId = await InsertCaptureAsync(
             connection,
             transaction,
+            definition,
             payload,
             retrievedAtUtc,
             cancellationToken);
@@ -63,16 +80,14 @@ public sealed class HistoricalFplSeasonStore
             payload.PlayerGameweeks,
             cancellationToken);
         await transaction.CommitAsync(cancellationToken);
-        return CreateDocument(captureId, payload, retrievedAtUtc);
+        return CreateDocument(captureId, definition, payload, retrievedAtUtc);
     }
 
     public async Task<HistoricalFplSeasonCaptureDocument?> GetLatestAsync(
         string seasonCode,
         CancellationToken cancellationToken = default)
     {
-        if (!StringComparer.Ordinal.Equals(
-                seasonCode,
-                HistoricalFplSeasonImporter.SeasonCode))
+        if (!HistoricalFplSeasonRegistry.TryGet(seasonCode, out _))
         {
             return null;
         }
@@ -120,9 +135,95 @@ public sealed class HistoricalFplSeasonStore
             : null;
     }
 
+    public async Task<HistoricalFplIdentityCoverageDocument?> GetIdentityCoverageAsync(
+        string fromSeasonCode,
+        string toSeasonCode,
+        CancellationToken cancellationToken = default)
+    {
+        if (!HistoricalFplSeasonRegistry.TryGet(
+                fromSeasonCode,
+                out HistoricalFplSeasonDefinition? fromDefinition)
+            || !HistoricalFplSeasonRegistry.TryGet(
+                toSeasonCode,
+                out HistoricalFplSeasonDefinition? toDefinition)
+            || StringComparer.Ordinal.Equals(fromSeasonCode, toSeasonCode))
+        {
+            return null;
+        }
+
+        await using SqliteConnection connection = new(_options.ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+        HistoricalFplSeasonIdentity? from = await ReadIdentityAsync(
+            connection,
+            fromDefinition,
+            cancellationToken);
+        HistoricalFplSeasonIdentity? to = await ReadIdentityAsync(
+            connection,
+            toDefinition,
+            cancellationToken);
+        if (from is null || to is null)
+        {
+            return null;
+        }
+
+        return CreateIdentityCoverage(from, to);
+    }
+
+    internal static HistoricalFplIdentityCoverageDocument CreateIdentityCoverage(
+        HistoricalFplSeasonCaptureDocument fromDocument,
+        IReadOnlyList<int> fromPlayerCodes,
+        HistoricalFplSeasonCaptureDocument toDocument,
+        IReadOnlyList<int> toPlayerCodes) =>
+        CreateIdentityCoverage(
+            new(
+                fromDocument,
+                fromPlayerCodes,
+                fromDocument.PlayerGameweekCount),
+            new(
+                toDocument,
+                toPlayerCodes,
+                toDocument.PlayerGameweekCount));
+
+    private static HistoricalFplIdentityCoverageDocument CreateIdentityCoverage(
+        HistoricalFplSeasonIdentity from,
+        HistoricalFplSeasonIdentity to)
+    {
+        ValidateIdentity(from);
+        ValidateIdentity(to);
+        int shared = from.PlayerCodes.Intersect(to.PlayerCodes).Count();
+        int departed = from.PlayerCodes.Count - shared;
+        int introduced = to.PlayerCodes.Count - shared;
+        string identitySet = string.Join(
+            '\n',
+            from.PlayerCodes
+                .Order()
+                .Select(code => $"{from.Document.SeasonCode}:{code}")
+                .Concat(
+                    to.PlayerCodes
+                        .Order()
+                        .Select(
+                            code => $"{to.Document.SeasonCode}:{code}")));
+        return new HistoricalFplIdentityCoverageDocument(
+            "1.0",
+            "audited",
+            "exact official player.code equality across pinned season archives",
+            false,
+            IdentitySeason(from.Document),
+            IdentitySeason(to.Document),
+            shared,
+            departed,
+            introduced,
+            Fraction(shared, from.PlayerCodes.Count),
+            Fraction(shared, to.PlayerCodes.Count),
+            Convert.ToHexString(
+                    SHA256.HashData(Encoding.UTF8.GetBytes(identitySet)))
+                .ToLowerInvariant());
+    }
+
     private static async Task<long?> FindExistingCaptureIdAsync(
         SqliteConnection connection,
         SqliteTransaction transaction,
+        HistoricalFplSeasonDefinition definition,
         CancellationToken cancellationToken)
     {
         await using SqliteCommand command = connection.CreateCommand();
@@ -137,20 +238,139 @@ public sealed class HistoricalFplSeasonStore
             """;
         command.Parameters.AddWithValue(
             "$sourceKey",
-            HistoricalFplSeasonImporter.SourceKey);
+            HistoricalFplSeasonRegistry.SourceKey);
         command.Parameters.AddWithValue(
             "$seasonCode",
-            HistoricalFplSeasonImporter.SeasonCode);
+            definition.SeasonCode);
         command.Parameters.AddWithValue(
             "$sourceRevision",
-            HistoricalFplSeasonImporter.SourceRevision);
+            definition.SourceRevision);
         object? value = await command.ExecuteScalarAsync(cancellationToken);
         return value is long captureId ? captureId : null;
     }
 
+    private static async Task<HistoricalFplSeasonIdentity?> ReadIdentityAsync(
+        SqliteConnection connection,
+        HistoricalFplSeasonDefinition definition,
+        CancellationToken cancellationToken)
+    {
+        await using SqliteCommand captureCommand = connection.CreateCommand();
+        captureCommand.CommandText =
+            $"""
+            {SelectDocumentSql}
+            WHERE season_code = $seasonCode
+            ORDER BY available_at_utc DESC, capture_id DESC
+            LIMIT 1;
+            """;
+        captureCommand.Parameters.AddWithValue(
+            "$seasonCode",
+            definition.SeasonCode);
+        HistoricalFplSeasonCaptureDocument? document;
+        await using (SqliteDataReader reader =
+            await captureCommand.ExecuteReaderAsync(cancellationToken))
+        {
+            document = await reader.ReadAsync(cancellationToken)
+                ? ReadDocument(reader)
+                : null;
+        }
+
+        if (document is null)
+        {
+            return null;
+        }
+
+        if (!StringComparer.Ordinal.Equals(
+                document.SourceKey,
+                HistoricalFplSeasonRegistry.SourceKey)
+            || !StringComparer.Ordinal.Equals(
+                document.SourceRevision,
+                definition.SourceRevision)
+            || !StringComparer.Ordinal.Equals(
+                document.PlayersSha256,
+                definition.ExpectedPlayersSha256)
+            || !StringComparer.Ordinal.Equals(
+                document.GameweeksSha256,
+                definition.ExpectedGameweeksSha256)
+            || document.PlayerCount != definition.ExpectedPlayerCount
+            || document.PlayerGameweekCount !=
+                definition.ExpectedPlayerGameweekCount)
+        {
+            throw new HistoricalFplSeasonCoverageException(
+                $"Historical FPL season '{definition.SeasonCode}' does not "
+                + "match its pinned registry identity.");
+        }
+
+        await using SqliteCommand playerCommand = connection.CreateCommand();
+        playerCommand.CommandText =
+            """
+            SELECT player_code
+            FROM historical_fpl_players
+            WHERE capture_id = $captureId
+            ORDER BY player_code;
+            """;
+        playerCommand.Parameters.AddWithValue("$captureId", document.CaptureId);
+        var playerCodes = new List<int>();
+        await using SqliteDataReader playerReader =
+            await playerCommand.ExecuteReaderAsync(cancellationToken);
+        while (await playerReader.ReadAsync(cancellationToken))
+        {
+            playerCodes.Add(playerReader.GetInt32(0));
+        }
+
+        await using SqliteCommand gameweekCommand = connection.CreateCommand();
+        gameweekCommand.CommandText =
+            """
+            SELECT COUNT(*)
+            FROM historical_fpl_player_gameweeks
+            WHERE capture_id = $captureId;
+            """;
+        gameweekCommand.Parameters.AddWithValue(
+            "$captureId",
+            document.CaptureId);
+        int playerGameweekCount = Convert.ToInt32(
+            await gameweekCommand.ExecuteScalarAsync(cancellationToken),
+            CultureInfo.InvariantCulture);
+
+        return new(document, playerCodes, playerGameweekCount);
+    }
+
+    private static void ValidateIdentity(HistoricalFplSeasonIdentity identity)
+    {
+        if (identity.PlayerCodes.Count != identity.Document.PlayerCount
+            || identity.PlayerCodes.Count != identity.Document.StableCodeCount
+            || identity.PlayerCodes.Count != identity.PlayerCodes.Distinct().Count()
+            || identity.PlayerCodes.Any(code => code <= 0)
+            || identity.PlayerGameweekCount !=
+                identity.Document.PlayerGameweekCount)
+        {
+            throw new HistoricalFplSeasonCoverageException(
+                $"Historical FPL season '{identity.Document.SeasonCode}' has "
+                + "incomplete or ambiguous stable player-code coverage.");
+        }
+    }
+
+    private static HistoricalFplIdentityCoverageSeasonDocument IdentitySeason(
+        HistoricalFplSeasonCaptureDocument document) =>
+        new(
+            document.SeasonCode,
+            document.CaptureId,
+            document.SourceRevision,
+            document.PlayersSha256,
+            document.GameweeksSha256,
+            document.AvailableAtUtc,
+            document.PlayerCount,
+            document.StableCodeCount);
+
+    private static decimal Fraction(int numerator, int denominator) =>
+        Math.Round(
+            (decimal)numerator / denominator,
+            6,
+            MidpointRounding.AwayFromZero);
+
     private static async Task<long> InsertCaptureAsync(
         SqliteConnection connection,
         SqliteTransaction transaction,
+        HistoricalFplSeasonDefinition definition,
         HistoricalFplSeasonPayload payload,
         DateTimeOffset retrievedAtUtc,
         CancellationToken cancellationToken)
@@ -203,22 +423,22 @@ public sealed class HistoricalFplSeasonStore
             """;
         command.Parameters.AddWithValue(
             "$sourceKey",
-            HistoricalFplSeasonImporter.SourceKey);
+            HistoricalFplSeasonRegistry.SourceKey);
         command.Parameters.AddWithValue(
             "$seasonCode",
-            HistoricalFplSeasonImporter.SeasonCode);
+            definition.SeasonCode);
         command.Parameters.AddWithValue(
             "$sourceRevision",
-            HistoricalFplSeasonImporter.SourceRevision);
+            definition.SourceRevision);
         command.Parameters.AddWithValue(
             "$playersUrl",
-            HistoricalFplSeasonImporter.PlayersUri.AbsoluteUri);
+            definition.PlayersUri.AbsoluteUri);
         command.Parameters.AddWithValue(
             "$gameweeksUrl",
-            HistoricalFplSeasonImporter.GameweeksUri.AbsoluteUri);
+            definition.GameweeksUri.AbsoluteUri);
         command.Parameters.AddWithValue(
             "$publishedAtUtc",
-            Format(HistoricalFplSeasonImporter.PublishedAtUtc));
+            Format(definition.PublishedAtUtc));
         command.Parameters.AddWithValue("$retrievedAtUtc", Format(retrievedAtUtc));
         command.Parameters.AddWithValue("$playersSha256", payload.PlayersSha256);
         command.Parameters.AddWithValue("$gameweeksSha256", payload.GameweeksSha256);
@@ -473,11 +693,17 @@ public sealed class HistoricalFplSeasonStore
             command.Parameters["$expectedGoalsConceded"].Value =
                 Decimal(row.ExpectedGoalsConceded);
             command.Parameters["$clearancesBlocksInterceptions"].Value =
-                row.ClearancesBlocksInterceptions;
+                row.ClearancesBlocksInterceptions is int clearances
+                    ? clearances
+                    : DBNull.Value;
             command.Parameters["$defensiveContribution"].Value =
-                row.DefensiveContribution;
-            command.Parameters["$recoveries"].Value = row.Recoveries;
-            command.Parameters["$tackles"].Value = row.Tackles;
+                row.DefensiveContribution is int contribution
+                    ? contribution
+                    : DBNull.Value;
+            command.Parameters["$recoveries"].Value =
+                row.Recoveries is int recoveries ? recoveries : DBNull.Value;
+            command.Parameters["$tackles"].Value =
+                row.Tackles is int tackles ? tackles : DBNull.Value;
             await command.ExecuteNonQueryAsync(cancellationToken);
         }
     }
@@ -498,17 +724,18 @@ public sealed class HistoricalFplSeasonStore
 
     private static HistoricalFplSeasonCaptureDocument CreateDocument(
         long captureId,
+        HistoricalFplSeasonDefinition definition,
         HistoricalFplSeasonPayload payload,
         DateTimeOffset retrievedAtUtc) =>
         new(
             captureId,
             "1.0",
-            HistoricalFplSeasonImporter.SourceKey,
-            HistoricalFplSeasonImporter.SeasonCode,
-            HistoricalFplSeasonImporter.SourceRevision,
-            HistoricalFplSeasonImporter.PlayersUri.AbsoluteUri,
-            HistoricalFplSeasonImporter.GameweeksUri.AbsoluteUri,
-            HistoricalFplSeasonImporter.PublishedAtUtc,
+            HistoricalFplSeasonRegistry.SourceKey,
+            definition.SeasonCode,
+            definition.SourceRevision,
+            definition.PlayersUri.AbsoluteUri,
+            definition.GameweeksUri.AbsoluteUri,
+            definition.PublishedAtUtc,
             retrievedAtUtc,
             retrievedAtUtc,
             payload.PlayersSha256,
@@ -568,4 +795,17 @@ public sealed class HistoricalFplSeasonStore
             stable_code_count
         FROM historical_fpl_season_captures
         """;
+
+    private sealed record HistoricalFplSeasonIdentity(
+        HistoricalFplSeasonCaptureDocument Document,
+        IReadOnlyList<int> PlayerCodes,
+        int PlayerGameweekCount);
+}
+
+public sealed class HistoricalFplSeasonCoverageException : Exception
+{
+    public HistoricalFplSeasonCoverageException(string message)
+        : base(message)
+    {
+    }
 }

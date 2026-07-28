@@ -7,8 +7,8 @@ namespace AutoFpl.Api.Sources;
 
 public sealed class HistoricalFplSeasonImporter
 {
-    public const string SourceKey = "vaastav-fpl-historical/v1";
-    public const string SeasonCode = "2025-26";
+    public const string SourceKey = HistoricalFplSeasonRegistry.SourceKey;
+    public const string SeasonCode = HistoricalFplSeasonRegistry.DefaultSeasonCode;
     public const string SourceRevision = "f9ed3e8839b0f970e0d5d4a83c5628f6eaee755a";
     public const string ExpectedPlayersSha256 =
         "412ce0172016f8f98f25177dc6de9f3cd2a8ec7a6135f9aa638d7fdee784d67b";
@@ -44,19 +44,55 @@ public sealed class HistoricalFplSeasonImporter
     }
 
     public async Task<HistoricalFplSeasonCaptureDocument> ImportAsync(
+        string seasonCode,
         CancellationToken cancellationToken = default)
     {
-        Task<byte[]> playersTask = FetchCsvAsync(PlayersUri, cancellationToken);
-        Task<byte[]> gameweeksTask = FetchCsvAsync(GameweeksUri, cancellationToken);
+        HistoricalFplSeasonDefinition definition =
+            HistoricalFplSeasonRegistry.GetRequired(seasonCode);
+        Task<byte[]> playersTask =
+            FetchCsvAsync(definition.PlayersUri, cancellationToken);
+        Task<byte[]> gameweeksTask =
+            FetchCsvAsync(definition.GameweeksUri, cancellationToken);
         await Task.WhenAll(playersTask, gameweeksTask);
         return await ImportCapturedPayloadAsync(
+            definition,
             await playersTask,
             await gameweeksTask,
             _timeProvider.GetUtcNow(),
             cancellationToken);
     }
 
+    public Task<HistoricalFplSeasonCaptureDocument> ImportAsync(
+        CancellationToken cancellationToken = default) =>
+        ImportAsync(SeasonCode, cancellationToken);
+
     internal async Task<HistoricalFplSeasonCaptureDocument> ImportCapturedPayloadAsync(
+        string seasonCode,
+        byte[] playersCsv,
+        byte[] gameweeksCsv,
+        DateTimeOffset retrievedAtUtc,
+        CancellationToken cancellationToken = default) =>
+        await ImportCapturedPayloadAsync(
+            HistoricalFplSeasonRegistry.GetRequired(seasonCode),
+            playersCsv,
+            gameweeksCsv,
+            retrievedAtUtc,
+            cancellationToken);
+
+    internal async Task<HistoricalFplSeasonCaptureDocument> ImportCapturedPayloadAsync(
+        byte[] playersCsv,
+        byte[] gameweeksCsv,
+        DateTimeOffset retrievedAtUtc,
+        CancellationToken cancellationToken = default) =>
+        await ImportCapturedPayloadAsync(
+            HistoricalFplSeasonRegistry.GetRequired(SeasonCode),
+            playersCsv,
+            gameweeksCsv,
+            retrievedAtUtc,
+            cancellationToken);
+
+    private async Task<HistoricalFplSeasonCaptureDocument> ImportCapturedPayloadAsync(
+        HistoricalFplSeasonDefinition definition,
         byte[] playersCsv,
         byte[] gameweeksCsv,
         DateTimeOffset retrievedAtUtc,
@@ -69,7 +105,7 @@ public sealed class HistoricalFplSeasonImporter
                 nameof(retrievedAtUtc));
         }
 
-        if (retrievedAtUtc < PublishedAtUtc)
+        if (retrievedAtUtc < definition.PublishedAtUtc)
         {
             throw new HistoricalFplSeasonPayloadException(
                 "Historical FPL archive retrieval predates the pinned publication.");
@@ -88,10 +124,10 @@ public sealed class HistoricalFplSeasonImporter
             Convert.ToHexString(SHA256.HashData(gameweeksCsv)).ToLowerInvariant();
         if (!StringComparer.Ordinal.Equals(
                 playersSha256,
-                ExpectedPlayersSha256)
+                definition.ExpectedPlayersSha256)
             || !StringComparer.Ordinal.Equals(
                 gameweeksSha256,
-                ExpectedGameweeksSha256))
+                definition.ExpectedGameweeksSha256))
         {
             throw new HistoricalFplSeasonPayloadException(
                 "Historical FPL archive does not match the pinned file hashes.");
@@ -99,14 +135,19 @@ public sealed class HistoricalFplSeasonImporter
 
         HistoricalFplSeasonPayload payload =
             HistoricalFplSeasonPayloadParser.Parse(playersCsv, gameweeksCsv);
-        if (payload.Players.Count != ExpectedPlayerCount
-            || payload.PlayerGameweeks.Count != ExpectedPlayerGameweekCount)
+        if (payload.Players.Count != definition.ExpectedPlayerCount
+            || payload.PlayerGameweeks.Count !=
+                definition.ExpectedPlayerGameweekCount)
         {
             throw new HistoricalFplSeasonPayloadException(
                 "Historical FPL archive does not match the pinned row counts.");
         }
 
-        return await _store.SaveAsync(payload, retrievedAtUtc, cancellationToken);
+        return await _store.SaveAsync(
+            definition,
+            payload,
+            retrievedAtUtc,
+            cancellationToken);
     }
 
     private async Task<byte[]> FetchCsvAsync(

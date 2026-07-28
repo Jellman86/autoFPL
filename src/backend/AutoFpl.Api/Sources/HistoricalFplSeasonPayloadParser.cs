@@ -52,10 +52,6 @@ internal static class HistoricalFplSeasonPayloadParser
         "expected_assists",
         "expected_goal_involvements",
         "expected_goals_conceded",
-        "clearances_blocks_interceptions",
-        "defensive_contribution",
-        "recoveries",
-        "tackles",
     ];
 
     public static HistoricalFplSeasonPayload Parse(
@@ -67,10 +63,11 @@ internal static class HistoricalFplSeasonPayloadParser
 
         try
         {
-            IReadOnlyList<HistoricalFplPlayer> players = ParsePlayers(playersCsv);
+            IReadOnlyList<HistoricalFplPlayer> players =
+                ParsePlayers(playersCsv, out IReadOnlySet<int> excludedElementIds);
             var byElement = players.ToDictionary(player => player.SeasonElementId);
             IReadOnlyList<HistoricalFplPlayerGameweek> gameweeks =
-                ParseGameweeks(gameweeksCsv, byElement);
+                ParseGameweeks(gameweeksCsv, byElement, excludedElementIds);
             return new(
                 playersCsv,
                 gameweeksCsv,
@@ -94,10 +91,13 @@ internal static class HistoricalFplSeasonPayloadParser
         }
     }
 
-    private static IReadOnlyList<HistoricalFplPlayer> ParsePlayers(byte[] csv)
+    private static IReadOnlyList<HistoricalFplPlayer> ParsePlayers(
+        byte[] csv,
+        out IReadOnlySet<int> excludedElementIds)
     {
         using CsvRows rows = CsvRows.Open(csv, PlayerHeaders);
         var players = new List<HistoricalFplPlayer>();
+        var excluded = new HashSet<int>();
         var elementIds = new HashSet<int>();
         var playerCodes = new HashSet<int>();
         while (rows.Read() is IReadOnlyDictionary<string, string> row)
@@ -109,6 +109,13 @@ internal static class HistoricalFplSeasonPayloadParser
                 throw Invalid("player identities must be unique within the archive.");
             }
 
+            string elementType = Required(row, "element_type", 1);
+            if (StringComparer.Ordinal.Equals(elementType, "5"))
+            {
+                excluded.Add(elementId);
+                continue;
+            }
+
             players.Add(
                 new(
                     elementId,
@@ -116,7 +123,7 @@ internal static class HistoricalFplSeasonPayloadParser
                     Required(row, "first_name", 100),
                     Required(row, "second_name", 100),
                     Required(row, "web_name", 100),
-                    Position(Required(row, "element_type", 1)),
+                    Position(elementType),
                     PositiveInt(row, "team"),
                     Required(row, "status", 8),
                     NullablePercent(row, "chance_of_playing_next_round"),
@@ -132,12 +139,14 @@ internal static class HistoricalFplSeasonPayloadParser
             throw Invalid("the player archive contains an unsupported row count.");
         }
 
+        excludedElementIds = excluded;
         return players;
     }
 
     private static IReadOnlyList<HistoricalFplPlayerGameweek> ParseGameweeks(
         byte[] csv,
-        IReadOnlyDictionary<int, HistoricalFplPlayer> players)
+        IReadOnlyDictionary<int, HistoricalFplPlayer> players,
+        IReadOnlySet<int> excludedElementIds)
     {
         using CsvRows rows = CsvRows.Open(csv, GameweekHeaders);
         var gameweeks = new List<HistoricalFplPlayerGameweek>();
@@ -148,6 +157,11 @@ internal static class HistoricalFplSeasonPayloadParser
         while (rows.Read() is IReadOnlyDictionary<string, string> row)
         {
             int elementId = PositiveInt(row, "element");
+            if (excludedElementIds.Contains(elementId))
+            {
+                continue;
+            }
+
             if (!players.TryGetValue(elementId, out HistoricalFplPlayer? player))
             {
                 throw Invalid(
@@ -185,10 +199,14 @@ internal static class HistoricalFplSeasonPayloadParser
                 Decimal(row, "expected_assists", 0, 20),
                 Decimal(row, "expected_goal_involvements", 0, 20),
                 Decimal(row, "expected_goals_conceded", 0, 30),
-                BoundedInt(row, "clearances_blocks_interceptions", 0, 100),
-                BoundedInt(row, "defensive_contribution", 0, 100),
-                BoundedInt(row, "recoveries", 0, 100),
-                BoundedInt(row, "tackles", 0, 100));
+                NullableBoundedInt(
+                    row,
+                    "clearances_blocks_interceptions",
+                    0,
+                    100),
+                NullableBoundedInt(row, "defensive_contribution", 0, 100),
+                NullableBoundedInt(row, "recoveries", 0, 100),
+                NullableBoundedInt(row, "tackles", 0, 100));
             var key = (elementId, gameweek, fixtureId);
             if (byKey.TryGetValue(key, out HistoricalFplPlayerGameweek? existing))
             {
@@ -291,6 +309,24 @@ internal static class HistoricalFplSeasonPayloadParser
         return value.Length == 0 || StringComparer.OrdinalIgnoreCase.Equals(value, "None")
             ? null
             : BoundedInt(row, name, 0, 100);
+    }
+
+    private static int? NullableBoundedInt(
+        IReadOnlyDictionary<string, string> row,
+        string name,
+        int minimum,
+        int maximum)
+    {
+        if (!row.TryGetValue(name, out string? raw))
+        {
+            return null;
+        }
+
+        string value = raw.Trim();
+        return value.Length == 0
+            || StringComparer.OrdinalIgnoreCase.Equals(value, "None")
+                ? null
+                : BoundedInt(row, name, minimum, maximum);
     }
 
     private static DateTimeOffset? NullableUtc(
