@@ -418,6 +418,10 @@ source pairs as null features. Ready rows expose raw season and last-3/6/8
 counts with exact snapshot hashes and availability time. The response remains
 `exploratory-not-promoted`, reports `influencesForecast: false`, and must not be
 fed into served advice before the registered temporal evaluation gate passes.
+An available pair that fails stable-match validation is retained as
+`rejected-incompatible-source-pair`; the cohort reports
+`blocked-incompatible-source-pairs` while still returning every valid and
+missing row for diagnosis.
 
 Set
 `AutoFpl__Research__ByparrUrl` to Riker's private-LAN origin when the default

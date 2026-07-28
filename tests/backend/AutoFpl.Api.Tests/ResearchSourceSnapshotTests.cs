@@ -563,6 +563,33 @@ public sealed class ResearchSourceSnapshotTests
         Assert.Equal("missing-player-log", missing.FeatureStatus);
         Assert.Null(missing.Season);
         Assert.Empty(missing.RollingWindows);
+
+        FbrefMatchOpportunityPlayerFeatureDocument rejected =
+            FbrefMatchOpportunityFeatureTableReader.CreateRejected(
+                new(
+                    opportunity.SourcePlayerId,
+                    opportunity.PlayerName,
+                    opportunity.SourceTeamId,
+                    opportunity.TeamName,
+                    opportunity.OfficialPlayerId,
+                    opportunity.OfficialPlayerCode,
+                    playerSnapshot.SourceKey,
+                    "captured",
+                    playerSnapshot.SnapshotId,
+                    1,
+                    playerSnapshot.RetrievedAtUtc,
+                    playerSnapshot.ContentSha256),
+                targetIdentity,
+                playerSnapshot,
+                scheduleSnapshot);
+        Assert.Equal(
+            "rejected-incompatible-source-pair",
+            rejected.FeatureStatus);
+        Assert.Equal(
+            playerSnapshot.SnapshotId,
+            rejected.PlayerMatchLogSnapshotId);
+        Assert.Null(rejected.Season);
+        Assert.Empty(rejected.RollingWindows);
     }
 
     [Fact]

@@ -151,6 +151,10 @@ pairs to the latest official target Gameweek and deadline. It always emits all
 rows retain exact source IDs, hashes, availability time, season counts and
 last-3/6/8 counts. `no-player-row` remains an explicit missing count and is
 never converted to zero minutes or a non-appearance.
+Pairs that exist but fail the deterministic player/schedule join remain visible
+as `rejected-incompatible-source-pair` rows with their exact snapshot IDs and
+hashes. They are counted separately from missing inputs and block the table
+from becoming complete without discarding valid rows.
 
 This table is a prospective, `exploratory-not-promoted` research input. It
 cannot influence a forecast. The current cohort can be frozen before GW1 and

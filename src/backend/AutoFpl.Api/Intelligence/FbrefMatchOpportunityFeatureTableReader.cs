@@ -132,40 +132,58 @@ public sealed class FbrefMatchOpportunityFeatureTableReader
             }
 
             ValidateCutoff(playerSnapshot, target);
-            FbrefPlayerMatchLogDocument playerLog =
-                await _playerExtractor.GetAsync(
-                    playerSnapshot.SnapshotId,
-                    context.PlayingTime,
-                    cancellationToken)
-                ?? throw Invalid(
-                    "A covered FBref player match-log snapshot was unavailable.");
-            FbrefPlayerMatchOpportunityDocument opportunity =
-                FbrefPlayerMatchOpportunityExtractor.Build(
-                    playerLog,
-                    schedule);
-            if (opportunity.OfficialPlayerCode != targetIdentity.PlayerCode)
+            try
             {
-                throw Invalid(
-                    "An FBref feature row did not match its official target identity.");
+                FbrefPlayerMatchLogDocument playerLog =
+                    await _playerExtractor.GetAsync(
+                        playerSnapshot.SnapshotId,
+                        context.PlayingTime,
+                        cancellationToken)
+                    ?? throw Invalid(
+                        "A covered FBref player match-log snapshot was unavailable.");
+                FbrefPlayerMatchOpportunityDocument opportunity =
+                    FbrefPlayerMatchOpportunityExtractor.Build(
+                        playerLog,
+                        schedule);
+                if (opportunity.OfficialPlayerCode != targetIdentity.PlayerCode)
+                {
+                    throw Invalid(
+                        "An FBref feature row did not match its official target identity.");
+                }
+                players.Add(CreateReady(
+                    opportunity,
+                    targetIdentity,
+                    playerSnapshot,
+                    scheduleSnapshot!));
             }
-            players.Add(CreateReady(
-                opportunity,
-                targetIdentity,
-                playerSnapshot,
-                scheduleSnapshot!));
+            catch (ResearchSourceSnapshotException)
+            {
+                players.Add(CreateRejected(
+                    player,
+                    targetIdentity,
+                    playerSnapshot,
+                    scheduleSnapshot!));
+            }
         }
 
         int readyCount = players.Count(player =>
             StringComparer.Ordinal.Equals(
                 player.FeatureStatus,
                 "shadow-feature-ready"));
+        int rejectedCount = players.Count(player =>
+            StringComparer.Ordinal.Equals(
+                player.FeatureStatus,
+                "rejected-incompatible-source-pair"));
+        int missingCount = players.Count - readyCount - rejectedCount;
         return new(
             "1.0",
             FeatureVersion,
             coverage.IdentityBridgeVersion,
-            readyCount == players.Count
-                ? "complete-shadow-feature-table"
-                : "blocked-incomplete-source-pairs",
+            rejectedCount > 0
+                ? "blocked-incompatible-source-pairs"
+                : missingCount > 0
+                    ? "blocked-incomplete-source-pairs"
+                    : "complete-shadow-feature-table",
             "exploratory-not-promoted",
             false,
             new(
@@ -176,7 +194,8 @@ public sealed class FbrefMatchOpportunityFeatureTableReader
                 target.AvailableAtUtc),
             players.Count,
             readyCount,
-            players.Count - readyCount,
+            missingCount,
+            rejectedCount,
             players);
     }
 
@@ -208,6 +227,28 @@ public sealed class FbrefMatchOpportunityFeatureTableReader
             null,
             []);
     }
+
+    internal static FbrefMatchOpportunityPlayerFeatureDocument CreateRejected(
+        FbrefMatchLogPlayerCoverageDocument player,
+        ResearchOfficialPlayerIdentity targetIdentity,
+        ResearchSourceSnapshotDocument playerSnapshot,
+        ResearchSourceSnapshotDocument scheduleSnapshot) =>
+        new(
+            targetIdentity.PlayerId,
+            targetIdentity.PlayerCode,
+            player.PlayerName,
+            targetIdentity.TeamName,
+            player.SourcePlayerId,
+            player.SourceTeamId,
+            player.TeamName,
+            "rejected-incompatible-source-pair",
+            playerSnapshot.SnapshotId,
+            playerSnapshot.ContentSha256,
+            scheduleSnapshot.SnapshotId,
+            scheduleSnapshot.ContentSha256,
+            null,
+            null,
+            []);
 
     internal static FbrefMatchOpportunityPlayerFeatureDocument CreateReady(
         FbrefPlayerMatchOpportunityDocument opportunity,
