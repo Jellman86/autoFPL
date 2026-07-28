@@ -17,6 +17,8 @@ public sealed record FbrefMatchOpportunityFeatureTableDocument(
         int FeatureReadyPlayerCount,
     [property: JsonPropertyName("missingSourcePairPlayerCount")]
         int MissingSourcePairPlayerCount,
+    [property: JsonPropertyName("rejectedSourcePairPlayerCount")]
+        int RejectedSourcePairPlayerCount,
     [property: JsonPropertyName("players")]
         IReadOnlyList<FbrefMatchOpportunityPlayerFeatureDocument> Players);
 
