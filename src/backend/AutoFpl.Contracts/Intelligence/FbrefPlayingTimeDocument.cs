@@ -7,6 +7,8 @@ public sealed record FbrefPlayingTimeDocument(
     [property: JsonPropertyName("snapshotId")] long SnapshotId,
     [property: JsonPropertyName("sourceKey")] string SourceKey,
     [property: JsonPropertyName("extractionVersion")] string ExtractionVersion,
+    [property: JsonPropertyName("identityBridgeVersion")]
+        string? IdentityBridgeVersion,
     [property: JsonPropertyName("contentSha256")] string ContentSha256,
     [property: JsonPropertyName("identityCaptureId")] long IdentityCaptureId,
     [property: JsonPropertyName("retrievedAtUtc")] DateTimeOffset RetrievedAtUtc,
@@ -16,6 +18,10 @@ public sealed record FbrefPlayingTimeDocument(
     [property: JsonPropertyName("sourcePlayerCount")] int SourcePlayerCount,
     [property: JsonPropertyName("exactCurrentTeamMatchCount")]
         int ExactCurrentTeamMatchCount,
+    [property: JsonPropertyName("reviewedIdentityCount")]
+        int ReviewedIdentityCount,
+    [property: JsonPropertyName("exactCurrentTeamProposalCount")]
+        int ExactCurrentTeamProposalCount,
     [property: JsonPropertyName("players")]
         IReadOnlyList<FbrefPlayingTimePlayerDocument> Players,
     [property: JsonPropertyName("currentTeamCoverage")]
@@ -39,6 +45,8 @@ public sealed record FbrefPlayingTimeTeamCoverageDocument(
     [property: JsonPropertyName("officialPlayerCount")] int OfficialPlayerCount,
     [property: JsonPropertyName("sourceRowCount")] int SourceRowCount,
     [property: JsonPropertyName("exactMatchCount")] int ExactMatchCount,
+    [property: JsonPropertyName("reviewedMatchCount")] int ReviewedMatchCount,
+    [property: JsonPropertyName("exactProposalCount")] int ExactProposalCount,
     [property: JsonPropertyName("unmatchedOfficialPlayerCodes")]
         IReadOnlyList<int> UnmatchedOfficialPlayerCodes,
     [property: JsonPropertyName("unmatchedSourcePlayerIds")]

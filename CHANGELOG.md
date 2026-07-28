@@ -24,6 +24,12 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **The first FBref-to-official identity bridge is explicit and fail-closed.**
+  Bridge v1 freezes 60 exact full-name/current-club source player/team IDs to
+  official stable codes and binds them to snapshot 27's content hash. Runtime
+  extraction revalidates both sides, disables the bridge for changed source
+  content, leaves new exact matches as proposals and keeps the other 25
+  promoted-club players unresolved.
 - **FBref prior-competition evidence is now deterministically inspectable.**
   The bounded v1 parser extracts 944 player-team rows, 894 stable player IDs,
   aggregate appearances/starts/minutes and fixed match-log URLs from the first

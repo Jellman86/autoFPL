@@ -43,15 +43,15 @@ matches described by the page. Match observations parsed later must retain
 their own kickoff times and precede every forecast target.
 
 FBref identity is not an official FPL identity. Player names are review
-evidence only. The extraction audit proposes a bridge only for an exact
-normalized full-name match within the same current promoted club. It labels all
-other rows unresolved, performs no fuzzy matching and cannot influence a
-forecast. A reviewed bridge must still map one source player ID to one official
-`player.code`.
+evidence only. Bridge v1 freezes the 60 exact normalized full-name/current-club
+matches as explicit source player/team ID to official stable-code mappings.
+Every use revalidates the source name/team, official code/team and reviewed
+snapshot content hash. A different content hash disables the bridge and leaves
+new exact matches as proposals until review. No fuzzy matching is performed.
 
 Snapshot 27 is the first retained production measurement. Extraction v1 found
 944 player-team rows and 894 stable FBref player IDs. The conservative audit
-proposed 60 exact current-team matches among 85 current promoted-club players:
+reviewed 60 exact current-team matches among 85 current promoted-club players:
 Coventry City 22/28, Hull City 18/29 and Ipswich Town 20/28. The other 25
 official identities remain an explicit review/collection queue.
 
@@ -67,4 +67,6 @@ The operator command
 `/api/v1/research/snapshots/{snapshotId}/fbref-playing-time` route run the same
 versioned parser. Both fail closed on an unsupported source, post-deadline
 capture, malformed or duplicate IDs, invalid counts, missing target clubs or an
-unexpected population size.
+unexpected population size. The response distinguishes `reviewed-v1`,
+`exact-current-team-proposal`, `unresolved` and `not-in-scope` identity states
+and publishes the applicable bridge version without exposing raw HTML.

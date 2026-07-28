@@ -1120,9 +1120,10 @@ app.MapGet(
         "Extract bounded prior-season appearances, starts and minutes from one snapshot.")
     .WithDescription(
         "The deterministic parser exposes stable FBref player and match-log identities. "
-        + "Only exact full-name matches within the same current promoted club are bridged "
-        + "to official player codes; unresolved identities remain explicit and the result "
-        + "cannot influence forecasts.")
+        + "The versioned bridge is bound to a reviewed snapshot content hash and validates "
+        + "every source ID against its expected official stable code and current team. New "
+        + "exact matches remain proposals, unresolved identities remain explicit and the "
+        + "result cannot influence forecasts.")
     .WithTags("Research")
     .Produces<FbrefPlayingTimeDocument>()
     .Produces(StatusCodes.Status404NotFound)

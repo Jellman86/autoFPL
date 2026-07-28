@@ -31,10 +31,11 @@ its reviewed FBref canonical redirect and a required page marker. It retains:
 
 The aggregate page capture and deterministic v1 extractor are implemented.
 Snapshot 27 yields 944 player-team rows, 894 stable source player IDs and 60
-exact same-current-team/full-name proposals among the 85 promoted-club
-players. These proposals are a measurable review queue, not an admitted
-identity bridge. Review of the remaining 25 official identities plus
-point-in-time match-log capture and parsing remain the next slices.
+exact same-current-team/full-name matches among the 85 promoted-club players.
+Bridge v1 freezes those mappings against snapshot 27's content hash and
+revalidates both source and official identity on every extraction. The
+remaining 25 official identities stay unresolved. Point-in-time match-log
+capture and parsing for only the reviewed allowlist remain the next slices.
 
 Goals, assists, shots, expected goals/assists, saves and cards are optional
 source fields with explicit coverage. Missing values remain null rather than
