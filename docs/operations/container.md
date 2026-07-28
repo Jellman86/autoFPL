@@ -331,7 +331,25 @@ GET /api/v1/research/snapshots/{snapshotId}/fbref-player-match-log
 
 Both reads revalidate the snapshot against the reviewed bridge and return
 bounded dated match rows without exposing raw HTML. They do not create model
-features or alter forecasts. Set
+features or alter forecasts.
+
+Inspect and expand reviewed-player coverage in bounded batches:
+
+```text
+GET /api/v1/research/fbref-player-match-log-coverage
+
+dotnet AutoFpl.Api.dll \
+  --capture-fbref-reviewed-match-logs <limit 1-5>
+```
+
+The GET route is metadata-only and never starts collection. The operator
+command skips captured players, runs missing players sequentially, retains at
+most one to five new snapshots and stops after at most twice the requested
+attempts. A failed player does not roll back successful captures; the JSON
+result reports `complete`, `partial`, `failed` or `no-op` and exits non-zero
+when any attempt failed.
+
+Set
 `AutoFpl__Research__ByparrUrl` to Riker's private-LAN origin when the default
 container-local name is not available.
 

@@ -102,3 +102,20 @@ retrieved pages. The CLI command
 `/api/v1/research/snapshots/{snapshotId}/fbref-player-match-log` route expose
 the same typed document without raw HTML. Extraction alone cannot influence a
 forecast.
+
+## Coverage operations
+
+The read-only
+`/api/v1/research/fbref-player-match-log-coverage` route reports captured and
+missing snapshot metadata for all 60 bridge-v1 identities, grouped by Coventry,
+Hull and Ipswich. It never starts collection or returns raw content.
+
+The operator command
+`--capture-fbref-reviewed-match-logs <limit 1-5>` selects only missing reviewed
+identities in deterministic team/player order. It runs sequentially through
+the existing single-connection Byparr client, captures at most the requested
+number of new snapshots and makes no more than twice that many attempts so a
+single unavailable page does not block all later players. Existing coverage is
+skipped, failures are isolated with a stable failure code and partial success
+is retained. Repeated operation is deliberate and bounded rather than a
+background crawl.

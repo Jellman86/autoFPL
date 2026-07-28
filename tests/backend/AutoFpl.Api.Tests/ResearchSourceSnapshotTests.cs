@@ -526,6 +526,172 @@ public sealed class ResearchSourceSnapshotTests
     }
 
     [Fact]
+    public void Fbref_match_log_coverage_reports_all_reviewed_identities()
+    {
+        FbrefPlayingTimePlayerDocument[] players =
+            FbrefPlayerIdentityBridge.All
+                .Select(
+                    (entry, index) => new FbrefPlayingTimePlayerDocument(
+                        entry.SourcePlayerId,
+                        entry.SourcePlayerName,
+                        entry.SourceTeamId,
+                        entry.TeamName,
+                        20,
+                        10,
+                        900,
+                        $"https://fbref.com/en/players/{entry.SourcePlayerId}"
+                            + "/matchlogs/2025-2026/summary/Player-Match-Logs",
+                        "reviewed-v1",
+                        index + 1,
+                        entry.OfficialPlayerCode))
+                .ToArray();
+        var playingTime = new FbrefPlayingTimeDocument(
+            "1.0",
+            FbrefPlayerIdentityBridge.ReviewedSnapshotId,
+            FbrefPlayingTimeExtractor.SourceKey,
+            FbrefPlayingTimeExtractor.ExtractionVersion,
+            FbrefPlayerIdentityBridge.Version,
+            FbrefPlayerIdentityBridge.ReviewedContentSha256,
+            13,
+            RetrievalTime,
+            "Championship",
+            "2025-26",
+            players.Length,
+            players.Length,
+            players.Length,
+            players.Length,
+            0,
+            players,
+            []);
+        FbrefPlayingTimePlayerDocument first = players[0];
+        var snapshot = new ResearchSourceSnapshotDocument(
+            31,
+            "1.0",
+            "shadow-only",
+            $"{FbrefPlayerMatchLogImporter.SourceKeyPrefix}"
+                + $"{first.SourcePlayerId}"
+                + $"{FbrefPlayerMatchLogImporter.SourceKeySuffix}",
+            "prior-competition-player-match-log",
+            first.MatchLogsUrl,
+            first.MatchLogsUrl.Replace(
+                "/summary/",
+                "/",
+                StringComparison.Ordinal),
+            "sports-reference-fbref",
+            "byparr",
+            "byparr/2.1.0",
+            "2026-27",
+            1,
+            new DateTimeOffset(2026, 8, 21, 17, 30, 0, TimeSpan.Zero),
+            13,
+            RetrievalTime,
+            RetrievalTime,
+            true,
+            1,
+            new string('a', 64),
+            100,
+            RetrievalTime);
+        var inventory = new ResearchSourceInventoryDocument(
+            "1.0",
+            [],
+            [snapshot],
+            []);
+
+        FbrefMatchLogCoverageDocument coverage =
+            FbrefMatchLogCoverageReader.Build(playingTime, inventory);
+
+        Assert.Equal(60, coverage.ReviewedPlayerCount);
+        Assert.Equal(1, coverage.CapturedPlayerCount);
+        Assert.Equal(59, coverage.MissingPlayerCount);
+        Assert.Equal(3, coverage.Teams.Count);
+        FbrefMatchLogPlayerCoverageDocument captured = Assert.Single(
+            coverage.Players,
+            player => player.CaptureStatus == "captured");
+        Assert.Equal(first.OfficialPlayerCode, captured.OfficialPlayerCode);
+        Assert.Equal(31, captured.SnapshotId);
+    }
+
+    [Fact]
+    public async Task Fbref_match_log_batch_is_bounded_skips_captured_and_isolates_failures()
+    {
+        FbrefMatchLogPlayerCoverageDocument[] players =
+        [
+            CreateCoveragePlayer(1, "captured", 30),
+            CreateCoveragePlayer(2, "missing", null),
+            CreateCoveragePlayer(3, "missing", null),
+            CreateCoveragePlayer(4, "missing", null),
+        ];
+        var coverage = new FbrefMatchLogCoverageDocument(
+            "1.0",
+            FbrefPlayerIdentityBridge.Version,
+            FbrefPlayerIdentityBridge.ReviewedSnapshotId,
+            4,
+            1,
+            3,
+            [],
+            players);
+        var attemptedCodes = new List<int>();
+        var batch = new FbrefMatchLogBatchCapture(
+            _ => Task.FromResult(coverage),
+            (code, _) =>
+            {
+                attemptedCodes.Add(code);
+                if (code == 2)
+                {
+                    throw new ResearchSourceSnapshotException("expected");
+                }
+                return Task.FromResult(
+                    new ResearchSourceSnapshotDocument(
+                        30 + code,
+                        "1.0",
+                        "shadow-only",
+                        $"fbref-player-match-log-{code:x8}-2025-26",
+                        "prior-competition-player-match-log",
+                        "https://fbref.com/source",
+                        "https://fbref.com/final",
+                        "sports-reference-fbref",
+                        "byparr",
+                        "byparr/2.1.0",
+                        "2026-27",
+                        1,
+                        new DateTimeOffset(
+                            2026,
+                            8,
+                            21,
+                            17,
+                            30,
+                            0,
+                            TimeSpan.Zero),
+                        13,
+                        RetrievalTime,
+                        RetrievalTime,
+                        true,
+                        1,
+                        new string('b', 64),
+                        100,
+                        RetrievalTime));
+            });
+
+        FbrefMatchLogBatchCaptureDocument result = await batch.RunAsync(
+            1,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal([2, 3], attemptedCodes);
+        Assert.Equal(1, result.AlreadyCapturedCount);
+        Assert.Equal(2, result.AttemptedCount);
+        Assert.Equal(1, result.CapturedCount);
+        Assert.Equal(1, result.FailedCount);
+        Assert.Equal(2, result.RemainingCount);
+        Assert.Equal("partial", result.Status);
+        Assert.Equal("capture-failed", result.Results[0].FailureCode);
+        Assert.Equal(33, result.Results[1].SnapshotId);
+        await Assert.ThrowsAsync<ResearchSourceSnapshotException>(
+            async () => await batch.RunAsync(
+                6,
+                TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
     public void Fbref_playing_time_parser_rejects_duplicate_player_team_rows()
     {
         string content = CreateFbrefPlayingTimeHtml(
@@ -1332,6 +1498,24 @@ public sealed class ResearchSourceSnapshotTests
             .Build();
         return DatabaseOptions.FromConfiguration(configuration);
     }
+
+    private static FbrefMatchLogPlayerCoverageDocument CreateCoveragePlayer(
+        int code,
+        string status,
+        long? snapshotId) =>
+        new(
+            code.ToString("x8"),
+            $"Player {code}",
+            "aaaaaaaa",
+            "Test Team",
+            code,
+            code,
+            $"fbref-player-match-log-{code:x8}-2025-26",
+            status,
+            snapshotId,
+            snapshotId is null ? null : 1,
+            snapshotId is null ? null : RetrievalTime,
+            snapshotId is null ? null : new string('a', 64));
 
     private static string CreateFbrefPlayingTimeHtml(
         bool duplicateCommentedTable = false,
