@@ -266,6 +266,25 @@ override current official health. The artifact is deterministic, read-only,
 hash-identified and explicitly does not influence a forecast. See the
 [cross-season state specification](../../docs/research/cross-season-player-state-v1.md).
 
+The prior-competition coverage audit turns the remaining current-player
+history gaps into a source-integration target:
+
+```text
+python -m autofpl_analytics.prior_competition_coverage \
+  --forecast /path/to/preseason-participation-v1.2.json \
+  --prior-competition-club "Coventry City" \
+  --prior-competition-club "Hull City" \
+  --prior-competition-club "Ipswich Town" \
+  --output /path/to/prior-competition-coverage.json
+```
+
+It verifies the complete frozen source artifact, preserves official stable
+codes, distinguishes prior-competition squads from other new/transferred
+players and emits the exact bounded capture fields needed from Quark's existing
+research services. Names are never an automatic identity fallback and the
+audit cannot influence a forecast. See the
+[coverage specification](../../docs/research/prior-competition-player-history-coverage-v1.md).
+
 ## Cross-season feature ablation v1
 
 The promotion-gate command compares unchanged ridge/tree models with
