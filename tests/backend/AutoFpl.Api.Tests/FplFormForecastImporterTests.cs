@@ -266,7 +266,9 @@ public sealed class FplFormForecastImporterTests
         Assert.True(reader.IsDBNull(3));
         Assert.Equal(2, reader.GetInt32(4));
         Assert.Equal(1, reader.GetInt64(5));
-        Assert.Equal(22, reader.GetInt64(6));
+        Assert.Equal(
+            (long)DatabaseMigrations.CurrentVersion,
+            reader.GetInt64(6));
     }
 
     private static DatabaseOptions CreateOptions(string databasePath)

@@ -359,6 +359,48 @@ public sealed class ResearchSourceSnapshotTests
     }
 
     [Fact]
+    public async Task Fbref_team_schedule_capture_persists_and_extracts()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = await CreateDatabaseAsync(files.DatabasePath);
+        ResearchSourceDefinition source = ResearchSourceRegistry.Get(
+            "fbref-team-schedule-f7e3dfe9-2025-26");
+        string content = CreateFbrefTeamScheduleHtml();
+        var handler = new ByparrHandler(
+            source,
+            content,
+            source.CanonicalUri.AbsoluteUri);
+        using var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("http://192.168.213.101:8191/"),
+        };
+        var store = new ResearchSourceSnapshotStore(
+            options,
+            new FixedTimeProvider(RetrievalTime));
+
+        ByparrCaptureResult capture = await new ByparrClient(httpClient)
+            .CaptureAsync(source, TestContext.Current.CancellationToken);
+        ResearchSourceSnapshotDocument snapshot = await store.PersistAsync(
+            source,
+            capture,
+            TestContext.Current.CancellationToken);
+        FbrefTeamScheduleDocument? extraction =
+            await new FbrefTeamScheduleExtractor(store).GetAsync(
+                snapshot.SnapshotId,
+                TestContext.Current.CancellationToken);
+
+        Assert.Equal(source.SourceKey, snapshot.SourceKey);
+        Assert.Equal(
+            "prior-competition-team-schedule",
+            snapshot.SourceClass);
+        Assert.NotNull(extraction);
+        Assert.Equal("f7e3dfe9", extraction.SourceTeamId);
+        Assert.Equal("Coventry City", extraction.TeamName);
+        Assert.Equal(46, extraction.MatchCount);
+        Assert.Equal(1, handler.RequestCount);
+    }
+
+    [Fact]
     public void Fbref_team_schedule_parser_retains_exact_match_opportunities()
     {
         string content = CreateFbrefTeamScheduleHtml();
@@ -1623,7 +1665,9 @@ public sealed class ResearchSourceSnapshotTests
     {
         var table = new StringBuilder(
             """
-            <html><body><table id="matchlogs_for"><tbody>
+            <html><head>
+            <title>Coventry City Scores and Fixtures, Championship | FBref.com</title>
+            </head><body><table id="matchlogs_for"><tbody>
             <tr class="thead"><th data-stat="date">Date</th></tr>
             """);
         var firstDate = new DateOnly(2025, 8, 1);
