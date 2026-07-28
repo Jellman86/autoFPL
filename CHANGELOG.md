@@ -24,6 +24,13 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **The historical evidence window now spans two complete seasons.** The same
+  fixed, commit-pinned importer now admits 2024/25 alongside 2025/26, preserves
+  unavailable legacy defensive metrics as null and excludes the temporary
+  Assistant Manager element type from player modelling. A fail-closed API
+  revalidates both exact archive identities and normalized coverage before
+  reporting stable official-code overlap without any name fallback. Migration
+  24 preserves the existing immutable archive and forecast references.
 - **My Squad is now a full decision workspace backed by an exact forecast
   contract.** A user revision may replace any of the model's original 15 with
   an eligible player from the same immutable official capture; the backend

@@ -22,7 +22,7 @@ A live connector requires tests and a source record, but not a separate vendor-s
 | [`official-fpl-api/v1`](official-fpl-api-v1.md) | Admitted | Fixed-origin public player, Gameweek, team, fixture and outcome captures for private point-in-time research |
 | [`fpl-form-public-forecast/v1`](fpl-form-public-forecast-v1.md) | Admitted | Fixed-origin public conditional predicted-points captures for private external-baseline evaluation |
 | [`public-research-shadow-sources/v1`](public-research-shadow-sources-v1.md) | Admitted for shadow capture | Fixed-registry official availability, specialist lineup and dependent-consensus page snapshots for private source evaluation |
-| [`vaastav-fpl-historical/v1`](vaastav-fpl-historical-v1.md) | Admitted | Commit-pinned 2025/26 player and fixture outcomes for private cross-season performance and durability research |
+| [`vaastav-fpl-historical/v1`](vaastav-fpl-historical-v1.md) | Admitted | Commit-pinned 2024/25 and 2025/26 player and fixture outcomes for private cross-season performance and durability research |
 | [`fbref-championship-playing-time/v1`](fbref-championship-playing-time-v1.md) | Admitted for shadow capture | Fixed-URL 2025/26 Championship aggregate, reviewed player chronology and promoted-club schedule evidence for prior-competition coverage research |
 
 ## Baseline boundaries

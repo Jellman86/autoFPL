@@ -42,9 +42,23 @@ bool runBackup =
 bool runOfficialFplImport =
     args.Length == 1
     && StringComparer.Ordinal.Equals(args[0], "--import-official-fpl");
-bool runHistoricalFplSeasonImport =
-    args.Length == 1
+bool requestedHistoricalFplSeasonImport =
+    args.Length > 0
     && StringComparer.Ordinal.Equals(args[0], "--import-historical-fpl-season");
+string historicalFplSeasonCode =
+    args.Length == 2
+        ? args[1]
+        : HistoricalFplSeasonRegistry.DefaultSeasonCode;
+bool runHistoricalFplSeasonImport =
+    requestedHistoricalFplSeasonImport
+    && args.Length is 1 or 2
+    && HistoricalFplSeasonRegistry.TryGet(historicalFplSeasonCode, out _);
+if (requestedHistoricalFplSeasonImport && !runHistoricalFplSeasonImport)
+{
+    await Console.Error.WriteLineAsync(
+        "Usage: --import-historical-fpl-season [2024-25|2025-26]");
+    return 2;
+}
 bool runFplFormForecastImport =
     args.Length == 1
     && StringComparer.Ordinal.Equals(args[0], "--import-fpl-form-forecast");
@@ -659,7 +673,7 @@ if (runHistoricalFplSeasonImport)
         HistoricalFplSeasonCaptureDocument capture =
             await app.Services
                 .GetRequiredService<HistoricalFplSeasonImporter>()
-                .ImportAsync();
+                .ImportAsync(historicalFplSeasonCode);
         await Console.Out.WriteLineAsync(
             JsonSerializer.Serialize(
                 capture,
@@ -1623,6 +1637,41 @@ app.MapGet(
     .WithTags("Data")
     .Produces<HistoricalFplSeasonCaptureDocument>()
     .Produces(StatusCodes.Status404NotFound);
+app.MapGet(
+    "/api/v1/data/historical-fpl/identity-coverage/{fromSeasonCode}/{toSeasonCode}",
+    async (
+        string fromSeasonCode,
+        string toSeasonCode,
+        HistoricalFplSeasonStore store,
+        CancellationToken cancellationToken) =>
+    {
+        try
+        {
+            HistoricalFplIdentityCoverageDocument? coverage =
+                await store.GetIdentityCoverageAsync(
+                    fromSeasonCode,
+                    toSeasonCode,
+                    cancellationToken);
+            return coverage is null ? Results.NotFound() : Results.Ok(coverage);
+        }
+        catch (HistoricalFplSeasonCoverageException)
+        {
+            return Results.Problem(
+                statusCode: StatusCodes.Status422UnprocessableEntity,
+                title: "Historical FPL identity coverage could not be audited.");
+        }
+    })
+    .WithName("GetHistoricalFplIdentityCoverage")
+    .WithSummary(
+        "Audit stable player identity coverage across two pinned FPL seasons.")
+    .WithDescription(
+        "The audit revalidates both exact archive identities and normalized row "
+        + "coverage, then compares official player codes without a name fallback. "
+        + "Missing, ambiguous or non-pinned evidence fails closed.")
+    .WithTags("Data")
+    .Produces<HistoricalFplIdentityCoverageDocument>()
+    .Produces(StatusCodes.Status404NotFound)
+    .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 app.MapGet(
     "/api/v1/data/fpl-form-forecast/status",
     async (

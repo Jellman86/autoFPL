@@ -15,7 +15,8 @@ Routes:
 | `GET` | `/api/v1/data/fpl-form-forecast/latest` | Returns provenance and counts for the latest immutable public FPL Form forecast capture |
 | `GET` | `/api/v1/data/fpl-form-forecast/status` | Distinguishes not checked, provider waiting, collection failure and retained forecast states |
 | `GET` | `/api/v1/data/fpl-form-forecast/{captureId}/identity-coverage` | Reports deterministic cutoff-correct official player/fixture coverage for one immutable forecast capture |
-| `GET` | `/api/v1/data/historical-fpl/{seasonCode}` | Returns provenance and normalized coverage counts for the fixed prior-season archive; raw CSV and player rows remain private |
+| `GET` | `/api/v1/data/historical-fpl/{seasonCode}` | Returns provenance and normalized coverage counts for a registered historical archive; raw CSV and player rows remain private |
+| `GET` | `/api/v1/data/historical-fpl/identity-coverage/{fromSeasonCode}/{toSeasonCode}` | Revalidates two pinned archives and audits exact stable-code overlap without a name fallback |
 | `GET` | `/api/v1/evidence/claims/{seasonCode}/{gameweek}?decisionCutoffUtc=...` | Returns immutable quarantined typed claims available by the requested cutoff; claims do not influence forecasts |
 | `POST` | `/mcp` | Stateless Streamable HTTP MCP endpoint; currently advertises only the anonymous read-only public player-dossier tool |
 | `GET` | `/openapi/v1.json` | Returns the generated OpenAPI 3.1 HTTP contract |
@@ -130,18 +131,21 @@ specific fields into a forecast.
 
 ## Historical FPL season archive
 
-Run the fixed, commit-pinned prior-season import as an operator command:
+Run either fixed, commit-pinned historical import as an operator command:
 
 ```text
-dotnet AutoFpl.Api.dll --import-historical-fpl-season
+dotnet AutoFpl.Api.dll --import-historical-fpl-season 2024-25
+dotnet AutoFpl.Api.dll --import-historical-fpl-season 2025-26
 ```
 
-The command accepts no URL, revision or season argument. It downloads only the
-two registered 2025/26 CSV resources, disables redirects, bounds each response
-to 6 MiB, verifies exact SHA-256 and row-count identities, maps season element
-IDs to stable official player codes and writes atomically. Exact raw bytes stay
-compressed in private SQLite. The normalized schema deliberately has no `xP`
-column. Re-running the same pinned revision is idempotent.
+Omitting the season retains the original 2025/26 default. The command accepts
+only the two registered season codes and no URL or revision. It downloads only
+the registered CSV resources, disables redirects, bounds each response to 6
+MiB, verifies exact SHA-256 and normalized row-count identities, maps season
+element IDs to stable official player codes and writes atomically. Exact raw
+bytes stay compressed in private SQLite. The normalized schema deliberately
+has no `xP` column; absent 2024/25 defensive metrics remain null. Re-running a
+pinned revision is idempotent.
 
 This archive did not exist in autoFPL at the original Gameweek deadlines.
 Accordingly, it supplies historical outcomes and an early-season durability
@@ -497,7 +501,7 @@ See the [source portfolio](../research/research-source-portfolio-v1.md).
 
 ## SQLite operations
 
-The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies nineteen explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
+The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies 24 explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
 
 The root filesystem stays read-only. Production must mount a private, UID
 `1654`-writable persistent directory at `/data`; the CI smoke test uses an

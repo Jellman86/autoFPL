@@ -762,22 +762,22 @@ v1.0 hardens the proven product rather than introducing its first UI:
 ## Immediate implementation order
 
 The next development slices are deliberately product-sized. The responsive
-shell, full player page, full-squad revision contract and dedicated My Squad
-builder are now implemented and browser-tested, so the active order is:
+shell, full player page, full-squad revision contract, dedicated My Squad
+builder and pinned two-season archive are now implemented and tested. The
+2024/25-to-2025/26 audit finds 534 exact stable-code matches; roster turnover
+stays explicit and no name fallback is allowed. The active order is:
 
-1. import and audit 2024/25 alongside the pinned 2025/26 archive, including a
-   fail-closed cross-season identity coverage report;
-2. run the first 2026/27 final-outcome pairing, then automate the bounded
+1. run the first 2026/27 final-outcome pairing, then automate the bounded
    post-Gameweek score-and-evaluate workflow;
-3. build the two-season expanding-origin feature table and compare the existing
+2. build the two-season expanding-origin feature table and compare the existing
    baseline, ridge and histogram-tree candidates on identical folds;
-4. join only the point, participation and minutes components that pass their
+3. join only the point, participation and minutes components that pass their
    registered gates, then publish the first calibrated player distributions;
-5. add CPU-reference scenario scoring and compare the model, safer,
+4. add CPU-reference scenario scoring and compare the model, safer,
    higher-ceiling and user-authored squads in the interface;
-6. connect the grounded AI surface through read-only MCP first, followed by an
+5. connect the grounded AI surface through read-only MCP first, followed by an
    owner-configured OpenAI-compatible provider; and
-7. add owner authentication and sanitized dashboard sharing before exposing
+6. add owner authentication and sanitized dashboard sharing before exposing
    any configuration or consequential action outside the trusted instance.
 
 Specialist lineups, public forecasts, named experts and social evidence remain

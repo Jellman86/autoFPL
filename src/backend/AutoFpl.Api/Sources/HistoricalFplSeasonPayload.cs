@@ -50,10 +50,10 @@ internal sealed record HistoricalFplPlayerGameweek(
     decimal ExpectedAssists,
     decimal ExpectedGoalInvolvements,
     decimal ExpectedGoalsConceded,
-    int ClearancesBlocksInterceptions,
-    int DefensiveContribution,
-    int Recoveries,
-    int Tackles);
+    int? ClearancesBlocksInterceptions,
+    int? DefensiveContribution,
+    int? Recoveries,
+    int? Tackles);
 
 public sealed class HistoricalFplSeasonPayloadException : Exception
 {
