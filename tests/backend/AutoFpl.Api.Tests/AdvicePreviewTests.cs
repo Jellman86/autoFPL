@@ -74,19 +74,29 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("text/html", response.Content.Headers.ContentType?.MediaType);
         string body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-        Assert.Contains("Gameweek decision room", body, StringComparison.Ordinal);
+        Assert.Contains("Gameweek squad plan", body, StringComparison.Ordinal);
+        Assert.Contains("Primary navigation", body, StringComparison.Ordinal);
+        Assert.Contains("Breadcrumb", body, StringComparison.Ordinal);
+        Assert.Contains("Model squad", body, StringComparison.Ordinal);
+        Assert.Contains("My squad", body, StringComparison.Ordinal);
         Assert.Contains("Ask about this exact selection", body, StringComparison.Ordinal);
-        Assert.Contains("Player dossier", body, StringComparison.Ordinal);
+        Assert.Contains("Player evidence", body, StringComparison.Ordinal);
+        Assert.Contains("Back to squad", body, StringComparison.Ordinal);
         Assert.Contains("Recent form", body, StringComparison.Ordinal);
         Assert.Contains("Research tape", body, StringComparison.Ordinal);
         Assert.Contains("Quarantined · not used", body, StringComparison.Ordinal);
         Assert.Contains("does not change", body, StringComparison.Ordinal);
-        Assert.Contains("Select any player for the full dossier", body, StringComparison.Ordinal);
+        Assert.Contains(
+            "Open a player to see the full evidence page",
+            body,
+            StringComparison.Ordinal);
         Assert.Contains("Official data footing", body, StringComparison.Ordinal);
         Assert.Contains("Capture to deadline provenance", body, StringComparison.Ordinal);
         Assert.Contains("External forecast challenger", body, StringComparison.Ordinal);
         Assert.Contains("Refresh prediction", body, StringComparison.Ordinal);
         Assert.Contains("Selection lifecycle", body, StringComparison.Ordinal);
+        Assert.Contains("id=\"selection-workflow\"", body, StringComparison.Ordinal);
+        Assert.Contains("id=\"my-squad\"", body, StringComparison.Ordinal);
         Assert.Contains("Use prediction as draft", body, StringComparison.Ordinal);
         Assert.Contains("Edit your selection", body, StringComparison.Ordinal);
         Assert.Contains("Save new draft", body, StringComparison.Ordinal);
@@ -106,6 +116,10 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
             StringComparison.Ordinal);
         Assert.Contains(
             "official availability shown, not modelled",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "advice.selection.expectedPoints + userDelta",
             script,
             StringComparison.Ordinal);
         Assert.DoesNotContain(

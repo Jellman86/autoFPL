@@ -1,6 +1,4 @@
 const positionOrder = ["forward", "midfielder", "defender", "goalkeeper"];
-const mobileDossierQuery = window.matchMedia("(max-width: 980px)");
-
 let selectedPlayerId = null;
 let advice = null;
 let selectionRevision = null;
@@ -8,6 +6,7 @@ let displayedPlayers = [];
 let selectionEditDraft = null;
 let lastSelectedCard = null;
 let dossierRequest = 0;
+let activeSquadView = "model";
 
 function formatDeadline(value) {
   return new Intl.DateTimeFormat(undefined, {
@@ -89,7 +88,7 @@ function createPlayerCard(player) {
   button.setAttribute("aria-pressed", String(player.playerId === selectedPlayerId));
   button.setAttribute(
     "aria-label",
-    `${player.name}, ${player.expectedPoints} ${advice?.isSynthetic ? "synthetic " : ""}expected points, ${player.expectedMinutes} expected minutes. Open player dossier.`,
+    `${player.name}, ${player.expectedPoints} ${advice?.isSynthetic ? "synthetic " : ""}expected points, ${player.expectedMinutes} expected minutes. Open player evidence page.`,
   );
 
   const portrait = createPortrait(player.name, player.photoUrl, "card-portrait");
@@ -143,7 +142,7 @@ function createPlayerCard(player) {
   button.append(portrait, badgeRail, body);
   button.addEventListener("click", () => {
     lastSelectedCard = button;
-    selectPlayer(player.playerId, { updateHistory: true, focusDossier: true });
+    selectPlayer(player.playerId, { updateHistory: true, openPage: true });
   });
   return button;
 }
@@ -160,36 +159,46 @@ function setDossierPortrait(name, photoUrl) {
   }
 }
 
-function openDossier(focusDossier) {
-  const dossier = document.querySelector("#player-dossier");
-  if (mobileDossierQuery.matches && !focusDossier) {
-    dossier.classList.remove("is-open");
-    dossier.setAttribute("aria-hidden", "true");
-    document.body.classList.remove("dossier-open");
-    return;
-  }
-
-  dossier.classList.add("is-open");
-  dossier.setAttribute("aria-hidden", "false");
-  document.body.classList.add("dossier-open");
-  if (focusDossier && mobileDossierQuery.matches) {
-    dossier.focus({ preventScroll: true });
-  }
+function setBreadcrumb(current, parent = "Squad planner") {
+  document.querySelector("#breadcrumb-parent").textContent = parent;
+  document.querySelector("#breadcrumb-current").textContent = current;
 }
 
-function closeDossier() {
-  if (!mobileDossierQuery.matches) return;
+function openDossier(focusDossier = false) {
+  const dossier = document.querySelector("#player-dossier");
+  dossier.classList.add("is-open");
+  dossier.setAttribute("aria-hidden", "false");
+  document.body.classList.add("player-page");
+  const squadLabel = activeSquadView === "owner" ? "My squad" : "Model squad";
+  setBreadcrumb(document.querySelector("#player-name").textContent, squadLabel);
+  setActiveNavigation(activeSquadView === "owner" ? "my-squad" : "model-squad");
+  window.scrollTo({ top: 0, behavior: "auto" });
+  if (focusDossier) dossier.focus({ preventScroll: true });
+}
+
+function closeDossier(options = {}) {
   const dossier = document.querySelector("#player-dossier");
   dossier.classList.remove("is-open");
   dossier.setAttribute("aria-hidden", "true");
-  document.body.classList.remove("dossier-open");
+  document.body.classList.remove("player-page");
+  const squadSection = activeSquadView === "owner" ? "my-squad" : "model-squad";
+  setBreadcrumb(activeSquadView === "owner" ? "My squad" : "Model squad");
+  setActiveNavigation(squadSection);
+  if (options.updateHistory !== false) {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("player");
+    window.history.pushState({}, "", `${url.pathname}${url.search}${url.hash}`);
+  }
+  if (options.restoreScroll !== false) {
+    document.querySelector("#model-squad").scrollIntoView({ block: "start" });
+  }
   lastSelectedCard?.focus({ preventScroll: true });
 }
 
 function updatePlayerUrl(playerId) {
   const url = new URL(window.location.href);
   url.searchParams.set("player", String(playerId));
-  window.history.replaceState({ playerId }, "", url);
+  window.history.pushState({ playerId }, "", url);
 }
 
 function selectPlayer(playerId, options = {}) {
@@ -224,7 +233,7 @@ function selectPlayer(playerId, options = {}) {
 
   renderList("#player-reasons", player.reasons);
   renderList("#player-risks", player.risks);
-  openDossier(Boolean(options.focusDossier));
+  if (options.openPage) openDossier(Boolean(options.focusDossier));
   if (options.updateHistory !== false) updatePlayerUrl(playerId);
   loadPlayerDossier(player);
 }
@@ -674,6 +683,7 @@ function playersForSelection(selection) {
 }
 
 function renderSquadPlayers(players, isOwnerSelection = false) {
+  activeSquadView = isOwnerSelection ? "owner" : "model";
   displayedPlayers = players;
   document.querySelector("#formation-kicker").textContent = isOwnerSelection
     ? "Your current revision"
@@ -705,10 +715,11 @@ function renderSquadPlayers(players, isOwnerSelection = false) {
 function renderAdvice(adviceDocument) {
   advice = adviceDocument;
   displayedPlayers = adviceDocument.selection.players;
-  document.querySelector("#evidence-status").textContent =
-    adviceDocument.evidenceStatus.replaceAll("-", " ");
+  const evidenceStatus = adviceDocument.evidenceStatus.replaceAll("-", " ");
+  document.querySelector("#evidence-status").textContent = evidenceStatus;
+  document.querySelector("#sidebar-evidence-status").textContent = evidenceStatus;
   document.querySelector("#gameweek-label").textContent =
-    `Gameweek ${adviceDocument.gameweek} decision room`;
+    `Gameweek ${adviceDocument.gameweek} squad plan`;
   document.querySelector("#recommendation-summary").textContent =
     adviceDocument.recommendationSummary;
   document.querySelector("#deadline").textContent = formatDeadline(adviceDocument.deadlineUtc);
@@ -759,6 +770,7 @@ function renderAdvice(adviceDocument) {
   adviceDocument.alternatives.forEach((alternative) => {
     const card = document.createElement("article");
     card.className = "alternative-card";
+    card.dataset.alternativeName = alternative.name;
     const title = document.createElement("strong");
     title.textContent = alternative.name;
     const description = document.createElement("p");
@@ -780,8 +792,57 @@ function renderAdvice(adviceDocument) {
   ) ?? starters.find((player) => player.captaincy === "captain") ?? starters[0];
   selectPlayer(initialPlayer.playerId, {
     updateHistory: false,
-    focusDossier: false,
+    openPage: Boolean(requestedPlayerId),
+    focusDossier: Boolean(requestedPlayerId),
   });
+}
+
+function rawSelectionScore(selection) {
+  const forecastByPlayer = new Map(
+    advice.selection.players.map((player) => [player.playerId, player.expectedPoints]),
+  );
+  const starterTotal = selection.startingPlayerIds.reduce(
+    (total, playerId) => total + (forecastByPlayer.get(playerId) ?? 0),
+    0,
+  );
+  return starterTotal + (forecastByPlayer.get(selection.captainPlayerId) ?? 0);
+}
+
+function scoreSelection(selection) {
+  if (!advice || !selection) return null;
+  const modelSelection = {
+    startingPlayerIds: advice.selection.players
+      .filter((player) => player.lineupPlace === "starting")
+      .map((player) => player.playerId),
+    captainPlayerId: advice.selection.players.find(
+      (player) => player.captaincy === "captain",
+    ).playerId,
+  };
+  const userDelta = rawSelectionScore(selection) - rawSelectionScore(modelSelection);
+  return advice.selection.expectedPoints + userDelta;
+}
+
+function updateOwnerComparison(revision) {
+  const card = document.querySelector(
+    '[data-alternative-name="My selection"]',
+  );
+  if (!card) return;
+  const description = card.querySelector("p");
+  const result = card.querySelector("span");
+  if (!revision) {
+    description.textContent =
+      "Create a draft from the model, then edit it to compare your choices on the same forecast.";
+    result.textContent = "No saved squad";
+    return;
+  }
+
+  const ownerPoints = scoreSelection(revision.selection);
+  const modelPoints = advice.selection.expectedPoints;
+  const difference = ownerPoints - modelPoints;
+  description.textContent =
+    `Revision ${revision.revision} scored against forecast #${revision.forecastArtifactId}.`;
+  result.textContent =
+    `${ownerPoints.toFixed(1)} pts · ${difference >= 0 ? "+" : ""}${difference.toFixed(1)} vs model`;
 }
 
 function setSelectionRail(status) {
@@ -803,6 +864,7 @@ function setSelectionFeedback(message, state = null) {
 
 function renderSelectionState(revision, feedback = "") {
   selectionRevision = revision;
+  updateOwnerComparison(revision);
   const panel = document.querySelector("#selection-workflow");
   const title = document.querySelector("#selection-workflow-title");
   const state = document.querySelector("#selection-state");
@@ -1564,49 +1626,70 @@ async function loadResearchCoverage() {
   }
 }
 
-function trapDossierFocus(event) {
-  if (
-    event.key !== "Tab" ||
-    !mobileDossierQuery.matches ||
-    !document.querySelector("#player-dossier").classList.contains("is-open")
-  ) {
-    return;
-  }
+function setSidebarOpen(isOpen) {
+  document.body.classList.toggle("sidebar-open", isOpen);
+  document.querySelector("#menu-button").setAttribute("aria-expanded", String(isOpen));
+}
 
-  const dossier = document.querySelector("#player-dossier");
-  const focusable = [...dossier.querySelectorAll("button, a, input, [tabindex='0']")]
-    .filter((element) => !element.disabled && element.offsetParent !== null);
-  if (!focusable.length) return;
-  const first = focusable[0];
-  const last = focusable[focusable.length - 1];
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault();
-    last.focus();
-  } else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault();
-    first.focus();
-  }
+function setActiveNavigation(section) {
+  document.querySelectorAll("[data-nav-section]").forEach((link) => {
+    const active = link.dataset.navSection === section;
+    link.classList.toggle("active", active);
+    if (active) link.setAttribute("aria-current", "page");
+    else link.removeAttribute("aria-current");
+  });
 }
 
 document.querySelector("#dossier-close").addEventListener("click", closeDossier);
 document.querySelector("#dossier-backdrop").addEventListener("click", closeDossier);
-document.querySelector("#player-dossier").addEventListener("keydown", trapDossierFocus);
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") closeDossier();
+document.querySelector("#player-page-back").addEventListener("click", (event) => {
+  event.preventDefault();
+  closeDossier();
 });
-mobileDossierQuery.addEventListener("change", (event) => {
-  if (event.matches) {
-    closeDossier();
-  } else if (selectedPlayerId !== null) {
-    openDossier(false);
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    if (document.body.classList.contains("sidebar-open")) setSidebarOpen(false);
+    else if (document.body.classList.contains("player-page")) closeDossier();
   }
 });
 window.addEventListener("popstate", () => {
   if (!advice) return;
   const playerId = Number(new URL(window.location.href).searchParams.get("player"));
   if (displayedPlayers.some((player) => player.playerId === playerId)) {
-    selectPlayer(playerId, { updateHistory: false, focusDossier: false });
+    selectPlayer(playerId, {
+      updateHistory: false,
+      openPage: true,
+      focusDossier: false,
+    });
+  } else if (document.body.classList.contains("player-page")) {
+    closeDossier({ updateHistory: false, restoreScroll: false });
   }
+});
+document.querySelector("#menu-button").addEventListener("click", () => setSidebarOpen(true));
+document.querySelector("#sidebar-close").addEventListener("click", () => setSidebarOpen(false));
+document.querySelector("#sidebar-backdrop").addEventListener("click", () => setSidebarOpen(false));
+document.querySelectorAll("[data-nav-section]").forEach((link) => {
+  link.addEventListener("click", (event) => {
+    const section = link.dataset.navSection;
+    setSidebarOpen(false);
+    setActiveNavigation(section);
+    if (document.body.classList.contains("player-page")) {
+      closeDossier({ restoreScroll: false });
+    }
+    if (section === "model-squad" && advice) {
+      event.preventDefault();
+      renderSquadPlayers(advice.selection.players);
+      document.querySelector("#model-squad").scrollIntoView({ block: "start" });
+      setBreadcrumb("Model squad");
+    } else if (section === "my-squad" && selectionRevision) {
+      event.preventDefault();
+      renderSquadPlayers(playersForSelection(selectionRevision.selection), true);
+      document.querySelector("#model-squad").scrollIntoView({ block: "start" });
+      setBreadcrumb("My squad");
+    } else {
+      setBreadcrumb(link.textContent.trim());
+    }
+  });
 });
 document.querySelector("#ai-form").addEventListener("submit", (event) => event.preventDefault());
 document.querySelector("#refresh-prediction").addEventListener("click", loadAdvice);

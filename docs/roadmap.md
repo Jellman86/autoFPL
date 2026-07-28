@@ -84,18 +84,22 @@ when the scientific ecosystem materially helps. A separate long-running
 service, another database or distributed infrastructure requires a measured
 need.
 
-## Decision-room visual direction
+## Application-shell visual direction
 
-The implemented decision-room foundation feels like a focused football analysis
-desk rather than a generic administration dashboard. The pitch remains the
-primary selection surface; official player portraits, forecast uncertainty and
-selection role make each player immediately recognisable. Dense research detail
-belongs in one selected-player dossier instead of being repeated across every
-card. With qualifying official evidence, forecast fields now use a plainly
-labelled, deliberately wide Baseline v0 built from market, availability,
-capture-reported aggregate and fixture inputs. It is useful as an initial prediction without
-being confused with an out-of-time validated or promoted model; identity, prior
-outcomes and fixtures come from the same cutoff-safe official capture.
+The implemented interface uses the same navigation grammar as Optimisarr and
+YAWAMF: a persistent desktop sidebar, responsive mobile drawer, compact top bar
+and breadcrumbs. autoFPL keeps its own focused football-analysis identity. The
+pitch remains the primary squad surface; official player portraits, forecast
+uncertainty and selection role make each player immediately recognisable.
+Dense research detail belongs on a dedicated, deep-linkable player page instead
+of a modal, side sheet or repeated card content.
+
+With qualifying official evidence, forecast fields use a plainly labelled,
+deliberately wide Baseline v0 built from market, availability,
+capture-reported aggregate and fixture inputs. It is useful as an initial
+prediction without being confused with an out-of-time validated or promoted
+model; identity, prior outcomes and fixtures come from the same cutoff-safe
+official capture.
 
 On the pitch and bench, each player card shows:
 
@@ -106,8 +110,9 @@ On the pitch and bench, each player card shows:
 - captain, vice-captain, bench order and availability status; and
 - a clear selected/focus state for mouse, touch and keyboard.
 
-Activating a card opens the same player dossier as a persistent side sheet on
-wide screens and a full-screen sheet on mobile. Its sections are:
+Activating a card opens the player's full evidence page. Breadcrumbs preserve
+location and the back action returns to the same squad context. Its sections
+are:
 
 1. **Forecast** — point/minutes distributions, starting and 60-minute
    probabilities, freshness, model/run identity and selection rationale;
@@ -122,6 +127,15 @@ wide screens and a full-screen sheet on mobile. Its sections are:
 5. **Decision rationale** — the incumbent model's reasons, risks and the
    specific evidence that materially moved the forecast.
 
+**My squad** is also a dedicated page, not a dashboard panel or edit dialog.
+The current revision/lock panel is only a transitional workflow. The complete
+builder must let a user construct and revise all 15 places from the eligible
+player pool, search and filter replacements, see budget, club and positional
+constraints update immediately, arrange XI/bench/captaincy, and save a
+validated immutable revision. It compares the user's squad with the model using
+the same forecast artifact and shows both expected-points delta and forecast
+distribution; it must not imply that the user's squad was submitted to FPL.
+
 Recent form initially uses the existing immutable Gameweek outcome captures.
 Rows with one fixture are match-specific; multi-fixture Gameweeks are visibly
 labelled as aggregated. Add a bounded, cached per-fixture history collector
@@ -130,10 +144,10 @@ The dossier never fills unavailable fields with invented values.
 
 The selected player's portrait and chronological forecast-to-outcome ribbon are
 the signature interaction: selection on the pitch should visually connect to
-the evidence used to judge that player. Motion is limited to this transition,
-respects reduced-motion preferences and never obscures values. The sheet must
-support Escape, focus trapping/restoration, deep linking and complete keyboard
-operation.
+the evidence used to judge that player. Motion is limited, respects
+reduced-motion preferences and never obscures values. The page must support
+breadcrumbs, browser history, focus restoration, deep linking and complete
+keyboard operation.
 
 ## AI access and identity
 
@@ -292,6 +306,34 @@ Gameweek-level outcomes are sufficient for the initial table; match-level
 granularity and previous-season joins remain separate challengers until
 fixture-level collection and cross-season player identity are reliable.
 
+### Multi-season outcome learning
+
+autoFPL learns through a controlled forecast → outcome → evaluation → retrain
+loop, not by allowing a live model to mutate after each match.
+
+The first useful training history is two complete seasons—2024/25 and 2025/26—
+plus the accumulating 2026/27 season. Each archived player-Gameweek row must
+retain the data that was knowable at its deadline, the later final outcome and
+a reviewed cross-season identity. Team changes, promoted clubs, renamed player
+records and genuine new players remain explicit rather than being guessed.
+
+After each completed Gameweek the operator workflow should:
+
+1. freeze and pair the final official outcome with its pre-deadline capture;
+2. score the incumbent, challengers and user-locked squad without retraining;
+3. append the new Gameweek as an untouched temporal fold;
+4. rebuild candidate models on the expanding historical window on a scheduled
+   cadence; and
+5. promote a challenger only when the registered rolling-origin gates improve
+   calibration, proper scores and decision utility without unacceptable
+   failure-slice regressions.
+
+Older seasons provide sample size and sparse-player priors; recency weighting,
+season effects and hierarchical partial pooling are evaluated inside each fold.
+They are not assumptions baked into the incumbent. Random splits, post-deadline
+news, corrected future values and evaluation on the same rows used for fitting
+cannot justify promotion.
+
 ### Baselines and challengers
 
 Build in this order:
@@ -405,12 +447,15 @@ effective outcome.
 
 The decision room now includes:
 
+- an Optimisarr/YAWAMF-style responsive sidebar and breadcrumbed application
+  shell;
 - a responsive formation and bench;
-- interactive player evidence cards;
+- interactive player evidence cards opening full player pages;
 - official player portraits and cutoff-aware player dossiers;
 - an immutable, capture-linked Baseline v0 expected-points artefact;
 - an immutable user-owned forecast draft with an explicit one-time pre-deadline
   lock and computed locked, expired or frozen status;
+- a same-artifact projected-points comparison between the model and user squad;
 - deterministic explanation and risk sections;
 - alternative-strategy summaries; and
 - an explicit, unavailable-until-grounded AI composer.
@@ -712,94 +757,33 @@ v1.0 hardens the proven product rather than introducing its first UI:
 
 ## Immediate implementation order
 
-The next development slices are:
+The next development slices are deliberately product-sized:
 
-1. resolve the implemented current participation artifact's observed import
-   blockers before adding backend or dossier fields: keep the rejected
-   Euclidean projection and full five-state joint model out of the current
-   artifact; run the implemented coherent factorization that preserves the
-   supported raw appearance model and learns start and 60-minute probability
-   conditional on appearance; keep that rejected factorization out after its
-   start probability was non-worse in only four of eight folds, freeze raw,
-   joint and factorized variants for genuinely new current-season temporal
-   folds and stop selecting coherence methods on the opened holdout; define a
-   separately labelled implemented current-official-availability ceiling and
-   prospective three-variant evaluation contract, preserve the first complete
-   current artifact and score it only after real outcomes; use the implemented
-   exact-code coverage audit and fixed-URL Riker Byparr capture of FBref's
-   2025/26 Championship playing-time page to drive the 78 promoted-club and 26
-   other new/transferred player gaps; use the implemented bounded extractor's
-   944 rows and 894 stable FBref identities; use the implemented,
-   snapshot-hash-bound bridge for 60 reviewed exact matches while keeping the
-   other 25 promoted-club players unresolved; use the implemented official-code
-   operator boundary to capture only those reviewed players' fixed match-log
-   URLs, use the implemented coverage API and bounded batch operator to expand
-   the 60-player capture cohort, and use the implemented deterministic parser
-   to retain bounded match chronology; use the three implemented fixed
-   promoted-club schedule sources and deterministic stable-match-ID parser to
-   define every prior-season match opportunity; use the implemented
-   explicit-snapshot join to retain `no-player-row` as null evidence with
-   before/within/after observed-range context and form last-3/6/8 count
-   summaries; use the implemented cohort readiness report to keep incomplete
-   player-log or team-schedule coverage blocked; use the implemented
-   cutoff-bound shadow feature table to freeze raw season and last-3/6/8 counts
-   for all 60 identities without dropping missing rows; treat this current
-   cohort as a prospective test and add that history to served forecasts only
-   after comparable identical-fold out-of-time evaluation;
-   keep exact minutes on the
-   retained player-last baseline, evaluate a two-stage or hierarchical minutes
-   challenger and add the empirical point-distribution loop before any raw
-   preseason value may influence advice;
-2. run the implemented identical-fold cross-season feature ablation as real
-   current-season folds accumulate, then promote only stable out-of-time gains
-   from prior-season match performance, minutes, starts, underlying events and
-   participation-derived durability; archived final health remains excluded
-   from the candidate and current official availability always dominates it;
-3. join the implemented provisional point and participation artifacts by exact
-   capture/player identity, with supported appearance/start/60-minute
-   probabilities, explicitly baseline-labelled minutes and only distribution
-   components that pass their rolling gates;
-4. operate the implemented bounded background Spider refresh across the fixed
-   official-availability, specialist-lineup and dependent-consensus inventory,
-   using the decision-room club board to audit FFScout gaps; then add
-   reproducible quantitative, market/team-strength and attributable
-   named-expert challengers without treating correlated reports as independent
-   votes;
-5. operate the implemented deterministic FFScout adapters, which resolve
-   predicted-XI photo codes with a unique team-scoped fallback, derive
-   non-starter claims only from complete identity-resolved XIs, and retain
-   unique team-scoped `Out` and percentage-bearing `Doubts` as separately
-   versioned quarantined claims; operate the implemented dependent strAIghtred
-   consensus adapter under the same player/target duplicate clusters and the
-   implemented read-only start-claim evaluator by source and lead time; then
-   add a fail-closed official-injury adapter plus defensible availability truth
-   before any feature use;
-6. run the final-outcome command after the first completed, data-checked
-   Gameweek and verify the resulting real replay/outcome pair;
-7. run the baseline command as complete pairs accumulate and retain the
-   machine-readable reports;
-8. retain the point, probability-of-60-minutes, expected-minutes and empirical
-   distribution reports as real folds accumulate;
-9. operate the Playwright-MCP-backed bounded FPL Form public predicted-points
-   adapter once its 2026/27 active forecast is available, preserve retrieval,
-   availability, transport and extraction identities, run the implemented
-   fail-closed player/fixture identity coverage report, and run the implemented
-   external evaluator over its conditional published values and separately
-   named probability-adjusted challenger before using any value as a feature;
-10. keep exercising the implemented official-photo decision room and
-   cutoff-aware dossiers against live captures as prior outcomes accumulate;
-11. run the implemented fold-local ridge and fixed histogram-tree challengers
-   as real folds accumulate, then run the implemented identical-fold official
-   underlying-feature ablation before changing the incumbent feature contract;
-12. run the implemented exact-cutoff, source-complete FPL Form feature ablation
-   comparing official-only, conditional-points and appearance-adjusted variants
-   on identical folds;
-13. retain the implemented, persisted and explicitly unvalidated Baseline v0 on
-   player cards while gathering enough real folds to promote or replace it
-   through the registered out-of-time rule.
+1. finish and browser-test the sidebar, breadcrumbs, full player page and
+   model-versus-user squad comparison;
+2. replace the transitional My squad panel/dialog with the dedicated
+   15-player builder, legal-constraint feedback and same-artifact comparison;
+3. import and audit 2024/25 alongside the pinned 2025/26 archive, including a
+   fail-closed cross-season identity coverage report;
+4. run the first 2026/27 final-outcome pairing, then automate the bounded
+   post-Gameweek score-and-evaluate workflow;
+5. build the two-season expanding-origin feature table and compare the existing
+   baseline, ridge and histogram-tree candidates on identical folds;
+6. join only the point, participation and minutes components that pass their
+   registered gates, then publish the first calibrated player distributions;
+7. add CPU-reference scenario scoring and compare the model, safer,
+   higher-ceiling and user-authored squads in the interface;
+8. connect the grounded AI surface through read-only MCP first, followed by an
+   owner-configured OpenAI-compatible provider; and
+9. add owner authentication and sanitized dashboard sharing before exposing
+   any configuration or consequential action outside the trusted instance.
 
-Do not add another standalone governance, universal contract, infrastructure or
-AI-orchestrator project ahead of those slices.
+Specialist lineups, public forecasts, named experts and social evidence remain
+valuable challenger sources. Operate the existing bounded collectors and score
+each source alone, then run identical-fold feature ablations. A source enters
+the incumbent only if it increases out-of-time accuracy or decision utility.
+Do not add another standalone governance, universal contract, infrastructure
+or AI-orchestrator project ahead of these slices.
 
 ## Conditional enhancements
 
