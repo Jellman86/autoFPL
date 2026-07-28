@@ -349,6 +349,23 @@ attempts. A failed player does not roll back successful captures; the JSON
 result reports `complete`, `partial`, `failed` or `no-op` and exits non-zero
 when any attempt failed.
 
+Enable automatic completion of the same reviewed queue with:
+
+```text
+AutoFpl__Research__FbrefMatchLogCaptureIntervalMinutes=60
+AutoFpl__Research__FbrefMatchLogCaptureBatchSize=5
+```
+
+The interval is restricted to `60` through `1440` minutes. Batch size is
+optional, defaults to `5` and is restricted to `1` through `5`. The worker runs
+one sequential bounded batch immediately after application startup and one per
+interval thereafter. It skips snapshots already present and retries failures
+on the next interval. Inspect the coverage route above for durable progress;
+the worker does not write source content or capture failures to application
+logs. Leave the interval unset to disable background collection; configuring a
+batch size without an interval fails startup so a partial configuration cannot
+appear active.
+
 Capture each fixed promoted-club Championship schedule through the same generic
 research-source operator:
 
