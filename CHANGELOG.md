@@ -24,6 +24,15 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **Two complete seasons now feed one leakage-safe expanding-origin
+  evaluator.** The read-only command joins players only through exact official
+  codes, separates prior- and current-season history, preserves legacy
+  defensive missingness and compares rolling-three, ridge and fixed
+  histogram-tree candidates on identical 2025/26 Gameweek 31–38 cohorts. A
+  matched current-season-only ablation shows that carrying 2024/25 produces a
+  small aggregate gain but not robust fold/position dominance, so the frozen
+  specification remains a prospective shadow challenger rather than replacing
+  Baseline v0.
 - **Final Gameweek outcomes now have a bounded automatic capture path.** Each
   enabled official-reference poll fills the oldest completed outcome gaps
   first, imports at most three fixed official live endpoints and rechecks the

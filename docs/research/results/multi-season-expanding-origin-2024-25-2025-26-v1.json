@@ -1,0 +1,109 @@
+{
+  "schemaVersion": "1.0",
+  "resultType": "retained-evaluation-summary",
+  "evaluatorVersion": "multi-season-expanding-origin-v1",
+  "researchStatus": "retrospective-screen-not-promoted",
+  "isPromoted": false,
+  "status": "complete",
+  "provenance": [
+    {
+      "captureId": 2,
+      "seasonCode": "2024-25",
+      "sourceRevision": "f9ed3e8839b0f970e0d5d4a83c5628f6eaee755a",
+      "availableAtUtc": "2026-07-28T21:55:42.0388821+00:00",
+      "playersSha256": "75686051b265cbe7755ac71213ecaad21b26ee1cc46a8bafbba19c39ce894b05",
+      "gameweeksSha256": "5bbbcba6353b4c72ad273adcc8e3aa451946a826564679788f45b1cb3325b84e",
+      "playerCount": 784,
+      "playerGameweekRowCount": 27283,
+      "stableCodeCount": 784
+    },
+    {
+      "captureId": 1,
+      "seasonCode": "2025-26",
+      "sourceRevision": "f9ed3e8839b0f970e0d5d4a83c5628f6eaee755a",
+      "availableAtUtc": "2026-07-26T18:17:21.4965221+00:00",
+      "playersSha256": "412ce0172016f8f98f25177dc6de9f3cd2a8ec7a6135f9aa638d7fdee784d67b",
+      "gameweeksSha256": "0d09f1f1cb1b5520ec8e2f25238aa652efe2a263d8ca7cb2b6538b27bf86727d",
+      "playerCount": 841,
+      "playerGameweekRowCount": 29747,
+      "stableCodeCount": 841
+    }
+  ],
+  "evaluation": {
+    "seasonCode": "2025-26",
+    "gameweekStart": 31,
+    "gameweekEnd": 38,
+    "foldCount": 8,
+    "targetPlayerGameweekCount": 6252,
+    "models": [
+      {
+        "name": "multi-season-histogram-tree",
+        "mae": 0.963833,
+        "rmse": 1.90917,
+        "meanError": 0.025308
+      },
+      {
+        "name": "current-season-only-histogram-tree",
+        "mae": 0.966352,
+        "rmse": 1.923032,
+        "meanError": 0.010289
+      },
+      {
+        "name": "multi-season-ridge",
+        "mae": 1.032849,
+        "rmse": 1.948337,
+        "meanError": 0.032603
+      },
+      {
+        "name": "current-season-only-ridge",
+        "mae": 1.036365,
+        "rmse": 1.95418,
+        "meanError": 0.019635
+      },
+      {
+        "name": "multi-season-player-rolling3-points",
+        "mae": 1.060919,
+        "rmse": 2.216491,
+        "meanError": 0.011655
+      }
+    ]
+  },
+  "crossSeasonAblation": [
+    {
+      "currentSeasonOnlyModel": "current-season-only-ridge",
+      "multiSeasonModel": "multi-season-ridge",
+      "maeImprovementFraction": 0.003393,
+      "rmseDelta": -0.005843,
+      "foldWins": 6,
+      "foldCount": 8,
+      "allPositionMaeNonWorse": false,
+      "positionMaeDeltas": {
+        "defender": -0.018448,
+        "forward": 0.006358,
+        "goalkeeper": -0.009988,
+        "midfielder": 0.006437
+      }
+    },
+    {
+      "currentSeasonOnlyModel": "current-season-only-histogram-tree",
+      "multiSeasonModel": "multi-season-histogram-tree",
+      "maeImprovementFraction": 0.002607,
+      "rmseDelta": -0.013862,
+      "foldWins": 3,
+      "foldCount": 8,
+      "allPositionMaeNonWorse": false,
+      "positionMaeDeltas": {
+        "defender": -0.008766,
+        "forward": -0.023388,
+        "goalkeeper": 0.000545,
+        "midfielder": 0.006396
+      }
+    }
+  ],
+  "decision": {
+    "status": "retain-as-prospective-shadow-challenger",
+    "leadingModel": "multi-season-histogram-tree",
+    "isPromoted": false
+  },
+  "completeReportRunIdentitySha256": "577ff6fc3d4283670bae47deb53acad683111c6ed1155c9715442688f4602cfd"
+}
