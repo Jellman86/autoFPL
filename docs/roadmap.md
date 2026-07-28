@@ -733,8 +733,9 @@ The next development slices are:
    snapshot-hash-bound bridge for 60 reviewed exact matches while keeping the
    other 25 promoted-club players unresolved; use the implemented official-code
    operator boundary to capture only those reviewed players' fixed match-log
-   URLs; next parse and retain bounded match chronology, then add that history
-   only after identical-fold evaluation; keep exact minutes on the
+   URLs and use the implemented deterministic parser to retain bounded match
+   chronology; next form explicitly missing-aware rolling features and add that
+   history only after identical-fold evaluation; keep exact minutes on the
    retained player-last baseline, evaluate a two-stage or hierarchical minutes
    challenger and add the empirical point-distribution loop before any raw
    preseason value may influence advice;

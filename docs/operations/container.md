@@ -320,7 +320,18 @@ dotnet AutoFpl.Api.dll \
 This command accepts an official stable code, not a URL. It resolves the fixed
 FBref URL through the exact reviewed aggregate snapshot, uses the configured
 private Byparr origin and stores only an immutable `shadow-only` raw snapshot.
-It neither polls the page nor parses or promotes its rows. Set
+It does not poll or promote the page. Extract its typed chronology explicitly:
+
+```text
+dotnet AutoFpl.Api.dll \
+  --extract-fbref-player-match-log <snapshot-id>
+
+GET /api/v1/research/snapshots/{snapshotId}/fbref-player-match-log
+```
+
+Both reads revalidate the snapshot against the reviewed bridge and return
+bounded dated match rows without exposing raw HTML. They do not create model
+features or alter forecasts. Set
 `AutoFpl__Research__ByparrUrl` to Riker's private-LAN origin when the default
 container-local name is not available.
 

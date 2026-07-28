@@ -208,7 +208,7 @@ public sealed class FbrefPlayingTimeExtractor
         return rows;
     }
 
-    private static string RemoveHtmlComments(string content)
+    internal static string RemoveHtmlComments(string content)
     {
         var output = new StringBuilder(content.Length);
         int position = 0;
@@ -407,12 +407,12 @@ public sealed class FbrefPlayingTimeExtractor
             coverage);
     }
 
-    private static HtmlCell RequireCell(string row, string dataStat) =>
+    internal static HtmlCell RequireCell(string row, string dataStat) =>
         FindCell(row, dataStat)
         ?? throw Invalid(
             $"An FBref player row did not contain the {dataStat} cell.");
 
-    private static HtmlCell? FindCell(string row, string dataStat)
+    internal static HtmlCell? FindCell(string row, string dataStat)
     {
         HtmlCell? found = null;
         int position = 0;
@@ -474,7 +474,7 @@ public sealed class FbrefPlayingTimeExtractor
         return (td, "td");
     }
 
-    private static string FindUniqueElement(
+    internal static string FindUniqueElement(
         string content,
         string tagName,
         string? attributeName = null,
@@ -523,7 +523,7 @@ public sealed class FbrefPlayingTimeExtractor
             ?? throw Invalid($"The required FBref {tagName} element was not found.");
     }
 
-    private static int FindOpeningTagEnd(
+    internal static int FindOpeningTagEnd(
         string content,
         int start,
         string tagName)
@@ -536,7 +536,7 @@ public sealed class FbrefPlayingTimeExtractor
         return end;
     }
 
-    private static string? ReadAttribute(
+    internal static string? ReadAttribute(
         string openingTag,
         string attributeName)
     {
@@ -555,7 +555,7 @@ public sealed class FbrefPlayingTimeExtractor
         return WebUtility.HtmlDecode(openingTag[start..end]);
     }
 
-    private static string? ReadHref(string cellContent)
+    internal static string? ReadHref(string cellContent)
     {
         int anchor = cellContent.IndexOf("<a", StringComparison.Ordinal);
         if (anchor < 0)
@@ -566,7 +566,7 @@ public sealed class FbrefPlayingTimeExtractor
         return ReadAttribute(cellContent[anchor..(end + 1)], "href");
     }
 
-    private static string ReadText(string content)
+    internal static string ReadText(string content)
     {
         var visible = new StringBuilder(content.Length);
         bool inTag = false;
@@ -612,7 +612,7 @@ public sealed class FbrefPlayingTimeExtractor
         return normalized.ToString().Trim();
     }
 
-    private static string ParseResourceId(
+    internal static string ParseResourceId(
         string href,
         string resourceType)
     {
@@ -638,7 +638,7 @@ public sealed class FbrefPlayingTimeExtractor
         return identifier.ToLowerInvariant();
     }
 
-    private static int ParseCount(
+    internal static int ParseCount(
         string value,
         string fieldName,
         bool allowEmpty)
@@ -688,7 +688,7 @@ public sealed class FbrefPlayingTimeExtractor
     private static ResearchSourceSnapshotException Invalid(string message) =>
         new(message);
 
-    private sealed record HtmlCell(string OpeningTag, string Content);
+    internal sealed record HtmlCell(string OpeningTag, string Content);
 
     internal sealed record FbrefPlayingTimeRow(
         string SourcePlayerId,

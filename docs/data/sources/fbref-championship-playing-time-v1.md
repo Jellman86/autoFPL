@@ -14,9 +14,10 @@ deterministic v1 extractor emits source player/team IDs, squad, appearances,
 starts, minutes and each player's fixed 2025/26 summary match-log URL. It never
 returns the retained page HTML.
 
-It does not yet supply match-order temporal form. No field influences a
-forecast until the source-ID-to-official-code bridge is reviewed, match
-chronology is retained and identical-fold evaluation shows predictive gain.
+The aggregate page does not itself supply match-order temporal form. Reviewed
+match-log capture and deterministic chronology extraction now provide that
+separate evidence boundary, but no field influences a forecast until
+identical-fold evaluation shows predictive gain.
 
 The reviewed-player capture boundary is now implemented. The operator supplies
 one official stable player code to
@@ -86,8 +87,18 @@ unexpected population size. The response distinguishes `reviewed-v1`,
 `exact-current-team-proposal`, `unresolved` and `not-in-scope` identity states
 and publishes the applicable bridge version without exposing raw HTML.
 
-The reviewed match-log operator command currently captures raw chronology
-pages only. A subsequent deterministic parser must retain match dates,
-competition, opponent, venue, starts, minutes and selected performance fields,
-validate row bounds and expose typed provenance before the first identical-fold
-feature ablation. Capture alone cannot influence a forecast.
+The reviewed match-log operator command captures raw chronology pages. Parser
+v1 revalidates the snapshot source against bridge v1 and emits bounded dated
+rows containing competition, round, venue, result, stable team/opponent/match
+IDs, starts, minutes, goals, assists and cards. It retains explicit matchday
+bench rows as zero minutes, ignores undated separators, and rejects duplicate
+or out-of-order matches and unsupported values. The typed document includes
+only rows for the reviewed aggregate source team; internationals and other-team
+rows remain excluded. It reports both aggregate and parsed
+appearance/start/minute totals with an explicit `exact` or
+`source-revision-mismatch` status, because FBref may correct the independently
+retrieved pages. The CLI command
+`--extract-fbref-player-match-log <snapshot-id>` and read-only
+`/api/v1/research/snapshots/{snapshotId}/fbref-player-match-log` route expose
+the same typed document without raw HTML. Extraction alone cannot influence a
+forecast.

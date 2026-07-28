@@ -24,6 +24,16 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **Reviewed FBref match chronology is now deterministically inspectable.** A
+  versioned parser revalidates each retained page against bridge v1 and emits
+  only bounded dated match rows: competition, round, venue, result, stable
+  team/opponent/match IDs, starts, minutes, goals, assists and cards. It retains
+  explicit zero-minute matchday-bench rows, rejects duplicate or out-of-order
+  matches and excludes international/other-team rows. Aggregate and chronology
+  appearance/start/minute totals are both reported with an explicit exact or
+  source-revision-mismatch state, preserving independently retrieved source
+  corrections rather than hiding them. Raw HTML stays private and the result
+  remains non-serving pending identical-fold evaluation.
 - **Reviewed FBref player match logs now have a bounded capture path.** The
   operator supplies only an official stable player code; autoFPL resolves it
   through the snapshot-hash-bound 60-player bridge, derives the fixed 2025/26

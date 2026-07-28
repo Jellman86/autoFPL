@@ -442,6 +442,90 @@ public sealed class ResearchSourceSnapshotTests
     }
 
     [Fact]
+    public void Fbref_match_log_parser_retains_dated_appearances_and_bench_rows()
+    {
+        const string content =
+            """
+            <html><body>
+            <table id="matchlogs_all"><tbody>
+            <tr>
+              <th data-stat="date">2025-08-09</th>
+              <td data-stat="comp">Championship</td>
+              <td data-stat="round">Regular season</td>
+              <td data-stat="venue">Away</td>
+              <td data-stat="result">D 0–0</td>
+              <td data-stat="team"><a href="/en/squads/aaaaaaaa/Hull-City">Hull City</a></td>
+              <td data-stat="opponent"><a href="/en/squads/bbbbbbbb/Coventry-City">Coventry City</a></td>
+              <td data-stat="game_started">Y</td>
+              <td data-stat="minutes">90</td>
+              <td data-stat="goals">1</td>
+              <td data-stat="assists">0</td>
+              <td data-stat="cards_yellow">1</td>
+              <td data-stat="cards_red">0</td>
+              <td data-stat="match_report"><a href="/en/matches/11111111/Report">Match Report</a></td>
+            </tr>
+            <tr>
+              <th data-stat="date"></th>
+            </tr>
+            <tr>
+              <th data-stat="date">2025-08-16</th>
+              <td data-stat="comp">Championship</td>
+              <td data-stat="round">Regular season</td>
+              <td data-stat="venue">Home</td>
+              <td data-stat="result">W 1–0</td>
+              <td data-stat="team"><a href="/en/squads/aaaaaaaa/Hull-City">Hull City</a></td>
+              <td data-stat="opponent"><a href="/en/squads/cccccccc/Ipswich-Town">Ipswich Town</a></td>
+              <td data-stat="game_started">N</td>
+              <td data-stat="bench_explain">On matchday squad, but did not play</td>
+              <td data-stat="match_report"><a href="/en/matches/22222222/Report">Match Report</a></td>
+            </tr>
+            </tbody></table>
+            </body></html>
+            """;
+
+        IReadOnlyList<FbrefPlayerMatchLogRowDocument> rows =
+            FbrefPlayerMatchLogExtractor.Parse(content);
+
+        Assert.Equal(2, rows.Count);
+        Assert.Equal(new DateOnly(2025, 8, 9), rows[0].MatchDate);
+        Assert.Equal("11111111", rows[0].SourceMatchId);
+        Assert.True(rows[0].Started);
+        Assert.Equal(90, rows[0].Minutes);
+        Assert.Equal(1, rows[0].Goals);
+        Assert.Equal("away", rows[0].Venue);
+        Assert.Equal("bbbbbbbb", rows[0].SourceOpponentId);
+        Assert.False(rows[1].Started);
+        Assert.Equal(0, rows[1].Minutes);
+        Assert.Equal(0, rows[1].Goals);
+        Assert.Equal("home", rows[1].Venue);
+    }
+
+    [Fact]
+    public void Fbref_match_log_parser_rejects_duplicate_matches()
+    {
+        const string row =
+            """
+            <tr>
+              <th data-stat="date">2025-08-09</th>
+              <td data-stat="comp">Championship</td>
+              <td data-stat="round">Regular season</td>
+              <td data-stat="venue">Away</td>
+              <td data-stat="result">D 0–0</td>
+              <td data-stat="team"><a href="/en/squads/aaaaaaaa/Hull-City">Hull City</a></td>
+              <td data-stat="opponent"><a href="/en/squads/bbbbbbbb/Coventry-City">Coventry City</a></td>
+              <td data-stat="game_started">Y</td>
+              <td data-stat="minutes">90</td>
+              <td data-stat="match_report"><a href="/en/matches/11111111/Report">Match Report</a></td>
+            </tr>
+            """;
+        string content =
+            $"<table id=\"matchlogs_all\"><tbody>{row}{row}</tbody></table>";
+
+        Assert.Throws<ResearchSourceSnapshotException>(
+            () => FbrefPlayerMatchLogExtractor.Parse(content));
+    }
+
+    [Fact]
     public void Fbref_playing_time_parser_rejects_duplicate_player_team_rows()
     {
         string content = CreateFbrefPlayingTimeHtml(
