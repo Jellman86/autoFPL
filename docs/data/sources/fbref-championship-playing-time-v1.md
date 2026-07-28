@@ -120,11 +120,21 @@ results and unsupported counts. The CLI command
 `/api/v1/research/snapshots/{snapshotId}/fbref-team-schedule` route expose the
 typed schedule without raw HTML.
 
-These rows define opportunities, not player state. A later missing-aware
-artifact must left-join each reviewed player chronology to the matching team
-schedule by stable match ID. A missing player row then remains an explicit
-unknown/absence observation according to a separately versioned rule; it is
-never silently discarded or assumed to be zero minutes by this source parser.
+These rows define opportunities, not player state. The implemented
+`fbref-player-match-opportunity/v1` artifact requires explicit immutable
+player-log and team-schedule snapshot IDs and left-joins them by stable match
+ID. It rejects team, season, opponent, date or venue disagreement and excludes
+other-competition player rows from the Championship join while reporting their
+count.
+
+Each schedule row is labelled `appeared`, `unused-bench` or `no-player-row`.
+Missing rows retain null start, minutes and performance fields; they are never
+silently discarded or assumed to be zero. A separate range label records
+whether the opportunity was before, within or after the player's observed
+Championship row range without claiming club membership or availability.
+Deterministic last-3, last-6 and last-8 summaries expose scheduled, observed,
+appearance, start, unused-bench, missing-row and observed-minute counts with an
+explicit complete/missing status. They remain shadow feature candidates.
 
 ## Coverage operations
 

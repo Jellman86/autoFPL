@@ -38,7 +38,10 @@ remaining 25 official identities stay unresolved. Point-in-time match-log
 capture, bounded coverage reporting and deterministic parsing for the reviewed
 allowlist are implemented. Three fixed promoted-club Championship schedule
 sources now define the complete match-opportunity sequence needed for an
-honest missing-aware join.
+honest missing-aware join. The implemented explicit-snapshot opportunity
+artifact performs that stable-match-ID join, retains null player fields for
+missing rows and emits last-3/6/8 count summaries without promoting them into
+the model.
 
 Goals, assists, shots, expected goals/assists, saves and cards are optional
 source fields with explicit coverage. Missing values remain null rather than

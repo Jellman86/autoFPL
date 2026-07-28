@@ -374,6 +374,25 @@ The parser returns only stable match IDs and bounded schedule facts. The rows
 define match opportunities for a later missing-aware join; these commands do
 not infer player absence or create model features.
 
+Join one reviewed player log to its exact team schedule using explicit
+immutable snapshot IDs:
+
+```text
+dotnet AutoFpl.Api.dll \
+  --extract-fbref-player-match-opportunities \
+  <player-match-log-snapshot-id> <team-schedule-snapshot-id>
+
+GET /api/v1/research/fbref-player-match-opportunities\
+?playerMatchLogSnapshotId=<player-match-log-snapshot-id>\
+&teamScheduleSnapshotId=<team-schedule-snapshot-id>
+```
+
+The join requires the same team and season and validates stable match ID,
+date, opponent and venue. A missing player row remains `no-player-row` with
+null player fields. The last-3/6/8 summaries report only observed counts and
+minutes plus explicit missing-row counts. This read does not persist a feature,
+alter a forecast or infer why the player row is absent.
+
 Set
 `AutoFpl__Research__ByparrUrl` to Riker's private-LAN origin when the default
 container-local name is not available.
