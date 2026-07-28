@@ -278,6 +278,8 @@ dotnet AutoFpl.Api.dll \
   --capture-research-source ffscout-predicted-lineups
 dotnet AutoFpl.Api.dll \
   --capture-research-source straightred-lineup-consensus
+dotnet AutoFpl.Api.dll \
+  --capture-research-source fbref-championship-playing-time-2025-26
 ```
 
 The command uses Quark's hardened Spider MCP endpoint, defaulting to
@@ -306,6 +308,21 @@ partial and missing states describe identity coverage only; missing players
 remain unknown. Repeated identical content is idempotent. Every source remains
 `shadow-only` and cannot alter predictions or selections, while supported
 derived claims remain `quarantined`.
+
+Capture a single prior-season match-log page only after its FBref identity is
+part of the reviewed bridge:
+
+```text
+dotnet AutoFpl.Api.dll \
+  --capture-fbref-player-match-log <official-player-code>
+```
+
+This command accepts an official stable code, not a URL. It resolves the fixed
+FBref URL through the exact reviewed aggregate snapshot, uses the configured
+private Byparr origin and stores only an immutable `shadow-only` raw snapshot.
+It neither polls the page nor parses or promotes its rows. Set
+`AutoFpl__Research__ByparrUrl` to Riker's private-LAN origin when the default
+container-local name is not available.
 
 Extract identity-checked claims from one supported retained snapshot explicitly:
 

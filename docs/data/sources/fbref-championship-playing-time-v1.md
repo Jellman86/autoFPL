@@ -18,6 +18,13 @@ It does not yet supply match-order temporal form. No field influences a
 forecast until the source-ID-to-official-code bridge is reviewed, match
 chronology is retained and identical-fold evaluation shows predictive gain.
 
+The reviewed-player capture boundary is now implemented. The operator supplies
+one official stable player code to
+`--capture-fbref-player-match-log <official-player-code>`. autoFPL accepts the
+code only when it resolves uniquely through bridge v1, reads that player's
+fixed match-log URL from the reviewed aggregate extraction and sends only that
+URL to Byparr. No HTTP caller or operator can supply a URL.
+
 ## Collection and provenance
 
 autoFPL sends only the registered canonical URL to Byparr 2.1.0 at Riker's
@@ -35,6 +42,14 @@ Gluetun proxy. The client:
 The raw HTML is Brotli-compressed in private SQLite and is not returned by the
 inventory API. Collection is manual because this completed-season page does
 not need the live-source six-hour poll cadence.
+
+Reviewed match-log captures use the same size, timing, immutable-storage and
+transport-provenance boundary. Each source key contains exactly the reviewed
+eight-character FBref player ID and fixed `2025-26` season. The client permits
+only the extractor-provided `/summary/` path and FBref's observed redirect
+without that segment, and requires both the match-log title and
+`matchlogs_all` table marker. A changed bridge snapshot, unresolved official
+code, arbitrary path or non-FBref origin fails closed.
 
 ## Timing, identity and limitations
 
@@ -70,3 +85,9 @@ capture, malformed or duplicate IDs, invalid counts, missing target clubs or an
 unexpected population size. The response distinguishes `reviewed-v1`,
 `exact-current-team-proposal`, `unresolved` and `not-in-scope` identity states
 and publishes the applicable bridge version without exposing raw HTML.
+
+The reviewed match-log operator command currently captures raw chronology
+pages only. A subsequent deterministic parser must retain match dates,
+competition, opponent, venue, starts, minutes and selected performance fields,
+validate row bounds and expose typed provenance before the first identical-fold
+feature ablation. Capture alone cannot influence a forecast.

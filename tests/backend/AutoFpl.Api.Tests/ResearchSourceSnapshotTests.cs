@@ -328,6 +328,120 @@ public sealed class ResearchSourceSnapshotTests
     }
 
     [Fact]
+    public async Task Fbref_match_log_capture_is_reviewed_allowlisted_and_immutable()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = await CreateDatabaseAsync(files.DatabasePath);
+        var player = new FbrefPlayingTimePlayerDocument(
+            "d6192210",
+            "Semi Ajayi",
+            "bd8769d1",
+            "Hull City",
+            14,
+            9,
+            843,
+            "https://fbref.com/en/players/d6192210/matchlogs/2025-2026/summary/Semi-Ajayi-Match-Logs",
+            "reviewed-v1",
+            101,
+            146426);
+        ResearchSourceDefinition source =
+            FbrefPlayerMatchLogImporter.CreateSourceDefinition(player);
+        const string finalUrl =
+            "https://fbref.com/en/players/d6192210/matchlogs/2025-2026/Semi-Ajayi-Match-Logs";
+        const string content =
+            """
+            <html><head><title>2025-2026 Semi Ajayi Match Logs | FBref.com</title></head>
+            <body><table id="matchlogs_all"><tbody></tbody></table></body></html>
+            """;
+        var handler = new ByparrHandler(source, content, finalUrl);
+        using var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("http://192.168.213.101:8191/"),
+        };
+        var store = new ResearchSourceSnapshotStore(
+            options,
+            new FixedTimeProvider(RetrievalTime));
+
+        ByparrCaptureResult capture = await new ByparrClient(httpClient)
+            .CaptureAsync(source, TestContext.Current.CancellationToken);
+        ResearchSourceSnapshotDocument snapshot = await store.PersistAsync(
+            source,
+            capture,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(
+            "fbref-player-match-log-d6192210-2025-26",
+            snapshot.SourceKey);
+        Assert.True(
+            FbrefPlayerMatchLogImporter.IsMatchLogSourceKey(
+                snapshot.SourceKey));
+        Assert.Equal("prior-competition-player-match-log", snapshot.SourceClass);
+        Assert.Equal("byparr/2.1.0", snapshot.TransportVersion);
+        Assert.Equal(player.MatchLogsUrl, snapshot.CanonicalUrl);
+        Assert.Equal(finalUrl, snapshot.FinalUrl);
+        Assert.False(source.PollAutomatically);
+        Assert.Equal(1, handler.RequestCount);
+
+        await using var connection =
+            new SqliteConnection(options.ConnectionString);
+        await connection.OpenAsync(TestContext.Current.CancellationToken);
+        await using SqliteCommand mutate = connection.CreateCommand();
+        mutate.CommandText =
+            "UPDATE research_source_snapshots SET source_revision = 2 WHERE snapshot_id = $snapshotId;";
+        mutate.Parameters.AddWithValue("$snapshotId", snapshot.SnapshotId);
+        SqliteException exception = await Assert.ThrowsAsync<SqliteException>(
+            async () => await mutate.ExecuteNonQueryAsync(
+                TestContext.Current.CancellationToken));
+        Assert.Contains(
+            "research source snapshots are immutable",
+            exception.Message,
+            StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("fbref-player-match-log-d6192210-2025-26", true)]
+    [InlineData("fbref-player-match-log-D6192210-2025-26", false)]
+    [InlineData("fbref-player-match-log-d6192210-2026-27", false)]
+    [InlineData("fbref-player-match-log-d61922100-2025-26", false)]
+    [InlineData("https://fbref.com/arbitrary", false)]
+    public void Fbref_match_log_source_key_is_exact(
+        string sourceKey,
+        bool expected)
+    {
+        Assert.Equal(
+            expected,
+            FbrefPlayerMatchLogImporter.IsMatchLogSourceKey(sourceKey));
+    }
+
+    [Fact]
+    public void Fbref_match_log_source_rejects_unreviewed_or_changed_urls()
+    {
+        var unreviewed = new FbrefPlayingTimePlayerDocument(
+            "d6192210",
+            "Semi Ajayi",
+            "bd8769d1",
+            "Hull City",
+            14,
+            9,
+            843,
+            "https://fbref.com/en/players/d6192210/matchlogs/2025-2026/summary/Semi-Ajayi-Match-Logs",
+            "exact-current-team-proposal",
+            101,
+            146426);
+        var changedUrl = unreviewed with
+        {
+            IdentityStatus = "reviewed-v1",
+            MatchLogsUrl =
+                "https://example.com/en/players/d6192210/matchlogs/2025-2026/summary/Semi-Ajayi-Match-Logs",
+        };
+
+        Assert.Throws<ResearchSourceSnapshotException>(
+            () => FbrefPlayerMatchLogImporter.CreateSourceDefinition(unreviewed));
+        Assert.Throws<ResearchSourceSnapshotException>(
+            () => FbrefPlayerMatchLogImporter.CreateSourceDefinition(changedUrl));
+    }
+
+    [Fact]
     public void Fbref_playing_time_parser_rejects_duplicate_player_team_rows()
     {
         string content = CreateFbrefPlayingTimeHtml(

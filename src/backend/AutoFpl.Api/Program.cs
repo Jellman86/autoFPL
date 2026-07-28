@@ -111,6 +111,24 @@ if (requestedFbrefPlayingTimeExtraction
         "Usage: --extract-fbref-playing-time <snapshot-id>");
     return 2;
 }
+bool requestedFbrefPlayerMatchLogCapture =
+    args.Length > 0
+    && StringComparer.Ordinal.Equals(
+        args[0],
+        "--capture-fbref-player-match-log");
+int fbrefPlayerMatchLogOfficialCode = 0;
+bool runFbrefPlayerMatchLogCapture =
+    requestedFbrefPlayerMatchLogCapture
+    && args.Length == 2
+    && int.TryParse(args[1], out fbrefPlayerMatchLogOfficialCode)
+    && fbrefPlayerMatchLogOfficialCode > 0;
+if (requestedFbrefPlayerMatchLogCapture
+    && !runFbrefPlayerMatchLogCapture)
+{
+    await Console.Error.WriteLineAsync(
+        "Usage: --capture-fbref-player-match-log <official-player-code>");
+    return 2;
+}
 bool requestedEvidenceClaimEvaluation =
     args.Length > 0
     && StringComparer.Ordinal.Equals(
@@ -201,6 +219,7 @@ bool runNonWebCommand =
     || runResearchSourceCapture
     || runResearchSourceClaimExtraction
     || runFbrefPlayingTimeExtraction
+    || runFbrefPlayerMatchLogCapture
     || runEvidenceClaimEvaluation
     || runFplFormForecastEvaluation
     || runOfficialExpectedPointsEvaluation
@@ -451,6 +470,7 @@ builder.Services.AddTransient<FplFormForecastImporter>();
 builder.Services.AddTransient<ResearchSourceSnapshotImporter>();
 builder.Services.AddTransient<ResearchSourceClaimExtractor>();
 builder.Services.AddTransient<FbrefPlayingTimeExtractor>();
+builder.Services.AddTransient<FbrefPlayerMatchLogImporter>();
 if (fplFormPollingOptions.Enabled)
 {
     builder.Services.AddHostedService<FplFormForecastPoller>();
@@ -690,6 +710,27 @@ if (runFbrefPlayingTimeExtraction)
         await Console.Out.WriteLineAsync(
             JsonSerializer.Serialize(
                 extraction,
+                new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+        return 0;
+    }
+    catch (ResearchSourceSnapshotException exception)
+    {
+        await Console.Error.WriteLineAsync(exception.Message);
+        return 2;
+    }
+}
+
+if (runFbrefPlayerMatchLogCapture)
+{
+    try
+    {
+        ResearchSourceSnapshotDocument snapshot =
+            await app.Services
+                .GetRequiredService<FbrefPlayerMatchLogImporter>()
+                .ImportAsync(fbrefPlayerMatchLogOfficialCode);
+        await Console.Out.WriteLineAsync(
+            JsonSerializer.Serialize(
+                snapshot,
                 new JsonSerializerOptions(JsonSerializerDefaults.Web)));
         return 0;
     }

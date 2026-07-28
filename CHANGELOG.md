@@ -24,6 +24,14 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **Reviewed FBref player match logs now have a bounded capture path.** The
+  operator supplies only an official stable player code; autoFPL resolves it
+  through the snapshot-hash-bound 60-player bridge, derives the fixed 2025/26
+  match-log URL, accepts only FBref's exact canonical redirect and expected
+  table markers, and retains immutable compressed HTML with Byparr provenance.
+  Arbitrary URLs, unresolved identities, changed paths and background polling
+  remain unavailable; parsing and forecast influence are deliberately separate
+  later gates.
 - **The first FBref-to-official identity bridge is explicit and fail-closed.**
   Bridge v1 freezes 60 exact full-name/current-club source player/team IDs to
   official stable codes and binds them to snapshot 27's content hash. Runtime

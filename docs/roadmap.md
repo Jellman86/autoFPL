@@ -731,9 +731,10 @@ The next development slices are:
    other new/transferred player gaps; use the implemented bounded extractor's
    944 rows and 894 stable FBref identities; use the implemented,
    snapshot-hash-bound bridge for 60 reviewed exact matches while keeping the
-   other 25 promoted-club players unresolved; next capture only those reviewed
-   players' fixed match-log URLs and parse match chronology, then add that history only after
-   identical-fold evaluation; keep exact minutes on the
+   other 25 promoted-club players unresolved; use the implemented official-code
+   operator boundary to capture only those reviewed players' fixed match-log
+   URLs; next parse and retain bounded match chronology, then add that history
+   only after identical-fold evaluation; keep exact minutes on the
    retained player-last baseline, evaluate a two-stage or hierarchical minutes
    challenger and add the empirical point-distribution loop before any raw
    preseason value may influence advice;
