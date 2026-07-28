@@ -405,6 +405,20 @@ input-availability state, not model approval. The cohort remains
 `blocked-incomplete-player-logs` until all reviewed logs exist and remains
 `blocked-incomplete-team-schedules` if any registered schedule is absent.
 
+Inspect the cutoff-bound shadow feature table:
+
+```text
+GET /api/v1/research/fbref-player-match-opportunity-features
+```
+
+The route reads the latest official target, reuses one parsed reviewed
+playing-time snapshot and one parsed schedule per team, then processes player
+logs sequentially. It returns all 60 reviewed identities and preserves missing
+source pairs as null features. Ready rows expose raw season and last-3/6/8
+counts with exact snapshot hashes and availability time. The response remains
+`exploratory-not-promoted`, reports `influencesForecast: false`, and must not be
+fed into served advice before the registered temporal evaluation gate passes.
+
 Set
 `AutoFpl__Research__ByparrUrl` to Riker's private-LAN origin when the default
 container-local name is not available.

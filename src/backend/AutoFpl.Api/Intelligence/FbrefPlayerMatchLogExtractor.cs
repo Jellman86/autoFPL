@@ -27,6 +27,21 @@ public sealed class FbrefPlayerMatchLogExtractor
         long snapshotId,
         CancellationToken cancellationToken = default)
     {
+        FbrefPlayingTimeDocument playingTime =
+            await _playingTimeExtractor.GetAsync(
+                FbrefPlayerIdentityBridge.ReviewedSnapshotId,
+                cancellationToken)
+            ?? throw Invalid(
+                "The reviewed FBref playing-time snapshot is not available.");
+        return await GetAsync(snapshotId, playingTime, cancellationToken);
+    }
+
+    internal async Task<FbrefPlayerMatchLogDocument?> GetAsync(
+        long snapshotId,
+        FbrefPlayingTimeDocument playingTime,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(playingTime);
         ResearchSourceSnapshotContent? retained =
             await _snapshotStore.ReadContentAsync(snapshotId, cancellationToken);
         if (retained is null)
@@ -50,12 +65,6 @@ public sealed class FbrefPlayerMatchLogExtractor
         string sourcePlayerId = snapshot.SourceKey.Substring(
             FbrefPlayerMatchLogImporter.SourceKeyPrefix.Length,
             8);
-        FbrefPlayingTimeDocument playingTime =
-            await _playingTimeExtractor.GetAsync(
-                FbrefPlayerIdentityBridge.ReviewedSnapshotId,
-                cancellationToken)
-            ?? throw Invalid(
-                "The reviewed FBref playing-time snapshot is not available.");
         FbrefPlayingTimePlayerDocument[] reviewedPlayers = playingTime.Players
             .Where(player =>
                 StringComparer.Ordinal.Equals(

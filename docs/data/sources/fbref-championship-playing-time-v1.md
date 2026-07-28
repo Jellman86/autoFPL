@@ -144,6 +144,20 @@ inputs exist. Missing schedules or player logs keep the cohort readiness status
 blocked; the route never claims that a join has passed validation or that a
 candidate has predictive value.
 
+The read-only
+`/api/v1/research/fbref-player-match-opportunity-features` route binds those
+pairs to the latest official target Gameweek and deadline. It always emits all
+60 reviewed identities: missing pairs have null feature values, while ready
+rows retain exact source IDs, hashes, availability time, season counts and
+last-3/6/8 counts. `no-player-row` remains an explicit missing count and is
+never converted to zero minutes or a non-appearance.
+
+This table is a prospective, `exploratory-not-promoted` research input. It
+cannot influence a forecast. The current cohort can be frozen before GW1 and
+scored after real outcomes arrive, but it is not itself an identical-fold
+historical ablation. Promotion still requires comparable cutoff-correct
+out-of-time folds and stable gain over declared baselines.
+
 ## Coverage operations
 
 The read-only

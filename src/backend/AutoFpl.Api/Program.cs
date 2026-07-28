@@ -558,6 +558,7 @@ builder.Services.AddTransient<FbrefPlayerMatchLogExtractor>();
 builder.Services.AddTransient<FbrefPlayerMatchOpportunityExtractor>();
 builder.Services.AddTransient<FbrefMatchLogCoverageReader>();
 builder.Services.AddTransient<FbrefMatchOpportunityCoverageReader>();
+builder.Services.AddTransient<FbrefMatchOpportunityFeatureTableReader>();
 builder.Services.AddTransient<FbrefMatchLogBatchCapture>();
 if (fplFormPollingOptions.Enabled)
 {
@@ -1460,6 +1461,33 @@ app.MapGet(
         + "gain; incomplete capture keeps shadow evaluation blocked.")
     .WithTags("Research")
     .Produces<FbrefMatchOpportunityCoverageDocument>()
+    .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+app.MapGet(
+    "/api/v1/research/fbref-player-match-opportunity-features",
+    async (
+        FbrefMatchOpportunityFeatureTableReader reader,
+        CancellationToken cancellationToken) =>
+    {
+        try
+        {
+            return Results.Ok(await reader.GetAsync(cancellationToken));
+        }
+        catch (ResearchSourceSnapshotException)
+        {
+            return Results.Problem(
+                statusCode: StatusCodes.Status422UnprocessableEntity,
+                title: "FBref match-opportunity features could not be read.");
+        }
+    })
+    .WithName("GetFbrefPlayerMatchOpportunityFeatures")
+    .WithSummary(
+        "Read cutoff-bound shadow match-opportunity features for the reviewed cohort.")
+    .WithDescription(
+        "Returns all 60 reviewed identities, preserving missing source pairs and "
+        + "no-player-row counts. Raw season and last-3/6/8 counts remain exploratory, "
+        + "unpromoted and unable to influence forecasts.")
+    .WithTags("Research")
+    .Produces<FbrefMatchOpportunityFeatureTableDocument>()
     .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 app.MapGet(
     "/api/v1/research/snapshots/{snapshotId:long}/fbref-player-match-log",
