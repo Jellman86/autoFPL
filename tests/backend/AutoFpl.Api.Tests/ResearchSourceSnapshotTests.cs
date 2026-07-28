@@ -208,6 +208,9 @@ public sealed class ResearchSourceSnapshotTests
         Assert.Equal(500, extraction.RowCount);
         Assert.Equal(500, extraction.SourcePlayerCount);
         Assert.Equal(3, extraction.ExactCurrentTeamMatchCount);
+        Assert.Null(extraction.IdentityBridgeVersion);
+        Assert.Equal(0, extraction.ReviewedIdentityCount);
+        Assert.Equal(3, extraction.ExactCurrentTeamProposalCount);
         Assert.Equal(
             FbrefPlayingTimeExtractor.ExtractionVersion,
             extraction.ExtractionVersion);
@@ -218,15 +221,110 @@ public sealed class ResearchSourceSnapshotTests
         Assert.Equal(46, player.Appearances);
         Assert.Equal(40, player.Starts);
         Assert.Equal(3600, player.Minutes);
-        Assert.Equal("exact-current-team", player.IdentityStatus);
+        Assert.Equal("exact-current-team-proposal", player.IdentityStatus);
         FbrefPlayingTimeTeamCoverageDocument coventry = Assert.Single(
             extraction.CurrentTeamCoverage,
             team => team.TeamName == "Coventry City");
         Assert.Equal(2, coventry.OfficialPlayerCount);
         Assert.Equal(15, coventry.SourceRowCount);
         Assert.Equal(1, coventry.ExactMatchCount);
+        Assert.Equal(0, coventry.ReviewedMatchCount);
+        Assert.Equal(1, coventry.ExactProposalCount);
         Assert.Equal([1002], coventry.UnmatchedOfficialPlayerCodes);
         Assert.Equal(14, coventry.UnmatchedSourcePlayerIds.Count);
+    }
+
+    [Fact]
+    public void Fbref_reviewed_bridge_is_snapshot_bound_unique_and_complete()
+    {
+        Assert.Equal(60, FbrefPlayerIdentityBridge.All.Count);
+        Assert.Equal(
+            22,
+            FbrefPlayerIdentityBridge.All.Count(
+                entry => entry.TeamName == "Coventry City"));
+        Assert.Equal(
+            18,
+            FbrefPlayerIdentityBridge.All.Count(
+                entry => entry.TeamName == "Hull City"));
+        Assert.Equal(
+            20,
+            FbrefPlayerIdentityBridge.All.Count(
+                entry => entry.TeamName == "Ipswich Town"));
+        Assert.All(
+            FbrefPlayerIdentityBridge.All,
+            entry =>
+            {
+                Assert.Matches("^[0-9a-f]{8}$", entry.SourcePlayerId);
+                Assert.Matches("^[0-9a-f]{8}$", entry.SourceTeamId);
+                Assert.True(entry.OfficialPlayerCode > 0);
+            });
+
+        var snapshot = new ResearchSourceSnapshotDocument(
+            FbrefPlayerIdentityBridge.ReviewedSnapshotId,
+            "1.0",
+            "shadow-only",
+            FbrefPlayingTimeExtractor.SourceKey,
+            "prior-competition-playing-time",
+            "https://fbref.com/source",
+            "https://fbref.com/final",
+            "sports-reference-fbref",
+            "byparr",
+            "byparr/2.1.0",
+            "2026-27",
+            1,
+            new DateTimeOffset(2026, 8, 1, 12, 0, 0, TimeSpan.Zero),
+            13,
+            RetrievalTime,
+            RetrievalTime,
+            true,
+            1,
+            FbrefPlayerIdentityBridge.ReviewedContentSha256,
+            4_280_848,
+            RetrievalTime);
+        FbrefPlayingTimeExtractor.FbrefPlayingTimeRow[] rows =
+            FbrefPlayerIdentityBridge.All
+                .Select(
+                    entry => new FbrefPlayingTimeExtractor.FbrefPlayingTimeRow(
+                        entry.SourcePlayerId,
+                        entry.SourcePlayerName,
+                        entry.SourceTeamId,
+                        entry.TeamName,
+                        20,
+                        10,
+                        900,
+                        $"https://fbref.com/en/players/{entry.SourcePlayerId}"
+                            + "/matchlogs/2025-2026/summary/Player-Match-Logs"))
+                .ToArray();
+        ResearchOfficialPlayerIdentity[] identities =
+            FbrefPlayerIdentityBridge.All
+                .Select(
+                    (entry, index) =>
+                    {
+                        int separator = entry.SourcePlayerName.IndexOf(' ');
+                        return new ResearchOfficialPlayerIdentity(
+                            index + 1,
+                            entry.OfficialPlayerCode,
+                            entry.TeamName,
+                            entry.SourcePlayerName[..separator],
+                            entry.SourcePlayerName[(separator + 1)..],
+                            entry.SourcePlayerName[(separator + 1)..]);
+                    })
+                .ToArray();
+
+        FbrefPlayingTimeDocument extraction =
+            FbrefPlayingTimeExtractor.BuildDocument(
+                snapshot,
+                rows,
+                identities);
+
+        Assert.Equal(
+            FbrefPlayerIdentityBridge.Version,
+            extraction.IdentityBridgeVersion);
+        Assert.Equal(60, extraction.ReviewedIdentityCount);
+        Assert.Equal(0, extraction.ExactCurrentTeamProposalCount);
+        Assert.All(
+            extraction.Players,
+            player => Assert.Equal("reviewed-v1", player.IdentityStatus));
     }
 
     [Fact]

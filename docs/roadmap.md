@@ -729,10 +729,10 @@ The next development slices are:
    exact-code coverage audit and fixed-URL Riker Byparr capture of FBref's
    2025/26 Championship playing-time page to drive the 78 promoted-club and 26
    other new/transferred player gaps; use the implemented bounded extractor's
-   944 rows, 894 stable FBref identities, 60 conservative exact match proposals
-   and 25-player promoted-club review queue to create an explicit reviewed
-   official-code bridge; next capture only those reviewed players' fixed
-   match-log URLs and parse match chronology, then add that history only after
+   944 rows and 894 stable FBref identities; use the implemented,
+   snapshot-hash-bound bridge for 60 reviewed exact matches while keeping the
+   other 25 promoted-club players unresolved; next capture only those reviewed
+   players' fixed match-log URLs and parse match chronology, then add that history only after
    identical-fold evaluation; keep exact minutes on the
    retained player-last baseline, evaluate a two-stage or hierarchical minutes
    challenger and add the empirical point-distribution loop before any raw

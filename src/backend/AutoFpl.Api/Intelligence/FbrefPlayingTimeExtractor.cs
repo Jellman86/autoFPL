@@ -259,6 +259,11 @@ public sealed class FbrefPlayingTimeExtractor
                 .ToDictionary(
                     group => group.Key,
                     group => group.ToArray());
+        IReadOnlyDictionary<int, ResearchOfficialPlayerIdentity>
+            identitiesByCode = identities.ToDictionary(
+                identity => identity.PlayerCode);
+        bool reviewedBridgeApplies =
+            FbrefPlayerIdentityBridge.AppliesTo(snapshot);
         var matchedOfficialPlayers =
             new HashSet<(string TeamName, int PlayerCode)>();
         var players = new List<FbrefPlayingTimePlayerDocument>(rows.Count);
@@ -269,19 +274,49 @@ public sealed class FbrefPlayingTimeExtractor
             if (targetTeams.Contains(row.TeamName))
             {
                 identityStatus = "unresolved";
-                if (identitiesByTeamAndName.TryGetValue(
+                FbrefReviewedPlayerIdentity? reviewed = reviewedBridgeApplies
+                    ? FbrefPlayerIdentityBridge.Find(
+                        row.SourcePlayerId,
+                        row.SourceTeamId)
+                    : null;
+                if (reviewed is not null)
+                {
+                    if (!StringComparer.Ordinal.Equals(
+                            reviewed.SourcePlayerName,
+                            row.PlayerName)
+                        || !StringComparer.Ordinal.Equals(
+                            reviewed.TeamName,
+                            row.TeamName)
+                        || !identitiesByCode.TryGetValue(
+                            reviewed.OfficialPlayerCode,
+                            out identity)
+                        || !StringComparer.Ordinal.Equals(
+                            identity.TeamName,
+                            reviewed.TeamName)
+                        || !StringComparer.Ordinal.Equals(
+                            Normalize(
+                                $"{identity.FirstName} {identity.SecondName}"),
+                            Normalize(reviewed.SourcePlayerName)))
+                    {
+                        throw Invalid(
+                            "A reviewed FBref identity no longer matches its source and official records.");
+                    }
+                    identityStatus = "reviewed-v1";
+                }
+                else if (identitiesByTeamAndName.TryGetValue(
                         (row.TeamName, Normalize(row.PlayerName)),
                         out ResearchOfficialPlayerIdentity[]? matches)
                     && matches.Length == 1)
                 {
                     identity = matches[0];
-                    if (!matchedOfficialPlayers.Add(
-                            (identity.TeamName, identity.PlayerCode)))
-                    {
-                        throw Invalid(
-                            "Two FBref rows resolved to the same current official player.");
-                    }
-                    identityStatus = "exact-current-team";
+                    identityStatus = "exact-current-team-proposal";
+                }
+                if (identity is not null
+                    && !matchedOfficialPlayers.Add(
+                        (identity.TeamName, identity.PlayerCode)))
+                {
+                    throw Invalid(
+                        "Two FBref rows resolved to the same current official player.");
                 }
             }
 
@@ -318,12 +353,22 @@ public sealed class FbrefPlayingTimeExtractor
                 .Where(player => player.OfficialPlayerCode.HasValue)
                 .Select(player => player.OfficialPlayerCode!.Value)
                 .ToHashSet();
+            int reviewedMatchCount = sourceRows.Count(player =>
+                StringComparer.Ordinal.Equals(
+                    player.IdentityStatus,
+                    "reviewed-v1"));
+            int exactProposalCount = sourceRows.Count(player =>
+                StringComparer.Ordinal.Equals(
+                    player.IdentityStatus,
+                    "exact-current-team-proposal"));
             coverage.Add(
                 new(
                     teamName,
                     officialPlayers.Length,
                     sourceRows.Length,
                     matchedCodes.Count,
+                    reviewedMatchCount,
+                    exactProposalCount,
                     officialPlayers
                         .Where(identity => !matchedCodes.Contains(
                             identity.PlayerCode))
@@ -341,6 +386,9 @@ public sealed class FbrefPlayingTimeExtractor
             snapshot.SnapshotId,
             snapshot.SourceKey,
             ExtractionVersion,
+            reviewedBridgeApplies
+                ? FbrefPlayerIdentityBridge.Version
+                : null,
             snapshot.ContentSha256,
             snapshot.IdentityCaptureId,
             snapshot.RetrievedAtUtc,
@@ -348,9 +396,13 @@ public sealed class FbrefPlayingTimeExtractor
             "2025-26",
             players.Count,
             players.Select(player => player.SourcePlayerId).Distinct().Count(),
+            players.Count(player => player.OfficialPlayerCode.HasValue),
             players.Count(player => StringComparer.Ordinal.Equals(
                 player.IdentityStatus,
-                "exact-current-team")),
+                "reviewed-v1")),
+            players.Count(player => StringComparer.Ordinal.Equals(
+                player.IdentityStatus,
+                "exact-current-team-proposal")),
             players,
             coverage);
     }
