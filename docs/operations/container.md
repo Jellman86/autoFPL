@@ -393,6 +393,18 @@ null player fields. The last-3/6/8 summaries report only observed counts and
 minutes plus explicit missing-row counts. This read does not persist a feature,
 alter a forecast or infer why the player row is absent.
 
+Inspect source-pair readiness across the reviewed cohort:
+
+```text
+GET /api/v1/research/fbref-player-match-opportunity-coverage
+```
+
+This metadata-only route reports the applicable team-schedule snapshot and
+player-log snapshot for every reviewed identity. `source-pair-ready` is an
+input-availability state, not model approval. The cohort remains
+`blocked-incomplete-player-logs` until all reviewed logs exist and remains
+`blocked-incomplete-team-schedules` if any registered schedule is absent.
+
 Set
 `AutoFpl__Research__ByparrUrl` to Riker's private-LAN origin when the default
 container-local name is not available.

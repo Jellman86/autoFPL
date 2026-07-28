@@ -163,6 +163,16 @@ public sealed class OpenApiContractTests : IClassFixture<WebApplicationFactory<P
                 .GetString());
         Assert.True(
             paths.TryGetProperty(
+                "/api/v1/research/fbref-player-match-opportunity-coverage",
+                out JsonElement fbrefOpportunityCoveragePath));
+        Assert.Equal(
+            "GetFbrefPlayerMatchOpportunityCoverage",
+            fbrefOpportunityCoveragePath
+                .GetProperty("get")
+                .GetProperty("operationId")
+                .GetString());
+        Assert.True(
+            paths.TryGetProperty(
                 "/api/v1/data/historical-fpl/{seasonCode}",
                 out JsonElement historicalFplPath));
         Assert.Equal(
