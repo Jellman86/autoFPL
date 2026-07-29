@@ -347,6 +347,22 @@ if (requestedSelectionScenarioScoreImport
         "Usage: --import-selection-scenario-score-shadow <json-file>");
     return 2;
 }
+bool requestedSelectionRoleStrategyImport =
+    args.Length > 0
+    && StringComparer.Ordinal.Equals(
+        args[0],
+        "--import-selection-role-strategy-shadow");
+bool runSelectionRoleStrategyImport =
+    requestedSelectionRoleStrategyImport
+    && args.Length == 2
+    && !string.IsNullOrWhiteSpace(args[1]);
+if (requestedSelectionRoleStrategyImport
+    && !runSelectionRoleStrategyImport)
+{
+    await Console.Error.WriteLineAsync(
+        "Usage: --import-selection-role-strategy-shadow <json-file>");
+    return 2;
+}
 
 bool runNonWebCommand =
     runIntegrityCheck
@@ -370,7 +386,8 @@ bool runNonWebCommand =
     || runPreseasonPlayerForecastImport
     || runMultiSeasonPlayerForecastImport
     || runJointScenarioImport
-    || runSelectionScenarioScoreImport;
+    || runSelectionScenarioScoreImport
+    || runSelectionRoleStrategyImport;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(
     runNonWebCommand ? [] : args);
@@ -451,6 +468,11 @@ builder.Services.AddSingleton(serviceProvider =>
         serviceProvider.GetRequiredService<DatabaseOptions>(),
         serviceProvider.GetRequiredService<TimeProvider>()));
 builder.Services.AddSingleton<SelectionScenarioScoreShadowImporter>();
+builder.Services.AddSingleton(serviceProvider =>
+    new SelectionRoleStrategyShadowStore(
+        serviceProvider.GetRequiredService<DatabaseOptions>(),
+        serviceProvider.GetRequiredService<TimeProvider>()));
+builder.Services.AddSingleton<SelectionRoleStrategyShadowImporter>();
 builder.Services.AddSingleton(serviceProvider =>
     new SelectionRevisionStore(
         serviceProvider.GetRequiredService<DatabaseOptions>(),
@@ -669,6 +691,7 @@ if (shadowForecastInboxOptions.Enabled)
     builder.Services.AddHostedService<ShadowForecastInboxPoller>();
     builder.Services.AddHostedService<JointScenarioInboxPoller>();
     builder.Services.AddHostedService<SelectionScenarioScoreInboxPoller>();
+    builder.Services.AddHostedService<SelectionRoleStrategyInboxPoller>();
 }
 if (analyticsSnapshotOptions.Enabled)
 {
@@ -909,6 +932,32 @@ if (runSelectionScenarioScoreImport)
     }
     catch (Exception exception)
         when (exception is SelectionScenarioScoreValidationException
+            or FileNotFoundException
+            or InvalidDataException
+            or JsonException)
+    {
+        await Console.Error.WriteLineAsync(exception.Message);
+        return 2;
+    }
+}
+
+if (runSelectionRoleStrategyImport)
+{
+    try
+    {
+        SelectionRoleStrategyShadowDocument strategy =
+            await app.Services
+                .GetRequiredService<
+                    SelectionRoleStrategyShadowImporter>()
+                .ImportFileAsync(args[1]);
+        await Console.Out.WriteLineAsync(
+            JsonSerializer.Serialize(
+                strategy,
+                new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+        return 0;
+    }
+    catch (Exception exception)
+        when (exception is SelectionRoleStrategyValidationException
             or FileNotFoundException
             or InvalidDataException
             or JsonException)
@@ -1394,6 +1443,28 @@ app.MapGet(
         + "is not promoted and cannot influence advice.")
     .WithTags("Selections")
     .Produces<SelectionScenarioScoreShadowDocument>()
+    .Produces(StatusCodes.Status404NotFound);
+app.MapGet(
+    "/api/v1/selections/current/role-strategies-shadow",
+    async (
+        SelectionRoleStrategyShadowStore store,
+        CancellationToken cancellationToken) =>
+    {
+        SelectionRoleStrategyShadowDocument? strategies =
+            await store.GetCurrentAsync(cancellationToken);
+        return strategies is null
+            ? Results.NotFound()
+            : Results.Ok(strategies);
+    })
+    .WithName("GetCurrentSelectionRoleStrategiesShadow")
+    .WithSummary(
+        "Read bounded balanced, safer and higher-ceiling role strategies.")
+    .WithDescription(
+        "Returns only an exact current selection-score match. Strategies "
+        + "change XI, bench order and captaincy on the fixed 15-player squad; "
+        + "they are prospective shadow evidence and cannot mutate a selection.")
+    .WithTags("Selections")
+    .Produces<SelectionRoleStrategyShadowDocument>()
     .Produces(StatusCodes.Status404NotFound);
 app.MapGet(
     "/api/v1/selections/{selectionRevisionId:long:min(1)}",

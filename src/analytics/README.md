@@ -82,9 +82,10 @@ polls the read-only `/analytics-snapshot/autofpl.db`, does nothing while the
 exact shadow is current, and atomically writes one capture-named JSON artifact to
 `/analytics-inbox` when the latest supported target is missing. Once the point
 shadow is present, the same worker creates the separately named joint scenario
-handoff; it never skips the point prerequisite or combines the two import
-states. Mount the database read-only and a separate private inbox writable by
-UID `1654`:
+handoff, then the exact selection-score handoff and finally the fixed-squad
+balanced/safer/higher-ceiling role-strategy handoff. It never skips a
+prerequisite or combines import states. Mount the database read-only and a
+separate private inbox writable by UID `1654`:
 
 ```bash
 docker run \

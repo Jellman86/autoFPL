@@ -4,7 +4,7 @@ internal sealed record DatabaseMigration(int Version, string Name, string Sql);
 
 internal static class DatabaseMigrations
 {
-    public const int CurrentVersion = 27;
+    public const int CurrentVersion = 28;
 
     public static IReadOnlyList<DatabaseMigration> All { get; } =
     [
@@ -2320,6 +2320,75 @@ internal static class DatabaseMigrations
                 SELECT RAISE(
                     ABORT,
                     'selection scenario score shadow artifacts cannot be deleted'
+                );
+            END;
+            """),
+        new(
+            28,
+            "selection-role-strategy-shadow-artifact",
+            """
+            CREATE TABLE selection_role_strategy_shadow_artifacts (
+                strategy_artifact_id INTEGER PRIMARY KEY,
+                schema_version TEXT NOT NULL
+                    CHECK (schema_version = '1.0'),
+                artifact_type TEXT NOT NULL
+                    CHECK (
+                        artifact_type =
+                            'current-selection-role-strategy-shadow'
+                    ),
+                artifact_version TEXT NOT NULL
+                    CHECK (
+                        artifact_version =
+                            'current-selection-role-strategies-v1'
+                    ),
+                status TEXT NOT NULL
+                    CHECK (status = 'prospective-shadow-unscored'),
+                score_artifact_id INTEGER NOT NULL
+                    REFERENCES selection_scenario_score_shadow_artifacts(
+                        score_artifact_id
+                    )
+                    ON DELETE RESTRICT,
+                search_version TEXT NOT NULL
+                    CHECK (
+                        search_version = 'deterministic-role-beam-v1'
+                    ),
+                season_code TEXT NOT NULL CHECK (season_code = '2026-27'),
+                gameweek INTEGER NOT NULL CHECK (gameweek = 1),
+                decision_cutoff_utc TEXT NOT NULL,
+                scenario_count INTEGER NOT NULL
+                    CHECK (scenario_count BETWEEN 1 AND 512),
+                producer_run_identity_sha256 TEXT NOT NULL
+                    CHECK (length(producer_run_identity_sha256) = 64),
+                document_json TEXT NOT NULL
+                    CHECK (length(document_json) BETWEEN 2 AND 2097152),
+                content_sha256 TEXT NOT NULL UNIQUE
+                    CHECK (length(content_sha256) = 64),
+                created_at_utc TEXT NOT NULL,
+                UNIQUE (score_artifact_id, search_version)
+            );
+
+            CREATE INDEX selection_role_strategy_shadow_latest_idx
+                ON selection_role_strategy_shadow_artifacts (
+                    season_code,
+                    gameweek,
+                    strategy_artifact_id DESC
+                );
+
+            CREATE TRIGGER selection_role_strategy_shadow_immutable
+            BEFORE UPDATE ON selection_role_strategy_shadow_artifacts
+            BEGIN
+                SELECT RAISE(
+                    ABORT,
+                    'selection role strategy shadow artifacts are immutable'
+                );
+            END;
+
+            CREATE TRIGGER selection_role_strategy_shadow_no_delete
+            BEFORE DELETE ON selection_role_strategy_shadow_artifacts
+            BEGIN
+                SELECT RAISE(
+                    ABORT,
+                    'selection role strategy shadow artifacts cannot be deleted'
                 );
             END;
             """),

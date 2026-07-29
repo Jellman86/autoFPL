@@ -42,6 +42,14 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **Fixed-squad role strategies now cross the private product boundary.**
+  Migration 28 stores one immutable, content-hashed strategy set per exact
+  selection-score artifact and search version. The network-isolated worker
+  advances automatically from selection scoring to bounded role search; a
+  strict application importer revalidates source lineage, legal selections,
+  summaries, objectives and paired comparisons before persistence. A
+  read-only OpenAPI route returns only the exact current strategy set, which
+  remains unpromoted and unable to mutate advice or a user selection.
 - **The current fixed squad now has three legal scenario strategies.** A
   deterministic bounded beam search uses the exact CPU substitution and
   captaincy reference to compare balanced mean points, worst-20% tail mean and

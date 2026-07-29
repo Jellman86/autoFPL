@@ -679,12 +679,15 @@ evidence and cannot influence advice. A deterministic three-iteration beam
 search now generates balanced, worst-20%-tail and best-20%-tail role strategies
 on the fixed 15-player squad. The current 4,008-candidate workload completes in
 about two CPU seconds, so GPU acceleration is deferred until transfer-aware or
-multi-Gameweek search demonstrates a measured bottleneck.
+multi-Gameweek search demonstrates a measured bottleneck. Migration 28 now
+persists one exact strategy set per selection-score artifact, the worker
+advances through that fourth stage automatically, and a strict read-only
+OpenAPI route exposes only the current result.
 
 - Score the frozen matrix prospectively as final outcomes arrive.
-- Persist and expose the fixed-squad strategy artifact through the strict
-  private handoff.
-- Let the user create a draft selection and compare its forecast distribution.
+- Surface the persisted balanced, safer and higher-ceiling strategies in the
+  decision room and let the user copy one into an explicit draft.
+- Compare the current user-authored selection distribution with every strategy.
 - Show objective, expected gain/loss, uncertainty and the evidence that changes
   between candidates.
 
@@ -800,11 +803,15 @@ stale and missing states without serving an older shadow as current. It remains
 outside advice. The frozen generator is also packaged as a separately scanned,
 non-root analytics image. A private filesystem handoff now keeps its database
 mount read-only and preserves the application as the sole strict importer; both
-pollers remain opt-in until the Compose slice is deployed. The active order is:
+pollers now run in the deployed Quark Compose stack, using a standalone
+application-published snapshot and private inbox. The worker progresses through
+point forecast, joint scenario, selection score and fixed-squad role-strategy
+artifacts without moving Python model work into the web request path. The active
+order is:
 
-1. add the packaged worker and shared private inbox to the Quark Compose stack,
-   retaining exact artifact validation and never moving Python model fitting
-   into the web request path;
+1. add the current balanced, safer and higher-ceiling strategy comparison to
+   the decision room, with an explicit copy-to-draft action and no silent
+   selection mutation;
 2. score both forecasts on the first automatically paired 2026/27 result, then
    register subsequent prospective folds without tuning on them;
 3. join only the point, participation and minutes components that pass their

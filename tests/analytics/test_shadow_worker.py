@@ -194,6 +194,34 @@ class ShadowWorkerTests(unittest.TestCase):
                     VALUES (1, 1, NULL);
                     """
                 )
+            strategies = {
+                "officialCaptureId": 16,
+                "strategies": {"balanced": {}},
+            }
+            with patch(
+                "autofpl_analytics.shadow_worker."
+                "build_current_selection_strategies",
+                return_value=strategies,
+            ):
+                generated = generate_once(
+                    database,
+                    root / "strategy-inbox",
+                )
+            self.assertEqual("generated", generated.status)
+            self.assertTrue(
+                str(generated.outputFile).startswith(
+                    "selection-role-strategies-capture-16-selection-none"
+                )
+            )
+
+            with sqlite3.connect(database) as connection:
+                connection.execute(
+                    """
+                    INSERT INTO selection_role_strategy_shadow_artifacts
+                        (score_artifact_id, search_version)
+                    VALUES (1, 'deterministic-role-beam-v1');
+                    """
+                )
             self.assertEqual(
                 "current",
                 generate_once(database, root / "empty-inbox").status,
@@ -249,6 +277,11 @@ class ShadowWorkerTests(unittest.TestCase):
                     scenario_artifact_id INTEGER NOT NULL,
                     forecast_artifact_id INTEGER NOT NULL,
                     selection_revision_id INTEGER
+                );
+                CREATE TABLE selection_role_strategy_shadow_artifacts (
+                    strategy_artifact_id INTEGER PRIMARY KEY,
+                    score_artifact_id INTEGER NOT NULL,
+                    search_version TEXT NOT NULL
                 );
                 """
             )
