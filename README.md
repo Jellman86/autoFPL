@@ -25,7 +25,9 @@ multi-season tree has a small aggregate advantage but not robust fold or
 position dominance, so it remains a frozen prospective shadow specification.
 An exact-capture read-only GW1 generator now emits its raw point means beside
 Baseline v0 without influencing advice. A dedicated immutable import and
-OpenAPI route expose that shadow separately, including in player dossiers.
+OpenAPI route expose that shadow separately, including in player dossiers. A
+lightweight readiness route reports exact-current, stale and missing artifact
+states without ever attaching an older shadow to a newer official capture.
 The earlier one-season challenger remains a distinct immutable artifact with
 its own read-only route and dossier comparison.
 

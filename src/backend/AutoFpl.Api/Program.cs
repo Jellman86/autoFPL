@@ -1196,6 +1196,22 @@ app.MapGet(
     .Produces<MultiSeasonPlayerForecastDocument>()
     .Produces(StatusCodes.Status404NotFound);
 app.MapGet(
+    "/api/v1/forecasts/multi-season-shadow/readiness",
+    async (
+        MultiSeasonPlayerForecastStore store,
+        CancellationToken cancellationToken) =>
+        Results.Ok(
+            await store.GetReadinessAsync(cancellationToken)))
+    .WithName("GetMultiSeasonPlayerForecastReadiness")
+    .WithSummary(
+        "Report whether the latest two-season shadow matches official evidence.")
+    .WithDescription(
+        "Returns current only when the shadow targets the latest official "
+        + "capture. Missing or stale status never falls back to older evidence, "
+        + "and the shadow never influences advice.")
+    .WithTags("Forecasts")
+    .Produces<MultiSeasonPlayerForecastReadinessDocument>();
+app.MapGet(
     "/api/v1/selections/current",
     async (
         SelectionRevisionStore store,

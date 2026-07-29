@@ -149,6 +149,115 @@ public sealed class MultiSeasonPlayerForecastStore
             : null;
     }
 
+    public async Task<MultiSeasonPlayerForecastReadinessDocument> GetReadinessAsync(
+        CancellationToken cancellationToken = default)
+    {
+        await using var connection = new SqliteConnection(_options.ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+
+        MultiSeasonPlayerForecastOfficialTargetDocument? official =
+            await ReadLatestOfficialTargetAsync(connection, cancellationToken);
+        MultiSeasonPlayerForecastArtifactIdentityDocument? shadow =
+            await ReadLatestArtifactIdentityAsync(connection, cancellationToken);
+
+        (string status, string reasonCode) = (official, shadow) switch
+        {
+            (null, _) => ("missing", "no-official-capture"),
+            (_, null) => ("missing", "no-shadow-artifact"),
+            _ when official.OfficialCaptureId == shadow.OfficialCaptureId
+                => ("current", "official-capture-match"),
+            _ => ("stale", "official-capture-mismatch"),
+        };
+        return new(
+            "1.0",
+            status,
+            reasonCode,
+            false,
+            official,
+            shadow);
+    }
+
+    private static async Task<MultiSeasonPlayerForecastOfficialTargetDocument?>
+        ReadLatestOfficialTargetAsync(
+            SqliteConnection connection,
+            CancellationToken cancellationToken)
+    {
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText =
+            """
+            SELECT
+                capture_id,
+                season_code,
+                next_gameweek_number,
+                next_deadline_utc,
+                available_at_utc
+            FROM official_fpl_captures
+            ORDER BY available_at_utc DESC, capture_id DESC
+            LIMIT 1;
+            """;
+        await using SqliteDataReader reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+        if (!await reader.ReadAsync(cancellationToken))
+        {
+            return null;
+        }
+
+        return new(
+            reader.GetInt64(0),
+            reader.GetString(1),
+            reader.IsDBNull(2) ? null : reader.GetInt32(2),
+            reader.IsDBNull(3)
+                ? null
+                : DateTimeOffset.Parse(
+                    reader.GetString(3),
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.RoundtripKind),
+            DateTimeOffset.Parse(
+                reader.GetString(4),
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.RoundtripKind));
+    }
+
+    private static async Task<MultiSeasonPlayerForecastArtifactIdentityDocument?>
+        ReadLatestArtifactIdentityAsync(
+            SqliteConnection connection,
+            CancellationToken cancellationToken)
+    {
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText =
+            """
+            SELECT
+                forecast_artifact_id,
+                official_capture_id,
+                season_code,
+                gameweek,
+                decision_cutoff_utc,
+                content_sha256
+            FROM multi_season_player_forecast_artifacts
+            ORDER BY
+                julianday(decision_cutoff_utc) DESC,
+                forecast_artifact_id DESC
+            LIMIT 1;
+            """;
+        await using SqliteDataReader reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+        if (!await reader.ReadAsync(cancellationToken))
+        {
+            return null;
+        }
+
+        return new(
+            reader.GetInt64(0),
+            reader.GetInt64(1),
+            reader.GetString(2),
+            reader.GetInt32(3),
+            DateTimeOffset.Parse(
+                reader.GetString(4),
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.RoundtripKind),
+            reader.GetString(5));
+    }
+
     private static void ValidateFixedIdentity(
         MultiSeasonPlayerForecastDocument document)
     {
