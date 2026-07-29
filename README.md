@@ -38,7 +38,7 @@ The [delivery roadmap](docs/roadmap.md) defines the dependency-ordered route fro
 - **One .NET 10 application** — product API, workflow, authoritative state, static decision-room UI and MCP tools.
 - **OpenAPI 3.1 contract** — the supported HTTP surface is generated from runtime metadata at `/openapi/v1.json`.
 - **SQLite** — authoritative local storage on a persistent home-lab volume.
-- **Python when needed** — research, forecasting, reproducible CPU/GPU Monte Carlo simulation and optimisation as a module/process or bounded worker.
+- **Python when needed** — research, forecasting, reproducible CPU/GPU Monte Carlo simulation and optimisation as a module/process or separately packaged bounded worker.
 - **Existing Quark research services** — isolated Playwright MCP handles dynamic structured pages, Spider MCP handles bounded public text extraction and SearXNG handles discovery; autoFPL adds typed evidence adapters rather than another crawler/browser stack.
 - **Gameweek decision room** — an evidence-rich formation, player-card, explanation, comparison and grounded-conversation experience served by the application.
 - **OpenViking** — versioned research and unstructured context, never authoritative squad state.

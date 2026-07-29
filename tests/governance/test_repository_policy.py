@@ -337,6 +337,18 @@ jobs:
             wrong_job,
         )
 
+        analytics_workflow = container_workflow.replace(
+            "container-publish:",
+            "analytics-container-publish:",
+        )
+        self.assertEqual(
+            [],
+            _workflow_permission_violations(
+                analytics_workflow,
+                Path(".github/workflows/analytics-container.yml"),
+            ),
+        )
+
     def test_codeql_security_events_write_is_the_only_scoped_exception(self) -> None:
         from tools.governance.check_repository import _workflow_permission_violations
 
@@ -866,6 +878,32 @@ jobs:
       - run: |
           scripts/ci_container_smoke.sh
           --input /scan/autofpl.tar
+          docker tag "${LOCAL_IMAGE}" "${IMAGE_NAME}:sha-${GITHUB_SHA}"
+          docker push "${IMAGE_NAME}:sha-${GITHUB_SHA}"
+          docker push "${IMAGE_NAME}:dev"
+          refs/heads/dev
+          sha-${GITHUB_SHA}
+"""
+            elif relative_path == ".github/workflows/analytics-container.yml":
+                content = """name: Analytics container
+permissions:
+  contents: read
+env:
+  IMAGE_NAME: ghcr.io/jellman86/autofpl-analytics
+jobs:
+  analytics-container-publish:
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: |
+          Dockerfile.analytics
+          scripts/ci_analytics_container_smoke.sh
+          --input /scan/autofpl-analytics.tar
           docker tag "${LOCAL_IMAGE}" "${IMAGE_NAME}:sha-${GITHUB_SHA}"
           docker push "${IMAGE_NAME}:sha-${GITHUB_SHA}"
           docker push "${IMAGE_NAME}:dev"

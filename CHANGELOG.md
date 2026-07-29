@@ -24,6 +24,11 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **The frozen two-season generator now has its own hardened companion
+  image.** Hash-locked scientific dependencies, a digest-pinned Python base,
+  non-root UID, read-only runtime, zero listening ports, Trivy scanning,
+  revision labels and immutable SHA publication package the one-shot generator
+  without expanding the decision-room image or granting it product import.
 - **Two-season shadow freshness is now machine-readable.** A lightweight
   OpenAPI readiness route reports `current`, `stale` or `missing` with the
   latest official and shadow identities. Exact-capture dossiers still refuse

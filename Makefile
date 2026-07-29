@@ -1,4 +1,4 @@
-.PHONY: test test-python test-dotnet governance verify container-build container-smoke container-verify
+.PHONY: test test-python test-dotnet governance verify container-build container-smoke container-verify analytics-container-build analytics-container-smoke analytics-container-verify
 
 test: test-python test-dotnet
 
@@ -23,3 +23,11 @@ container-smoke:
 	bash scripts/ci_container_smoke.sh autofpl:local "$$(git rev-parse HEAD)"
 
 container-verify: container-build container-smoke
+
+analytics-container-build:
+	docker build --file Dockerfile.analytics --build-arg "SOURCE_REVISION=$$(git rev-parse HEAD)" --tag autofpl-analytics:local .
+
+analytics-container-smoke:
+	bash scripts/ci_analytics_container_smoke.sh autofpl-analytics:local "$$(git rev-parse HEAD)"
+
+analytics-container-verify: analytics-container-build analytics-container-smoke

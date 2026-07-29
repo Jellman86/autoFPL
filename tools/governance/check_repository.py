@@ -29,6 +29,7 @@ REQUIRED_PATHS = (
     ".github/workflows/codeql.yml",
     ".github/workflows/dependency-review.yml",
     ".github/workflows/container.yml",
+    ".github/workflows/analytics-container.yml",
     "docs/standards/definition-of-done.md",
     "docs/standards/documentation.md",
     "docs/standards/engineering.md",
@@ -192,6 +193,19 @@ REQUIRED_CONTENT_MARKERS = {
         "refs/heads/dev",
         "sha-${GITHUB_SHA}",
     ),
+    ".github/workflows/analytics-container.yml": (
+        "persist-credentials: false",
+        "Dockerfile.analytics",
+        "scripts/ci_analytics_container_smoke.sh",
+        "--input /scan/autofpl-analytics.tar",
+        "IMAGE_NAME: ghcr.io/jellman86/autofpl-analytics",
+        "docker tag \"${LOCAL_IMAGE}\" \"${IMAGE_NAME}:sha-${GITHUB_SHA}\"",
+        "docker push \"${IMAGE_NAME}:sha-${GITHUB_SHA}\"",
+        "docker push \"${IMAGE_NAME}:dev\"",
+        "packages: write",
+        "refs/heads/dev",
+        "sha-${GITHUB_SHA}",
+    ),
     "docs/adr/0005-chatgpt-mcp-interface.md": (
         "ChatGPT Apps SDK / MCP",
         "does not receive or store OpenAI/ChatGPT OAuth tokens",
@@ -310,9 +324,18 @@ def _permission_value_violations(
                 and scope == "security-events"
             )
             is_container_publish = (
-                relative == Path(".github/workflows/container.yml")
-                and location == "job container-publish"
-                and scope == "packages"
+                scope == "packages"
+                and (
+                    (
+                        relative == Path(".github/workflows/container.yml")
+                        and location == "job container-publish"
+                    )
+                    or (
+                        relative
+                        == Path(".github/workflows/analytics-container.yml")
+                        and location == "job analytics-container-publish"
+                    )
+                )
             )
             if not (is_codeql_upload or is_container_publish):
                 violations.append(

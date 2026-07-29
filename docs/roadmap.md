@@ -775,11 +775,14 @@ but wins only three of eight folds and remains a shadow candidate. Its frozen
 in its own immutable artifact family and exposed through OpenAPI and player
 dossiers. A lightweight readiness contract now distinguishes exact-current,
 stale and missing states without serving an older shadow as current. It remains
-outside advice. The active order is:
+outside advice. The frozen generator is also packaged as a separately scanned,
+non-root one-shot analytics image; it still has no automatic import or serving
+authority. The active order is:
 
-1. automate the bounded companion analytics handoff when a newer official
-   capture makes the shadow stale, retaining exact artifact validation and
-   never moving Python model fitting into the web request path;
+1. add the packaged worker to the private compose stack and automate its
+   bounded handoff when a newer official capture makes the shadow stale,
+   retaining exact artifact validation and never moving Python model fitting
+   into the web request path;
 2. score both forecasts on the first automatically paired 2026/27 result, then
    register subsequent prospective folds without tuning on them;
 3. join only the point, participation and minutes components that pass their

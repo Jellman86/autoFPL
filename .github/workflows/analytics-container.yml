@@ -1,0 +1,119 @@
+name: Analytics container
+
+on:
+  pull_request:
+    branches: [main, dev]
+  push:
+    branches: [dev]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-container-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGE_NAME: ghcr.io/jellman86/autofpl-analytics
+  LOCAL_IMAGE: autofpl-analytics:ci
+  TRIVY_IMAGE: docker.io/aquasec/trivy:0.72.0@sha256:cffe3f5161a47a6823fbd23d985795b3ed72a4c806da4c4df16266c02accdd6f
+
+jobs:
+  analytics-container-build:
+    name: analytics-container-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build candidate image
+        run: >-
+          docker build
+          --file Dockerfile.analytics
+          --build-arg "SOURCE_REVISION=${GITHUB_SHA}"
+          --tag "${LOCAL_IMAGE}" .
+      - name: Scan candidate image
+        run: |
+          set -euo pipefail
+          mkdir -p "${RUNNER_TEMP}/autofpl-analytics-scan"
+          docker image save \
+            --output "${RUNNER_TEMP}/autofpl-analytics-scan/autofpl-analytics.tar" \
+            "${LOCAL_IMAGE}"
+          docker run --rm \
+            --volume "${RUNNER_TEMP}/autofpl-analytics-scan:/scan:ro" \
+            "${TRIVY_IMAGE}" \
+            image --input /scan/autofpl-analytics.tar \
+            --scanners vuln \
+            --severity HIGH,CRITICAL \
+            --exit-code 1 \
+            --no-progress
+      - name: Smoke-test candidate image
+        run: >-
+          bash scripts/ci_analytics_container_smoke.sh
+          "${LOCAL_IMAGE}" "${GITHUB_SHA}"
+
+  analytics-container-publish:
+    name: analytics-container-publish
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    needs: analytics-container-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build publication candidate
+        run: >-
+          docker build
+          --file Dockerfile.analytics
+          --build-arg "SOURCE_REVISION=${GITHUB_SHA}"
+          --tag "${LOCAL_IMAGE}" .
+      - name: Scan publication candidate
+        run: |
+          set -euo pipefail
+          mkdir -p "${RUNNER_TEMP}/autofpl-analytics-scan"
+          docker image save \
+            --output "${RUNNER_TEMP}/autofpl-analytics-scan/autofpl-analytics.tar" \
+            "${LOCAL_IMAGE}"
+          docker run --rm \
+            --volume "${RUNNER_TEMP}/autofpl-analytics-scan:/scan:ro" \
+            "${TRIVY_IMAGE}" \
+            image --input /scan/autofpl-analytics.tar \
+            --scanners vuln \
+            --severity HIGH,CRITICAL \
+            --exit-code 1 \
+            --no-progress
+      - name: Smoke-test publication candidate
+        run: >-
+          bash scripts/ci_analytics_container_smoke.sh
+          "${LOCAL_IMAGE}" "${GITHUB_SHA}"
+      - name: Authenticate to GHCR
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: printf '%s' "${GHCR_TOKEN}" | docker login ghcr.io --username "${GITHUB_ACTOR}" --password-stdin
+      - name: Publish exact verified images
+        run: |
+          set -euo pipefail
+          docker tag "${LOCAL_IMAGE}" "${IMAGE_NAME}:sha-${GITHUB_SHA}"
+          docker tag "${LOCAL_IMAGE}" "${IMAGE_NAME}:dev"
+          docker push "${IMAGE_NAME}:sha-${GITHUB_SHA}"
+          docker push "${IMAGE_NAME}:dev"
+      - name: Verify immutable image tag
+        run: docker buildx imagetools inspect "${IMAGE_NAME}:sha-${GITHUB_SHA}"
+      - name: Log out of GHCR
+        if: always()
+        run: docker logout ghcr.io
