@@ -2317,7 +2317,7 @@ footer {
   text-transform: uppercase;
 }
 
-@media (max-width: 1280px) {
+@media (max-width: 1500px) {
   .selection-workflow {
     grid-template-columns: 1fr 1fr;
   }
@@ -2325,7 +2325,9 @@ footer {
   .selection-workflow-actions {
     grid-column: 1 / -1;
   }
+}
 
+@media (max-width: 1280px) {
   .decision-header {
     grid-template-columns: 1fr;
   }
