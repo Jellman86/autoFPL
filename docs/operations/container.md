@@ -13,6 +13,7 @@ Routes:
 | `GET` | `/api/v1/forecasts/player-gameweek/latest` | Returns the latest immutable provisional Baseline v0 artifact for every eligible official player |
 | `GET` | `/api/v1/forecasts/preseason-challenger/latest` | Returns the latest immutable holdout-supported GW1 point-mean challenger; it cannot influence advice |
 | `GET` | `/api/v1/forecasts/multi-season-shadow/latest` | Returns the latest immutable two-season GW1 shadow comparison; Baseline v0 still drives advice |
+| `GET` | `/api/v1/forecasts/multi-season-shadow/readiness` | Reports whether the latest shadow matches the latest official capture, is stale or is missing |
 | `GET` | `/api/v1/data/fpl-form-forecast/latest` | Returns provenance and counts for the latest immutable public FPL Form forecast capture |
 | `GET` | `/api/v1/data/fpl-form-forecast/status` | Distinguishes not checked, provider waiting, collection failure and retained forecast states |
 | `GET` | `/api/v1/data/fpl-form-forecast/{captureId}/identity-coverage` | Reports deterministic cutoff-correct official player/fixture coverage for one immutable forecast capture |
@@ -121,6 +122,20 @@ official capture fails closed.
 The latest route and player dossier expose the shadow only as comparison
 evidence. Its retrospective status, weak cross-season ablation result, lack of
 a calibrated distribution and `influencesAdvice: false` remain explicit.
+
+Readiness is a separate lightweight contract:
+
+```text
+GET /api/v1/forecasts/multi-season-shadow/readiness
+```
+
+`current` requires the shadow's exact `officialCaptureId` to match the latest
+official capture. `stale` exposes both identities when they differ, while
+`missing` distinguishes the absence of official evidence from the absence of a
+shadow artifact. The player dossier continues to require an exact capture
+match and never substitutes an older shadow. This route is the machine-readable
+handoff for a future companion analytics worker; it does not trigger generation
+or collection.
 
 ## Official FPL capture
 

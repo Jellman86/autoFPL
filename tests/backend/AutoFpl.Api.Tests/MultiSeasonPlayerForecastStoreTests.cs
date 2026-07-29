@@ -66,12 +66,24 @@ public sealed class MultiSeasonPlayerForecastStoreTests
             await client.GetFromJsonAsync<MultiSeasonPlayerForecastDocument>(
                 "/api/v1/forecasts/multi-season-shadow/latest",
                 TestContext.Current.CancellationToken);
+        MultiSeasonPlayerForecastReadinessDocument? readiness =
+            await client.GetFromJsonAsync<
+                MultiSeasonPlayerForecastReadinessDocument>(
+                "/api/v1/forecasts/multi-season-shadow/readiness",
+                TestContext.Current.CancellationToken);
         OfficialFplPlayerDossierDocument? dossier =
             await client.GetFromJsonAsync<OfficialFplPlayerDossierDocument>(
                 "/api/v1/data/official-fpl/replays/2026-27/1/players/1",
                 TestContext.Current.CancellationToken);
 
         Assert.Equal(imported.ForecastArtifactId, response?.ForecastArtifactId);
+        Assert.Equal("current", readiness?.Status);
+        Assert.Equal("official-capture-match", readiness?.ReasonCode);
+        Assert.Equal(15, readiness?.LatestOfficialCapture?.OfficialCaptureId);
+        Assert.Equal(
+            imported.ForecastArtifactId,
+            readiness?.LatestShadow?.ForecastArtifactId);
+        Assert.False(readiness?.InfluencesAdvice);
         Assert.Equal("1.4", dossier?.SchemaVersion);
         Assert.NotNull(dossier?.MultiSeasonShadow);
         Assert.Equal(
@@ -96,6 +108,64 @@ public sealed class MultiSeasonPlayerForecastStoreTests
             () => update.ExecuteNonQueryAsync(
                 TestContext.Current.CancellationToken));
         Assert.Contains("immutable", immutable.Message);
+    }
+
+    [Fact]
+    public async Task Readiness_reports_missing_and_stale_without_falling_back()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        (DatabaseOptions options, MultiSeasonPlayerForecastDocument request) =
+            await CreateDatabaseAsync(files.DatabasePath);
+        var store = new MultiSeasonPlayerForecastStore(
+            options,
+            TimeProvider.System);
+
+        MultiSeasonPlayerForecastReadinessDocument missing =
+            await store.GetReadinessAsync(
+                TestContext.Current.CancellationToken);
+        Assert.Equal("missing", missing.Status);
+        Assert.Equal("no-shadow-artifact", missing.ReasonCode);
+        Assert.Equal(15, missing.LatestOfficialCapture?.OfficialCaptureId);
+        Assert.Null(missing.LatestShadow);
+
+        MultiSeasonPlayerForecastDocument imported = await store.ImportAsync(
+            request,
+            TestContext.Current.CancellationToken);
+        await SeedNewerOfficialCaptureAsync(options);
+
+        MultiSeasonPlayerForecastReadinessDocument stale =
+            await store.GetReadinessAsync(
+                TestContext.Current.CancellationToken);
+        Assert.Equal("stale", stale.Status);
+        Assert.Equal("official-capture-mismatch", stale.ReasonCode);
+        Assert.Equal(16, stale.LatestOfficialCapture?.OfficialCaptureId);
+        Assert.Equal(15, stale.LatestShadow?.OfficialCaptureId);
+        Assert.Equal(
+            imported.ForecastArtifactId,
+            stale.LatestShadow?.ForecastArtifactId);
+        Assert.False(stale.InfluencesAdvice);
+    }
+
+    [Fact]
+    public async Task Readiness_reports_when_official_capture_is_missing()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = CreateOptions(files.DatabasePath);
+        await new DecisionSnapshotStore(options)
+            .MigrateAsync(TestContext.Current.CancellationToken);
+        var store = new MultiSeasonPlayerForecastStore(
+            options,
+            TimeProvider.System);
+
+        MultiSeasonPlayerForecastReadinessDocument readiness =
+            await store.GetReadinessAsync(
+                TestContext.Current.CancellationToken);
+
+        Assert.Equal("missing", readiness.Status);
+        Assert.Equal("no-official-capture", readiness.ReasonCode);
+        Assert.Null(readiness.LatestOfficialCapture);
+        Assert.Null(readiness.LatestShadow);
+        Assert.False(readiness.InfluencesAdvice);
     }
 
     [Fact]
@@ -298,6 +368,40 @@ public sealed class MultiSeasonPlayerForecastStoreTests
             await command.ExecuteNonQueryAsync(
                 TestContext.Current.CancellationToken);
         }
+    }
+
+    private static async Task SeedNewerOfficialCaptureAsync(
+        DatabaseOptions options)
+    {
+        await using var connection = new SqliteConnection(
+            options.ConnectionString);
+        await connection.OpenAsync(TestContext.Current.CancellationToken);
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText =
+            """
+            INSERT INTO official_fpl_captures (
+                capture_id, schema_version, source_key, season_code,
+                bootstrap_url, fixtures_url, retrieved_at_utc,
+                available_at_utc, bootstrap_sha256, fixtures_sha256,
+                bootstrap_json, fixtures_json, event_count, team_count,
+                player_count, fixture_count, next_gameweek_number,
+                next_deadline_utc, latest_completed_gameweek, created_at_utc
+            )
+            SELECT
+                16, schema_version, source_key, season_code,
+                bootstrap_url, fixtures_url,
+                '2026-07-29T00:00:00Z', '2026-07-29T00:00:00Z',
+                $bootstrapHash, $fixturesHash,
+                bootstrap_json, fixtures_json, event_count, team_count,
+                player_count, fixture_count, next_gameweek_number,
+                next_deadline_utc, latest_completed_gameweek,
+                '2026-07-29T00:00:00Z'
+            FROM official_fpl_captures
+            WHERE capture_id = 15;
+            """;
+        command.Parameters.AddWithValue("$bootstrapHash", new string('f', 64));
+        command.Parameters.AddWithValue("$fixturesHash", new string('0', 64));
+        await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
     }
 
     private static async Task<decimal> SeedBaselineAsync(

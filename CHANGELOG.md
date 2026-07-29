@@ -24,6 +24,11 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **Two-season shadow freshness is now machine-readable.** A lightweight
+  OpenAPI readiness route reports `current`, `stale` or `missing` with the
+  latest official and shadow identities. Exact-capture dossiers still refuse
+  stale fallback, the route cannot trigger model work and
+  `influencesAdvice` remains false.
 - **Player evidence pages now show the two-season research shadow without
   overselling it.** The amber comparison card reports the raw point mean,
   difference from Baseline v0, stable-code history coverage, the small matched
