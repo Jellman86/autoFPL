@@ -176,6 +176,28 @@ RMSE, fold wins and position stability on identical folds; component
 probability diagnostics cannot override it. See the
 [hurdle-point specification](../../docs/research/historical-appearance-hurdle-points-evaluation-v1.md).
 
+The retained factorization can now be fitted to the current Gameweek 1–8
+decision and carried through availability-coherent scenario paths to a
+zero-gap opening squad:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.current_appearance_hurdle_player_forecast \
+  --database /path/to/autofpl.db \
+  --output /path/to/current-hurdle-points.json
+
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.current_appearance_hurdle_opening_squad \
+  --database /path/to/autofpl.db \
+  --output /path/to/current-hurdle-opening-squad.json
+```
+
+The first solve replaced Pickford, Rodon and Anderson with Leno, Tarkowski and
+Rayan, the same three slots independently flagged as least stable. The
+challenger remains prospective and does not overwrite the persisted incumbent.
+See the
+[current hurdle opener specification](../../docs/research/current-appearance-hurdle-opening-squad-v1.md).
+
 The fixture-strength ablation asks whether cutoff-correct recent team output
 and opponent points allowed by position add useful signal to the retained
 two-season tree on the exact same expanding-origin folds:

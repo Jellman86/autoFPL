@@ -73,6 +73,7 @@ still require owner authentication.
 - [Multi-season expanding-origin evaluation v1](research/multi-season-expanding-origin-v1.md) — exact-code 2024/25 plus 2025/26 feature table and matched current-only versus multi-season ridge/tree ablation.
 - [Historical training-window evaluation v1](research/historical-training-window-evaluation-v1.md) — fixed identical-fold screen of the retained two-season point model against an otherwise unchanged four-season challenger.
 - [Historical appearance-hurdle points evaluation v1](research/historical-appearance-hurdle-points-evaluation-v1.md) — fixed two-part comparison of direct point regression with appearance probability times conditional points.
+- [Current appearance-hurdle opening squad v1](research/current-appearance-hurdle-opening-squad-v1.md) — current GW1–8 hurdle means, availability-coherent paths and the new zero-gap six-week opening-squad challenger.
 - [Multi-season preseason shadow forecast v1](research/multi-season-preseason-shadow-forecast-v1.md) — exact-capture 2026/27 GW1 raw point comparison from the frozen two-season tree, unable to influence advice.
 - [CPU joint-scenario reference v1](research/cpu-joint-scenario-reference-v1.md) — seeded whole-row sampling and exact auto-substitution, formation and captaincy scoring for paired strategy comparisons.
 - [Current multi-horizon player forecast v1](research/current-multi-horizon-player-forecast-v1.md) — cutoff-bound Gameweek 1–8 point means and registered 3/6/8 opening-squad horizons.

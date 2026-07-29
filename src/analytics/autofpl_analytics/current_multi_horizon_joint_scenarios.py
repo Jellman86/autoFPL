@@ -83,8 +83,17 @@ def _build_from_artifacts(
     point_forecast: Mapping[str, Any],
     participation_forecast: Mapping[str, Any],
     screen: Mapping[str, Any],
+    *,
+    allowed_point_artifact_versions: Sequence[str] = (
+        POINT_ARTIFACT_VERSION,
+    ),
 ) -> Dict[str, Any]:
-    _require_sources(point_forecast, participation_forecast, screen)
+    _require_sources(
+        point_forecast,
+        participation_forecast,
+        screen,
+        allowed_point_artifact_versions,
+    )
     connection = _open_connection(Path(database_path))
     try:
         capture = _load_capture(
@@ -156,6 +165,10 @@ def _build_from_artifacts(
             "point": point_player,
             "participation": participation_player,
             "pointByGameweek": point_by_gameweek,
+            "pointWeekByGameweek": {
+                int(row["gameweek"]): dict(row)
+                for row in point_player["gameweeks"]
+            },
         }
 
     player_codes = tuple(sorted(by_code))
@@ -377,7 +390,9 @@ def _build_from_artifacts(
             "sourceHistoricalCaptureId": capture.capture_id,
             "sourcePlayersSha256": capture.players_sha256,
             "sourceGameweeksSha256": capture.gameweeks_sha256,
-            "pointForecastArtifactVersion": POINT_ARTIFACT_VERSION,
+            "pointForecastArtifactVersion": point_forecast[
+                "artifactVersion"
+            ],
             "pointForecastRunIdentitySha256": point_forecast[
                 "runIdentitySha256"
             ],
@@ -458,6 +473,7 @@ def _week_input(
     point = values["point"]
     participation = values["participation"]
     raw_point_mean = float(values["pointByGameweek"][gameweek])
+    point_week = values["pointWeekByGameweek"][gameweek]
     variants = participation.get("variants", {})
     try:
         raw_appearance = float(
@@ -472,18 +488,70 @@ def _week_input(
             "A current player does not contain the required appearance "
             "probability variants.",
         ) from exception
-    point_with_current_mean = {**point, "expectedPoints": raw_point_mean}
-    if gameweek == TARGET_GAMEWEEKS[0]:
-        point_mean = _availability_adjusted_point_mean(
-            point_with_current_mean,
-            participation,
+    participation_raw_appearance = raw_appearance
+    if "appearanceProbability" in point_week:
+        raw_appearance = float(point_week["appearanceProbability"])
+        try:
+            appearance_ceiling = float(
+                variants[APPEARANCE_VARIANT]["availability"][
+                    "appearanceProbabilityCeiling"
+                ]
+            )
+        except (KeyError, TypeError, ValueError):
+            appearance_ceiling = (
+                constrained_appearance
+                if constrained_appearance
+                < participation_raw_appearance
+                else 1.0
+            )
+        if (
+            not np.isfinite(raw_appearance)
+            or not np.isfinite(appearance_ceiling)
+            or raw_appearance < 0.0
+            or raw_appearance > 1.0
+            or appearance_ceiling < 0.0
+            or appearance_ceiling > 1.0
+        ):
+            raise TemporalRidgeError(
+                "multi-scenario.point-appearance",
+                "The point model appearance probability is invalid.",
+            )
+        constrained_appearance = min(
+            raw_appearance,
+            appearance_ceiling,
         )
-        appearance_probability = constrained_appearance
-        appearance_variant = APPEARANCE_VARIANT
+        if gameweek == TARGET_GAMEWEEKS[0]:
+            point_mean = (
+                0.0
+                if raw_appearance == 0.0
+                else raw_point_mean
+                * constrained_appearance
+                / raw_appearance
+            )
+            appearance_probability = constrained_appearance
+            appearance_variant = (
+                "point-model-appearance-with-official-ceiling"
+            )
+        else:
+            point_mean = raw_point_mean
+            appearance_probability = raw_appearance
+            appearance_variant = "point-model-appearance"
     else:
-        point_mean = raw_point_mean
-        appearance_probability = raw_appearance
-        appearance_variant = RAW_APPEARANCE_VARIANT
+        point_with_current_mean = {
+            **point,
+            "expectedPoints": raw_point_mean,
+        }
+        if gameweek == TARGET_GAMEWEEKS[0]:
+            point_mean = _availability_adjusted_point_mean(
+                point_with_current_mean,
+                participation,
+            )
+            appearance_probability = constrained_appearance
+            appearance_variant = APPEARANCE_VARIANT
+        else:
+            point_mean = raw_point_mean
+            appearance_probability = raw_appearance
+            appearance_variant = RAW_APPEARANCE_VARIANT
     return {
         "pointMean": _round(point_mean),
         "pointMeanBeforeAvailability": _round(raw_point_mean),
@@ -513,10 +581,14 @@ def _require_sources(
     point: Mapping[str, Any],
     participation: Mapping[str, Any],
     screen: Mapping[str, Any],
+    allowed_point_artifact_versions: Sequence[str] = (
+        POINT_ARTIFACT_VERSION,
+    ),
 ) -> None:
     if (
         point.get("status") != POINT_FORECAST_STATUS
-        or point.get("artifactVersion") != POINT_ARTIFACT_VERSION
+        or point.get("artifactVersion")
+        not in set(allowed_point_artifact_versions)
         or bool(point.get("influencesAdvice"))
         or list(point.get("targetGameweeks", []))
         != list(TARGET_GAMEWEEKS)
