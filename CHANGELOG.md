@@ -24,6 +24,11 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **Player evidence pages now show the two-season research shadow without
+  overselling it.** The amber comparison card reports the raw point mean,
+  difference from Baseline v0, stable-code history coverage, the small matched
+  MAE gain and the weak three-of-eight fold result. It remains visibly
+  distribution-free and outside squad advice on desktop and mobile.
 - **The two-season GW1 shadow is now an immutable, queryable product
   artifact.** Migration 25 adds a dedicated append-only store, a strict
   fail-closed operator import and
