@@ -365,6 +365,21 @@ opened, the result strengthens the current prospective choice but cannot
 promote it. See the
 [historical hurdle opening-policy evaluation](../../docs/research/historical-appearance-hurdle-opening-policy-evaluation-v1.md).
 
+The matching proper-score screen compares the full direct and hurdle
+player-Gameweek distributions and appearance probabilities:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.historical_appearance_hurdle_opening_distribution_evaluation \
+  --database /path/to/autofpl.db \
+  --output /path/to/historical-hurdle-opening-distributions.json
+```
+
+The first fixed run improved CRPS by 1.38%, won all three opening targets and
+all four positions, and improved appearance Brier and log loss. The empirical
+ranges remain conservative and finite-sample limited. See the
+[historical hurdle opening-distribution evaluation](../../docs/research/historical-appearance-hurdle-opening-distribution-evaluation-v1.md).
+
 The conditional-optimality audit distinguishes an exact solver result from a
 robust player choice:
 

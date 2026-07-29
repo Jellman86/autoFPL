@@ -54,6 +54,13 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **The hurdle scenario distributions now pass a proper-score screen.** A
+  target-outcome-free reconstruction compares direct and hurdle empirical
+  paths across 15,712 historical opening player-Gameweeks. Hurdle CRPS improves
+  by 1.38%, all three target seasons and all four positions improve, and
+  appearance Brier and log loss also improve. The retained ranges remain
+  conservative and limited to 37/38 donor paths, so the result strengthens the
+  current scenario engine without claiming perfect calibration.
 - **The best-supported v2 squad now has its own optimality audit.** The audit
   binds the retained point and opening-policy evaluations, repeats the
   best-distinct and 15 player-exclusion global solves, and runs 200 paired-path

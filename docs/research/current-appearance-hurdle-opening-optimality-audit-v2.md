@@ -58,7 +58,8 @@ between many legal squads.
 The v2 squad is mathematically optimal for the retained appearance-hurdle
 means, 38 paired paths, six-Gameweek expected-points objective, prices and FPL
 constraints. The historical opening-policy screen also improved realised
-eight-Gameweek points in all three target seasons.
+eight-Gameweek points in all three target seasons, while the separate
+proper-score screen improved CRPS in all three targets and every position.
 
 It is not possible to claim an empirically optimal 2026/27 squad before those
 matches occur. The audit deliberately distinguishes:
@@ -72,12 +73,12 @@ than implying equal certainty across all 15 picks. Roefs is the clearest
 candidate for close monitoring as new lineup, health and external forecast
 evidence arrives before the deadline.
 
-The capture #19 data identity is
-`fca0ef84cbecb8eb08808c92ffd580df769937c2400f44168f26c761cf64bacf`
+The distribution-bound capture #19 data identity is
+`c483aa0353e74b28b2a3aa83b52375f47ec377e36c123a9b11f7ac70308ab31c`
 and the run identity is
-`a9390a02dc001636fc0c778a4058fccf9615366b44c75e9f4f3fe756272fc594`.
+`e8083fc800e39b0793769d55ea524760812686a62f5b5445c7d80ab0e5424b42`.
 An independent complete rerun was byte-identical; the emitted file SHA-256 was
-`cf392fbbf3f8515dd36d6766ab480f66a7b5a59dda1dbcafe9e37f537bccfe79`.
+`3c48526493852000663f9520517e8d13a94c7e4733e7ebc1d08e0b2125f2ad86`.
 
 ## Reproduction
 

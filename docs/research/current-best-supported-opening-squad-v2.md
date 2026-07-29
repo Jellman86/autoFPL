@@ -83,3 +83,10 @@ confirms the capture #19 squad as the zero-gap model optimum. Watkins, Bruno
 Fernandes, Leno, Tarkowski and Truffert are bootstrap-core selections; Roefs is
 the only fragile selection. This is current model robustness evidence, not a
 substitute for prospective outcome scoring.
+
+The
+[historical opening-distribution screen](historical-appearance-hurdle-opening-distribution-evaluation-v1.md)
+also retains the exact hurdle paths: CRPS improves by 1.38% across 15,712
+player-Gameweeks, all three opening targets and all four positions improve,
+and appearance Brier and log loss do not regress. The empirical intervals
+remain conservative and finite-sample limited.
