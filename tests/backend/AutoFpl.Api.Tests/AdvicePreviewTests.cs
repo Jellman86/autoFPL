@@ -110,6 +110,10 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
             "<dt id=\"artifact-reference-label\">Snapshot</dt>",
             body,
             StringComparison.Ordinal);
+        Assert.Contains(
+            "Two-season research shadow",
+            body,
+            StringComparison.Ordinal);
         string script = await _client.GetStringAsync(
             "/app.js",
             TestContext.Current.CancellationToken);
@@ -119,6 +123,10 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
             StringComparison.Ordinal);
         Assert.Contains(
             "official availability shown, not modelled",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "matchedCurrentSeasonTreeFoldWins",
             script,
             StringComparison.Ordinal);
         Assert.Contains(

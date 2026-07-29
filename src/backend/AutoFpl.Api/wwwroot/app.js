@@ -232,6 +232,7 @@ function selectPlayer(playerId, options = {}) {
     `${player.lower80.toFixed(0)}–${player.upper80.toFixed(0)}`;
   document.querySelector("#published-xpts").hidden = true;
   document.querySelector("#preseason-challenger").hidden = true;
+  document.querySelector("#multi-season-shadow").hidden = true;
   setDossierPortrait(player.name, player.photoUrl);
 
   const badge = document.querySelector("#player-badge");
@@ -648,6 +649,32 @@ async function loadPlayerDossier(player) {
       challenger.hidden = false;
     } else {
       challenger.hidden = true;
+    }
+    const multiSeasonShadow = document.querySelector("#multi-season-shadow");
+    if (dossier.multiSeasonShadow) {
+      const forecast = dossier.multiSeasonShadow;
+      const difference = Number(forecast.differenceFromBaselineV0);
+      const direction = difference > 0 ? "+" : "";
+      const identityLabels = {
+        "both-historical-seasons": "matched in both archived seasons",
+        "latest-historical-season-only": "matched in 2025/26 only",
+        "older-historical-season-only": "matched in 2024/25 only",
+        "no-historical-season-match": "no archived stable-code match",
+      };
+      document.querySelector("#multi-season-shadow-value").textContent =
+        `${Number(forecast.expectedPoints).toFixed(1)} pts`;
+      document.querySelector("#multi-season-shadow-delta").textContent =
+        `${direction}${difference.toFixed(1)} vs Baseline v0`;
+      const matchedImprovement =
+        Number(forecast.matchedCurrentSeasonTreeMaeImprovementFraction) * 100;
+      const identity =
+        identityLabels[forecast.historicalIdentityStatus]
+        ?? forecast.historicalIdentityStatus;
+      document.querySelector("#multi-season-shadow-note").textContent =
+        `Research shadow · ${matchedImprovement.toFixed(1)}% lower matched-tree MAE, but only ${forecast.matchedCurrentSeasonTreeFoldWins}/${forecast.matchedCurrentSeasonTreeFoldCount} fold wins · ${identity} · no calibrated distribution`;
+      multiSeasonShadow.hidden = false;
+    } else {
+      multiSeasonShadow.hidden = true;
     }
     renderRecentForm(dossier.recentOutcomes);
     renderUpcomingFixtures(dossier.upcomingFixtures);
