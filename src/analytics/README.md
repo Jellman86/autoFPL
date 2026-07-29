@@ -356,6 +356,20 @@ on identical Gameweek 31–38 folds. The fixed dual-reference gate, fixture
 bound and reused-holdout boundary are in the
 [conditional-minutes specification](../../docs/research/historical-conditional-minutes-evaluation-v1.md).
 
+The follow-on distribution evaluator combines the fixed appearance probability
+with each player's positive-minutes empirical support and compares the exact
+weighted distribution with player, last-value and position references:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.historical_minutes_distribution_evaluation \
+  --database /path/to/autofpl.db \
+  --output /path/to/historical-minutes-distribution.json
+```
+
+CRPS is primary; interval coverage remains diagnostic. See the
+[minutes-distribution specification](../../docs/research/historical-minutes-distribution-evaluation-v1.md).
+
 ## Current official availability ceiling v1
 
 The current participation artifact carries a prospective comparison variant
