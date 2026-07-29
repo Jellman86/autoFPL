@@ -3,3 +3,4 @@
 # pip-compile --generate-hashes requirements-analytics.in
 numpy==2.5.1
 scikit-learn==1.9.0
+scipy==1.18.0

@@ -26,6 +26,12 @@ The product is not an autonomous FPL account bot. It does not collect FPL
 credentials or session material and does not submit transfers, activate chips
 or change a lineup.
 
+Initial-squad prediction quality is the active development priority because it
+drives every downstream comparison, scenario, explanation and AI interaction.
+Additional AI, authentication and sharing work does not outrank replacing the
+served heuristic with a leakage-safe, calibrated, multi-Gameweek decision
+policy.
+
 ## Selection ownership and locking
 
 Forecast evidence and the user's FPL decision are separate records. A new
@@ -488,6 +494,14 @@ player before immutable persistence. A read-only route exposes the artifact
 and the player dossier shows its raw point mean, Baseline delta, holdout result
 and availability/identity warnings. It remains unable to influence advice.
 
+The first replacement initial-squad candidate now consumes the complete
+current joint player matrix and exact official prices. A zero-gap MILP selects
+the full squad, legal XI and captain for a transparent single-Gameweek mean
+surrogate, then the CPU FPL scorer measures the choice against Baseline v0 on
+all retained joint rows. It is intentionally shadow-only: the underlying
+distributions are still prospective and the 3/6/8-Gameweek decision horizon is
+not yet implemented.
+
 The SQLite persistence vertical slice is deployed and survives a managed
 container recreate. Operator-triggered fixed-origin official FPL collectors
 store exact raw hashes, retrieval-time availability and normalised
@@ -498,10 +512,10 @@ data-checked, every fixture is finished and player coverage exactly matches the
 post-event reference capture. The API and decision room can pair that final
 outcome with a cutoff-safe replay. No 2026/27 Gameweek has completed yet, so a
 real pair and current-season baseline evaluation dataset do not exist. There is
-still no promoted model, scenario engine, optimiser, live AI provider or
-product release. Public read-only MCP player-dossier and current-prediction
-tools are deployed; owner selection data remains outside that anonymous
-boundary.
+still no promoted model, calibrated scenario engine, promoted full-squad
+optimiser, live AI provider or product release. Public read-only MCP
+player-dossier, current-prediction and strategy tools are deployed; owner
+selection data remains outside that anonymous boundary.
 
 ## v0.1 — Evidence-grounded single-Gameweek advisor
 
@@ -819,17 +833,23 @@ on their identical retained scenarios; previews are non-mutating and an
 explicit copy creates a current-forecast draft before opening the full My Squad
 builder. The active order is:
 
-1. score both forecasts on the first automatically paired 2026/27 result, then
-   register subsequent prospective folds without tuning on them;
-2. join only the point, participation and minutes components that pass their
-   registered gates, then publish the first calibrated player distributions;
-3. replace the exploratory joint rows behind the completed CPU-reference
-   scorer with calibrated distributions, preserve immutable scenario
-   provenance and add exact user-authored comparisons to the strategy surface;
-4. connect the grounded AI surface through read-only MCP first, followed by an
-   owner-configured OpenAI-compatible provider; and
-5. add owner authentication and sanitized dashboard sharing before exposing
-   any configuration or consequential action outside the trusted instance.
+1. persist and surface the exact current initial-squad quality shadow so the
+   stronger full-squad candidate is inspectable without replacing advice;
+2. score Baseline v0, the frozen point/participation components and the complete
+   initial-squad candidate on the first automatically paired 2026/27 result,
+   then register subsequent prospective folds without tuning on them;
+3. join only the point, participation and minutes components that pass their
+   registered gates, publish calibrated player distributions and replace the
+   exploratory rows behind the CPU-reference scorer;
+4. compare registered 3-, 6- and 8-Gameweek initial-squad policies with exact
+   budget, captaincy, bench, transfer and flexibility utility before selecting
+   a serving horizon;
+5. admit external forecasts, lineup/news claims and richer features only when
+   same-fold ablations improve prediction or decision utility;
+6. resume the owner-configured OpenAI-compatible provider after the prediction
+   and initial-squad path is credible; and
+7. add owner authentication and sanitized dashboard sharing before exposing
+   consequential actions outside the trusted instance.
 
 Specialist lineups, public forecasts, named experts and social evidence remain
 valuable challenger sources. Operate the existing bounded collectors and score
