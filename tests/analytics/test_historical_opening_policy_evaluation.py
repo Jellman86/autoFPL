@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import sys
 import unittest
 from pathlib import Path
@@ -17,9 +18,36 @@ from autofpl_analytics.historical_opening_policy_evaluation import (  # noqa: E4
 from autofpl_analytics.historical_opening_policy_registration import (  # noqa: E402
     REFERENCE_POLICY_KEY,
 )
+from autofpl_analytics.temporal_ridge import _sha256  # noqa: E402
 
 
 class HistoricalOpeningPolicyEvaluationTests(unittest.TestCase):
+    def test_retained_evaluation_is_self_consistent_and_not_promoted(
+        self,
+    ) -> None:
+        path = (
+            Path(__file__).resolve().parents[2]
+            / "docs"
+            / "research"
+            / "results"
+            / "historical-opening-policy-evaluation-v1.json"
+        )
+        retained = json.loads(path.read_text(encoding="utf-8"))
+        expected = retained.pop("runIdentitySha256")
+
+        self.assertEqual(expected, _sha256(retained))
+        self.assertTrue(retained["targetOutcomesOpened"])
+        self.assertEqual(
+            REFERENCE_POLICY_KEY,
+            retained["decision"]["selectedPolicyKey"],
+        )
+        self.assertFalse(
+            retained["prospectiveBoundary"]["isPromoted"]
+        )
+        self.assertFalse(
+            retained["prospectiveBoundary"]["mayInfluenceAdvice"]
+        )
+
     def test_post_horizon_roles_maximise_legal_preseason_mean(
         self,
     ) -> None:

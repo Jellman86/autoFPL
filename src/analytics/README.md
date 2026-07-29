@@ -102,6 +102,23 @@ before the policy evaluator reads target outcomes. The retained registration
 identity and limitations are in the
 [policy registration specification](../../docs/research/historical-opening-policy-registration-v1.md).
 
+The registered evaluator is the only stage that may open the three target
+seasons' points and minutes:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.historical_opening_policy_evaluation \
+  --database /path/to/autofpl.db \
+  --output /path/to/historical-opening-policy-evaluation.json
+```
+
+It first reproduces the exact frozen registration identity, solves all 18
+season-policy combinations, and scores the fixed opening squads with the
+shared exact FPL rules. The stability gate retained the six-Gameweek
+expected-points reference for prospective scoring; it remains unable to
+influence advice. See the
+[policy evaluation specification](../../docs/research/historical-opening-policy-evaluation-v1.md).
+
 ## Multi-season expanding-origin evaluation v1
 
 The multi-season evaluator asks whether carrying exact-code 2024/25 history

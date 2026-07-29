@@ -531,8 +531,12 @@ appearance estimates and 37/38/38 latest-prior-season whole-Gameweek donor
 paths without opening target performance. Registration
 `b9d28cac497af35fc0762b7080db7e369759678872f78d47135e050f1920b675`
 freezes all six candidates, common exact-FPL GW1–8 scoring and a stability gate
-before target outcomes are opened. Running that registered comparison remains
-the next decision-quality gate.
+before target outcomes are opened. The byte-reproducible registered comparison
+has now selected the six-Gameweek expected-points reference: the higher-mean
+three-Gameweek downside policy failed the frozen worst-season regression gate.
+The selected policy remains non-serving and is now frozen for prospective
+2026/27 outcome scoring. Applying it to the current opening artifact, without
+retrospective reselection, is the next decision-quality gate.
 
 The SQLite persistence vertical slice is deployed and survives a managed
 container recreate. Operator-triggered fixed-origin official FPL collectors
