@@ -218,6 +218,8 @@ class MultiSeasonEvaluationTests(unittest.TestCase):
                         gameweek INTEGER NOT NULL,
                         fixture_id INTEGER NOT NULL,
                         kickoff_utc TEXT NOT NULL,
+                        team_name TEXT NOT NULL,
+                        opponent_team_id INTEGER NOT NULL,
                         was_home INTEGER NOT NULL,
                         minutes INTEGER NOT NULL,
                         starts INTEGER NOT NULL,
@@ -306,9 +308,11 @@ class MultiSeasonEvaluationTests(unittest.TestCase):
                         gameweek,
                         capture_id * 1000 + gameweek * 10 + index,
                         (
-                            f"{kickoff_year}-08-{gameweek:02d}"
+                        f"{kickoff_year}-08-{gameweek:02d}"
                             "T15:00:00+00:00"
                         ),
+                        f"Team {index % 3}",
+                        ((index + gameweek) % 3) + 1,
                         (gameweek + index) % 2,
                         minutes,
                         int(active),
@@ -323,7 +327,7 @@ class MultiSeasonEvaluationTests(unittest.TestCase):
         connection.executemany(
             """
             INSERT INTO historical_fpl_player_gameweeks VALUES (
-                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
             );
             """,
             rows,

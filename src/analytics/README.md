@@ -58,6 +58,20 @@ official player code only. The result is a retrospective shadow-candidate
 screen, never a promotion decision. See the
 [multi-season specification](../../docs/research/multi-season-expanding-origin-v1.md).
 
+The fixture-strength ablation asks whether cutoff-correct recent team output
+and opponent points allowed by position add useful signal to the retained
+two-season tree on the exact same expanding-origin folds:
+
+```shell
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.fixture_strength_evaluation \
+  --database /path/to/autofpl.db \
+  --output /path/to/fixture-strength-report.json
+```
+
+Its fixed gate and research boundary are recorded in the
+[fixture-strength specification](../../docs/research/fixture-strength-expanding-origin-v1.md).
+
 ## Multi-season preseason shadow forecast v1
 
 The frozen leading two-season tree can emit a current GW1 comparison artifact
