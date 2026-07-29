@@ -37,7 +37,7 @@ versions="$(docker run --rm \
   --tmpfs /tmp:rw,noexec,nosuid,nodev,size=32m,uid=1654,gid=1654 \
   --cap-drop ALL \
   --security-opt no-new-privileges:true \
-  --entrypoint python \
+  --entrypoint /usr/bin/python3 \
   "$image" \
   -c 'import numpy, sklearn; print(f"{numpy.__version__} {sklearn.__version__}")')"
 [[ "$versions" == "2.5.1 1.9.0" ]] || {

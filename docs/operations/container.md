@@ -607,10 +607,11 @@ bash scripts/ci_container_smoke.sh autofpl:local "$(git rev-parse HEAD)"
 
 The smoke test launches the image with a read-only filesystem, all Linux capabilities dropped, `no-new-privileges`, and no fixed host port.
 
-`Dockerfile.analytics` uses the digest-pinned Python 3.13 slim Trixie base and
-separately packages the frozen Python shadow generator from the hash-locked
-scientific requirements. The companion image runs as UID `1654`, has a
-read-only root filesystem, exposes no port and writes only the requested
+`Dockerfile.analytics` builds hash-locked scientific wheels with a
+digest-pinned Python 3.13 slim Trixie stage, then copies only the runtime
+packages and generator into a digest-pinned distroless Python Debian 13 final
+image. The companion runs as UID `1654`, contains no shell or package manager,
+has a read-only root filesystem, exposes no port and writes only the requested
 artifact to a mounted output directory. Its smoke test imports the exact NumPy
 and scikit-learn versions and starts the real command surface:
 
