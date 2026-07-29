@@ -72,6 +72,20 @@ PYTHONPATH=src/analytics python3 \
 Its fixed gate and research boundary are recorded in the
 [fixture-strength specification](../../docs/research/fixture-strength-expanding-origin-v1.md).
 
+The latent team-strength evaluator reconstructs match scores from the immutable
+archive and compares a fixed time-decayed Dixon–Coles model with a weighted
+league-rate Poisson baseline on expanding origins:
+
+```shell
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.team_goal_strength_evaluation \
+  --database /path/to/autofpl.db \
+  --output /path/to/team-goal-strength-report.json
+```
+
+The complete likelihood, temporal split and fixed retention gate are in the
+[team goal-strength specification](../../docs/research/time-decayed-dixon-coles-expanding-origin-v1.md).
+
 ## Multi-season preseason shadow forecast v1
 
 The frozen leading two-season tree can emit a current GW1 comparison artifact
