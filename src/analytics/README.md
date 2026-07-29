@@ -86,6 +86,19 @@ PYTHONPATH=src/analytics python3 \
 The complete likelihood, temporal split and fixed retention gate are in the
 [team goal-strength specification](../../docs/research/time-decayed-dixon-coles-expanding-origin-v1.md).
 
+The expected-goals ablation keeps the same latent-strength model and folds but
+fits attack/defence rates from team xG aggregated from official player rows:
+
+```shell
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.xg_team_strength_evaluation \
+  --database /path/to/autofpl.db \
+  --output /path/to/xg-team-strength-report.json
+```
+
+Its dual-reference gate and non-promotion boundary are in the
+[expected-goals team-strength specification](../../docs/research/expected-goals-team-strength-expanding-origin-v1.md).
+
 ## Multi-season preseason shadow forecast v1
 
 The frozen leading two-season tree can emit a current GW1 comparison artifact
