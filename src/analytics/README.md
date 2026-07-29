@@ -158,6 +158,24 @@ majority fold wins and position stability. Reused target outcomes mean a pass
 can retain only a prospective current shadow. See the
 [training-window specification](../../docs/research/historical-training-window-evaluation-v1.md).
 
+The appearance-hurdle point ablation tests whether an explicit
+`P(appearance) × E(points | appearance)` factorization improves the same
+unconditional total-point target:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.historical_appearance_hurdle_points_evaluation \
+  --database /path/to/autofpl.db \
+  --output /path/to/historical-appearance-hurdle-points.json
+```
+
+The classifier uses all earlier rows while the conditional point tree trains
+only where minutes were positive. Both use the incumbent feature and
+hyperparameter contract. The fixed gate compares unconditional point MAE,
+RMSE, fold wins and position stability on identical folds; component
+probability diagnostics cannot override it. See the
+[hurdle-point specification](../../docs/research/historical-appearance-hurdle-points-evaluation-v1.md).
+
 The fixture-strength ablation asks whether cutoff-correct recent team output
 and opponent points allowed by position add useful signal to the retained
 two-season tree on the exact same expanding-origin folds:
