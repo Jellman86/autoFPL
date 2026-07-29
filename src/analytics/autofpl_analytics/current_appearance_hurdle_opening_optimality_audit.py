@@ -25,6 +25,12 @@ from .historical_appearance_hurdle_opening_evaluation import (
     RETAINED_DATA_IDENTITY as OPENING_EVALUATION_DATA_IDENTITY,
     RETAINED_RUN_IDENTITY as OPENING_EVALUATION_RUN_IDENTITY,
 )
+from .historical_appearance_hurdle_opening_distribution_evaluation import (
+    ARTIFACT_VERSION as DISTRIBUTION_EVALUATION_ARTIFACT_VERSION,
+    DECISION_RETAIN as DISTRIBUTION_EVALUATION_DECISION,
+    RETAINED_DATA_IDENTITY as DISTRIBUTION_EVALUATION_DATA_IDENTITY,
+    RETAINED_RUN_IDENTITY as DISTRIBUTION_EVALUATION_RUN_IDENTITY,
+)
 from .historical_appearance_hurdle_points_evaluation import (
     EVALUATOR_VERSION as POINT_EVALUATION_ARTIFACT_VERSION,
     HURDLE_MODEL,
@@ -85,6 +91,18 @@ def _build_from_scenario(
             "dataIdentitySha256": OPENING_EVALUATION_DATA_IDENTITY,
             "runIdentitySha256": OPENING_EVALUATION_RUN_IDENTITY,
             "decision": OPENING_EVALUATION_DECISION,
+        },
+        "distributionEvaluationSource": {
+            "artifactVersion": (
+                DISTRIBUTION_EVALUATION_ARTIFACT_VERSION
+            ),
+            "dataIdentitySha256": (
+                DISTRIBUTION_EVALUATION_DATA_IDENTITY
+            ),
+            "runIdentitySha256": (
+                DISTRIBUTION_EVALUATION_RUN_IDENTITY
+            ),
+            "decision": DISTRIBUTION_EVALUATION_DECISION,
         },
     }
     artifact["source"]["modelVariant"] = artifact["modelVariant"]

@@ -194,6 +194,15 @@ class CurrentOpeningSquadOptimalityAuditTests(unittest.TestCase):
             ],
         )
         self.assertEqual(
+            (
+                "historical-appearance-hurdle-opening-"
+                "distribution-evaluation-v1"
+            ),
+            first["modelVariant"]["distributionEvaluationSource"][
+                "artifactVersion"
+            ],
+        )
+        self.assertEqual(
             "hurdle-opening-audit.scenario",
             caught.exception.code,
         )

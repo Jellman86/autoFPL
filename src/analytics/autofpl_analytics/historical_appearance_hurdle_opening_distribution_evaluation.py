@@ -58,6 +58,12 @@ DECISION_RETAIN = (
     "retain-hurdle-opening-distributions-prospective-challenger"
 )
 DECISION_REJECT = "do-not-retain-hurdle-opening-distributions"
+RETAINED_DATA_IDENTITY = (
+    "af3e964f3f936b06f542ab6b19ecb996d2f1c97584298a5aff7877aa8837ada1"
+)
+RETAINED_RUN_IDENTITY = (
+    "00808a1062b294785ebb5be506a7787198722598720d736436c969e003fb2234"
+)
 
 
 def build_historical_appearance_hurdle_opening_distribution_evaluation(
