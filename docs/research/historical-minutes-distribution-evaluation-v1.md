@@ -38,6 +38,34 @@ strict majority of folds and avoid position CRPS regression above 5%.
 Passing retains the exact model only for prospective shadow generation.
 Promotion and product import remain prohibited.
 
+## Result
+
+The Quark run at application revision
+`fd87ea4f79ecf902fc401176c53b3bdc15e826c3` completed all eight folds and
+scored 6,252 player-Gameweeks:
+
+| Model | Mean CRPS | Central 80% coverage | Mean width |
+|---|---:|---:|---:|
+| Appearance-hurdle conditional empirical | **8.666169** | 0.936020 | 34.598049 |
+| Player empirical | 10.469246 | 0.929623 | 37.356206 |
+| Player-last point mass | 12.205374 | 0.689699 | 0.000000 |
+| Position empirical | 18.196291 | 0.986564 | 90.000000 |
+
+The candidate improved CRPS by 17.2226% against player empirical, 28.9971%
+against player-last and 52.3740% against position empirical. It won all eight
+folds against every reference and improved goalkeeper, defender, midfielder
+and forward CRPS in every comparison. The fixed screen therefore passes.
+
+The exact specification is retained for a current prospective
+minutes-distribution shadow. It remains unpromoted and cannot alter served
+expected minutes, point forecasts or squad advice until genuinely new 2026/27
+outcomes score the frozen artifact.
+
+Coverage above the nominal 80% level shows that the retained intervals are
+conservative. This is visible diagnostic evidence to carry into prospective
+scoring; the already-opened folds must not be used to narrow support or tune
+the appearance probability.
+
 ## Reproduction
 
 ```shell
