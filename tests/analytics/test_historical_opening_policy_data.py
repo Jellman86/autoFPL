@@ -22,9 +22,14 @@ from autofpl_analytics.historical_opening_policy_data import (  # noqa: E402
     EXPECTED_CAPTURE_IDENTITIES,
     REGISTERED_SEASONS,
     TARGET_SEASONS,
+    _load_opening_fold,
+    _required_capture,
     build_historical_opening_policy_data,
 )
-from autofpl_analytics.temporal_ridge import TemporalRidgeError  # noqa: E402
+from autofpl_analytics.temporal_ridge import (  # noqa: E402
+    TemporalRidgeError,
+    _open_connection,
+)
 
 
 class HistoricalOpeningPolicyDataTests(unittest.TestCase):
@@ -108,6 +113,43 @@ class HistoricalOpeningPolicyDataTests(unittest.TestCase):
                     build_historical_opening_policy_data(database)
 
         self.assertEqual("data.raw-gameweeks-sha256", raised.exception.code)
+
+    def test_constraint_only_fold_does_not_load_outcomes(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            database = Path(temporary) / "autofpl.db"
+            expected = self._create_database(database)
+            connection = _open_connection(database)
+            try:
+                with (
+                    patch.dict(
+                        EXPECTED_CAPTURE_IDENTITIES,
+                        expected,
+                        clear=True,
+                    ),
+                    patch(
+                        "autofpl_analytics."
+                        "historical_opening_policy_data._load_outcomes",
+                        side_effect=AssertionError(
+                            "target outcomes must remain unopened"
+                        ),
+                    ),
+                ):
+                    captures = tuple(
+                        _required_capture(connection, season)
+                        for season in REGISTERED_SEASONS
+                    )
+                    fold = _load_opening_fold(
+                        connection,
+                        captures,
+                        1,
+                        include_outcomes=False,
+                    )
+            finally:
+                connection.close()
+
+        self.assertEqual(15, len(fold.players))
+        self.assertTrue(all(not player.points for player in fold.players))
+        self.assertTrue(all(not player.minutes for player in fold.players))
 
     @staticmethod
     def _create_database(database: Path) -> dict[str, dict[str, object]]:

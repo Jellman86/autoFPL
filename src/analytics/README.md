@@ -57,6 +57,27 @@ raw hashes, stable-code joins, legal-pool feasibility and outcome coverage
 without writing SQLite or selecting a policy. See the
 [opening-policy data specification](../../docs/research/historical-opening-policy-data-v1.md).
 
+## Historical opening forecast reconstruction v1
+
+The next read-only stage fits the unchanged multi-season histogram tree on
+strictly earlier archives and reconstructs Gameweek 1–8 point means for every
+target opening cohort:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.historical_opening_forecast_reconstruction \
+  --database /path/to/autofpl.db \
+  --output /path/to/historical-opening-forecasts.json
+```
+
+The target-season SQL reads only fixture identity, kickoff and home/away
+context; it does not select target points, minutes or event fields. Because no
+opening-day historical fixture snapshot exists, final-archive fixture
+structure is an explicit retrospective proxy. The artifact remains an
+input reconstruction and does not generate scenarios, read outcomes or select
+a policy. See the
+[forecast reconstruction specification](../../docs/research/historical-opening-forecast-reconstruction-v1.md).
+
 ## Multi-season expanding-origin evaluation v1
 
 The multi-season evaluator asks whether carrying exact-code 2024/25 history
