@@ -137,6 +137,26 @@ multi-Gameweek correlated scenarios and the global opening-squad optimiser; it
 cannot yet influence served advice. See the
 [multi-horizon specification](../../docs/research/current-multi-horizon-player-forecast-v1.md).
 
+## Current multi-horizon joint scenarios v1
+
+The scenario extension preserves each historical whole-Gameweek donor row and
+pairs eight weekly marginals into fixed-seed paths for the registered opening
+horizons:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.current_multi_horizon_joint_scenarios \
+  --database /path/to/autofpl.db \
+  --output /path/to/current-multi-horizon-joint-scenarios.json
+```
+
+Gameweek 1 exactly retains the existing official availability ceiling.
+Gameweeks 2–8 revert to the raw preseason appearance estimate rather than
+guessing an injury duration. Weekly cross-player dependence is preserved;
+cross-Gameweek row pairing is an explicit fixed reference assumption. The
+artifact remains prospective and non-serving. See the
+[multi-horizon scenario specification](../../docs/research/current-multi-horizon-joint-scenarios-v1.md).
+
 The same fixed command is packaged as the non-root
 `ghcr.io/jellman86/autofpl-analytics` companion image. Its default invocation
 polls the read-only `/analytics-snapshot/autofpl.db`, does nothing while the

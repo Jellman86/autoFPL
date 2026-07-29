@@ -505,8 +505,10 @@ not yet implemented.
 The opening-decision forecast now extends the unchanged retained two-season
 tree across Gameweeks 1–8 from one exact official cutoff and records cumulative
 3, 6 and 8-Gameweek player means. It does not propagate Gameweek 1 injury
-status through the horizon. Correlated per-Gameweek scenarios and the
-multi-horizon legal squad optimiser remain the next decision-quality gates.
+status through the horizon. Eight per-Gameweek whole-row scenario marginals now
+preserve within-week player dependence and are paired into fixed-seed paths
+without repeating one historic shock through the horizon. The multi-horizon
+legal squad optimiser remains the next decision-quality gate.
 
 The SQLite persistence vertical slice is deployed and survives a managed
 container recreate. Operator-triggered fixed-origin official FPL collectors
