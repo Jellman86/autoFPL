@@ -255,9 +255,9 @@ PYTHONPATH=src/analytics python3 \
 ```
 
 Every selection is then scored with exact FPL auto-substitution and captaincy
-on the paired paths. The artifact exposes all six frozen 3/6/8 horizon-policy
-results but intentionally recommends none until retrospective policy selection
-is complete. See the
+on the paired paths. The v2 artifact exposes all six frozen 3/6/8
+horizon-policy results and marks the retrospectively selected six-Gameweek
+expected-points policy for prospective scoring. It remains non-serving. See the
 [multi-horizon initial-squad specification](../../docs/research/current-multi-horizon-initial-squad-v1.md).
 
 The same fixed command is packaged as the non-root

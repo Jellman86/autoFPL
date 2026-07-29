@@ -35,12 +35,22 @@ from .temporal_ridge import (
 
 SCHEMA_VERSION = "1.0"
 ARTIFACT_TYPE = "current-multi-horizon-initial-squad-shadow"
-ARTIFACT_VERSION = "current-multi-horizon-initial-squad-shadow-v1"
+ARTIFACT_VERSION = "current-multi-horizon-initial-squad-shadow-v2"
 STATUS = "prospective-shadow-unscored"
 OPTIMIZER_VERSION = "scipy-highs-multi-horizon-mean-cvar-v1"
 MAXIMUM_NUMERICAL_MIP_GAP = 1e-12
 BENCH_WEIGHT = 0.08
 LOWER_TAIL_FRACTION = 0.20
+SELECTED_POLICY_KEY = "6-expected-points"
+POLICY_EVALUATION_ARTIFACT_VERSION = (
+    "historical-opening-policy-evaluation-v1"
+)
+POLICY_EVALUATION_DATA_IDENTITY = (
+    "e99bb4fce3615c91ecaf642037c6cebb3d36efffc2df54857ffbc4c27714e048"
+)
+POLICY_EVALUATION_RUN_IDENTITY = (
+    "a79acdbc991768c31f4bf3abc1bcaa5724dcdfbdb89f0e3f0c0b63a530c5008e"
+)
 POLICIES = (
     {
         "policyKey": "expected-points",
@@ -141,6 +151,17 @@ def _build_from_scenario(
                 {
                     "horizonGameweeks": horizon,
                     "policyKey": policy["policyKey"],
+                    "evaluationPolicyKey": _evaluation_policy_key(
+                        horizon,
+                        str(policy["policyKey"]),
+                    ),
+                    "isSelectedForProspectiveScoring": (
+                        _evaluation_policy_key(
+                            horizon,
+                            str(policy["policyKey"]),
+                        )
+                        == SELECTED_POLICY_KEY
+                    ),
                     "objective": {
                         "surrogate": (
                             "weekly-points-bench-weighted-with-captain"
@@ -186,6 +207,17 @@ def _build_from_scenario(
                 - _lower_tail_cvar(incumbent_scores)
             ),
         }
+    selected_results = [
+        result
+        for result in policy_results
+        if bool(result["isSelectedForProspectiveScoring"])
+    ]
+    _require(
+        len(selected_results) == 1,
+        "multi-squad.selected-policy",
+        "The retrospectively selected policy is not registered exactly once.",
+    )
+    selected = selected_results[0]
 
     artifact: Dict[str, Any] = {
         "schemaVersion": SCHEMA_VERSION,
@@ -210,9 +242,21 @@ def _build_from_scenario(
         },
         "policies": policy_results,
         "policySelectionStatus": (
-            "awaiting-retrospective-horizon-and-risk-policy-evaluation"
+            "retrospectively-selected-prospective-shadow-unscored"
         ),
-        "recommendedPolicyKey": None,
+        "recommendedPolicyKey": SELECTED_POLICY_KEY,
+        "selectedProspectivePolicy": {
+            "evaluationPolicyKey": SELECTED_POLICY_KEY,
+            "horizonGameweeks": selected["horizonGameweeks"],
+            "optimizerPolicyKey": selected["policyKey"],
+            "selectionPlayerIds": selected["selection"]["playerIds"],
+            "selectionBudgetTenths": selected["selection"]["budgetTenths"],
+            "retrospectiveEvaluationSource": {
+                "artifactVersion": POLICY_EVALUATION_ARTIFACT_VERSION,
+                "dataIdentitySha256": POLICY_EVALUATION_DATA_IDENTITY,
+                "runIdentitySha256": POLICY_EVALUATION_RUN_IDENTITY,
+            },
+        },
         "limitations": [
             (
                 "Every solver result is a global optimum for its declared "
@@ -220,16 +264,17 @@ def _build_from_scenario(
                 "captaincy are scored afterwards on the paired paths."
             ),
             (
-                "The horizon and CVaR weight are registered candidates, not "
-                "selected using this current prospective artifact."
+                "The six-Gameweek expected-points policy was selected by the "
+                "frozen historical evaluation, not by this current "
+                "prospective artifact."
             ),
             (
                 "Transfers, chips and future price changes are excluded from "
                 "this opening-squad comparison."
             ),
             (
-                "No policy can influence served advice until retrospective "
-                "selection and prospective outcome gates pass."
+                "The selected policy cannot influence served advice until "
+                "prospective outcome gates pass."
             ),
         ],
     }
@@ -242,6 +287,9 @@ def _build_from_scenario(
             "lowerTailFraction": LOWER_TAIL_FRACTION,
             "registeredPolicies": artifact["registeredPolicies"],
             "registeredHorizons": artifact["registeredHorizons"],
+            "selectedProspectivePolicy": artifact[
+                "selectedProspectivePolicy"
+            ],
         }
     )
     artifact["runIdentitySha256"] = _sha256(artifact)
@@ -678,6 +726,10 @@ def _lower_tail_cvar(values: np.ndarray) -> float:
     if fraction > 0.0:
         total += fraction * float(ordered[full])
     return total / tail_mass
+
+
+def _evaluation_policy_key(horizon: int, policy_key: str) -> str:
+    return f"{horizon}-{policy_key}"
 
 
 def _require(condition: bool, code: str, message: str) -> None:

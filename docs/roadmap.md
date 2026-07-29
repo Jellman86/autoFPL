@@ -535,8 +535,11 @@ before target outcomes are opened. The byte-reproducible registered comparison
 has now selected the six-Gameweek expected-points reference: the higher-mean
 three-Gameweek downside policy failed the frozen worst-season regression gate.
 The selected policy remains non-serving and is now frozen for prospective
-2026/27 outcome scoring. Applying it to the current opening artifact, without
-retrospective reselection, is the next decision-quality gate.
+2026/27 outcome scoring. The current v2 opening artifact now binds that exact
+evaluation identity, marks only the six-Gameweek expected-points squad as the
+prospective selection and leaves the serving boundary closed. Capturing its
+official 2026/27 outcomes without retrospective reselection is the next
+decision-quality gate.
 
 The SQLite persistence vertical slice is deployed and survives a managed
 container recreate. Operator-triggered fixed-origin official FPL collectors
