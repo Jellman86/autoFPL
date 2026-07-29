@@ -78,6 +78,30 @@ input reconstruction and does not generate scenarios, read outcomes or select
 a policy. See the
 [forecast reconstruction specification](../../docs/research/historical-opening-forecast-reconstruction-v1.md).
 
+## Historical opening scenarios and policy registration v1
+
+The outcome-free scenario phase combines the reconstructed point means with a
+missingness-safe prior-season appearance classifier and whole-Gameweek donor
+rows:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.historical_opening_scenario_reconstruction \
+  --database /path/to/autofpl.db \
+  --output /path/to/historical-opening-scenarios.json
+
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.historical_opening_policy_registration \
+  --database /path/to/autofpl.db \
+  --output /path/to/historical-opening-policy-registration.json
+```
+
+The registration fixes all six policies, a common exact-FPL GW1–8 outcome
+score, a neutral six-week expected-points reference and stability thresholds
+before the policy evaluator reads target outcomes. The retained registration
+identity and limitations are in the
+[policy registration specification](../../docs/research/historical-opening-policy-registration-v1.md).
+
 ## Multi-season expanding-origin evaluation v1
 
 The multi-season evaluator asks whether carrying exact-code 2024/25 history

@@ -1,0 +1,108 @@
+{
+  "artifactType": "historical-opening-policy-evaluation-registration",
+  "artifactVersion": "historical-opening-policy-evaluation-registration-v1",
+  "commonOutcomeScoring": {
+    "gameweeks": [1, 2, 3, 4, 5, 6, 7, 8],
+    "primaryMetric": "mean-realised-eight-gameweek-fpl-points-across-targets",
+    "realisedScorer": "exact-fpl-captain-fallback-and-ordered-auto-substitution",
+    "rolesAfterOptimisationHorizon": "choose-legal-maximum-preseason-scenario-mean-xi-and-captain-with-deterministic-bench-order",
+    "rolesWithinOptimisationHorizon": "use-policy-optimised-weekly-xi-captain-vice-and-bench",
+    "squadMembership": "fixed-opening-squad-no-transfers-for-all-eight-gameweeks",
+    "targetWeighting": "equal-weight-per-season"
+  },
+  "dataIdentitySha256": "b9d28cac497af35fc0762b7080db7e369759678872f78d47135e050f1920b675",
+  "evaluationTargets": [
+    {
+      "forecastIdentitySha256": "c33e5aaceea268d777ed9fe4ffe15d4097f94285b31a6e6c0a67000cc66408d8",
+      "latestPriorSeasonCode": "2022-23",
+      "playerCount": 658,
+      "scenarioContentSha256": "8656765a77454718554a731dac1b63948bbe5f65ef4d4b869b8c21061d9571aa",
+      "scenarioCount": 37,
+      "targetCaptureId": 4,
+      "targetSeasonCode": "2023-24"
+    },
+    {
+      "forecastIdentitySha256": "b73de5553ebc11f1101121f38b1d9895d911feca28320d5996a3426d531a2a5a",
+      "latestPriorSeasonCode": "2023-24",
+      "playerCount": 616,
+      "scenarioContentSha256": "18e696f7681ff4cb3b872fffa5a458bb7573f9a50f7d62567239e49021e30fed",
+      "scenarioCount": 38,
+      "targetCaptureId": 2,
+      "targetSeasonCode": "2024-25"
+    },
+    {
+      "forecastIdentitySha256": "c9e93e91c3ea2eefaf99db4ea8ac8b6f94fc3269054556cd515ad17e3c275305",
+      "latestPriorSeasonCode": "2024-25",
+      "playerCount": 690,
+      "scenarioContentSha256": "9cc23c3ede34e34ae0c0db924b5b31e67d56a11cdd066e02ae2b1007f5ed4037",
+      "scenarioCount": 38,
+      "targetCaptureId": 1,
+      "targetSeasonCode": "2025-26"
+    }
+  ],
+  "limitations": [
+    "Three target seasons provide limited policy-selection power. The stability gate deliberately resists choosing a six-way retrospective winner on mean alone.",
+    "All policies are compared on the same realised eight-week period. Horizon changes opening squad construction, not the amount of outcome data awarded to a policy.",
+    "The scenario source retains its documented historical fixture-proxy and missing opening-status limitations."
+  ],
+  "prospectiveBoundary": {
+    "isPromoted": false,
+    "mayInfluenceAdvice": false,
+    "nextRequirement": "freeze-the-selected-policy-and-score-new-2026-27-outcomes"
+  },
+  "registeredPolicies": [
+    {
+      "cvarWeight": 0.0,
+      "evaluationPolicyKey": "3-expected-points",
+      "horizonGameweeks": 3,
+      "optimizerPolicyKey": "expected-points"
+    },
+    {
+      "cvarWeight": 0.15,
+      "evaluationPolicyKey": "3-downside-balanced",
+      "horizonGameweeks": 3,
+      "optimizerPolicyKey": "downside-balanced"
+    },
+    {
+      "cvarWeight": 0.0,
+      "evaluationPolicyKey": "6-expected-points",
+      "horizonGameweeks": 6,
+      "optimizerPolicyKey": "expected-points"
+    },
+    {
+      "cvarWeight": 0.15,
+      "evaluationPolicyKey": "6-downside-balanced",
+      "horizonGameweeks": 6,
+      "optimizerPolicyKey": "downside-balanced"
+    },
+    {
+      "cvarWeight": 0.0,
+      "evaluationPolicyKey": "8-expected-points",
+      "horizonGameweeks": 8,
+      "optimizerPolicyKey": "expected-points"
+    },
+    {
+      "cvarWeight": 0.15,
+      "evaluationPolicyKey": "8-downside-balanced",
+      "horizonGameweeks": 8,
+      "optimizerPolicyKey": "downside-balanced"
+    }
+  ],
+  "runIdentitySha256": "3a571e0813079b30fe721f48f670bc619252966ad949d8d1bfb0134771823b45",
+  "scenarioSource": {
+    "artifactVersion": "historical-opening-joint-scenario-reconstruction-v1",
+    "dataIdentitySha256": "677ac7473d405a361ebd1d2694bde1dc5da3a44a7e941e9e7bda3da8c861a506",
+    "runIdentitySha256": "232ac51314b724c79396a37e9c415f4db51b60d897b3b081aa7401898b93fe9b"
+  },
+  "schemaVersion": "1.0",
+  "selectionRule": {
+    "decision": "select-the-ranked-leader-only-if-all-stability-gates-pass;otherwise-retain-the-predeclared-reference",
+    "leaderRanking": "higher-mean-then-higher-worst-target-then-expected-points-then-shorter-horizon-then-policy-key",
+    "maximumWorstTargetRegressionPoints": 2.0,
+    "minimumMeanImprovementOverReferencePoints": 2.0,
+    "minimumTargetWinsOverReference": 2,
+    "referencePolicyKey": "6-expected-points"
+  },
+  "status": "registered-before-target-outcomes-opened",
+  "targetOutcomesOpened": false
+}
