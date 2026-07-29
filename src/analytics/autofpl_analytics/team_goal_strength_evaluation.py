@@ -294,26 +294,23 @@ def _fit_dixon_coles(
         / max(MINIMUM_RATE, weighted_away)
     )
 
-    def objective(values: np.ndarray) -> float:
+    def objective(values: np.ndarray) -> Tuple[float, np.ndarray]:
         intercept, home_advantage, rho = values[:3]
         attacks = values[3 : 3 + count]
         defences = values[3 + count :]
         loss = 0.0
+        gradient = np.zeros_like(values)
         for weight, match in zip(weights, training):
-            home_rate = _bounded_rate(
-                math.exp(
-                    intercept
-                    + home_advantage
-                    + attacks[indices[match.home_team]]
-                    + defences[indices[match.away_team]]
-                )
+            home_index = indices[match.home_team]
+            away_index = indices[match.away_team]
+            home_rate, home_derivative = _rate_and_derivative(
+                intercept
+                + home_advantage
+                + attacks[home_index]
+                + defences[away_index]
             )
-            away_rate = _bounded_rate(
-                math.exp(
-                    intercept
-                    + attacks[indices[match.away_team]]
-                    + defences[indices[match.home_team]]
-                )
+            away_rate, away_derivative = _rate_and_derivative(
+                intercept + attacks[away_index] + defences[home_index]
             )
             tau = _tau(
                 match.home_goals,
@@ -323,17 +320,47 @@ def _fit_dixon_coles(
                 rho,
             )
             if tau <= 0 or not math.isfinite(tau):
-                return 1e100
+                return 1e100, np.zeros_like(values)
             loss -= weight * (
                 _poisson_log_probability(match.home_goals, home_rate)
                 + _poisson_log_probability(match.away_goals, away_rate)
                 + math.log(tau)
             )
+            tau_home, tau_away, tau_rho = _tau_derivatives(
+                match.home_goals,
+                match.away_goals,
+                home_rate,
+                away_rate,
+                rho,
+            )
+            home_gradient = home_derivative * (
+                home_rate
+                - match.home_goals
+                - tau_home * home_rate / tau
+            )
+            away_gradient = away_derivative * (
+                away_rate
+                - match.away_goals
+                - tau_away * away_rate / tau
+            )
+            rho_gradient = -tau_rho / tau
+            gradient[0] += weight * (home_gradient + away_gradient)
+            gradient[1] += weight * home_gradient
+            gradient[2] += weight * rho_gradient
+            gradient[3 + home_index] += weight * home_gradient
+            gradient[3 + away_index] += weight * away_gradient
+            gradient[3 + count + away_index] += weight * home_gradient
+            gradient[3 + count + home_index] += weight * away_gradient
         loss += L2_PENALTY * float(
             np.dot(attacks, attacks) + np.dot(defences, defences)
         )
         loss += IDENTIFIABILITY_PENALTY * float(attacks.mean() ** 2)
-        return float(loss)
+        gradient[3 : 3 + count] += 2.0 * L2_PENALTY * attacks
+        gradient[3 + count :] += 2.0 * L2_PENALTY * defences
+        gradient[3 : 3 + count] += (
+            2.0 * IDENTIFIABILITY_PENALTY * attacks.mean() / count
+        )
+        return float(loss), gradient
 
     bounds = [
         (math.log(MINIMUM_RATE), math.log(MAXIMUM_RATE)),
@@ -345,6 +372,7 @@ def _fit_dixon_coles(
         objective,
         initial,
         method="L-BFGS-B",
+        jac=True,
         bounds=bounds,
         options={"maxiter": 500, "ftol": 1e-10, "gtol": 1e-7},
     )
@@ -371,6 +399,10 @@ def _fit_dixon_coles(
         "effectiveMatchWeight": _round(float(weights.sum())),
         "homeAdvantageLogRate": _round(float(values[1])),
         "rho": _round(float(values[2])),
+        "gradientInfinityNorm": _round(
+            float(np.linalg.norm(fitted.jac, ord=np.inf))
+        ),
+        "optimizerMessage": str(fitted.message),
     }
 
 
@@ -622,6 +654,34 @@ def _tau(
     if home_goals == 1 and away_goals == 1:
         return 1.0 - rho
     return 1.0
+
+
+def _tau_derivatives(
+    home_goals: int,
+    away_goals: int,
+    home_rate: float,
+    away_rate: float,
+    rho: float,
+) -> Tuple[float, float, float]:
+    if home_goals == 0 and away_goals == 0:
+        return -away_rate * rho, -home_rate * rho, -home_rate * away_rate
+    if home_goals == 0 and away_goals == 1:
+        return rho, 0.0, home_rate
+    if home_goals == 1 and away_goals == 0:
+        return 0.0, rho, away_rate
+    if home_goals == 1 and away_goals == 1:
+        return 0.0, 0.0, -1.0
+    return 0.0, 0.0, 0.0
+
+
+def _rate_and_derivative(log_rate: float) -> Tuple[float, float]:
+    minimum = math.log(MINIMUM_RATE)
+    maximum = math.log(MAXIMUM_RATE)
+    if log_rate <= minimum:
+        return MINIMUM_RATE, 0.0
+    if log_rate >= maximum:
+        return MAXIMUM_RATE, 0.0
+    return math.exp(log_rate), 1.0
 
 
 def _poisson_log_probability(value: int, rate: float) -> float:

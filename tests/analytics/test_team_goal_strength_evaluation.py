@@ -54,6 +54,17 @@ class TeamGoalStrengthEvaluationTests(unittest.TestCase):
             [5, 6, 7, 8],
             [fold["gameweek"] for fold in report["folds"]],
         )
+        self.assertTrue(
+            all(
+                fold["challengerDiagnostics"]["iterations"] > 1
+                for fold in report["folds"]
+            )
+        )
+        indexed = {model["name"]: model for model in report["models"]}
+        self.assertNotEqual(
+            indexed[BASELINE_MODEL]["metrics"],
+            indexed[CHALLENGER_MODEL]["metrics"],
+        )
         for model in report["models"]:
             for value in model["metrics"].values():
                 self.assertGreaterEqual(value, 0)
