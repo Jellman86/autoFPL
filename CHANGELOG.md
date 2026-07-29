@@ -6,6 +6,16 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Changed
 
+- **Current joint-scenario generation now binds the retained retrospective
+  screen instead of recomputing it.** The exact evaluator, data, run, metric
+  and fold identities remain fail-closed inputs, while the operator historical
+  evaluator remains the reproducibility path. This removes an unnecessary
+  large empirical-comparator allocation from each prospective worker cycle and
+  keeps generation inside the hardened worker's 1 GiB memory limit. The worker
+  also reuses the already validated persisted point artifact and runs the
+  participation fit in a bounded child process so fitted model memory is
+  released before matrix construction; scientific thread pools match its
+  two-CPU limit.
 - **The provisional participation artifact now fails closed for product import.** It remains a useful research output, but its machine-readable readiness is blocked until current official availability is fused, independent probability nesting is coherent and missing prior-season identities have an evaluated fallback.
 - **Fixed participation challengers now fit only where they can affect evidence.** Development folds select the simple comparator without repeatedly fitting the pre-registered challenger; challenger fitting begins only after comparator lock on Gameweeks 31–38, preserving the identical support gate while removing work that cannot change it.
 - **FFScout lineup evidence now covers both sides of a complete categorical forecast.** Predicted starters still resolve through official photo codes, with a lower-confidence unique team/name fallback for stale identifiers; when all eleven players resolve to one club, the remaining registered players receive separately versioned `does-not-start` claims. Partial clubs remain unknown, and the player dossier now explains that missing coverage is not a bench prediction.

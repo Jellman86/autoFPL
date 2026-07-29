@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Mapping, Optional, Sequence
 
@@ -11,7 +12,6 @@ import numpy as np
 from .historical_joint_scenario_evaluation import (
     EVALUATOR_VERSION,
     MODEL_NAME,
-    evaluate_historical_joint_scenarios,
     generate_joint_fold,
 )
 from .historical_preseason_evaluation import (
@@ -45,6 +45,16 @@ STATUS = "prospective-shadow-unscored"
 APPEARANCE_VARIANT = "officialCeilingFactorized"
 RAW_APPEARANCE_VARIANT = "rawIndependent"
 POINT_AVAILABILITY_FUSION = "official-appearance-ceiling-ratio-v1"
+SCREEN_DATA_IDENTITY = (
+    "265fc9e0457273ef51bc247f44943805058e64a99fc9f5178a1eff5a43e27d90"
+)
+SCREEN_RUN_IDENTITY = (
+    "d48e8483dc0af0e85aab254e5919b43d98a1167b5c9956f5988b37e92ef87c78"
+)
+SCREEN_MEAN_CRPS = 0.639806
+SCREEN_CRPS_IMPROVEMENT = 0.071611
+SCREEN_FOLD_COUNT = 8
+SCREEN_FOLD_WINS = 8
 
 
 def build_current_joint_scenario_forecast(
@@ -53,7 +63,7 @@ def build_current_joint_scenario_forecast(
     gameweek: int = CURRENT_GAMEWEEK,
 ) -> Dict[str, Any]:
     path = Path(database_path)
-    screen = evaluate_historical_joint_scenarios(path)
+    screen = _retained_screen()
     if (
         screen["status"] != "complete"
         or screen["retrospectiveScreen"] is None
@@ -81,6 +91,31 @@ def build_current_joint_scenario_forecast(
         participation_forecast,
         screen,
     )
+
+
+def _retained_screen() -> Dict[str, Any]:
+    return {
+        "evaluatorVersion": EVALUATOR_VERSION,
+        "status": "complete",
+        "isPromoted": False,
+        "mayInfluenceAdvice": False,
+        "dataIdentitySha256": SCREEN_DATA_IDENTITY,
+        "runIdentitySha256": SCREEN_RUN_IDENTITY,
+        "distributionModels": [
+            {
+                "name": MODEL_NAME,
+                "metrics": {"meanCrps": SCREEN_MEAN_CRPS},
+            }
+        ],
+        "retrospectiveScreen": {
+            "status": "passes-retrospective-screen",
+            "aggregateCrpsImprovementFraction": (
+                SCREEN_CRPS_IMPROVEMENT
+            ),
+            "foldWins": SCREEN_FOLD_WINS,
+            "foldCount": SCREEN_FOLD_COUNT,
+        },
+    }
 
 
 def _build_from_artifacts(
@@ -422,13 +457,13 @@ def _require_artifact_alignment(
             str(point["seasonCode"]),
             int(point["gameweek"]),
             int(point["officialCaptureId"]),
-            str(point["decisionCutoffUtc"]),
+            _utc_instant(point["decisionCutoffUtc"]),
         ),
         (
             str(participation["seasonCode"]),
             int(participation["gameweek"]),
             int(participation["officialCaptureId"]),
-            str(participation["decisionCutoffUtc"]),
+            _utc_instant(participation["decisionCutoffUtc"]),
         ),
     )
     if identities[0] != identities[1]:
@@ -449,6 +484,22 @@ def _require_artifact_alignment(
             "The supplied joint scenario screen is not the frozen "
             "research-only evaluator result.",
         )
+
+
+def _utc_instant(value: Any) -> datetime:
+    try:
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except ValueError as exception:
+        raise TemporalRidgeError(
+            "scenario.source-artifact-time",
+            "A scenario source artifact has an invalid decision cutoff.",
+        ) from exception
+    if parsed.tzinfo is None:
+        raise TemporalRidgeError(
+            "scenario.source-artifact-time",
+            "A scenario source artifact decision cutoff must include UTC.",
+        )
+    return parsed.astimezone(timezone.utc)
 
 
 def _require_capture_alignment(

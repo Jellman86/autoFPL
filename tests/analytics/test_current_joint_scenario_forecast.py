@@ -14,8 +14,11 @@ from autofpl_analytics.current_joint_scenario_forecast import (  # noqa: E402
     ARTIFACT_TYPE,
     POINT_AVAILABILITY_FUSION,
     RAW_APPEARANCE_VARIANT,
+    SCREEN_DATA_IDENTITY,
+    SCREEN_RUN_IDENTITY,
     STATUS,
     _build_from_artifacts,
+    _retained_screen,
 )
 from autofpl_analytics.historical_joint_scenario_evaluation import (  # noqa: E402
     EVALUATOR_VERSION,
@@ -36,6 +39,25 @@ from tests.analytics import (  # noqa: E402
 
 
 class CurrentJointScenarioForecastTests(unittest.TestCase):
+    def test_current_generation_binds_the_retained_screen(self) -> None:
+        screen = _retained_screen()
+
+        self.assertEqual("complete", screen["status"])
+        self.assertEqual(
+            "passes-retrospective-screen",
+            screen["retrospectiveScreen"]["status"],
+        )
+        self.assertEqual(
+            SCREEN_DATA_IDENTITY,
+            screen["dataIdentitySha256"],
+        )
+        self.assertEqual(
+            SCREEN_RUN_IDENTITY,
+            screen["runIdentitySha256"],
+        )
+        self.assertFalse(screen["isPromoted"])
+        self.assertFalse(screen["mayInfluenceAdvice"])
+
     def test_current_shadow_is_deterministic_aligned_and_non_serving(
         self,
     ) -> None:
@@ -208,7 +230,7 @@ class CurrentJointScenarioForecastTests(unittest.TestCase):
             "seasonCode": "2026-27",
             "gameweek": 1,
             "officialCaptureId": 99,
-            "decisionCutoffUtc": cutoff,
+            "decisionCutoffUtc": cutoff.replace("+00:00", "Z"),
             "runIdentitySha256": "b" * 64,
             "training": {
                 "seasonCode": source_season,

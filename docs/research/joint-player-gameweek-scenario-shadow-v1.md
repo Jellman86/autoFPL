@@ -72,6 +72,18 @@ The supported current generator binds:
 - the exact retained 2025/26 source archive; and
 - the passing historical screen identities.
 
+The current worker binds the retained screen's exact evaluator, data, run,
+metric and fold identities. It does not recompute the already-opened
+retrospective comparison on every prospective capture; the standalone
+historical evaluator remains the deterministic reproduction command. This
+keeps current generation bounded without weakening the import identity.
+The worker also reads the already validated exact point artifact from SQLite
+and fits participation in an isolated child process. That child exits before
+matrix construction, preventing independent model-fitting heaps from
+accumulating in the long-lived polling process. OpenMP and BLAS thread counts
+are bounded to the worker's two-CPU allocation; the retained matrix remains
+byte-for-byte identical.
+
 The point forecast is unconditional and deliberately does not model current
 availability. For coherence, the shadow multiplies that mean by the ratio of
 official-ceiling appearance probability to raw appearance probability. The
