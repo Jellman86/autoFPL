@@ -411,10 +411,12 @@ builder.Services
             "autoFPL returns read-only, cutoff-correct football evidence. "
             + "Research claims are quarantined and must never be described as "
             + "influencing Baseline v0. Preserve stable IDs, timestamps, evidence "
-            + "status and source URLs when explaining a dossier.";
+            + "status and source URLs. Never describe a provisional or shadow "
+            + "artifact as calibrated or promoted.";
     })
     .WithHttpTransport(options => options.Stateless = true)
-    .WithTools<PlayerDossierMcpTools>();
+    .WithTools<PlayerDossierMcpTools>()
+    .WithTools<CurrentPredictionMcpTools>();
 builder.Services.AddSingleton(serviceProvider =>
     DatabaseOptions.FromConfiguration(
         serviceProvider.GetRequiredService<IConfiguration>()));

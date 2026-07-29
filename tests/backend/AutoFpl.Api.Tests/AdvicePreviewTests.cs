@@ -22,7 +22,7 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
     }
 
     [Fact]
-    public async Task Mcp_endpoint_advertises_only_the_public_player_dossier_tool()
+    public async Task Mcp_endpoint_advertises_only_public_read_only_tools()
     {
         await using var transport = new HttpClientTransport(
             new()
@@ -36,17 +36,37 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
             transport,
             cancellationToken: TestContext.Current.CancellationToken);
 
-        McpClientTool tool = Assert.Single(
+        IList<McpClientTool> tools =
             await mcpClient.ListToolsAsync(
-                cancellationToken: TestContext.Current.CancellationToken));
-        Assert.Equal("get_player_dossier", tool.Name);
+                cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Equal(
+            ["get_current_prediction", "get_player_dossier"],
+            tools.Select(tool => tool.Name).Order().ToArray());
+        Assert.All(
+            tools,
+            tool =>
+            {
+                Assert.True(tool.ProtocolTool.Annotations?.ReadOnlyHint);
+                Assert.False(tool.ProtocolTool.Annotations?.DestructiveHint);
+                Assert.False(tool.ProtocolTool.Annotations?.OpenWorldHint);
+            });
+
+        McpClientTool tool = Assert.Single(
+            tools,
+            candidate => candidate.Name == "get_player_dossier");
         Assert.Contains(
             "quarantined",
             tool.Description,
             StringComparison.OrdinalIgnoreCase);
-        Assert.True(tool.ProtocolTool.Annotations?.ReadOnlyHint);
-        Assert.False(tool.ProtocolTool.Annotations?.DestructiveHint);
-        Assert.False(tool.ProtocolTool.Annotations?.OpenWorldHint);
+
+        McpClientTool predictionTool = Assert.Single(
+            tools,
+            candidate => candidate.Name == "get_current_prediction");
+        Assert.Contains(
+            "provisional",
+            predictionTool.Description,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.NotNull(predictionTool.ProtocolTool.OutputSchema);
 
         CallToolResult invalid = await mcpClient.CallToolAsync(
             "get_player_dossier",
@@ -61,6 +81,16 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
         Assert.Contains(
             "seasonCode",
             Assert.Single(invalid.Content.OfType<TextContentBlock>()).Text,
+            StringComparison.Ordinal);
+
+        CallToolResult missingPrediction = await mcpClient.CallToolAsync(
+            "get_current_prediction",
+            cancellationToken: TestContext.Current.CancellationToken);
+        Assert.True(missingPrediction.IsError);
+        Assert.Contains(
+            "No persisted official",
+            Assert.Single(
+                missingPrediction.Content.OfType<TextContentBlock>()).Text,
             StringComparison.Ordinal);
     }
 

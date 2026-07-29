@@ -7,7 +7,8 @@ are deployed. Fixed-origin
 official FPL reference and final-outcome capture plus cutoff-safe pairing are
 implemented; the first completed 2026/27 Gameweek pair, validated forecasting,
 simulation, optimisation and proposal persistence do not yet exist. One public
-read-only MCP player-dossier tool is deployed; user-specific advisory tools
+read-only MCP player-dossier and current-prediction tools are deployed;
+user-specific advisory tools
 still require owner authentication.
 
 ## Start here
