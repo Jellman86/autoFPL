@@ -158,6 +158,10 @@ public sealed class AnalyticsSnapshotPublisher : BackgroundService
                     SELECT MAX(outcome_capture_id)
                     FROM official_fpl_outcome_captures
                 ), 0) AS TEXT)
+                || ':' || CAST(COALESCE((
+                    SELECT MAX(capture_id)
+                    FROM historical_fpl_season_captures
+                ), 0) AS TEXT)
                 || ':' || COALESCE((
                     SELECT locked_at_utc
                     FROM selection_revisions

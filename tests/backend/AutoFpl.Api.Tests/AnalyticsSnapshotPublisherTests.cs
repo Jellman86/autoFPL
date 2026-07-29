@@ -57,6 +57,63 @@ public sealed class AnalyticsSnapshotPublisherTests : IDisposable
             new SqliteConnection(databaseOptions.ConnectionString))
         {
             await source.OpenAsync(cancellationToken);
+            await using SqliteCommand archive = source.CreateCommand();
+            archive.CommandText =
+                """
+                INSERT INTO historical_fpl_season_captures (
+                    capture_id, schema_version, source_key, season_code,
+                    source_revision, players_url, gameweeks_url,
+                    published_at_utc, retrieved_at_utc, available_at_utc,
+                    players_sha256, gameweeks_sha256, players_csv_brotli,
+                    gameweeks_csv_brotli, player_count,
+                    player_gameweek_count, stable_code_count, created_at_utc
+                )
+                VALUES (
+                    1, '1.0', 'vaastav-fpl-historical/v1', '2022-23',
+                    $revision, 'https://example.test/players.csv',
+                    'https://example.test/gameweeks.csv',
+                    '2026-06-17T12:19:44Z',
+                    '2026-07-29T12:00:00Z',
+                    '2026-07-29T12:00:00Z',
+                    $playersHash, $gameweeksHash, X'01', X'01',
+                    1, 1, 1, '2026-07-29T12:00:00Z'
+                );
+                """;
+            archive.Parameters.AddWithValue(
+                "$revision",
+                new string('d', 40));
+            archive.Parameters.AddWithValue(
+                "$playersHash",
+                new string('e', 64));
+            archive.Parameters.AddWithValue(
+                "$gameweeksHash",
+                new string('f', 64));
+            await archive.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        Assert.Equal(
+            "published",
+            await publisher.PublishOnceAsync(cancellationToken));
+        await using (var archiveSnapshot =
+            new SqliteConnection(readOnly.ToString()))
+        {
+            await archiveSnapshot.OpenAsync(cancellationToken);
+            await using SqliteCommand count =
+                archiveSnapshot.CreateCommand();
+            count.CommandText =
+                "SELECT COUNT(*) FROM historical_fpl_season_captures;";
+            Assert.Equal(
+                1L,
+                await count.ExecuteScalarAsync(cancellationToken));
+        }
+        Assert.Equal(
+            "unchanged",
+            await publisher.PublishOnceAsync(cancellationToken));
+
+        await using (var source =
+            new SqliteConnection(databaseOptions.ConnectionString))
+        {
+            await source.OpenAsync(cancellationToken);
             await using SqliteCommand outcome = source.CreateCommand();
             outcome.CommandText =
                 """

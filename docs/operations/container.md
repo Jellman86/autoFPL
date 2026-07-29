@@ -172,7 +172,8 @@ AutoFpl__Analytics__SnapshotPath=/analytics-snapshot/autofpl.db
 Both intervals are bounded from one through 60 minutes and absent by default.
 The application uses SQLite's online-backup API to publish a consistent,
 integrity-checked, delete-journal snapshot through an atomic rename only when
-the relevant capture, forecast, scenario, selection or lock identity changes.
+the relevant official or historical capture, forecast, scenario, selection or
+lock identity changes.
 The worker reads `/analytics-snapshot/autofpl.db` through a dedicated read-only
 mount, checks exact official/shadow capture identity every minute in the
 published image and atomically writes at most one
