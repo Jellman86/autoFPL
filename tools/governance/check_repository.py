@@ -198,6 +198,7 @@ REQUIRED_CONTENT_MARKERS = {
         "Dockerfile.analytics",
         "scripts/ci_analytics_container_smoke.sh",
         "--input /scan/autofpl-analytics.tar",
+        "--ignore-unfixed",
         "IMAGE_NAME: ghcr.io/jellman86/autofpl-analytics",
         "docker tag \"${LOCAL_IMAGE}\" \"${IMAGE_NAME}:sha-${GITHUB_SHA}\"",
         "docker push \"${IMAGE_NAME}:sha-${GITHUB_SHA}\"",

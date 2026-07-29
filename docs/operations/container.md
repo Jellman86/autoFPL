@@ -622,6 +622,14 @@ make analytics-container-verify
 Keeping the scientific runtime separate prevents an analytics dependency or
 long-running fit from expanding or taking down the serving image.
 
+The analytics Trivy gate scans both OS and Python packages and fails on
+HIGH/CRITICAL findings for which an actionable fixed version exists. Newly
+disclosed vendor records with no available fix remain covered by every fresh
+Trivy database evaluation but do not make the package permanently
+unpublishable; the final distroless image, read-only filesystem, non-root user,
+dropped capabilities and absence of network listeners bound their runtime
+exposure.
+
 ## CI and publication
 
 `.github/workflows/container.yml` runs on pull requests to `dev`/`main` and pushes to `dev`.

@@ -904,6 +904,7 @@ jobs:
           Dockerfile.analytics
           scripts/ci_analytics_container_smoke.sh
           --input /scan/autofpl-analytics.tar
+          --ignore-unfixed
           docker tag "${LOCAL_IMAGE}" "${IMAGE_NAME}:sha-${GITHUB_SHA}"
           docker push "${IMAGE_NAME}:sha-${GITHUB_SHA}"
           docker push "${IMAGE_NAME}:dev"

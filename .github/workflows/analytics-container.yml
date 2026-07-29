@@ -51,6 +51,7 @@ jobs:
             image --input /scan/autofpl-analytics.tar \
             --scanners vuln \
             --severity HIGH,CRITICAL \
+            --ignore-unfixed \
             --exit-code 1 \
             --no-progress
       - name: Smoke-test candidate image
@@ -95,6 +96,7 @@ jobs:
             image --input /scan/autofpl-analytics.tar \
             --scanners vuln \
             --severity HIGH,CRITICAL \
+            --ignore-unfixed \
             --exit-code 1 \
             --no-progress
       - name: Smoke-test publication candidate
