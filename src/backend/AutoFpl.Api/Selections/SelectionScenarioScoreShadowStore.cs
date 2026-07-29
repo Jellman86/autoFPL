@@ -337,7 +337,7 @@ public sealed class SelectionScenarioScoreShadowStore
         }
     }
 
-    private static void ValidateResult(
+    internal static void ValidateResult(
         SelectionScenarioResultDocument result,
         int scenarioCount,
         string field)
@@ -441,11 +441,12 @@ public sealed class SelectionScenarioScoreShadowStore
             $"{field}.summary");
     }
 
-    private static void ValidateComparison(
+    internal static void ValidateComparison(
         IReadOnlyList<int> model,
         IReadOnlyList<int> user,
         SelectionScenarioComparisonDocument comparison,
-        int scenarioCount)
+        int scenarioCount,
+        string field = "userVsModel")
     {
         int[] differences = model
             .Zip(user, (reference, candidate) => candidate - reference)
@@ -477,7 +478,7 @@ public sealed class SelectionScenarioScoreShadowStore
                 && Close(comparison.ProbabilityTie, ties)
                 && Close(comparison.ProbabilityCandidateLoses, losses),
             "comparison",
-            "userVsModel");
+            field);
     }
 
     private static void ValidateLineage(
@@ -819,7 +820,7 @@ public sealed class SelectionScenarioScoreShadowStore
     private static bool Close(decimal actual, decimal expected) =>
         Math.Abs(actual - expected) <= NumericTolerance;
 
-    private static string SelectionContentSha256(
+    internal static string SelectionContentSha256(
         SelectionScenarioDefinitionDocument selection)
     {
         using var stream = new MemoryStream();

@@ -167,7 +167,36 @@ class ShadowWorkerTests(unittest.TestCase):
             target = inspect_target(database)
             self.assertTrue(target["hasExactPointShadow"])
             self.assertTrue(target["hasExactScenarioShadow"])
+            self.assertFalse(target["hasExactInitialSquadQuality"])
             self.assertFalse(target["hasExactSelectionScore"])
+            candidate = {
+                "officialCaptureId": 16,
+                "candidate": {"totalPointRows": [10]},
+            }
+            with patch(
+                "autofpl_analytics.shadow_worker."
+                "build_current_initial_squad_candidate",
+                return_value=candidate,
+            ):
+                generated = generate_once(database, root / "inbox")
+            self.assertEqual("generated", generated.status)
+            self.assertTrue(
+                str(generated.outputFile).startswith(
+                    "initial-squad-quality-capture-16"
+                )
+            )
+
+            with sqlite3.connect(database) as connection:
+                connection.execute(
+                    """
+                    INSERT INTO initial_squad_quality_shadow_artifacts
+                        (scenario_artifact_id, forecast_artifact_id,
+                         optimizer_version)
+                    VALUES (
+                        1, 1, 'scipy-highs-linear-squad-surrogate-v1'
+                    );
+                    """
+                )
             score = {
                 "officialCaptureId": 16,
                 "model": {"totalPointRows": [10]},
@@ -177,7 +206,7 @@ class ShadowWorkerTests(unittest.TestCase):
                 "build_current_scenario_selection_score",
                 return_value=score,
             ):
-                generated = generate_once(database, root / "inbox")
+                generated = generate_once(database, root / "score-inbox")
             self.assertEqual("generated", generated.status)
             self.assertTrue(
                 str(generated.outputFile).startswith(
@@ -266,6 +295,12 @@ class ShadowWorkerTests(unittest.TestCase):
                 CREATE TABLE baseline_forecast_artifacts (
                     artifact_id INTEGER PRIMARY KEY,
                     capture_id INTEGER NOT NULL
+                );
+                CREATE TABLE initial_squad_quality_shadow_artifacts (
+                    initial_squad_artifact_id INTEGER PRIMARY KEY,
+                    scenario_artifact_id INTEGER NOT NULL,
+                    forecast_artifact_id INTEGER NOT NULL,
+                    optimizer_version TEXT NOT NULL
                 );
                 CREATE TABLE selection_revisions (
                     selection_revision_id INTEGER PRIMARY KEY,

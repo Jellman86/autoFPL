@@ -831,24 +831,23 @@ artifacts without moving Python model work into the web request path. The
 decision room now presents the model, balanced, safer and higher-ceiling roles
 on their identical retained scenarios; previews are non-mutating and an
 explicit copy creates a current-forecast draft before opening the full My Squad
-builder. The active order is:
+builder. Exact candidate persistence and its read-only comparison surface are
+now implemented. The active order is:
 
-1. persist and surface the exact current initial-squad quality shadow so the
-   stronger full-squad candidate is inspectable without replacing advice;
-2. score Baseline v0, the frozen point/participation components and the complete
+1. score Baseline v0, the frozen point/participation components and the complete
    initial-squad candidate on the first automatically paired 2026/27 result,
    then register subsequent prospective folds without tuning on them;
-3. join only the point, participation and minutes components that pass their
+2. join only the point, participation and minutes components that pass their
    registered gates, publish calibrated player distributions and replace the
    exploratory rows behind the CPU-reference scorer;
-4. compare registered 3-, 6- and 8-Gameweek initial-squad policies with exact
+3. compare registered 3-, 6- and 8-Gameweek initial-squad policies with exact
    budget, captaincy, bench, transfer and flexibility utility before selecting
    a serving horizon;
-5. admit external forecasts, lineup/news claims and richer features only when
+4. admit external forecasts, lineup/news claims and richer features only when
    same-fold ablations improve prediction or decision utility;
-6. resume the owner-configured OpenAI-compatible provider after the prediction
+5. resume the owner-configured OpenAI-compatible provider after the prediction
    and initial-squad path is credible; and
-7. add owner authentication and sanitized dashboard sharing before exposing
+6. add owner authentication and sanitized dashboard sharing before exposing
    consequential actions outside the trusted instance.
 
 Specialist lineups, public forecasts, named experts and social evidence remain

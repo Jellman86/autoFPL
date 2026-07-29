@@ -347,6 +347,22 @@ if (requestedSelectionScenarioScoreImport
         "Usage: --import-selection-scenario-score-shadow <json-file>");
     return 2;
 }
+bool requestedInitialSquadQualityImport =
+    args.Length > 0
+    && StringComparer.Ordinal.Equals(
+        args[0],
+        "--import-initial-squad-quality-shadow");
+bool runInitialSquadQualityImport =
+    requestedInitialSquadQualityImport
+    && args.Length == 2
+    && !string.IsNullOrWhiteSpace(args[1]);
+if (requestedInitialSquadQualityImport
+    && !runInitialSquadQualityImport)
+{
+    await Console.Error.WriteLineAsync(
+        "Usage: --import-initial-squad-quality-shadow <json-file>");
+    return 2;
+}
 bool requestedSelectionRoleStrategyImport =
     args.Length > 0
     && StringComparer.Ordinal.Equals(
@@ -386,6 +402,7 @@ bool runNonWebCommand =
     || runPreseasonPlayerForecastImport
     || runMultiSeasonPlayerForecastImport
     || runJointScenarioImport
+    || runInitialSquadQualityImport
     || runSelectionScenarioScoreImport
     || runSelectionRoleStrategyImport;
 
@@ -466,6 +483,11 @@ builder.Services.AddSingleton(serviceProvider =>
         serviceProvider.GetRequiredService<DatabaseOptions>(),
         serviceProvider.GetRequiredService<TimeProvider>()));
 builder.Services.AddSingleton<JointScenarioShadowImporter>();
+builder.Services.AddSingleton(serviceProvider =>
+    new InitialSquadQualityShadowStore(
+        serviceProvider.GetRequiredService<DatabaseOptions>(),
+        serviceProvider.GetRequiredService<TimeProvider>()));
+builder.Services.AddSingleton<InitialSquadQualityShadowImporter>();
 builder.Services.AddSingleton(serviceProvider =>
     new SelectionScenarioScoreShadowStore(
         serviceProvider.GetRequiredService<DatabaseOptions>(),
@@ -693,6 +715,7 @@ if (shadowForecastInboxOptions.Enabled)
 {
     builder.Services.AddHostedService<ShadowForecastInboxPoller>();
     builder.Services.AddHostedService<JointScenarioInboxPoller>();
+    builder.Services.AddHostedService<InitialSquadQualityInboxPoller>();
     builder.Services.AddHostedService<SelectionScenarioScoreInboxPoller>();
     builder.Services.AddHostedService<SelectionRoleStrategyInboxPoller>();
 }
@@ -935,6 +958,32 @@ if (runSelectionScenarioScoreImport)
     }
     catch (Exception exception)
         when (exception is SelectionScenarioScoreValidationException
+            or FileNotFoundException
+            or InvalidDataException
+            or JsonException)
+    {
+        await Console.Error.WriteLineAsync(exception.Message);
+        return 2;
+    }
+}
+
+if (runInitialSquadQualityImport)
+{
+    try
+    {
+        InitialSquadQualityShadowDocument candidate =
+            await app.Services
+                .GetRequiredService<
+                    InitialSquadQualityShadowImporter>()
+                .ImportFileAsync(args[1]);
+        await Console.Out.WriteLineAsync(
+            JsonSerializer.Serialize(
+                candidate,
+                new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+        return 0;
+    }
+    catch (Exception exception)
+        when (exception is InitialSquadQualityValidationException
             or FileNotFoundException
             or InvalidDataException
             or JsonException)
@@ -1408,6 +1457,29 @@ app.MapGet(
         + "advice.")
     .WithTags("Forecasts")
     .Produces<JointScenarioReadinessDocument>();
+app.MapGet(
+    "/api/v1/forecasts/initial-squad-quality-shadow/latest",
+    async (
+        InitialSquadQualityShadowStore store,
+        CancellationToken cancellationToken) =>
+    {
+        InitialSquadQualityShadowDocument? candidate =
+            await store.GetCurrentAsync(cancellationToken);
+        return candidate is null
+            ? Results.NotFound()
+            : Results.Ok(candidate);
+    })
+    .WithName("GetCurrentInitialSquadQualityShadow")
+    .WithSummary(
+        "Read the current optimiser's prospective initial-squad candidate.")
+    .WithDescription(
+        "Returns only an exact latest official capture, joint scenario and "
+        + "served forecast match. The result is unpromoted shadow evidence, "
+        + "cannot influence advice and includes its paired comparison with "
+        + "the currently served squad.")
+    .WithTags("Forecasts")
+    .Produces<InitialSquadQualityShadowDocument>()
+    .Produces(StatusCodes.Status404NotFound);
 app.MapGet(
     "/api/v1/selections/current",
     async (
