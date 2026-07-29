@@ -4,7 +4,7 @@ internal sealed record DatabaseMigration(int Version, string Name, string Sql);
 
 internal static class DatabaseMigrations
 {
-    public const int CurrentVersion = 29;
+    public const int CurrentVersion = 30;
 
     public static IReadOnlyList<DatabaseMigration> All { get; } =
     [
@@ -2495,6 +2495,90 @@ internal static class DatabaseMigrations
                 SELECT RAISE(
                     ABORT,
                     'joint scenario shadow artifacts cannot be deleted'
+                );
+            END;
+            """),
+        new(
+            30,
+            "initial-squad-quality-shadow-artifact",
+            """
+            CREATE TABLE initial_squad_quality_shadow_artifacts (
+                initial_squad_artifact_id INTEGER PRIMARY KEY,
+                schema_version TEXT NOT NULL CHECK (schema_version = '1.0'),
+                artifact_type TEXT NOT NULL
+                    CHECK (
+                        artifact_type =
+                            'current-initial-squad-quality-shadow'
+                    ),
+                artifact_version TEXT NOT NULL
+                    CHECK (
+                        artifact_version =
+                            'current-initial-squad-quality-shadow-v1'
+                    ),
+                status TEXT NOT NULL
+                    CHECK (status = 'prospective-shadow-unscored'),
+                scenario_artifact_id INTEGER NOT NULL
+                    REFERENCES joint_scenario_shadow_artifacts(
+                        scenario_artifact_id
+                    )
+                    ON DELETE RESTRICT,
+                forecast_artifact_id INTEGER NOT NULL
+                    REFERENCES baseline_forecast_artifacts(artifact_id)
+                    ON DELETE RESTRICT,
+                optimizer_version TEXT NOT NULL
+                    CHECK (
+                        optimizer_version =
+                            'scipy-highs-linear-squad-surrogate-v1'
+                    ),
+                official_capture_id INTEGER NOT NULL
+                    REFERENCES official_fpl_captures(capture_id)
+                    ON DELETE RESTRICT,
+                season_code TEXT NOT NULL CHECK (season_code = '2026-27'),
+                gameweek INTEGER NOT NULL CHECK (gameweek = 1),
+                decision_cutoff_utc TEXT NOT NULL,
+                scenario_count INTEGER NOT NULL
+                    CHECK (scenario_count BETWEEN 1 AND 512),
+                candidate_pool_count INTEGER NOT NULL
+                    CHECK (candidate_pool_count BETWEEN 15 AND 1024),
+                budget_tenths INTEGER NOT NULL
+                    CHECK (budget_tenths BETWEEN 0 AND 1000),
+                producer_run_identity_sha256 TEXT NOT NULL
+                    CHECK (length(producer_run_identity_sha256) = 64),
+                document_json TEXT NOT NULL
+                    CHECK (length(document_json) BETWEEN 2 AND 2097152),
+                content_sha256 TEXT NOT NULL UNIQUE
+                    CHECK (length(content_sha256) = 64),
+                created_at_utc TEXT NOT NULL,
+                UNIQUE (
+                    scenario_artifact_id,
+                    forecast_artifact_id,
+                    optimizer_version
+                )
+            );
+
+            CREATE INDEX initial_squad_quality_shadow_latest_idx
+                ON initial_squad_quality_shadow_artifacts (
+                    season_code,
+                    gameweek,
+                    decision_cutoff_utc DESC,
+                    initial_squad_artifact_id DESC
+                );
+
+            CREATE TRIGGER initial_squad_quality_shadow_immutable
+            BEFORE UPDATE ON initial_squad_quality_shadow_artifacts
+            BEGIN
+                SELECT RAISE(
+                    ABORT,
+                    'initial squad quality shadow artifacts are immutable'
+                );
+            END;
+
+            CREATE TRIGGER initial_squad_quality_shadow_no_delete
+            BEFORE DELETE ON initial_squad_quality_shadow_artifacts
+            BEGIN
+                SELECT RAISE(
+                    ABORT,
+                    'initial squad quality shadow artifacts cannot be deleted'
                 );
             END;
             """),

@@ -60,17 +60,46 @@ The command opens SQLite read-only, validates source hashes and lineage, is
 deterministic, refuses output overwrite and retains model, solver and source
 identities.
 
+## Private product boundary
+
+Migration 30 retains one immutable, content-hashed candidate for an exact joint
+scenario, served forecast and optimiser version. The isolated analytics worker
+checks that target after the point and scenario shadows are current, writes one
+private `initial-squad-quality-capture-<id>.json` handoff and cannot modify
+SQLite. The application imports at most one handoff per poll cycle and
+independently checks:
+
+- exact scenario and Baseline v0 document hashes and target lineage;
+- canonical Baseline selection identity;
+- official player identity, position, price and availability in the same
+  capture;
+- complete scenario-player candidate-pool coverage;
+- legal squad composition, club limit and integer-tenths budget;
+- recomputed empirical player means and complete FPL scenario results; and
+- the candidate-versus-model paired comparison.
+
+The operator equivalent is:
+
+```text
+dotnet AutoFpl.Api.dll \
+  --import-initial-squad-quality-shadow <json-file>
+```
+
+`GET /api/v1/forecasts/initial-squad-quality-shadow/latest` returns only the
+artifact matching the latest official capture, scenario and served forecast.
+Missing or stale evidence returns `404`; there is no fallback and no mutation
+route.
+
 ## Promotion boundary and next work
 
 The first candidate deliberately does not claim that a better optimiser repairs
 uncalibrated inputs. Before serving it:
 
-1. persist and surface the exact shadow artifact without replacing advice;
-2. score its frozen Gameweek choice against the first real 2026/27 outcome;
-3. add 3-, 6- and 8-Gameweek objectives with transfer and flexibility value;
-4. evaluate point, appearance, minutes and external-source components on
+1. score its frozen Gameweek choice against the first real 2026/27 outcome;
+2. add 3-, 6- and 8-Gameweek objectives with transfer and flexibility value;
+3. evaluate point, appearance, minutes and external-source components on
    identical temporal folds; and
-5. promote only a complete distribution-and-decision policy that improves
+4. promote only a complete distribution-and-decision policy that improves
    calibration and realised decision utility without unacceptable failure
    slices.
 

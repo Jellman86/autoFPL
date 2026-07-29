@@ -54,6 +54,14 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **The current initial-squad optimiser now crosses the private shadow
+  boundary.** Migration 30 stores one immutable candidate per exact scenario,
+  served forecast and optimiser version. The network-isolated worker
+  automatically generates the missing legal squad before owner-selection
+  scoring; a strict application importer revalidates source hashes, official
+  prices and identities, squad legality, scenario means, model lineage and
+  paired score distributions. A read-only OpenAPI route exposes only the exact
+  current result, which remains unpromoted and cannot change advice.
 - **ChatGPT and MCP clients can now compare current role strategies.** The
   anonymous `get_current_strategies` tool returns balanced, safer and
   higher-ceiling fixed-squad alternatives with paired scenario distributions,

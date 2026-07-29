@@ -18,6 +18,10 @@ from .current_joint_scenario_forecast import (
     _build_from_artifacts,
     _retained_screen,
 )
+from .current_initial_squad_candidate import (
+    OPTIMIZER_VERSION as INITIAL_SQUAD_OPTIMIZER_VERSION,
+    build_current_initial_squad_candidate,
+)
 from .current_scenario_selection_score import (
     build_current_scenario_selection_score,
 )
@@ -78,6 +82,27 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
                     WHERE scenario.official_capture_id =
                         official_fpl_captures.capture_id
                 ) AS has_exact_scenario_shadow,
+                EXISTS (
+                    SELECT 1
+                    FROM initial_squad_quality_shadow_artifacts AS initial
+                    WHERE initial.scenario_artifact_id = (
+                        SELECT scenario_artifact_id
+                        FROM joint_scenario_shadow_artifacts
+                        WHERE official_capture_id =
+                            official_fpl_captures.capture_id
+                        ORDER BY scenario_artifact_id DESC
+                        LIMIT 1
+                    )
+                    AND initial.forecast_artifact_id = (
+                        SELECT artifact_id
+                        FROM baseline_forecast_artifacts
+                        WHERE capture_id =
+                            official_fpl_captures.capture_id
+                        ORDER BY artifact_id DESC
+                        LIMIT 1
+                    )
+                    AND initial.optimizer_version = ?
+                ) AS has_exact_initial_squad_quality,
                 (
                     SELECT selection_revision_id
                     FROM selection_revisions
@@ -172,7 +197,8 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
             FROM official_fpl_captures
             ORDER BY available_at_utc DESC, capture_id DESC
             LIMIT 1;
-            """
+            """,
+            (INITIAL_SQUAD_OPTIMIZER_VERSION,),
         ).fetchone()
         return (
             {
@@ -188,6 +214,9 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
                 ),
                 "hasExactScenarioShadow": bool(
                     row["has_exact_scenario_shadow"]
+                ),
+                "hasExactInitialSquadQuality": bool(
+                    row["has_exact_initial_squad_quality"]
                 ),
                 "selectionRevisionId": (
                     None
@@ -208,6 +237,7 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
                 "gameweek": None,
                 "hasExactPointShadow": False,
                 "hasExactScenarioShadow": False,
+                "hasExactInitialSquadQuality": False,
                 "selectionRevisionId": None,
                 "hasExactSelectionScore": False,
                 "hasExactSelectionStrategies": False,
@@ -234,6 +264,7 @@ def generate_once(
     if (
         target["hasExactPointShadow"]
         and target["hasExactScenarioShadow"]
+        and target["hasExactInitialSquadQuality"]
         and target["hasExactSelectionScore"]
         and target["hasExactSelectionStrategies"]
     ):
@@ -247,6 +278,13 @@ def generate_once(
     inbox = Path(inbox_path)
     inbox.mkdir(mode=0o700, parents=True, exist_ok=True)
     if (
+        target["hasExactPointShadow"]
+        and target["hasExactScenarioShadow"]
+        and not target["hasExactInitialSquadQuality"]
+    ):
+        stem = f"initial-squad-quality-capture-{capture_id}"
+        build = build_current_initial_squad_candidate
+    elif (
         target["hasExactPointShadow"]
         and target["hasExactScenarioShadow"]
         and target["hasExactSelectionScore"]

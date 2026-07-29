@@ -209,6 +209,28 @@ the complete rows for the future deterministic comparison service, but the
 artifact remains prospectively unscored, unpromoted and unable to alter advice
 or a user selection.
 
+## Initial-squad quality shadow
+
+Once the exact point and joint-scenario artifacts exist, the analytics worker
+generates one
+`initial-squad-quality-capture-<official-capture-id>.json` handoff before
+advancing to owner-selection scoring. The application imports it through the
+same private inbox, archives accepted files with `.imported` and rejected files
+with `.rejected`, and remains the sole SQLite writer.
+
+The operator equivalent is:
+
+```text
+dotnet AutoFpl.Api.dll \
+  --import-initial-squad-quality-shadow <json-file>
+```
+
+The current exact candidate is available at
+`GET /api/v1/forecasts/initial-squad-quality-shadow/latest`. A `404` means the
+latest official capture, scenario and served forecast do not yet have a
+matching zero-gap optimiser artifact. Older results are never substituted.
+This surface is read-only, shadow-only and cannot replace advice.
+
 ## Official FPL capture
 
 Run the bounded fixed-origin import as an operator command:

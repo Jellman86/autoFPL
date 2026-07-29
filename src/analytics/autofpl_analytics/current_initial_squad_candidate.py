@@ -127,6 +127,12 @@ def build_current_initial_squad_candidate(
         point_rows,
         played_rows,
     )
+    # Bind the source to the complete, canonical scored selection rather than
+    # the smaller forecast input shape. The importer independently rebuilds
+    # this definition from the immutable forecast before accepting it.
+    forecast_source["selectionContentSha256"] = _sha256(
+        model_result["selection"]
+    )
     selected_ids = set(candidate_result["selection"]["playerIds"])
     selected_players = [
         {
@@ -371,9 +377,7 @@ def _read_inputs(
                     forecast_row["content_sha256"]
                 ),
                 "modelLabel": forecast["modelLabel"],
-                "selectionContentSha256": _sha256(
-                    _model_selection(forecast)
-                ),
+                "selectionContentSha256": "",
             },
             official,
         )
