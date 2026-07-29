@@ -6,6 +6,12 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Changed
 
+- **Initial-squad prediction quality is now the critical development path.**
+  A new read-only shadow generator joins the full current scenario player pool
+  to exact official prices and uses a zero-gap MILP to select a legal squad,
+  XI and captain before scoring it against Baseline v0 with the exact CPU FPL
+  rules. The result remains prospective and cannot influence advice until its
+  input distributions and complete decision policy pass promotion gates.
 - **Unchanged scenario matrices can now advance across official captures.**
   Migration 29 removes the incorrect global uniqueness constraint from the
   matrix-content hash while retaining one immutable artifact per capture and

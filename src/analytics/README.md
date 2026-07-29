@@ -104,6 +104,26 @@ imports at most one file of each type per cycle and renames it `.imported` or
 `.rejected`. The worker treats either marker as final for that exact source
 identity, avoiding a regeneration loop.
 
+## Current initial-squad quality shadow v1
+
+The first full-squad replacement candidate uses the exact current joint
+scenario artifact and official prices to solve squad, XI and captaincy
+together:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.current_initial_squad_candidate \
+  --database /path/to/autofpl.db \
+  --output /path/to/current-initial-squad-shadow.json
+```
+
+The MILP enforces budget, club, composition and formation rules and must reach
+a zero-gap optimum for its fixed transparent linear surrogate. The resulting
+selection is then scored with exact FPL captaincy and auto-substitution rules on
+the retained joint rows. It remains prospective shadow evidence and cannot
+replace advice. See the
+[initial-squad shadow specification](../../docs/research/current-initial-squad-quality-shadow-v1.md).
+
 ## CPU joint-scenario reference v1
 
 The first simulation kernel scores a complete selection over supplied joint
