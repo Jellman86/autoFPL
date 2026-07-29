@@ -521,7 +521,12 @@ training seed, not an evaluation target. The read-only opening-policy data
 audit verifies exact raw payload hashes, reconstructs each target's Gameweek 1
 cohort and price, joins Gameweek 1–8 outcomes and proves legal-pool feasibility.
 Historical `value` is confined to the decision constraint; same-Gameweek `xP`
-remains excluded. Forecast reconstruction and frozen six-policy comparison
+remains excluded. The matching forecast reconstruction now fits the unchanged
+multi-season tree on strictly earlier archives and emits GW1–8 point means for
+all 658, 616 and 690 opening players without selecting target point, minute or
+event fields. Historical fixture structure is explicitly a final-archive
+proxy: the 2023/24 target correctly contains the GW2 postponement and 11-match
+GW7 realization. Scenario reconstruction and the frozen six-policy comparison
 remain the next decision-quality gate.
 
 The SQLite persistence vertical slice is deployed and survives a managed

@@ -207,6 +207,7 @@ def _load_opening_fold(
     connection: Any,
     captures: Sequence[HistoricalCapture],
     target_index: int,
+    include_outcomes: bool = True,
 ) -> OpeningFold:
     target = captures[target_index]
     raw = connection.execute(
@@ -242,7 +243,7 @@ def _load_opening_fold(
         gameweeks_csv,
         identities,
     )
-    outcomes = _load_outcomes(connection, target)
+    outcomes = _load_outcomes(connection, target) if include_outcomes else {}
     team_ids = {
         name: index
         for index, name in enumerate(
@@ -259,18 +260,36 @@ def _load_opening_fold(
             team_name=str(row["teamName"]),
             team_id=team_ids[str(row["teamName"])],
             price_tenths=int(row["priceTenths"]),
-            points=tuple(
-                outcomes.get((int(row["playerCode"]), gameweek), (0, 0))[0]
-                for gameweek in OUTCOME_GAMEWEEKS
+            points=(
+                tuple(
+                    outcomes.get(
+                        (int(row["playerCode"]), gameweek),
+                        (0, 0),
+                    )[0]
+                    for gameweek in OUTCOME_GAMEWEEKS
+                )
+                if include_outcomes
+                else ()
             ),
-            minutes=tuple(
-                outcomes.get((int(row["playerCode"]), gameweek), (0, 0))[1]
-                for gameweek in OUTCOME_GAMEWEEKS
+            minutes=(
+                tuple(
+                    outcomes.get(
+                        (int(row["playerCode"]), gameweek),
+                        (0, 0),
+                    )[1]
+                    for gameweek in OUTCOME_GAMEWEEKS
+                )
+                if include_outcomes
+                else ()
             ),
-            observed_gameweeks=tuple(
-                gameweek
-                for gameweek in OUTCOME_GAMEWEEKS
-                if (int(row["playerCode"]), gameweek) in outcomes
+            observed_gameweeks=(
+                tuple(
+                    gameweek
+                    for gameweek in OUTCOME_GAMEWEEKS
+                    if (int(row["playerCode"]), gameweek) in outcomes
+                )
+                if include_outcomes
+                else ()
             ),
         )
         for element_id, row in sorted(raw_players.items())
@@ -446,6 +465,15 @@ def _require_legal_pool(
 
 
 def _fold_document(fold: OpeningFold) -> Dict[str, Any]:
+    if any(
+        len(player.points) != len(OUTCOME_GAMEWEEKS)
+        or len(player.minutes) != len(OUTCOME_GAMEWEEKS)
+        for player in fold.players
+    ):
+        raise TemporalRidgeError(
+            "data.opening-outcome-coverage",
+            "The policy data artifact requires loaded target outcomes.",
+        )
     positions = Counter(player.position for player in fold.players)
     teams = Counter(player.team_name for player in fold.players)
     observed = Counter(

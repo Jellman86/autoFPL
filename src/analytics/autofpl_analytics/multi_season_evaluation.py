@@ -470,6 +470,8 @@ def _features(
         "targetFixtureCount": float(target.fixture_count),
         "targetHomeFixtureRate": (
             target.home_fixture_count / target.fixture_count
+            if target.fixture_count > 0
+            else 0.0
         ),
         "priorGameweekCount": float(len(history)),
         "priorSeasonGameweekCount": float(len(previous)),
