@@ -157,6 +157,26 @@ cross-Gameweek row pairing is an explicit fixed reference assumption. The
 artifact remains prospective and non-serving. See the
 [multi-horizon scenario specification](../../docs/research/current-multi-horizon-joint-scenarios-v1.md).
 
+## Current multi-horizon initial squad v1
+
+The decision layer solves one legal opening squad with independently legal
+weekly roles for each registered horizon. It compares an expected-points
+policy with a fixed worst-20% CVaR challenger and requires a zero-gap global
+MILP result:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.current_multi_horizon_initial_squad \
+  --database /path/to/autofpl.db \
+  --output /path/to/current-multi-horizon-initial-squad.json
+```
+
+Every selection is then scored with exact FPL auto-substitution and captaincy
+on the paired paths. The artifact exposes all six frozen 3/6/8 horizon-policy
+results but intentionally recommends none until retrospective policy selection
+is complete. See the
+[multi-horizon initial-squad specification](../../docs/research/current-multi-horizon-initial-squad-v1.md).
+
 The same fixed command is packaged as the non-root
 `ghcr.io/jellman86/autofpl-analytics` companion image. Its default invocation
 polls the read-only `/analytics-snapshot/autofpl.db`, does nothing while the
