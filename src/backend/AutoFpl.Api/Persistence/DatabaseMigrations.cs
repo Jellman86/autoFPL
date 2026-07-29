@@ -4,7 +4,7 @@ internal sealed record DatabaseMigration(int Version, string Name, string Sql);
 
 internal static class DatabaseMigrations
 {
-    public const int CurrentVersion = 26;
+    public const int CurrentVersion = 27;
 
     public static IReadOnlyList<DatabaseMigration> All { get; } =
     [
@@ -2240,6 +2240,86 @@ internal static class DatabaseMigrations
                 SELECT RAISE(
                     ABORT,
                     'joint scenario shadow artifacts cannot be deleted'
+                );
+            END;
+            """),
+        new(
+            27,
+            "selection-scenario-score-shadow-artifact",
+            """
+            CREATE TABLE selection_scenario_score_shadow_artifacts (
+                score_artifact_id INTEGER PRIMARY KEY,
+                schema_version TEXT NOT NULL
+                    CHECK (schema_version = '1.0'),
+                artifact_type TEXT NOT NULL
+                    CHECK (
+                        artifact_type =
+                            'current-selection-joint-scenario-score-shadow'
+                    ),
+                artifact_version TEXT NOT NULL
+                    CHECK (
+                        artifact_version =
+                            'current-selection-scenario-score-v1'
+                    ),
+                status TEXT NOT NULL
+                    CHECK (status = 'prospective-shadow-unscored'),
+                scenario_artifact_id INTEGER NOT NULL
+                    REFERENCES joint_scenario_shadow_artifacts(
+                        scenario_artifact_id
+                    )
+                    ON DELETE RESTRICT,
+                forecast_artifact_id INTEGER NOT NULL
+                    REFERENCES baseline_forecast_artifacts(artifact_id)
+                    ON DELETE RESTRICT,
+                selection_revision_id INTEGER
+                    REFERENCES selection_revisions(selection_revision_id)
+                    ON DELETE RESTRICT,
+                user_selection_key TEXT NOT NULL
+                    CHECK (
+                        user_selection_key = 'missing'
+                        OR length(user_selection_key) = 64
+                    ),
+                season_code TEXT NOT NULL CHECK (season_code = '2026-27'),
+                gameweek INTEGER NOT NULL CHECK (gameweek = 1),
+                decision_cutoff_utc TEXT NOT NULL,
+                scenario_count INTEGER NOT NULL
+                    CHECK (scenario_count BETWEEN 1 AND 512),
+                producer_run_identity_sha256 TEXT NOT NULL
+                    CHECK (length(producer_run_identity_sha256) = 64),
+                document_json TEXT NOT NULL
+                    CHECK (length(document_json) BETWEEN 2 AND 2097152),
+                content_sha256 TEXT NOT NULL UNIQUE
+                    CHECK (length(content_sha256) = 64),
+                created_at_utc TEXT NOT NULL,
+                UNIQUE (
+                    scenario_artifact_id,
+                    forecast_artifact_id,
+                    user_selection_key
+                )
+            );
+
+            CREATE INDEX selection_scenario_score_shadow_latest_idx
+                ON selection_scenario_score_shadow_artifacts (
+                    season_code,
+                    gameweek,
+                    score_artifact_id DESC
+                );
+
+            CREATE TRIGGER selection_scenario_score_shadow_immutable
+            BEFORE UPDATE ON selection_scenario_score_shadow_artifacts
+            BEGIN
+                SELECT RAISE(
+                    ABORT,
+                    'selection scenario score shadow artifacts are immutable'
+                );
+            END;
+
+            CREATE TRIGGER selection_scenario_score_shadow_no_delete
+            BEFORE DELETE ON selection_scenario_score_shadow_artifacts
+            BEGIN
+                SELECT RAISE(
+                    ABORT,
+                    'selection scenario score shadow artifacts cannot be deleted'
                 );
             END;
             """),

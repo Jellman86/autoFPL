@@ -42,6 +42,14 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **Current selection distributions now cross the private product boundary.**
+  Migration 27 stores one immutable content-hashed score per exact scenario,
+  Baseline v0 artifact and latest user revision. The network-isolated worker
+  advances automatically from matrix generation to selection scoring, while a
+  strict inbox importer revalidates target lineage, selection roles, derived
+  summaries and paired win/tie/loss values before persistence. A read-only
+  OpenAPI route returns only the exact current revision; the shadow remains
+  unpromoted and cannot influence advice.
 - **The current model and user selection can now be scored on identical joint
   scenario rows.** A deterministic read-only shadow binds the exact persisted
   scenario, official-capture Baseline v0 forecast and latest immutable user
