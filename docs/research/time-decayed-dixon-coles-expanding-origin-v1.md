@@ -28,7 +28,10 @@ and applies the Dixon–Coles low-score correction to the two Poisson
 distributions. Earlier matches receive an exponentially decaying weight with a
 fixed 180-day half-life. Attack and defence effects receive fixed L2
 regularisation; a mean-attack penalty resolves model identifiability. The
-correlation parameter is bounded to `[-0.20, 0.20]`. No parameter is selected
+correlation parameter is bounded to `[-0.20, 0.20]`. For numerical stability,
+the fixed two-stage likelihood first fits the weighted Poisson attack, defence
+and home effects with an analytic gradient, then fits the one-dimensional
+low-score correlation conditional on those rates. No parameter is selected
 using the evaluation folds.
 
 The design is based on the dynamic team-strength and low-score likelihood in
