@@ -403,9 +403,11 @@ public sealed class OfficialFplOutcomeImporterTests
         await using McpClient mcpClient = await McpClient.CreateAsync(
             transport,
             cancellationToken: TestContext.Current.CancellationToken);
+        IList<McpClientTool> tools = await mcpClient.ListToolsAsync(
+            cancellationToken: TestContext.Current.CancellationToken);
         McpClientTool tool = Assert.Single(
-            await mcpClient.ListToolsAsync(
-                cancellationToken: TestContext.Current.CancellationToken));
+            tools,
+            candidate => candidate.Name == "get_player_dossier");
         Assert.Equal("get_player_dossier", tool.Name);
         Assert.True(tool.ProtocolTool.Annotations?.ReadOnlyHint);
         Assert.False(tool.ProtocolTool.Annotations?.DestructiveHint);

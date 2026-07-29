@@ -48,6 +48,13 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **ChatGPT and Hermes can now retrieve the current public prediction through
+  MCP.** The anonymous `get_current_prediction` tool returns the exact
+  persisted model squad, XI, bench, captaincy, cutoff, artifact identity,
+  evidence status and uncertainty as structured read-only content. It fails
+  closed when no official prediction exists, preserves the provisional
+  Baseline v0 boundary and never exposes owner selections or private
+  configuration.
 - **The decision room now compares fixed-squad matchday strategies.** A
   responsive evidence board presents the current model roles plus balanced,
   safer and higher-ceiling XI, bench and captaincy choices with mean, 10th and

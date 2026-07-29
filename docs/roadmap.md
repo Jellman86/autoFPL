@@ -499,8 +499,9 @@ post-event reference capture. The API and decision room can pair that final
 outcome with a cutoff-safe replay. No 2026/27 Gameweek has completed yet, so a
 real pair and current-season baseline evaluation dataset do not exist. There is
 still no promoted model, scenario engine, optimiser, live AI provider or
-product release. A public read-only MCP player-dossier tool is deployed; owner
-selection data remains outside that anonymous boundary.
+product release. Public read-only MCP player-dossier and current-prediction
+tools are deployed; owner selection data remains outside that anonymous
+boundary.
 
 ## v0.1 — Evidence-grounded single-Gameweek advisor
 
@@ -699,10 +700,12 @@ and the UI can compare at least three strategies plus the user's selection.
 Tracked initially by [#46](https://github.com/Jellman86/autoFPL/issues/46).
 
 **Status:** active — the application now hosts a stateless Streamable HTTP MCP
-endpoint with one typed anonymous `get_player_dossier` tool over the same
-cutoff-correct read service as the decision room. It is explicitly read-only,
-non-destructive and closed-world, and exposes no owner selection data. Plugin
-packaging, OAuth, user-specific tools and host integration tests remain.
+endpoint with typed anonymous `get_player_dossier` and
+`get_current_prediction` tools over the same cutoff-correct read services as
+the decision room. They are explicitly read-only, non-destructive and
+closed-world; the prediction tool returns only the public model artifact and
+neither tool exposes owner selection data. Plugin packaging, OAuth,
+user-specific tools and host integration tests remain.
 
 - Expose typed read-only tools for snapshots, player forecasts, candidate
   comparison, evidence and data freshness.

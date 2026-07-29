@@ -11,6 +11,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 
+using ModelContextProtocol.Client;
+using ModelContextProtocol.Protocol;
+
 using Xunit;
 
 namespace AutoFpl.Api.Tests;
@@ -140,6 +143,38 @@ public sealed class OfficialDecisionRoomPreviewTests
         Assert.Subset(
             playerForecast.Players.Select(player => player.PlayerId).ToHashSet(),
             advice.Selection.Players.Select(player => player.PlayerId).ToHashSet());
+
+        await using var transport = new HttpClientTransport(
+            new()
+            {
+                Endpoint = new Uri(client.BaseAddress!, "/mcp"),
+                Name = "autoFPL prediction integration test",
+                TransportMode = HttpTransportMode.StreamableHttp,
+            },
+            client);
+        await using McpClient mcpClient = await McpClient.CreateAsync(
+            transport,
+            cancellationToken: TestContext.Current.CancellationToken);
+        McpClientTool predictionTool = Assert.Single(
+            await mcpClient.ListToolsAsync(
+                cancellationToken: TestContext.Current.CancellationToken),
+            tool => tool.Name == "get_current_prediction");
+        Assert.True(predictionTool.ProtocolTool.Annotations?.ReadOnlyHint);
+        Assert.False(predictionTool.ProtocolTool.Annotations?.DestructiveHint);
+        Assert.False(predictionTool.ProtocolTool.Annotations?.OpenWorldHint);
+        Assert.NotNull(predictionTool.ProtocolTool.OutputSchema);
+
+        CallToolResult predictionResult = await mcpClient.CallToolAsync(
+            "get_current_prediction",
+            cancellationToken: TestContext.Current.CancellationToken);
+        Assert.NotEqual(true, predictionResult.IsError);
+        Assert.NotNull(predictionResult.StructuredContent);
+        GameweekAdviceDocument? mcpAdvice =
+            predictionResult.StructuredContent.Value
+                .Deserialize<GameweekAdviceDocument>();
+        Assert.Equal(
+            JsonSerializer.Serialize(advice),
+            JsonSerializer.Serialize(mcpAdvice));
 
         await using WebApplicationFactory<Program> restartedFactory =
             new WebApplicationFactory<Program>()
