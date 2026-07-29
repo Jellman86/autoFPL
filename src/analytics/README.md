@@ -329,8 +329,23 @@ PYTHONPATH=src/analytics python3 \
 
 It binds the retained evaluation identities, extends the selected six-week
 policy through Gameweeks 7–8 using the registered preseason-only role rule and
-remains unable to influence advice. See the
+remains as the immutable v1 comparator. See the
 [selected opening-squad specification](../../docs/research/current-selected-opening-squad-shadow-v1.md).
+
+The versioned product handoff freezes the best-supported appearance-hurdle
+candidate with its separate point-model evaluation identity:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.current_best_supported_opening_squad \
+  --database /path/to/autofpl.db \
+  --output /path/to/current-best-supported-opening-squad.json
+```
+
+The v2 artifact exposes model-consistent GW1 and six-week player means, keeps
+all eight role decisions frozen and is the current decision-room prediction.
+It remains explicitly prospectively unscored and unpromoted. See the
+[best-supported v2 specification](../../docs/research/current-best-supported-opening-squad-v2.md).
 
 The conditional-optimality audit distinguishes an exact solver result from a
 robust player choice:
@@ -355,8 +370,9 @@ exact shadow is current, and atomically writes one capture-named JSON artifact
 to `/analytics-inbox` when the latest supported target is missing. Once the
 point shadow is present, the same worker creates the separately named joint
 scenario and initial-squad-quality handoffs, freezes the selected eight-week
-opening squad, then advances to selection scoring and fixed-squad role
-strategies. It never skips a prerequisite or combines import states. Mount the
+opening squad, generates the separately identified best-supported v2 handoff,
+then advances to selection scoring and fixed-squad role strategies. It never
+skips a prerequisite or combines import states. Mount the
 database read-only and a separate private inbox writable by UID `1654`:
 
 ```bash

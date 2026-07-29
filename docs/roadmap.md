@@ -596,6 +596,13 @@ players, reaches a zero-gap six-week optimum and gains 1.97 mean points on its
 least stable incumbent selections. Treat this as the strongest supported
 current opener, but keep the serving handoff explicit and versioned because
 current outcomes remain unavailable.
+That handoff is now implemented as selected opening-squad v2. The worker
+generates it separately, SQLite retains v1 and v2 under their own model
+evaluation identities, the current typed route prefers v2 with v1 fallback and
+the decision room displays v2's squad, roles and player means. “Use prediction
+as draft” copies the shown GW1 choice before any explicit lock. V2 is therefore
+the best-supported current product prediction, while its status remains
+prospective-unscored and its promotion flag remains false.
 
 The SQLite persistence vertical slice is deployed and survives a managed
 container recreate. Operator-triggered fixed-origin official FPL collectors

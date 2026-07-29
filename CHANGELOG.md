@@ -54,6 +54,13 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **The best-supported opening squad now reaches the product as an explicit
+  v2 decision.** The worker freezes the hurdle-model squad and all eight role
+  decisions, the immutable store retains v1 and v2 side-by-side, and the
+  current route prefers v2 with v1 fallback. The decision room shows v2's own
+  player means and copies its GW1 roles when a user starts a draft. Its status
+  is prospective-unscored and it remains unpromoted until official outcomes
+  pass the registered gate.
 - **The retained hurdle model now produces a complete current opening-squad
   challenger.** It fits raw appearance and conditional-point components for
   Gameweeks 1–8, applies Gameweek 1 official availability coherently, rebuilds

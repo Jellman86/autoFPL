@@ -6,6 +6,7 @@ let selectionComparison = null;
 let selectionStrategies = null;
 let selectionScenarioScore = null;
 let playerForecast = null;
+let selectedOpeningSquad = null;
 let displayedPlayers = [];
 let selectionEditDraft = null;
 let editingRevisionId = null;
@@ -731,6 +732,37 @@ function playersForSelection(selection) {
   }));
 }
 
+function openingGameweekSelection() {
+  if (!selectedOpeningSquad) return null;
+  return selectedOpeningSquad.selection.gameweeks.find(
+    (row) => row.gameweek === selectedOpeningSquad.openingGameweek,
+  ) ?? null;
+}
+
+function modelSquadPlayers() {
+  const selection = openingGameweekSelection();
+  if (!selection || !playerForecast) return advice.selection.players;
+  const selectedById = new Map(
+    selectedOpeningSquad.selection.players.map((player) => [
+      player.playerId,
+      player,
+    ]),
+  );
+  const players = playersForSelection(selection).map((player) => {
+    const selected = selectedById.get(player.playerId);
+    return {
+      ...player,
+      expectedPoints:
+        selected?.modelExpectedPoints ?? player.expectedPoints,
+      appearanceProbability:
+        selected?.modelAppearanceProbability ?? null,
+      sixGameweekExpectedPoints:
+        selected?.modelSixGameweekExpectedPoints ?? null,
+    };
+  });
+  return players.length === 15 ? players : advice.selection.players;
+}
+
 function renderSquadPlayers(players, isOwnerSelection = false) {
   activeSquadView = isOwnerSelection ? "owner" : "model";
   displayedPlayers = players;
@@ -826,6 +858,47 @@ function renderAdvice(adviceDocument) {
     openPage: Boolean(requestedPlayerId),
     focusDossier: Boolean(requestedPlayerId),
   });
+}
+
+function applySelectedOpeningSquad() {
+  if (!selectedOpeningSquad || !playerForecast) return;
+  const isBestSupported =
+    selectedOpeningSquad.artifactVersion
+      === "current-selected-opening-squad-shadow-v2";
+  document.querySelector("#evidence-status").textContent =
+    isBestSupported ? "Best-supported · prospective" : "Registered · prospective";
+  document.querySelector("#sidebar-evidence-status").textContent =
+    isBestSupported ? "Best-supported prediction" : "Registered prediction";
+  document.querySelector("#recommendation-summary").textContent =
+    isBestSupported
+      ? "The strongest supported current opening squad: an exact six-Gameweek optimum under the retained appearance-hurdle model."
+      : "The registered six-Gameweek opening squad is shown while the v2 hurdle handoff is unavailable.";
+  document.querySelector("#artifact-reference-label").textContent =
+    "Opening squad";
+  document.querySelector("#snapshot-reference").textContent =
+    selectedOpeningSquad.selectedOpeningSquadArtifactId
+      ? `#${selectedOpeningSquad.selectedOpeningSquadArtifactId} · ${selectedOpeningSquad.selectedOpeningSquadArtifactContentSha256.slice(0, 8)}`
+      : selectedOpeningSquad.runIdentitySha256.slice(0, 8);
+  document.querySelector("#model-label").textContent = isBestSupported
+    ? "Appearance-hurdle v2 · historically retained"
+    : "Registered opening policy v1";
+  document.querySelector("#team-points").textContent =
+    Number(selectedOpeningSquad.preseasonScenarioScore.weekly[0].meanPoints)
+      .toFixed(1);
+  document.querySelector("#selection-objective").textContent =
+    "Exact global six-Gameweek squad optimum; Gameweek 1 XI, bench and captaincy shown. Current outcomes are not available yet.";
+  document.querySelector("#forecast-kind").textContent = isBestSupported
+    ? "Best-supported v2"
+    : "Registered v1";
+  document.querySelector("#forecast-callout-title").textContent =
+    isBestSupported
+      ? "Best-supported opening prediction"
+      : "Registered opening prediction";
+  document.querySelector("#forecast-callout-copy").textContent =
+    isBestSupported
+      ? "The hurdle point model improved every historical position group and the exact solver found this squad at zero gap. It is still prospectively unscored."
+      : "This remains the immutable comparator while the versioned hurdle candidate is generated.";
+  renderSquadPlayers(modelSquadPlayers());
 }
 
 function strategyDefinition(strategyId) {
@@ -1765,9 +1838,11 @@ function showModelSquad(options = {}) {
   document.querySelector("#squad-builder-page").hidden = true;
   activeSquadView = "model";
   previewedStrategyId = "model";
-  renderSquadPlayers(advice.selection.players);
+  renderSquadPlayers(modelSquadPlayers());
   document.querySelector("#selection-objective").textContent =
-    advice.selection.objective;
+    selectedOpeningSquad
+      ? "Exact global six-Gameweek squad optimum; Gameweek 1 XI, bench and captaincy shown. Current outcomes are not available yet."
+      : advice.selection.objective;
   updateStrategyPreviewState();
   setActiveNavigation("model-squad");
   setBreadcrumb("Model squad");
@@ -1888,7 +1963,29 @@ async function createSelectionDraft() {
     if (!response.ok) {
       throw new Error(`Draft request failed with ${response.status}`);
     }
-    const revision = await response.json();
+    let revision = await response.json();
+    const prediction = openingGameweekSelection();
+    if (prediction) {
+      const revisionResponse = await fetch(
+        `/api/v1/selections/${revision.selectionRevisionId}/revisions`,
+        {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(cloneSelection(prediction)),
+        },
+      );
+      if (!revisionResponse.ok) {
+        const problem = await revisionResponse.json().catch(() => null);
+        throw new Error(
+          problem?.code
+            ?? `prediction revision failed with ${revisionResponse.status}`,
+        );
+      }
+      revision = await revisionResponse.json();
+    }
     renderSelectionState(
       revision,
       "Draft created. Review the squad, then lock it when you are satisfied.",
@@ -1961,7 +2058,11 @@ async function loadAdvice() {
     });
     if (!response.ok) throw new Error(`Advice request failed with ${response.status}`);
     renderAdvice(await response.json());
-    await loadPlayerForecast();
+    await Promise.all([
+      loadPlayerForecast(),
+      loadSelectedOpeningSquad(),
+    ]);
+    applySelectedOpeningSquad();
     await loadSelectionState();
     await loadSelectionStrategies();
     if (window.location.hash === "#my-squad") {
@@ -1983,6 +2084,25 @@ async function loadAdvice() {
   } finally {
     refresh.disabled = false;
     refresh.textContent = "Refresh prediction";
+  }
+}
+
+async function loadSelectedOpeningSquad() {
+  selectedOpeningSquad = null;
+  try {
+    const response = await fetch(
+      "/api/v1/forecasts/selected-opening-squad-shadow/current",
+      { headers: { Accept: "application/json" } },
+    );
+    if (response.status === 404) return;
+    if (!response.ok) {
+      throw new Error(
+        `Opening squad request failed with ${response.status}`,
+      );
+    }
+    selectedOpeningSquad = await response.json();
+  } catch (error) {
+    console.error(error);
   }
 }
 

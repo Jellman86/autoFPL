@@ -22,6 +22,9 @@ from .current_initial_squad_candidate import (
     OPTIMIZER_VERSION as INITIAL_SQUAD_OPTIMIZER_VERSION,
     build_current_initial_squad_candidate,
 )
+from .current_best_supported_opening_squad import (
+    build_current_best_supported_opening_squad,
+)
 from .current_scenario_selection_score import (
     build_current_scenario_selection_score,
 )
@@ -116,6 +119,16 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
                     AND selected.evaluation_data_identity_sha256 =
                         'e99bb4fce3615c91ecaf642037c6cebb3d36efffc2df54857ffbc4c27714e048'
                 ) AS has_exact_selected_opening_squad,
+                EXISTS (
+                    SELECT 1
+                    FROM selected_opening_squad_shadow_artifacts AS selected
+                    WHERE selected.official_capture_id =
+                        official_fpl_captures.capture_id
+                    AND selected.evaluation_policy_key =
+                        '6-expected-points'
+                    AND selected.evaluation_data_identity_sha256 =
+                        '1ef395d722844b1833fb059d606606e0bf1f1d42732377474d671f1a3f17b16e'
+                ) AS has_exact_best_supported_opening_squad,
                 (
                     SELECT selection_revision_id
                     FROM selection_revisions
@@ -234,6 +247,9 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
                 "hasExactSelectedOpeningSquad": bool(
                     row["has_exact_selected_opening_squad"]
                 ),
+                "hasExactBestSupportedOpeningSquad": bool(
+                    row["has_exact_best_supported_opening_squad"]
+                ),
                 "selectionRevisionId": (
                     None
                     if row["selection_revision_id"] is None
@@ -255,6 +271,7 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
                 "hasExactScenarioShadow": False,
                 "hasExactInitialSquadQuality": False,
                 "hasExactSelectedOpeningSquad": False,
+                "hasExactBestSupportedOpeningSquad": False,
                 "selectionRevisionId": None,
                 "hasExactSelectionScore": False,
                 "hasExactSelectionStrategies": False,
@@ -283,6 +300,7 @@ def generate_once(
         and target["hasExactScenarioShadow"]
         and target["hasExactInitialSquadQuality"]
         and target["hasExactSelectedOpeningSquad"]
+        and target["hasExactBestSupportedOpeningSquad"]
         and target["hasExactSelectionScore"]
         and target["hasExactSelectionStrategies"]
     ):
@@ -310,6 +328,18 @@ def generate_once(
     ):
         stem = f"selected-opening-squad-capture-{capture_id}"
         build = build_current_selected_opening_squad
+    elif (
+        target["hasExactPointShadow"]
+        and target["hasExactScenarioShadow"]
+        and target["hasExactInitialSquadQuality"]
+        and target["hasExactSelectedOpeningSquad"]
+        and not target["hasExactBestSupportedOpeningSquad"]
+    ):
+        stem = (
+            f"selected-opening-squad-capture-{capture_id}"
+            "-hurdle-v2"
+        )
+        build = build_current_best_supported_opening_squad
     elif (
         target["hasExactPointShadow"]
         and target["hasExactScenarioShadow"]

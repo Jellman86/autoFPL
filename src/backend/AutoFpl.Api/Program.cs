@@ -1544,12 +1544,14 @@ app.MapGet(
     })
     .WithName("GetCurrentSelectedOpeningSquadShadow")
     .WithSummary(
-        "Read the frozen selected opening squad for prospective scoring.")
+        "Read the best-supported frozen opening-squad prediction.")
     .WithDescription(
-        "Returns only the exact latest official-capture artifact bound to the "
-        + "registered historical policy decision. All eight weekly roles are "
-        + "frozen before outcomes. The result remains unpromoted and cannot "
-        + "influence served advice.")
+        "Returns the exact latest official-capture v2 appearance-hurdle "
+        + "prediction when available, with a v1 fallback. Both bind the "
+        + "registered six-Gameweek policy and freeze all eight weekly roles "
+        + "before outcomes. Artifact version and modelEvaluationSource make "
+        + "the selected pipeline explicit; the result remains prospectively "
+        + "unscored.")
     .WithTags("Forecasts")
     .Produces<SelectedOpeningSquadShadowDocument>()
     .Produces(StatusCodes.Status404NotFound);

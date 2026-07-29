@@ -15,7 +15,11 @@ public sealed class SelectedOpeningSquadShadowStore
         "current-selected-opening-squad-shadow";
     public const string ArtifactVersion =
         "current-selected-opening-squad-shadow-v1";
+    public const string BestSupportedArtifactVersion =
+        "current-selected-opening-squad-shadow-v2";
     public const string Status = "prospective-shadow-unscored";
+    public const string BestSupportedStatus =
+        "best-supported-current-prospective-unscored";
     public const string EvaluationPolicyKey = "6-expected-points";
     public const string EvaluationArtifactVersion =
         "historical-opening-policy-evaluation-v1";
@@ -23,6 +27,12 @@ public sealed class SelectedOpeningSquadShadowStore
         "e99bb4fce3615c91ecaf642037c6cebb3d36efffc2df54857ffbc4c27714e048";
     public const string EvaluationRunIdentity =
         "a79acdbc991768c31f4bf3abc1bcaa5724dcdfbdb89f0e3f0c0b63a530c5008e";
+    public const string ModelEvaluationArtifactVersion =
+        "historical-appearance-hurdle-points-evaluation-v1";
+    public const string ModelEvaluationDataIdentity =
+        "1ef395d722844b1833fb059d606606e0bf1f1d42732377474d671f1a3f17b16e";
+    public const string ModelEvaluationRunIdentity =
+        "852b3728150cba9ad3bdb46ba24d66e9ac77262b2cf4dc9aae38f0df5cdc7e71";
 
     private const string OptimizerVersion =
         "scipy-highs-multi-horizon-mean-cvar-v1";
@@ -52,6 +62,7 @@ public sealed class SelectedOpeningSquadShadowStore
     {
         ArgumentNullException.ThrowIfNull(document);
         ValidateDocument(document);
+        string persistenceIdentity = PersistenceIdentity(document);
 
         await using var connection =
             new SqliteConnection(_options.ConnectionString);
@@ -127,8 +138,7 @@ public sealed class SelectedOpeningSquadShadowStore
                 document.SelectedPolicy.EvaluationPolicyKey);
             insert.Parameters.AddWithValue(
                 "$evaluationDataIdentity",
-                document.SelectedPolicy.RetrospectiveEvaluationSource
-                    .DataIdentitySha256);
+                persistenceIdentity);
             insert.Parameters.AddWithValue(
                 "$scenarioCount",
                 document.ScenarioCount);
@@ -156,6 +166,7 @@ public sealed class SelectedOpeningSquadShadowStore
             connection,
             transaction,
             document.OfficialCaptureId,
+            persistenceIdentity,
             cancellationToken)
             ?? throw new InvalidOperationException(
                 "The selected opening squad shadow was not persisted.");
@@ -190,13 +201,24 @@ public sealed class SelectedOpeningSquadShadowStore
                 LIMIT 1
             )
               AND evaluation_policy_key = $policyKey
-              AND evaluation_data_identity_sha256 = $evaluationIdentity
-            ORDER BY selected_opening_squad_artifact_id DESC
+              AND evaluation_data_identity_sha256 IN (
+                    $modelEvaluationIdentity,
+                    $policyEvaluationIdentity
+              )
+            ORDER BY
+                CASE evaluation_data_identity_sha256
+                    WHEN $modelEvaluationIdentity THEN 0
+                    ELSE 1
+                END,
+                selected_opening_squad_artifact_id DESC
             LIMIT 1;
             """;
         command.Parameters.AddWithValue("$policyKey", EvaluationPolicyKey);
         command.Parameters.AddWithValue(
-            "$evaluationIdentity",
+            "$modelEvaluationIdentity",
+            ModelEvaluationDataIdentity);
+        command.Parameters.AddWithValue(
+            "$policyEvaluationIdentity",
             EvaluationDataIdentity);
         await using SqliteDataReader reader =
             await command.ExecuteReaderAsync(cancellationToken);
@@ -215,12 +237,22 @@ public sealed class SelectedOpeningSquadShadowStore
         Require(document.SchemaVersion == "1.0", "identity", "schemaVersion");
         Require(document.ArtifactType == ArtifactType, "identity", "artifactType");
         Require(
-            document.ArtifactVersion == ArtifactVersion,
+            document.ArtifactVersion is
+                ArtifactVersion or BestSupportedArtifactVersion,
             "identity",
             "artifactVersion");
-        Require(document.Status == Status, "identity", "status");
+        bool isBestSupported =
+            document.ArtifactVersion == BestSupportedArtifactVersion;
+        Require(
+            document.Status
+                == (isBestSupported ? BestSupportedStatus : Status),
+            "identity",
+            "status");
         Require(!document.IsPromoted, "must-be-false", "isPromoted");
-        Require(!document.InfluencesAdvice, "must-be-false", "influencesAdvice");
+        Require(
+            document.InfluencesAdvice == isBestSupported,
+            "serving-boundary",
+            "influencesAdvice");
         Require(
             document.SelectedOpeningSquadArtifactId is null
                 && document.SelectedOpeningSquadArtifactContentSha256 is null,
@@ -235,7 +267,9 @@ public sealed class SelectedOpeningSquadShadowStore
                 && document.ScenarioCount is >= 1 and <= 512,
             "target",
             "officialCaptureId");
-        ValidatePolicy(document.SelectedPolicy);
+        ValidatePolicy(
+            document.SelectedPolicy,
+            document.ArtifactVersion);
         ValidateSelection(document.Selection);
         ValidatePreseasonScore(
             document.PreseasonScenarioScore,
@@ -274,7 +308,9 @@ public sealed class SelectedOpeningSquadShadowStore
             "dataIdentitySha256");
     }
 
-    private static void ValidatePolicy(SelectedOpeningPolicyDocument policy)
+    private static void ValidatePolicy(
+        SelectedOpeningPolicyDocument policy,
+        string artifactVersion)
     {
         Require(
             policy.EvaluationPolicyKey == EvaluationPolicyKey
@@ -298,6 +334,28 @@ public sealed class SelectedOpeningSquadShadowStore
                 && source.RunIdentitySha256 == EvaluationRunIdentity,
             "evaluation-source",
             "selectedPolicy.retrospectiveEvaluationSource");
+        SelectedOpeningEvaluationSourceDocument? modelSource =
+            policy.ModelEvaluationSource;
+        if (artifactVersion == BestSupportedArtifactVersion)
+        {
+            Require(
+                modelSource is not null
+                    && modelSource.ArtifactVersion
+                        == ModelEvaluationArtifactVersion
+                    && modelSource.DataIdentitySha256
+                        == ModelEvaluationDataIdentity
+                    && modelSource.RunIdentitySha256
+                        == ModelEvaluationRunIdentity,
+                "model-evaluation-source",
+                "selectedPolicy.modelEvaluationSource");
+        }
+        else
+        {
+            Require(
+                modelSource is null,
+                "model-evaluation-source",
+                "selectedPolicy.modelEvaluationSource");
+        }
     }
 
     private static void ValidateSelection(
@@ -534,6 +592,15 @@ public sealed class SelectedOpeningSquadShadowStore
             in document.Selection.Players)
         {
             Require(
+                player.ModelExpectedPoints is null
+                    or >= -100m and <= 100m
+                    && player.ModelAppearanceProbability is null
+                        or >= 0m and <= 1m
+                    && player.ModelSixGameweekExpectedPoints is null
+                        or >= -600m and <= 600m,
+                "model-player-forecast",
+                $"selection.players[{player.PlayerId}]");
+            Require(
                 official.TryGetValue(player.PlayerId, out OfficialPlayer? row)
                     && row.WebName == player.WebName
                     && row.TeamId == player.TeamId
@@ -552,6 +619,7 @@ public sealed class SelectedOpeningSquadShadowStore
         SqliteConnection connection,
         SqliteTransaction transaction,
         long captureId,
+        string persistenceIdentity,
         CancellationToken cancellationToken)
     {
         await using SqliteCommand command = connection.CreateCommand();
@@ -570,7 +638,7 @@ public sealed class SelectedOpeningSquadShadowStore
         command.Parameters.AddWithValue("$policyKey", EvaluationPolicyKey);
         command.Parameters.AddWithValue(
             "$evaluationIdentity",
-            EvaluationDataIdentity);
+            persistenceIdentity);
         await using SqliteDataReader reader =
             await command.ExecuteReaderAsync(cancellationToken);
         return await reader.ReadAsync(cancellationToken)
@@ -599,6 +667,13 @@ public sealed class SelectedOpeningSquadShadowStore
                 artifact.ContentSha256,
         };
     }
+
+    private static string PersistenceIdentity(
+        SelectedOpeningSquadShadowDocument document) =>
+        document.SelectedPolicy.ModelEvaluationSource
+            ?.DataIdentitySha256
+        ?? document.SelectedPolicy.RetrospectiveEvaluationSource
+            .DataIdentitySha256;
 
     private static string Sha256(string value) =>
         Convert.ToHexStringLower(

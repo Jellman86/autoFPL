@@ -12,6 +12,8 @@ sys.path.insert(0, str(ROOT / "src" / "analytics"))
 from autofpl_analytics.current_selected_opening_squad import (  # noqa: E402
     ARTIFACT_TYPE,
     ARTIFACT_VERSION,
+    BEST_SUPPORTED_ARTIFACT_VERSION,
+    BEST_SUPPORTED_STATUS,
     STATUS,
     _build_from_scenario,
 )
@@ -51,6 +53,18 @@ class CurrentSelectedOpeningSquadTests(unittest.TestCase):
             first["selectedPolicy"]["evaluationPolicyKey"],
         )
         self.assertEqual(15, len(first["selection"]["players"]))
+        for player in first["selection"]["players"]:
+            self.assertIn("modelExpectedPoints", player)
+            self.assertIn("modelAppearanceProbability", player)
+            self.assertIn("modelSixGameweekExpectedPoints", player)
+            self.assertGreaterEqual(
+                player["modelAppearanceProbability"],
+                0.0,
+            )
+            self.assertLessEqual(
+                player["modelAppearanceProbability"],
+                1.0,
+            )
         self.assertEqual(8, len(first["selection"]["gameweeks"]))
         self.assertEqual(
             list(range(1, 9)),
@@ -81,6 +95,42 @@ class CurrentSelectedOpeningSquadTests(unittest.TestCase):
         )
         self.assertEqual(64, len(first["dataIdentitySha256"]))
         self.assertEqual(64, len(first["runIdentitySha256"]))
+
+    def test_v2_binds_the_point_model_evaluation_identity(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            database = Path(temporary) / "autofpl.db"
+            scenario = (
+                multi_squad_fixture.CurrentMultiHorizonInitialSquadTests
+                ._database_and_scenario(database)
+            )
+            model_evaluation = {
+                "artifactVersion": "appearance-hurdle-v1",
+                "dataIdentitySha256": "a" * 64,
+                "runIdentitySha256": "b" * 64,
+            }
+            artifact = _build_from_scenario(
+                database,
+                scenario,
+                artifact_version=BEST_SUPPORTED_ARTIFACT_VERSION,
+                status=BEST_SUPPORTED_STATUS,
+                influences_advice=True,
+                model_evaluation_source=model_evaluation,
+            )
+
+        self.assertEqual(
+            BEST_SUPPORTED_ARTIFACT_VERSION,
+            artifact["artifactVersion"],
+        )
+        self.assertEqual(
+            model_evaluation,
+            artifact["selectedPolicy"]["modelEvaluationSource"],
+        )
+        self.assertEqual(BEST_SUPPORTED_STATUS, artifact["status"])
+        self.assertTrue(artifact["influencesAdvice"])
+        self.assertNotEqual(
+            artifact["selectedPolicy"]["retrospectiveEvaluationSource"],
+            artifact["selectedPolicy"]["modelEvaluationSource"],
+        )
 
 
 if __name__ == "__main__":

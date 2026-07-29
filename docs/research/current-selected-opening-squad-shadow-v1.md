@@ -52,9 +52,11 @@ artifact only when it matches the latest official capture. It remains:
 - `isPromoted: false`; and
 - `influencesAdvice: false`.
 
-This read-only research route does not change the served initial prediction.
-The SQLite snapshot publisher includes the immutable artifact so a later
-outcome evaluator can score the exact pre-outcome decision.
+V1 remains the immutable registered comparator. The same route now prefers the
+separately identified best-supported v2 artifact and falls back to v1 when v2
+has not completed its worker/import handoff. The SQLite snapshot publisher
+retains both so later outcome evaluation can recover each exact pre-outcome
+decision.
 
 ## Command
 
