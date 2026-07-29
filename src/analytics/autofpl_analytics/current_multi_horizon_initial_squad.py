@@ -308,6 +308,11 @@ def _optimise_horizon(
     week_matrices: Sequence[Tuple[np.ndarray, np.ndarray]],
     horizon: int,
     cvar_weight: float,
+    *,
+    required_player_ids: Sequence[int] = (),
+    excluded_player_ids: Sequence[int] = (),
+    maximum_overlap_player_ids: Sequence[int] = (),
+    maximum_overlap_count: Optional[int] = None,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     _require(
         horizon in HORIZONS and len(week_matrices) >= horizon,
@@ -315,6 +320,34 @@ def _optimise_horizon(
         "The optimiser horizon is not registered or available.",
     )
     count = len(candidates)
+    candidate_index_by_id = {
+        int(player["playerId"]): index
+        for index, player in enumerate(candidates)
+    }
+    required_ids = {int(value) for value in required_player_ids}
+    excluded_ids = {int(value) for value in excluded_player_ids}
+    overlap_ids = {int(value) for value in maximum_overlap_player_ids}
+    _require(
+        required_ids.isdisjoint(excluded_ids),
+        "multi-squad.conditional-conflict",
+        "A player cannot be both required and excluded.",
+    )
+    _require(
+        required_ids | excluded_ids | overlap_ids
+        <= set(candidate_index_by_id),
+        "multi-squad.conditional-player",
+        "A conditional squad constraint references an unknown player.",
+    )
+    _require(
+        (maximum_overlap_count is None and not overlap_ids)
+        or (
+            maximum_overlap_count is not None
+            and overlap_ids
+            and 0 <= maximum_overlap_count <= len(overlap_ids)
+        ),
+        "multi-squad.conditional-overlap",
+        "The conditional squad-overlap constraint is invalid.",
+    )
     scenario_count = week_matrices[0][0].shape[0]
     binary_count = count * (1 + 2 * horizon)
     has_cvar = cvar_weight > 0.0
@@ -397,6 +430,21 @@ def _optimise_horizon(
             },
             0,
             3,
+        )
+    for player_id in sorted(required_ids):
+        index = candidate_index_by_id[player_id]
+        add({index: 1.0}, 1, 1)
+    for player_id in sorted(excluded_ids):
+        index = candidate_index_by_id[player_id]
+        add({index: 1.0}, 0, 0)
+    if maximum_overlap_count is not None:
+        add(
+            {
+                candidate_index_by_id[player_id]: 1.0
+                for player_id in sorted(overlap_ids)
+            },
+            0,
+            maximum_overlap_count,
         )
 
     for gameweek_index in range(horizon):

@@ -54,6 +54,14 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **The selected opening squad now exposes conditional optimality rather than
+  a bare solver claim.** A read-only audit reproduces the retained six-week
+  zero-gap solution, finds the best distinct squad, globally reoptimises after
+  excluding each of its 15 players and measures selection stability with a
+  deterministic paired-path bootstrap. The output distinguishes exact
+  in-model optimality, player opportunity cost and finite-scenario
+  sensitivity; it remains non-serving and makes no empirical-optimality
+  claim.
 - **The initial-squad prediction now has an untouched prospective scoring
   path.** A deterministic read-only evaluator waits for the later final
   official outcome, verifies the frozen candidate, scenario, full-cohort

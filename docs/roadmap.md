@@ -559,6 +559,13 @@ the same transfers as weak weekly fixture means alternated. It is rejected.
 Do not add banking, hits or richer recourse until the per-fixture player
 distribution demonstrates materially better opponent, minutes and role
 discrimination; solver expressiveness is not forecast accuracy.
+The selected six-week opener now also has a fixed conditional-optimality audit:
+it solves the best distinct squad, excludes and globally reoptimises around
+each incumbent player, and bootstraps the paired scenario paths. This exposes
+small objective margins and unstable picks without confusing exact solver
+optimality with empirical prediction quality. The resulting player regret and
+selection-frequency fields are intended to ground later card explanations;
+they remain non-serving diagnostics.
 
 The SQLite persistence vertical slice is deployed and survives a managed
 container recreate. Operator-triggered fixed-origin official FPL collectors

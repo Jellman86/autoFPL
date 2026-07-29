@@ -275,6 +275,22 @@ policy through Gameweeks 7–8 using the registered preseason-only role rule and
 remains unable to influence advice. See the
 [selected opening-squad specification](../../docs/research/current-selected-opening-squad-shadow-v1.md).
 
+The conditional-optimality audit distinguishes an exact solver result from a
+robust player choice:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.current_opening_squad_optimality_audit \
+  --database /path/to/autofpl.db \
+  --output /path/to/current-opening-squad-optimality-audit.json
+```
+
+It finds the best distinct legal squad, globally reoptimises after excluding
+each selected player and runs a deterministic paired-path bootstrap. Player
+regret and selection frequency remain diagnostics of the current forecast,
+not empirical proof or a promotion path. See the
+[optimality-audit specification](../../docs/research/current-opening-squad-optimality-audit-v1.md).
+
 The same fixed command is packaged as the non-root
 `ghcr.io/jellman86/autofpl-analytics` companion image. Its default invocation
 polls the read-only `/analytics-snapshot/autofpl.db`, does nothing while the
