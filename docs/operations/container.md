@@ -607,11 +607,12 @@ bash scripts/ci_container_smoke.sh autofpl:local "$(git rev-parse HEAD)"
 
 The smoke test launches the image with a read-only filesystem, all Linux capabilities dropped, `no-new-privileges`, and no fixed host port.
 
-`Dockerfile.analytics` separately packages the frozen Python shadow generator
-from the hash-locked scientific requirements. The companion image runs as UID
-`1654`, has a read-only root filesystem, exposes no port and writes only the
-requested artifact to a mounted output directory. Its smoke test imports the
-exact NumPy and scikit-learn versions and starts the real command surface:
+`Dockerfile.analytics` uses the digest-pinned Python 3.13 slim Trixie base and
+separately packages the frozen Python shadow generator from the hash-locked
+scientific requirements. The companion image runs as UID `1654`, has a
+read-only root filesystem, exposes no port and writes only the requested
+artifact to a mounted output directory. Its smoke test imports the exact NumPy
+and scikit-learn versions and starts the real command surface:
 
 ```bash
 make analytics-container-verify
