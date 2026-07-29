@@ -61,6 +61,22 @@ passes the screen only if it:
 Passing retains the exact feature contract for a 2026/27 prospective shadow.
 It does not alter served advice. Failing discards the feature pair.
 
+## Retained result
+
+The immutable two-season archive produced eight 2025/26 folds and 6,252
+player-Gameweeks. The challenger improved MAE by only 0.1792%, from 0.963833
+to 0.962106, although RMSE improved from 1.909170 to 1.904411. It won four of
+eight folds, not a strict majority. Position MAE changed by -0.71% for
+goalkeepers, -0.21% for defenders, -0.18% for midfielders and +0.19% for
+forwards.
+
+The fixed screen therefore returned `do-not-retain`. Recent aggregate FPL
+points by team and opposing position are too weak to enter the opening-squad
+forecast. This negative result rules out the cheap proxy; the next challenger
+will estimate time-decayed, venue-aware latent team attack and defence rates
+from match goals, then test whether those rates improve player event
+distributions on untouched chronological folds.
+
 ## Reproduction
 
 ```shell
