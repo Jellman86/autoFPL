@@ -40,7 +40,11 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
             await mcpClient.ListToolsAsync(
                 cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(
-            ["get_current_prediction", "get_player_dossier"],
+            [
+                "get_current_prediction",
+                "get_current_strategies",
+                "get_player_dossier",
+            ],
             tools.Select(tool => tool.Name).Order().ToArray());
         Assert.All(
             tools,
@@ -68,6 +72,19 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
             StringComparison.OrdinalIgnoreCase);
         Assert.NotNull(predictionTool.ProtocolTool.OutputSchema);
 
+        McpClientTool strategyTool = Assert.Single(
+            tools,
+            candidate => candidate.Name == "get_current_strategies");
+        Assert.Contains(
+            "prospective shadow",
+            strategyTool.Description,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(
+            "not global",
+            strategyTool.Description,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.NotNull(strategyTool.ProtocolTool.OutputSchema);
+
         CallToolResult invalid = await mcpClient.CallToolAsync(
             "get_player_dossier",
             new Dictionary<string, object?>
@@ -91,6 +108,16 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
             "No persisted official",
             Assert.Single(
                 missingPrediction.Content.OfType<TextContentBlock>()).Text,
+            StringComparison.Ordinal);
+
+        CallToolResult missingStrategies = await mcpClient.CallToolAsync(
+            "get_current_strategies",
+            cancellationToken: TestContext.Current.CancellationToken);
+        Assert.True(missingStrategies.IsError);
+        Assert.Contains(
+            "No current autoFPL strategy",
+            Assert.Single(
+                missingStrategies.Content.OfType<TextContentBlock>()).Text,
             StringComparison.Ordinal);
     }
 

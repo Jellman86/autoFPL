@@ -22,7 +22,7 @@ Routes:
 | `GET` | `/api/v1/data/historical-fpl/{seasonCode}` | Returns provenance and normalized coverage counts for a registered historical archive; raw CSV and player rows remain private |
 | `GET` | `/api/v1/data/historical-fpl/identity-coverage/{fromSeasonCode}/{toSeasonCode}` | Revalidates two pinned archives and audits exact stable-code overlap without a name fallback |
 | `GET` | `/api/v1/evidence/claims/{seasonCode}/{gameweek}?decisionCutoffUtc=...` | Returns immutable quarantined typed claims available by the requested cutoff; claims do not influence forecasts |
-| `POST` | `/mcp` | Stateless Streamable HTTP MCP endpoint; currently advertises only the anonymous read-only public player-dossier and current-prediction tools |
+| `POST` | `/mcp` | Stateless Streamable HTTP MCP endpoint; advertises anonymous read-only public prediction, player-dossier and strategy-comparison tools |
 | `GET` | `/openapi/v1.json` | Returns the generated OpenAPI 3.1 HTTP contract |
 | `GET` | `/healthz` | Liveness response: `{"status":"healthy"}` |
 | `GET` | `/readyz` | Returns ready only when the current SQLite migration is present |
@@ -45,8 +45,8 @@ Routes:
 
 Decision-snapshot metadata request fields are exact and case-sensitive. Missing or `null` required fields, duplicate or undeclared fields, non-string field values and malformed payloads fail with 400. Present string values that are unsupported fail with the stable domain error code and 422. The request body is bounded to 16 KiB by Kestrel.
 
-The public MCP surface deliberately exposes only `get_player_dossier` and
-`get_current_prediction`. The dossier tool reads
+The public MCP surface deliberately exposes only `get_player_dossier`,
+`get_current_prediction` and `get_current_strategies`. The dossier tool reads
 the same cutoff-correct service as the dashboard and returns official identity,
 form, fixtures and quarantined public research claims as structured content.
 Its advertised annotations are read-only, non-destructive and closed-world.
@@ -54,7 +54,10 @@ It cannot read a user's draft or locked selection, trigger collection, run a
 forecast or mutate any state. `get_current_prediction` returns only the latest
 persisted public model squad and its exact cutoff, evidence status, uncertainty
 and artifact identity. It never returns an owner-authored squad or private
-configuration. User-specific MCP tools remain absent until the
+configuration. `get_current_strategies` returns the exact current balanced,
+safer and higher-ceiling fixed-squad shadow artifact with paired model
+comparisons. Its status remains unpromoted and its bounded search is not
+described as globally optimal. User-specific MCP tools remain absent until the
 owner identity and OAuth 2.1 resource-server boundary are implemented.
 
 The repo-owned development plugin package is

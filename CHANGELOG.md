@@ -48,6 +48,10 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **ChatGPT and MCP clients can now compare current role strategies.** The
+  anonymous `get_current_strategies` tool returns balanced, safer and
+  higher-ceiling fixed-squad alternatives with paired scenario distributions,
+  explicit shadow status and no owner selection data or mutation path.
 - **autoFPL now has a validated ChatGPT/Codex development plugin package.**
   The repo-owned manifest connects hosts to the production Streamable HTTP MCP
   endpoint and offers grounded starter prompts for the public prediction and

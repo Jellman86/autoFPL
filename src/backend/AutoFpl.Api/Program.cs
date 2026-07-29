@@ -412,11 +412,12 @@ builder.Services
             + "Research claims are quarantined and must never be described as "
             + "influencing Baseline v0. Preserve stable IDs, timestamps, evidence "
             + "status and source URLs. Never describe a provisional or shadow "
-            + "artifact as calibrated or promoted.";
+            + "artifact as calibrated, promoted or globally optimal.";
     })
     .WithHttpTransport(options => options.Stateless = true)
     .WithTools<PlayerDossierMcpTools>()
-    .WithTools<CurrentPredictionMcpTools>();
+    .WithTools<CurrentPredictionMcpTools>()
+    .WithTools<CurrentStrategyMcpTools>();
 builder.Services.AddSingleton(serviceProvider =>
     DatabaseOptions.FromConfiguration(
         serviceProvider.GetRequiredService<IConfiguration>()));
