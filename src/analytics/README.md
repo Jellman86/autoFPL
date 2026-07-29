@@ -370,6 +370,20 @@ PYTHONPATH=src/analytics python3 \
 CRPS is primary; interval coverage remains diagnostic. See the
 [minutes-distribution specification](../../docs/research/historical-minutes-distribution-evaluation-v1.md).
 
+The passing historical specification can be frozen against the exact current
+GW1 participation snapshot without changing served expected minutes:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.current_minutes_distribution_forecast \
+  --database /path/to/autofpl.db \
+  --output /path/to/current-minutes-distribution.json
+```
+
+The output preserves both the historically screened raw appearance input and a
+separately labelled official-availability ceiling variant. See the
+[current minutes-distribution shadow](../../docs/research/current-minutes-distribution-shadow-v1.md).
+
 ## Current official availability ceiling v1
 
 The current participation artifact carries a prospective comparison variant
