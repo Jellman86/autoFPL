@@ -136,7 +136,8 @@ class TeamGoalStrengthEvaluationTests(unittest.TestCase):
                         kickoff_utc TEXT NOT NULL,
                         team_name TEXT NOT NULL,
                         was_home INTEGER NOT NULL,
-                        goals_scored INTEGER NOT NULL
+                        goals_scored INTEGER NOT NULL,
+                        expected_goals TEXT NOT NULL
                     );
                     """
                 )
@@ -182,6 +183,7 @@ class TeamGoalStrengthEvaluationTests(unittest.TestCase):
                             home,
                             1,
                             home_goals,
+                            str(max(0.1, home_goals - 0.4)),
                         ),
                         (
                             capture_id,
@@ -192,6 +194,7 @@ class TeamGoalStrengthEvaluationTests(unittest.TestCase):
                             away,
                             0,
                             away_goals,
+                            str(max(0.1, away_goals + 0.3)),
                         ),
                     )
                 )
@@ -216,7 +219,7 @@ class TeamGoalStrengthEvaluationTests(unittest.TestCase):
         connection.executemany(
             """
             INSERT INTO historical_fpl_player_gameweeks VALUES (
-                ?, ?, ?, ?, ?, ?, ?, ?
+                ?, ?, ?, ?, ?, ?, ?, ?, ?
             );
             """,
             rows,

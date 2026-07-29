@@ -48,6 +48,8 @@ class Match:
     away_team: str
     home_goals: int
     away_goals: int
+    home_expected_goals: float
+    away_expected_goals: float
 
     @property
     def origin(self) -> Origin:
@@ -182,7 +184,7 @@ def _load_matches(
     rows = connection.execute(
         """
         SELECT fixture_id, gameweek, kickoff_utc, team_name, was_home,
-               goals_scored
+               goals_scored, expected_goals
         FROM historical_fpl_player_gameweeks
         WHERE capture_id = :capture_id
         ORDER BY gameweek, kickoff_utc, fixture_id, team_name, player_code;
@@ -204,10 +206,17 @@ def _load_matches(
         fixture["kickoffs"].add(str(row["kickoff_utc"]))
         team_name = str(row["team_name"])
         team = fixture["teams"].setdefault(
-            team_name, {"venues": set(), "goals": 0}
+            team_name, {"venues": set(), "goals": 0, "expected_goals": 0.0}
         )
         team["venues"].add(int(row["was_home"]))
         team["goals"] += int(row["goals_scored"])
+        expected_goals = float(row["expected_goals"])
+        if not math.isfinite(expected_goals) or expected_goals < 0:
+            raise TemporalRidgeError(
+                "data.invalid-historical-expected-goals",
+                "A historical player expected-goals value is invalid.",
+            )
+        team["expected_goals"] += expected_goals
     matches: List[Match] = []
     for fixture_id, fixture in sorted(grouped.items()):
         if (
@@ -245,6 +254,8 @@ def _load_matches(
                 away[0][0],
                 int(home[0][1]["goals"]),
                 int(away[0][1]["goals"]),
+                float(home[0][1]["expected_goals"]),
+                float(away[0][1]["expected_goals"]),
             )
         )
     if not matches:
@@ -272,8 +283,31 @@ def _fit_baseline(training: Sequence[Match], cutoff: datetime) -> Rates:
 
 
 def _fit_dixon_coles(
-    training: Sequence[Match], cutoff: datetime
+    training: Sequence[Match],
+    cutoff: datetime,
+    rate_target: str = "goals",
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    if rate_target not in {"goals", "expected-goals"}:
+        raise TemporalRidgeError(
+            "configuration.team-strength-rate-target",
+            "The team-strength rate target is unsupported.",
+        )
+    home_targets = [
+        (
+            float(match.home_goals)
+            if rate_target == "goals"
+            else match.home_expected_goals
+        )
+        for match in training
+    ]
+    away_targets = [
+        (
+            float(match.away_goals)
+            if rate_target == "goals"
+            else match.away_expected_goals
+        )
+        for match in training
+    ]
     teams = sorted(
         {match.home_team for match in training}
         | {match.away_team for match in training}
@@ -283,10 +317,10 @@ def _fit_dixon_coles(
     weights = _weights(training, cutoff)
     initial = np.zeros(2 + 2 * count, dtype=float)
     weighted_home = sum(
-        weight * match.home_goals for weight, match in zip(weights, training)
+        weight * target for weight, target in zip(weights, home_targets)
     ) / float(weights.sum())
     weighted_away = sum(
-        weight * match.away_goals for weight, match in zip(weights, training)
+        weight * target for weight, target in zip(weights, away_targets)
     ) / float(weights.sum())
     initial[0] = math.log(max(MINIMUM_RATE, weighted_away))
     initial[1] = math.log(
@@ -300,7 +334,9 @@ def _fit_dixon_coles(
         defences = values[2 + count :]
         loss = 0.0
         gradient = np.zeros_like(values)
-        for weight, match in zip(weights, training):
+        for weight, match, home_target, away_target in zip(
+            weights, training, home_targets, away_targets
+        ):
             home_index = indices[match.home_team]
             away_index = indices[match.away_team]
             home_rate, home_derivative = _rate_and_derivative(
@@ -313,14 +349,14 @@ def _fit_dixon_coles(
                 intercept + attacks[away_index] + defences[home_index]
             )
             loss -= weight * (
-                _poisson_log_probability(match.home_goals, home_rate)
-                + _poisson_log_probability(match.away_goals, away_rate)
+                _poisson_log_probability(home_target, home_rate)
+                + _poisson_log_probability(away_target, away_rate)
             )
             home_gradient = home_derivative * (
-                home_rate - match.home_goals
+                home_rate - home_target
             )
             away_gradient = away_derivative * (
-                away_rate - match.away_goals
+                away_rate - away_target
             )
             gradient[0] += weight * (home_gradient + away_gradient)
             gradient[1] += weight * home_gradient
@@ -422,6 +458,7 @@ def _fit_dixon_coles(
         ),
         "poissonOptimizerMessage": str(fitted.message),
         "rhoOptimizerIterations": int(fitted_rho.nfev),
+        "rateTarget": rate_target,
     }
 
 
@@ -685,7 +722,7 @@ def _rate_and_derivative(log_rate: float) -> Tuple[float, float]:
     return math.exp(log_rate), 1.0
 
 
-def _poisson_log_probability(value: int, rate: float) -> float:
+def _poisson_log_probability(value: float, rate: float) -> float:
     return value * math.log(rate) - rate - math.lgamma(value + 1)
 
 
