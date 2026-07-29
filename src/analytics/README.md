@@ -78,21 +78,24 @@ distribution and cannot influence selection. See the
 
 The same fixed command is packaged as the non-root
 `ghcr.io/jellman86/autofpl-analytics` companion image. Its default invocation
-reads `/data/autofpl.db` and writes `/output/two-season-shadow.json`; mount the
-database read-only and a separate bounded output directory writable by UID
-`1654`. The image is a one-shot generator, not a web service or importer:
+polls the read-only `/data/autofpl.db`, does nothing while the exact shadow is
+current, and atomically writes one capture-named JSON artifact to
+`/analytics-inbox` when the latest supported target is missing. Mount the
+database read-only and a separate private inbox writable by UID `1654`:
 
 ```bash
-docker run --rm \
+docker run \
   --read-only \
   --volume /private/autofpl:/data:ro \
-  --volume /private/autofpl-analytics:/output \
+  --volume autofpl-analytics-inbox:/analytics-inbox \
   ghcr.io/jellman86/autofpl-analytics:dev
 ```
 
-The `.NET` application remains the only strict product import boundary. Compose
-polling and handoff are intentionally a later slice so packaging cannot
-silently turn model fitting into a background mutation.
+The worker never writes SQLite, exposes no port and supports only the frozen
+2026/27 GW1 target. The `.NET` application remains the only strict product
+import boundary: when its bounded inbox poll is enabled, it imports at most one
+file per cycle and renames it `.imported` or `.rejected`. The worker treats
+either marker as final for that capture, avoiding a regeneration loop.
 
 ## Historical participation evaluation v1
 

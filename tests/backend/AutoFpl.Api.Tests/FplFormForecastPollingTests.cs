@@ -1,5 +1,6 @@
 using AutoFpl.Api.Sources;
 using AutoFpl.Api.Intelligence;
+using AutoFpl.Api.Forecasts;
 
 using Microsoft.Extensions.Configuration;
 
@@ -129,6 +130,61 @@ public sealed class FplFormForecastPollingTests
 
         Assert.True(options.Enabled);
         Assert.Equal(5, options.BatchSize);
+    }
+
+    [Fact]
+    public void Shadow_inbox_polling_is_disabled_by_default_and_bounded()
+    {
+        ShadowForecastInboxOptions disabled =
+            ShadowForecastInboxOptions.FromConfiguration(
+                new ConfigurationBuilder().Build());
+        Assert.False(disabled.Enabled);
+        Assert.Equal(
+            ShadowForecastInboxOptions.DefaultInboxPath,
+            disabled.InboxPath);
+
+        string inbox = Path.Combine(
+            Path.GetTempPath(),
+            "autofpl-shadow-inbox-options");
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    [
+                        "AutoFpl:Analytics:"
+                        + "ShadowInboxPollIntervalMinutes"
+                    ] = "5",
+                    ["AutoFpl:Analytics:ShadowInboxPath"] = inbox,
+                })
+            .Build();
+        ShadowForecastInboxOptions enabled =
+            ShadowForecastInboxOptions.FromConfiguration(configuration);
+
+        Assert.True(enabled.Enabled);
+        Assert.Equal(TimeSpan.FromMinutes(5), enabled.Interval);
+        Assert.Equal(Path.GetFullPath(inbox), enabled.InboxPath);
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("61")]
+    [InlineData("1.5")]
+    public void Invalid_shadow_inbox_interval_fails_configuration(
+        string configured)
+    {
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    [
+                        "AutoFpl:Analytics:"
+                        + "ShadowInboxPollIntervalMinutes"
+                    ] = configured,
+                })
+            .Build();
+
+        Assert.Throws<InvalidOperationException>(
+            () => ShadowForecastInboxOptions.FromConfiguration(configuration));
     }
 
     [Fact]

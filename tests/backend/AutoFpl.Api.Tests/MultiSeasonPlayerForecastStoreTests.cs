@@ -169,6 +169,70 @@ public sealed class MultiSeasonPlayerForecastStoreTests
     }
 
     [Fact]
+    public async Task Private_inbox_imports_valid_artifact_and_quarantines_invalid()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        (DatabaseOptions options, MultiSeasonPlayerForecastDocument request) =
+            await CreateDatabaseAsync(files.DatabasePath);
+        var store = new MultiSeasonPlayerForecastStore(
+            options,
+            TimeProvider.System);
+        var importer = new MultiSeasonPlayerForecastImporter(store);
+        string inbox = Path.Combine(files.DirectoryPath, "analytics-inbox");
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    [
+                        "AutoFpl:Analytics:"
+                        + "ShadowInboxPollIntervalMinutes"
+                    ] = "1",
+                    ["AutoFpl:Analytics:ShadowInboxPath"] = inbox,
+                })
+            .Build();
+        var poller = new ShadowForecastInboxPoller(
+            importer,
+            ShadowForecastInboxOptions.FromConfiguration(configuration),
+            TimeProvider.System);
+        Directory.CreateDirectory(inbox);
+        string validPath = Path.Combine(
+            inbox,
+            "multi-season-shadow-capture-15.json");
+        await File.WriteAllTextAsync(
+            validPath,
+            JsonSerializer.Serialize(
+                request,
+                new JsonSerializerOptions(JsonSerializerDefaults.Web)),
+            TestContext.Current.CancellationToken);
+
+        string imported = await poller.ImportOnceAsync(
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal("imported", imported);
+        Assert.False(File.Exists(validPath));
+        Assert.True(File.Exists(validPath + ".imported"));
+        Assert.Equal(
+            "current",
+            (await store.GetReadinessAsync(
+                TestContext.Current.CancellationToken)).Status);
+
+        string invalidPath = Path.Combine(
+            inbox,
+            "multi-season-shadow-capture-16.json");
+        await File.WriteAllTextAsync(
+            invalidPath,
+            "{\"unexpected\":true}",
+            TestContext.Current.CancellationToken);
+
+        string rejected = await poller.ImportOnceAsync(
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal("rejected", rejected);
+        Assert.False(File.Exists(invalidPath));
+        Assert.True(File.Exists(invalidPath + ".rejected"));
+    }
+
+    [Fact]
     public async Task Changed_player_or_unknown_field_fails_closed()
     {
         using var files = new TemporaryDatabaseFiles();

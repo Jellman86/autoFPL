@@ -134,8 +134,25 @@ official capture. `stale` exposes both identities when they differ, while
 `missing` distinguishes the absence of official evidence from the absence of a
 shadow artifact. The player dossier continues to require an exact capture
 match and never substitutes an older shadow. This route is the machine-readable
-handoff for a future companion analytics worker; it does not trigger generation
-or collection.
+view used to verify the companion handoff; it does not itself trigger
+generation or collection.
+
+Enable the private filesystem handoff only when the separately published
+analytics worker and shared inbox volume are present:
+
+```text
+AutoFpl__Analytics__ShadowInboxPollIntervalMinutes=1
+AutoFpl__Analytics__ShadowInboxPath=/analytics-inbox
+```
+
+The interval is bounded from one through 60 minutes and absent by default.
+The worker reads `/data/autofpl.db` through a read-only mount, checks exact
+official/shadow capture identity every 15 minutes by default and atomically
+writes at most one `multi-season-shadow-capture-<id>.json` file. The application
+imports at most one pending file per cycle through the same strict 2 MiB
+validator used by the operator command, then renames the handoff `.imported` or
+`.rejected`. Neither side follows a public route: the worker cannot write
+SQLite and the web application remains the only import authority.
 
 ## Official FPL capture
 
@@ -611,9 +628,10 @@ The smoke test launches the image with a read-only filesystem, all Linux capabil
 digest-pinned Python 3.13 slim Trixie stage, then copies only the runtime
 packages and generator into a digest-pinned distroless Python Debian 13 final
 image. The companion runs as UID `1654`, contains no shell or package manager,
-has a read-only root filesystem, exposes no port and writes only the requested
-artifact to a mounted output directory. Its smoke test imports the exact NumPy
-and scikit-learn versions and starts the real command surface:
+has a read-only root filesystem, exposes no port, reads SQLite only through a
+read-only mount and writes only capture-named artifacts to a private inbox. Its
+smoke test imports the exact NumPy and scikit-learn versions and starts the real
+command surface:
 
 ```bash
 make analytics-container-verify
@@ -651,9 +669,10 @@ non-root smoke, SHA-tag and `dev`-tag flow to:
 - `ghcr.io/jellman86/autofpl-analytics:dev`
 - `ghcr.io/jellman86/autofpl-analytics:sha-<full-commit-sha>`
 
-It publishes a one-shot generator only. The Dockhand stack does not add it
-until the following compose-handoff slice provides bounded polling, exact
-capture freshness checks and strict `.NET` import.
+It publishes a bounded generator only. Exact capture freshness checks and the
+strict `.NET` inbox import are implemented but disabled until the Dockhand
+compose definition mounts the shared private volume and explicitly enables
+both pollers.
 
 ## Private Dockhand deployment
 
