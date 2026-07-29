@@ -18,7 +18,9 @@ from autofpl_analytics.historical_preseason_evaluation import (  # noqa: E402
     BASELINE_MODELS,
     CANDIDATE_MODELS,
     FEATURES,
+    HistoricalGameweek,
     _build_samples,
+    _features,
     _load_capture,
     evaluate_historical_preseason,
     main,
@@ -27,6 +29,41 @@ from autofpl_analytics.temporal_ridge import _open_connection  # noqa: E402
 
 
 class HistoricalPreseasonEvaluationTests(unittest.TestCase):
+    def test_missing_defensive_contribution_remains_missing(self) -> None:
+        missing = HistoricalGameweek(
+            gameweek=1,
+            fixture_count=1,
+            home_fixture_count=1,
+            minutes=90,
+            starts=1,
+            total_points=6,
+            expected_goals=0.1,
+            expected_assists=0.2,
+            expected_goal_involvements=0.3,
+            expected_goals_conceded=1.0,
+            defensive_contribution=None,
+        )
+        target = HistoricalGameweek(
+            gameweek=2,
+            fixture_count=0,
+            home_fixture_count=0,
+            minutes=0,
+            starts=0,
+            total_points=0,
+            expected_goals=0.0,
+            expected_assists=0.0,
+            expected_goal_involvements=0.0,
+            expected_goals_conceded=0.0,
+            defensive_contribution=None,
+        )
+
+        features = _features(target, [missing])
+
+        self.assertEqual(0.0, features["targetFixtureCount"])
+        self.assertEqual(0.0, features["targetHomeFixtureRate"])
+        self.assertIsNone(features["priorDefensiveContributionMean"])
+        self.assertIsNone(features["ewmaDefensiveContributionMean"])
+
     def test_locked_holdout_evaluates_only_development_selected_models(
         self,
     ) -> None:

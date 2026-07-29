@@ -8,7 +8,17 @@ import sys
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, DefaultDict, Dict, List, Mapping, Optional, Sequence, Tuple
+from typing import (
+    Any,
+    DefaultDict,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Tuple,
+)
 
 import numpy as np
 
@@ -115,7 +125,7 @@ class HistoricalGameweek:
     expected_assists: float
     expected_goal_involvements: float
     expected_goals_conceded: float
-    defensive_contribution: int
+    defensive_contribution: Optional[int]
 
 
 def evaluate_historical_preseason(
@@ -363,6 +373,33 @@ def _build_samples(
             "configuration.historical-target",
             f"Unsupported historical target: {target_name}",
         )
+    positions, histories = _load_historical_gameweeks(connection, capture)
+    samples: DefaultDict[int, List[Sample]] = defaultdict(list)
+    for player_code in sorted(histories):
+        history = histories[player_code]
+        for gameweek in sorted(history):
+            target = history[gameweek]
+            prior = [history[key] for key in sorted(history) if key < gameweek]
+            samples[gameweek].append(
+                Sample(
+                    season_code=capture.season_code,
+                    gameweek=gameweek,
+                    player_id=player_code,
+                    position=positions[player_code],
+                    features=_features(target, prior),
+                    actual=_target_value(target_name, target),
+                )
+            )
+    return {
+        gameweek: sorted(items, key=lambda item: item.player_id)
+        for gameweek, items in sorted(samples.items())
+    }
+
+
+def _load_historical_gameweeks(
+    connection: sqlite3.Connection,
+    capture: HistoricalCapture,
+) -> Tuple[Dict[int, str], Dict[int, Dict[int, HistoricalGameweek]]]:
     player_rows = connection.execute(
         """
         SELECT player_code, position
@@ -431,7 +468,7 @@ def _build_samples(
                 "expected_assists": 0.0,
                 "expected_goal_involvements": 0.0,
                 "expected_goals_conceded": 0.0,
-                "defensive_contribution": 0,
+                "defensive_contribution": None,
             },
         )
         aggregate["fixture_count"] += 1
@@ -447,35 +484,19 @@ def _build_samples(
         aggregate["expected_goals_conceded"] += _finite(
             row["expected_goals_conceded"]
         )
-        aggregate["defensive_contribution"] += int(
-            row["defensive_contribution"]
-        )
+        if row["defensive_contribution"] is not None:
+            if aggregate["defensive_contribution"] is None:
+                aggregate["defensive_contribution"] = 0
+            aggregate["defensive_contribution"] += int(
+                row["defensive_contribution"]
+            )
     for (player_code, gameweek), aggregate in aggregates.items():
         histories[player_code][gameweek] = HistoricalGameweek(
             gameweek=gameweek,
             **aggregate,
         )
 
-    samples: DefaultDict[int, List[Sample]] = defaultdict(list)
-    for player_code in sorted(histories):
-        history = histories[player_code]
-        for gameweek in sorted(history):
-            target = history[gameweek]
-            prior = [history[key] for key in sorted(history) if key < gameweek]
-            samples[gameweek].append(
-                Sample(
-                    season_code=capture.season_code,
-                    gameweek=gameweek,
-                    player_id=player_code,
-                    position=positions[player_code],
-                    features=_features(target, prior),
-                    actual=_target_value(target_name, target),
-                )
-            )
-    return {
-        gameweek: sorted(items, key=lambda item: item.player_id)
-        for gameweek, items in sorted(samples.items())
-    }
+    return positions, dict(histories)
 
 
 def _target_value(target_name: str, row: HistoricalGameweek) -> int:
@@ -504,6 +525,8 @@ def _features(
         "targetFixtureCount": float(target.fixture_count),
         "targetHomeFixtureRate": (
             target.home_fixture_count / target.fixture_count
+            if target.fixture_count > 0
+            else 0.0
         ),
         "priorGameweekCount": float(len(prior)),
         "priorTrailingZeroMinuteGameweeks": float(
@@ -555,8 +578,8 @@ def _summary(
         "expectedGoalsConcededMean": (
             sum(row.expected_goals_conceded for row in rows) / count
         ),
-        "defensiveContributionMean": (
-            sum(row.defensive_contribution for row in rows) / count
+        "defensiveContributionMean": _optional_mean(
+            row.defensive_contribution for row in rows
         ),
     }
 
@@ -570,13 +593,26 @@ def _ewma(
     values: Dict[str, Optional[float]] = dict(per_row[0])
     for current in per_row[1:]:
         values = {
-            key: (
-                EWMA_ALPHA * float(current[key])
-                + (1.0 - EWMA_ALPHA) * float(values[key])
-            )
+            key: _ewma_value(values[key], current[key])
             for key in values
         }
     return values
+
+
+def _optional_mean(values: Iterable[Optional[int]]) -> Optional[float]:
+    observed = [float(value) for value in values if value is not None]
+    return sum(observed) / len(observed) if observed else None
+
+
+def _ewma_value(
+    previous: Optional[float],
+    current: Optional[float],
+) -> Optional[float]:
+    if current is None:
+        return previous
+    if previous is None:
+        return current
+    return EWMA_ALPHA * current + (1.0 - EWMA_ALPHA) * previous
 
 
 def _copy_summary(
