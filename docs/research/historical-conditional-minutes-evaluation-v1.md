@@ -44,6 +44,32 @@ position MAE regression above 5%. Passing retains the exact specification only
 for a prospective player-distribution shadow. Promotion and product import
 remain prohibited.
 
+## Result
+
+The Quark run at application revision
+`7621b735c9a3635552830840771c570dae3679c3` completed all eight folds and
+scored 6,252 player-Gameweeks:
+
+| Model | MAE | RMSE |
+|---|---:|---:|
+| Player-last minutes | **12.280442** | 28.954555 |
+| Appearance-hurdle conditional tree | 13.286008 | **23.164577** |
+| Unconditional histogram tree | 13.470439 | 23.369100 |
+
+The hurdle improved MAE by 1.3692% over the unconditional tree, reduced RMSE
+by 0.204523 minutes and won seven of eight folds. It nevertheless regressed MAE
+by 8.1884% against player-last, won only one of eight folds and crossed the 5%
+position-MAE tolerance for goalkeeper, defender and midfielder. It therefore
+failed the dual-reference gate and remains excluded from current minutes and
+player-point forecasts.
+
+The much lower RMSE alongside worse MAE is useful diagnostic evidence: a
+deterministic last-value comparator and a smooth conditional mean make
+different errors on the zero-heavy minutes target. The gate must not be relaxed
+after seeing this result. A subsequent candidate should model and score the
+complete minutes distribution with a proper distributional score such as CRPS,
+rather than tune another mean estimator on these opened folds.
+
 ## Reproduction
 
 ```shell
