@@ -30,8 +30,11 @@ therefore use identical scenario rows.
 
 The command opens SQLite read-only, refuses an existing output path and verifies
 the stored JSON bytes against every persisted content hash. Production
-automation must run it against an application-produced stable SQLite snapshot.
-It must not weaken the analytics container's read-only database mount or mark a
+automation runs against an application-produced stable SQLite snapshot. The
+application creates that standalone copy with SQLite's online-backup operation,
+verifies integrity, switches it to delete-journal mode and atomically replaces
+the previous snapshot only when relevant source identity changes. A dedicated
+read-only worker mount avoids weakening the analytics boundary or marking a
 changing live database as immutable.
 
 ## Current GW1 evidence
@@ -53,9 +56,9 @@ paired delta is exactly zero on every row. That is a useful identity check, not
 evidence that user and model strategies generally perform the same.
 
 The 38 retained rows make central summaries useful for product development but
-tail estimates coarse. The next boundary persists this score artifact, adds an
-application-produced stable database snapshot handoff and then generates legal
-safer and higher-ceiling candidates on the identical rows.
+tail estimates coarse. The next boundary persists this score artifact through
+the existing private result handoff and then generates legal safer and
+higher-ceiling candidates on the identical rows.
 
 ## Reproduction
 
@@ -67,4 +70,3 @@ PYTHONPATH=src/analytics python -m \
   --database /path/to/stable-autofpl.db \
   --output /path/to/current-selection-scenario-score.json
 ```
-

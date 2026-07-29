@@ -669,12 +669,14 @@ boundary through a network-isolated worker, immutable SQLite artifact and
 current/stale/missing readiness contract. A deterministic read-only selection
 score shadow now binds that matrix to the exact model selection and latest
 user-owned revision, preserves all 38 paired score rows and emits distribution
-and win/tie/loss summaries. It remains an operator artifact until a stable
-application-produced SQLite snapshot handoff and strict product importer are
-implemented.
+and win/tie/loss summaries. The application now atomically publishes a
+standalone integrity-checked SQLite backup into a dedicated read-only worker
+mount when relevant source identity changes, removing the live-WAL timing
+dependency. The score remains an operator artifact until its strict product
+importer is implemented.
 
-- Persist and expose the current selection score artifact through a stable
-  application-produced database snapshot handoff and strict importer.
+- Persist and expose the current selection score artifact through the existing
+  private result handoff and a strict importer.
 - Establish a representative workload before implementing the GPU
   parity/benchmark path.
 - Score the frozen matrix prospectively as final outcomes arrive.
