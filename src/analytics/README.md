@@ -337,6 +337,25 @@ The first real screen preserved appearance and improved aggregate start and
 The fixed gate therefore rejects the combined candidate. Raw, joint and
 factorized variants are now frozen for prospective 2026/27 comparison.
 
+## Historical conditional-minutes evaluation v1
+
+The minutes hurdle candidate preserves the fixed supported appearance
+classifier, fits a minutes regressor only on historical appearance-positive
+rows and multiplies the two predictions:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.historical_conditional_minutes_evaluation \
+  --database /path/to/autofpl.db \
+  --output /path/to/historical-conditional-minutes.json
+```
+
+It compares the resulting unconditional minutes mean against both the retained
+player-last baseline and the rejected zero-heavy unconditional histogram tree
+on identical Gameweek 31–38 folds. The fixed dual-reference gate, fixture
+bound and reused-holdout boundary are in the
+[conditional-minutes specification](../../docs/research/historical-conditional-minutes-evaluation-v1.md).
+
 ## Current official availability ceiling v1
 
 The current participation artifact carries a prospective comparison variant
