@@ -550,6 +550,15 @@ same-capture served Baseline v0 and single-Gameweek optimiser held unchanged.
 Partial Gameweek 1–7 reports cannot pass. After Gameweek 8, a promotion review
 requires at least a two-point gain over the served benchmark and no breach of
 the frozen preseason cumulative p10; the evaluator itself never promotes.
+A first exact transfer-aware challenger has also been tested rather than
+assumed better. It jointly optimised the opening squad and up to one free
+transfer before each Gameweek through GW6, but lost 21.33 realised points on
+average against the fixed incumbent, won only one of three historical targets
+and regressed by 74 points in the worst target. The plans repeatedly reversed
+the same transfers as weak weekly fixture means alternated. It is rejected.
+Do not add banking, hits or richer recourse until the per-fixture player
+distribution demonstrates materially better opponent, minutes and role
+discrimination; solver expressiveness is not forecast accuracy.
 
 The SQLite persistence vertical slice is deployed and survives a managed
 container recreate. Operator-triggered fixed-origin official FPL collectors
