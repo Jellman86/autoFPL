@@ -130,7 +130,7 @@ class ShadowWorkerTests(unittest.TestCase):
             self.assertEqual("generated", generated.status)
             self.assertTrue(
                 str(generated.outputFile).startswith(
-                    "joint-scenario-shadow-capture-16"
+                    "joint-scenario-shadow-capture-16-v2"
                 )
             )
             self.assertEqual(

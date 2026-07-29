@@ -276,7 +276,10 @@ def generate_once(
         )
         build = build_current_scenario_selection_score
     elif target["hasExactPointShadow"]:
-        stem = f"joint-scenario-shadow-capture-{capture_id}"
+        # Keep the handoff generation version in the filename. A rejected
+        # artifact is retained for diagnosis, so a corrected importer/schema
+        # must be able to produce a fresh handoff without deleting evidence.
+        stem = f"joint-scenario-shadow-capture-{capture_id}-v2"
         build = _build_joint_scenario_for_worker
     else:
         stem = f"multi-season-shadow-capture-{capture_id}"

@@ -112,6 +112,107 @@ public sealed class JointScenarioShadowStoreTests
     }
 
     [Fact]
+    public async Task Matrix_content_can_repeat_for_a_new_official_capture()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        (DatabaseOptions options, MultiSeasonPlayerForecastDocument point) =
+            await MultiSeasonPlayerForecastStoreTests.CreateDatabaseAsync(
+                files.DatabasePath);
+        var pointStore = new MultiSeasonPlayerForecastStore(
+            options,
+            TimeProvider.System);
+        MultiSeasonPlayerForecastDocument importedPoint =
+            await pointStore.ImportAsync(
+                point,
+                TestContext.Current.CancellationToken);
+        var store = new JointScenarioShadowStore(
+            options,
+            TimeProvider.System);
+        JointScenarioShadowDocument imported = await store.ImportAsync(
+            CreateRequest(importedPoint),
+            TestContext.Current.CancellationToken);
+
+        await using var connection = new SqliteConnection(
+            options.ConnectionString);
+        await connection.OpenAsync(TestContext.Current.CancellationToken);
+        await using SqliteCommand allowRepeatedContent =
+            connection.CreateCommand();
+        allowRepeatedContent.CommandText =
+            """
+            INSERT INTO official_fpl_captures (
+                capture_id, schema_version, source_key, season_code,
+                bootstrap_url, fixtures_url, retrieved_at_utc,
+                available_at_utc, bootstrap_sha256, fixtures_sha256,
+                bootstrap_json, fixtures_json, event_count, team_count,
+                player_count, fixture_count, next_gameweek_number,
+                next_deadline_utc, latest_completed_gameweek, created_at_utc
+            )
+            SELECT
+                capture_id + 1, schema_version, source_key, season_code,
+                bootstrap_url, fixtures_url, '2026-07-29T00:00:00Z',
+                '2026-07-29T00:00:00Z', $bootstrapHash, $fixturesHash,
+                bootstrap_json, fixtures_json, event_count, team_count,
+                player_count, fixture_count, next_gameweek_number,
+                next_deadline_utc, latest_completed_gameweek,
+                '2026-07-29T00:00:00Z'
+            FROM official_fpl_captures
+            WHERE capture_id = 15;
+
+            INSERT INTO joint_scenario_shadow_artifacts (
+                schema_version, artifact_type, artifact_version, status,
+                scenario_model_key, official_capture_id,
+                source_historical_capture_id, point_forecast_artifact_id,
+                season_code, gameweek, decision_cutoff_utc, scenario_count,
+                player_count, scenario_content_sha256,
+                producer_run_identity_sha256, document_json, content_sha256,
+                created_at_utc
+            )
+            SELECT
+                schema_version, artifact_type, artifact_version, status,
+                scenario_model_key, official_capture_id + 1,
+                source_historical_capture_id, point_forecast_artifact_id,
+                season_code, gameweek, decision_cutoff_utc, scenario_count,
+                player_count, scenario_content_sha256,
+                $runIdentity, document_json, $contentHash, created_at_utc
+            FROM joint_scenario_shadow_artifacts
+            WHERE scenario_artifact_id = $artifactId;
+            """;
+        allowRepeatedContent.Parameters.AddWithValue(
+            "$artifactId",
+            imported.ScenarioArtifactId);
+        allowRepeatedContent.Parameters.AddWithValue(
+            "$bootstrapHash",
+            new string('3', 64));
+        allowRepeatedContent.Parameters.AddWithValue(
+            "$fixturesHash",
+            new string('4', 64));
+        allowRepeatedContent.Parameters.AddWithValue(
+            "$runIdentity",
+            new string('1', 64));
+        allowRepeatedContent.Parameters.AddWithValue(
+            "$contentHash",
+            new string('2', 64));
+        await allowRepeatedContent.ExecuteNonQueryAsync(
+            TestContext.Current.CancellationToken);
+
+        await using SqliteCommand count = connection.CreateCommand();
+        count.CommandText =
+            """
+            SELECT COUNT(*)
+            FROM joint_scenario_shadow_artifacts
+            WHERE scenario_content_sha256 = $matrixHash;
+            """;
+        count.Parameters.AddWithValue(
+            "$matrixHash",
+            imported.ScenarioContentSha256);
+
+        Assert.Equal(
+            2L,
+            await count.ExecuteScalarAsync(
+                TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
     public async Task Matrix_and_point_forecast_tampering_fail_closed()
     {
         using var files = new TemporaryDatabaseFiles();
