@@ -44,6 +44,12 @@
           </svg>
           Model squad
         </a>
+        <a href="#strategies" data-nav-section="strategies">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 18V9M10 18V5M16 18v-6M22 18H2"></path>
+          </svg>
+          Strategies
+        </a>
         <a href="#my-squad" data-nav-section="my-squad">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"></path>
@@ -699,14 +705,36 @@
       </section>
     </div>
 
-    <section class="alternatives" aria-labelledby="alternatives-title">
-      <div class="section-heading">
+    <section
+      class="strategy-board"
+      id="strategies"
+      data-state="loading"
+      aria-labelledby="strategies-title">
+      <div class="section-heading strategy-board-heading">
         <div>
-          <p class="eyebrow">Decision sensitivity</p>
-          <h2 id="alternatives-title">Compare another approach</h2>
+          <p class="eyebrow">Same squad · different matchday roles</p>
+          <h2 id="strategies-title">Compare matchday strategies.</h2>
+          <p id="strategy-summary">
+            Comparing captaincy, starting XI and bench order on the same
+            retained scenario rows.
+          </p>
         </div>
+        <span class="strategy-state" id="strategy-state">Loading</span>
       </div>
-      <div id="alternative-list" class="alternative-list"></div>
+      <div
+        id="strategy-list"
+        class="strategy-list"
+        aria-live="polite"
+        aria-busy="true">
+        <article class="strategy-empty">
+          <strong>Preparing strategy comparison</strong>
+          <p>The model squad remains available while scenario roles load.</p>
+        </article>
+      </div>
+      <p class="strategy-boundary" id="strategy-boundary">
+        These are exploratory shadow results selected on retained scenarios,
+        not a promise of future points. Previewing never changes your draft.
+      </p>
     </section>
 
     <section class="ai-desk" aria-labelledby="ai-title">

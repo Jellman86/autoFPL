@@ -806,22 +806,22 @@ mount read-only and preserves the application as the sole strict importer; both
 pollers now run in the deployed Quark Compose stack, using a standalone
 application-published snapshot and private inbox. The worker progresses through
 point forecast, joint scenario, selection score and fixed-squad role-strategy
-artifacts without moving Python model work into the web request path. The active
-order is:
+artifacts without moving Python model work into the web request path. The
+decision room now presents the model, balanced, safer and higher-ceiling roles
+on their identical retained scenarios; previews are non-mutating and an
+explicit copy creates a current-forecast draft before opening the full My Squad
+builder. The active order is:
 
-1. add the current balanced, safer and higher-ceiling strategy comparison to
-   the decision room, with an explicit copy-to-draft action and no silent
-   selection mutation;
-2. score both forecasts on the first automatically paired 2026/27 result, then
+1. score both forecasts on the first automatically paired 2026/27 result, then
    register subsequent prospective folds without tuning on them;
-3. join only the point, participation and minutes components that pass their
+2. join only the point, participation and minutes components that pass their
    registered gates, then publish the first calibrated player distributions;
-4. connect calibrated joint rows to the completed CPU-reference scorer, add
-   immutable scenario provenance and compare the model, safer, higher-ceiling
-   and user-authored squads in the interface;
-5. connect the grounded AI surface through read-only MCP first, followed by an
+3. replace the exploratory joint rows behind the completed CPU-reference
+   scorer with calibrated distributions, preserve immutable scenario
+   provenance and add exact user-authored comparisons to the strategy surface;
+4. connect the grounded AI surface through read-only MCP first, followed by an
    owner-configured OpenAI-compatible provider; and
-6. add owner authentication and sanitized dashboard sharing before exposing
+5. add owner authentication and sanitized dashboard sharing before exposing
    any configuration or consequential action outside the trusted instance.
 
 Specialist lineups, public forecasts, named experts and social evidence remain

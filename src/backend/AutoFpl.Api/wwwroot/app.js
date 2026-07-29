@@ -3,6 +3,8 @@ let selectedPlayerId = null;
 let advice = null;
 let selectionRevision = null;
 let selectionComparison = null;
+let selectionStrategies = null;
+let selectionScenarioScore = null;
 let playerForecast = null;
 let displayedPlayers = [];
 let selectionEditDraft = null;
@@ -12,6 +14,7 @@ let marketPosition = "all";
 let lastSelectedCard = null;
 let dossierRequest = 0;
 let activeSquadView = "model";
+let previewedStrategyId = "model";
 
 function formatDeadline(value) {
   return new Intl.DateTimeFormat(undefined, {
@@ -811,24 +814,6 @@ function renderAdvice(adviceDocument) {
 
   renderSquadPlayers(adviceDocument.selection.players);
 
-  const alternatives = document.querySelector("#alternative-list");
-  alternatives.replaceChildren();
-  adviceDocument.alternatives.forEach((alternative) => {
-    const card = document.createElement("article");
-    card.className = "alternative-card";
-    card.dataset.alternativeName = alternative.name;
-    const title = document.createElement("strong");
-    title.textContent = alternative.name;
-    const description = document.createElement("p");
-    description.textContent = alternative.objective;
-    const delta = document.createElement("span");
-    delta.textContent = alternative.name === "My selection"
-      ? "Not created yet"
-      : `${alternative.expectedPoints.toFixed(1)} pts · ${alternative.difference >= 0 ? "+" : ""}${alternative.difference.toFixed(1)}`;
-    card.append(title, description, delta);
-    alternatives.append(card);
-  });
-
   const requestedPlayerId = Number(new URL(window.location.href).searchParams.get("player"));
   const starters = displayedPlayers.filter(
     (player) => player.lineupPlace === "starting",
@@ -841,6 +826,357 @@ function renderAdvice(adviceDocument) {
     openPage: Boolean(requestedPlayerId),
     focusDossier: Boolean(requestedPlayerId),
   });
+}
+
+function strategyDefinition(strategyId) {
+  return {
+    model: {
+      label: "Model roles",
+      objective: "The current Baseline v0 XI, bench and captaincy.",
+      tone: "model",
+    },
+    balanced: {
+      label: "Balanced",
+      objective: "Maximises mean points across the retained scenarios.",
+      tone: "balanced",
+    },
+    safer: {
+      label: "Safer",
+      objective: "Optimises the average of the lowest-scoring 20% of scenarios.",
+      tone: "safer",
+    },
+    higherCeiling: {
+      label: "Higher ceiling",
+      objective: "Optimises the average of the highest-scoring 20% of scenarios.",
+      tone: "ceiling",
+    },
+    owner: {
+      label: "Your selection",
+      objective: "Your latest saved revision on the same scenario rows.",
+      tone: "owner",
+    },
+  }[strategyId];
+}
+
+function signedPoints(value) {
+  return `${value >= 0 ? "+" : ""}${value.toFixed(1)}`;
+}
+
+function updateStrategyPreviewState() {
+  document.querySelectorAll(".strategy-card").forEach((card) => {
+    const selected = card.dataset.strategyId === previewedStrategyId;
+    card.dataset.previewing = String(selected);
+    card.querySelector(".strategy-preview")?.setAttribute(
+      "aria-pressed",
+      String(selected),
+    );
+  });
+}
+
+function previewStrategy(strategyId, result) {
+  const definition = strategyDefinition(strategyId);
+  previewedStrategyId = strategyId;
+  renderSquadPlayers(playersForSelection(result.selection));
+  document.querySelector("#formation-kicker").textContent =
+    `${definition.label} · role preview`;
+  document.querySelector("#selection-objective").textContent =
+    `${definition.objective} Preview only; your saved selection is unchanged.`;
+  setActiveNavigation("strategies");
+  setBreadcrumb(definition.label, "Strategies");
+  updateStrategyPreviewState();
+  const reducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
+  document.querySelector("#model-squad").scrollIntoView({
+    block: "start",
+    behavior: reducedMotion ? "auto" : "smooth",
+  });
+}
+
+function createStrategyCard(strategyId, result, comparison = null) {
+  const definition = strategyDefinition(strategyId);
+  const card = document.createElement("article");
+  card.className = "strategy-card";
+  card.dataset.strategyId = strategyId;
+  card.dataset.tone = definition.tone;
+
+  const heading = document.createElement("header");
+  const titleGroup = document.createElement("div");
+  const type = document.createElement("span");
+  type.className = "strategy-type";
+  type.textContent = strategyId === "model"
+    ? "Reference"
+    : strategyId === "owner"
+      ? "Saved choice"
+      : "Role strategy";
+  const title = document.createElement("h3");
+  title.textContent = definition.label;
+  titleGroup.append(type, title);
+  const status = document.createElement("span");
+  status.className = "strategy-card-status";
+  status.textContent = strategyId === "model" ? "Current" : "Shadow";
+  heading.append(titleGroup, status);
+
+  const objective = document.createElement("p");
+  objective.className = "strategy-objective";
+  objective.textContent = definition.objective;
+
+  const score = document.createElement("div");
+  score.className = "strategy-score";
+  const mean = document.createElement("div");
+  const meanLabel = document.createElement("span");
+  meanLabel.textContent = "Mean";
+  const meanValue = document.createElement("strong");
+  meanValue.textContent = result.summary.meanPoints.toFixed(1);
+  const meanUnit = document.createElement("small");
+  meanUnit.textContent = "pts";
+  mean.append(meanLabel, meanValue, meanUnit);
+  const interval = document.createElement("dl");
+  interval.innerHTML = `
+    <div><dt>10th percentile</dt><dd>${result.summary.p10Points.toFixed(1)}</dd></div>
+    <div><dt>90th percentile</dt><dd>${result.summary.p90Points.toFixed(1)}</dd></div>
+  `;
+  score.append(mean, interval);
+
+  const comparisonArea = document.createElement("div");
+  comparisonArea.className = "strategy-comparison";
+  if (comparison) {
+    const delta = document.createElement("strong");
+    delta.textContent =
+      `${signedPoints(comparison.meanPointsDelta)} mean vs model`;
+    const probabilities = document.createElement("div");
+    probabilities.className = "strategy-probabilities";
+    probabilities.setAttribute(
+      "aria-label",
+      `${(comparison.probabilityCandidateWins * 100).toFixed(0)}% wins, `
+        + `${(comparison.probabilityTie * 100).toFixed(0)}% ties, `
+        + `${(comparison.probabilityCandidateLoses * 100).toFixed(0)}% loses`,
+    );
+    [
+      ["win", comparison.probabilityCandidateWins],
+      ["tie", comparison.probabilityTie],
+      ["loss", comparison.probabilityCandidateLoses],
+    ].forEach(([outcome, probability]) => {
+      const segment = document.createElement("span");
+      segment.dataset.outcome = outcome;
+      segment.style.width = `${probability * 100}%`;
+      probabilities.append(segment);
+    });
+    const legend = document.createElement("span");
+    legend.className = "strategy-probability-copy";
+    legend.textContent =
+      `${(comparison.probabilityCandidateWins * 100).toFixed(0)}% ahead · `
+      + `${(comparison.probabilityTie * 100).toFixed(0)}% level · `
+      + `${(comparison.probabilityCandidateLoses * 100).toFixed(0)}% behind`;
+    comparisonArea.append(delta, probabilities, legend);
+  } else {
+    const reference = document.createElement("strong");
+    reference.textContent = "Comparison reference";
+    const copy = document.createElement("span");
+    copy.className = "strategy-probability-copy";
+    copy.textContent = "Every alternative uses these same scenario rows.";
+    comparisonArea.append(reference, copy);
+  }
+
+  const actions = document.createElement("div");
+  actions.className = "strategy-actions";
+  const preview = document.createElement("button");
+  preview.type = "button";
+  preview.className = "strategy-preview";
+  preview.textContent = "Preview roles";
+  preview.setAttribute("aria-pressed", "false");
+  preview.addEventListener(
+    "click",
+    () => previewStrategy(strategyId, result),
+  );
+  actions.append(preview);
+  if (strategyId !== "owner") {
+    const use = document.createElement("button");
+    use.type = "button";
+    use.className = "strategy-use";
+    use.textContent = strategyId === "model"
+      ? "Use as draft"
+      : "Copy to draft";
+    use.disabled =
+      !advice?.forecastArtifactId
+      || new Date(advice.deadlineUtc).getTime() <= Date.now()
+      || ["frozen", "expired"].includes(selectionRevision?.status);
+    use.addEventListener(
+      "click",
+      () => copyStrategyToDraft(strategyId, result.selection, use),
+    );
+    actions.append(use);
+  }
+
+  card.append(heading, objective, score, comparisonArea, actions);
+  return card;
+}
+
+function renderStrategyBoard() {
+  const board = document.querySelector("#strategies");
+  const state = document.querySelector("#strategy-state");
+  const summary = document.querySelector("#strategy-summary");
+  const list = document.querySelector("#strategy-list");
+  list.setAttribute("aria-busy", "false");
+  list.replaceChildren();
+  if (!selectionStrategies) {
+    board.dataset.state = "unavailable";
+    state.textContent = "Preparing";
+    summary.textContent =
+      "The exact role strategies are still being generated for this forecast and saved selection.";
+    const empty = document.createElement("article");
+    empty.className = "strategy-empty";
+    empty.innerHTML = `
+      <strong>Strategy comparison is not current yet</strong>
+      <p>Keep using the model squad. This board appears only after the scenario, selection score and strategy identities all match.</p>
+    `;
+    list.append(empty);
+    return;
+  }
+
+  board.dataset.state = "ready";
+  state.textContent = `${selectionStrategies.scenarioCount} scenarios`;
+  summary.textContent =
+    "One fixed 15-player squad, four ways to assign the XI, bench and captaincy.";
+  list.append(
+    createStrategyCard("model", selectionStrategies.model),
+    createStrategyCard(
+      "balanced",
+      selectionStrategies.strategies.balanced.result,
+      selectionStrategies.strategies.balanced.vsModel,
+    ),
+    createStrategyCard(
+      "safer",
+      selectionStrategies.strategies.safer.result,
+      selectionStrategies.strategies.safer.vsModel,
+    ),
+    createStrategyCard(
+      "higherCeiling",
+      selectionStrategies.strategies.higherCeiling.result,
+      selectionStrategies.strategies.higherCeiling.vsModel,
+    ),
+  );
+  if (selectionScenarioScore?.user && selectionScenarioScore.userVsModel) {
+    list.append(
+      createStrategyCard(
+        "owner",
+        selectionScenarioScore.user,
+        selectionScenarioScore.userVsModel,
+      ),
+    );
+  }
+  updateStrategyPreviewState();
+}
+
+async function loadSelectionStrategies() {
+  selectionStrategies = null;
+  selectionScenarioScore = null;
+  document.querySelector("#strategy-list").setAttribute("aria-busy", "true");
+  try {
+    const [strategyResponse, scoreResponse] = await Promise.all([
+      fetch("/api/v1/selections/current/role-strategies-shadow", {
+        headers: { Accept: "application/json" },
+      }),
+      fetch("/api/v1/selections/current/scenario-score-shadow", {
+        headers: { Accept: "application/json" },
+      }),
+    ]);
+    if (!strategyResponse.ok && strategyResponse.status !== 404) {
+      throw new Error(
+        `Strategy request failed with ${strategyResponse.status}`,
+      );
+    }
+    if (!scoreResponse.ok && scoreResponse.status !== 404) {
+      throw new Error(
+        `Selection score request failed with ${scoreResponse.status}`,
+      );
+    }
+    selectionStrategies = strategyResponse.ok
+      ? await strategyResponse.json()
+      : null;
+    selectionScenarioScore = scoreResponse.ok
+      ? await scoreResponse.json()
+      : null;
+    renderStrategyBoard();
+  } catch (error) {
+    renderStrategyBoard();
+    document.querySelector("#strategy-summary").textContent =
+      "Strategy evidence could not be checked. The model squad and saved selection remain available.";
+    console.error(error);
+  }
+}
+
+async function copyStrategyToDraft(strategyId, selection, button) {
+  const definition = strategyDefinition(strategyId);
+  const originalLabel = button.textContent;
+  document.querySelectorAll(".strategy-use").forEach((candidate) => {
+    candidate.disabled = true;
+  });
+  button.textContent = "Saving…";
+  document.querySelector("#strategy-boundary").textContent =
+    `Creating an explicit draft from ${definition.label}. Nothing is sent to FPL.`;
+  try {
+    let baseRevision = selectionRevision;
+    if (
+      !baseRevision
+      || baseRevision.forecastArtifactId !== advice.forecastArtifactId
+    ) {
+      const draftResponse = await fetch("/api/v1/selections/drafts", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          forecastArtifactId: advice.forecastArtifactId,
+        }),
+      });
+      if (!draftResponse.ok) {
+        throw new Error(
+          `Draft request failed with ${draftResponse.status}`,
+        );
+      }
+      baseRevision = await draftResponse.json();
+    }
+    const revisionResponse = await fetch(
+      `/api/v1/selections/${baseRevision.selectionRevisionId}/revisions`,
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(cloneSelection(selection)),
+      },
+    );
+    if (!revisionResponse.ok) {
+      const problem = await revisionResponse.json().catch(() => null);
+      throw new Error(
+        problem?.code
+          ?? `revision request failed with ${revisionResponse.status}`,
+      );
+    }
+    const revision = await revisionResponse.json();
+    renderSelectionState(
+      revision,
+      `${definition.label} copied to a new draft. Review it before locking.`,
+    );
+    await loadSelectionComparison(revision);
+    selectionEditDraft = cloneSelection(revision.selection);
+    showSquadBuilder();
+    document.querySelector("#builder-feedback").textContent =
+      `${definition.label} is now your editable draft. No action was sent to FPL.`;
+    await loadSelectionStrategies();
+    document.querySelector("#strategy-boundary").textContent =
+      `${definition.label} is now your saved draft. Exact comparisons will reappear after recalculation. Nothing was sent to FPL.`;
+  } catch (error) {
+    document.querySelector("#strategy-boundary").textContent =
+      `${definition.label} was not copied. Your current saved selection is unchanged.`;
+    console.error(error);
+  } finally {
+    button.textContent = originalLabel;
+    if (selectionStrategies) renderStrategyBoard();
+  }
 }
 
 function rawSelectionScore(selection) {
@@ -869,33 +1205,6 @@ function scoreSelection(selection) {
   return advice.selection.expectedPoints + userDelta;
 }
 
-function updateOwnerComparison(revision) {
-  const card = document.querySelector(
-    '[data-alternative-name="My selection"]',
-  );
-  if (!card) return;
-  const description = card.querySelector("p");
-  const result = card.querySelector("span");
-  if (!revision) {
-    description.textContent =
-      "Create a draft from the model, then edit it to compare your choices on the same forecast.";
-    result.textContent = "No saved squad";
-    return;
-  }
-
-  const ownerPoints = selectionComparison?.selectionRevisionId === revision.selectionRevisionId
-    ? selectionComparison.user.projectedPoints
-    : scoreSelection(revision.selection);
-  const modelPoints = selectionComparison?.selectionRevisionId === revision.selectionRevisionId
-    ? selectionComparison.model.projectedPoints
-    : advice.selection.expectedPoints;
-  const difference = ownerPoints - modelPoints;
-  description.textContent =
-    `Revision ${revision.revision} scored against forecast #${revision.forecastArtifactId}.`;
-  result.textContent =
-    `${ownerPoints.toFixed(1)} pts · ${difference >= 0 ? "+" : ""}${difference.toFixed(1)} vs model`;
-}
-
 async function loadSelectionComparison(revision) {
   selectionComparison = null;
   if (!revision) return;
@@ -908,7 +1217,6 @@ async function loadSelectionComparison(revision) {
       throw new Error(`Comparison request failed with ${response.status}`);
     }
     selectionComparison = await response.json();
-    updateOwnerComparison(revision);
     renderBuilderScoreboard();
   } catch (error) {
     document.querySelector("#builder-comparison-note").textContent =
@@ -937,9 +1245,11 @@ function setSelectionFeedback(message, state = null) {
 function renderSelectionState(revision, feedback = "") {
   if (selectionRevision?.selectionRevisionId !== revision?.selectionRevisionId) {
     selectionComparison = null;
+    selectionStrategies = null;
+    selectionScenarioScore = null;
+    if (advice) renderStrategyBoard();
   }
   selectionRevision = revision;
-  updateOwnerComparison(revision);
   const panel = document.querySelector("#selection-workflow");
   const title = document.querySelector("#selection-workflow-title");
   const state = document.querySelector("#selection-state");
@@ -1454,7 +1764,11 @@ function showModelSquad(options = {}) {
   document.body.classList.remove("builder-page-active");
   document.querySelector("#squad-builder-page").hidden = true;
   activeSquadView = "model";
+  previewedStrategyId = "model";
   renderSquadPlayers(advice.selection.players);
+  document.querySelector("#selection-objective").textContent =
+    advice.selection.objective;
+  updateStrategyPreviewState();
   setActiveNavigation("model-squad");
   setBreadcrumb("Model squad");
   document.querySelector("#model-squad").scrollIntoView({ block: "start" });
@@ -1499,6 +1813,7 @@ async function saveSelectionRevision() {
       "New draft saved. Review it, then lock this revision explicitly.",
     );
     await loadSelectionComparison(revised);
+    await loadSelectionStrategies();
     document.querySelector("#builder-feedback").textContent =
       "Draft saved. The comparison now reflects the authoritative revision.";
   } catch (error) {
@@ -1578,6 +1893,7 @@ async function createSelectionDraft() {
       revision,
       "Draft created. Review the squad, then lock it when you are satisfied.",
     );
+    await loadSelectionStrategies();
     showSquadBuilder();
   } catch (error) {
     setSelectionFeedback(
@@ -1647,8 +1963,15 @@ async function loadAdvice() {
     renderAdvice(await response.json());
     await loadPlayerForecast();
     await loadSelectionState();
+    await loadSelectionStrategies();
     if (window.location.hash === "#my-squad") {
       showSquadBuilder({ updateHistory: false });
+    } else if (window.location.hash === "#strategies") {
+      setActiveNavigation("strategies");
+      setBreadcrumb("Strategies");
+      document.querySelector("#strategies").scrollIntoView({
+        block: "start",
+      });
     } else if (window.location.hash === "#model-squad") {
       showModelSquad({ updateHistory: false });
     }
@@ -2062,6 +2385,14 @@ window.addEventListener("popstate", () => {
     });
   } else if (document.body.classList.contains("player-page")) {
     closeDossier({ updateHistory: false, restoreScroll: false });
+  } else if (window.location.hash === "#strategies") {
+    document.body.classList.remove("builder-page-active");
+    document.querySelector("#squad-builder-page").hidden = true;
+    setActiveNavigation("strategies");
+    setBreadcrumb("Strategies");
+    document.querySelector("#strategies").scrollIntoView({
+      block: "start",
+    });
   } else if (window.location.hash === "#my-squad") {
     showSquadBuilder({ updateHistory: false });
   } else if (window.location.hash === "#model-squad") {

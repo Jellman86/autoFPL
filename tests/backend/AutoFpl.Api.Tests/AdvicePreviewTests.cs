@@ -78,7 +78,16 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
         Assert.Contains("Primary navigation", body, StringComparison.Ordinal);
         Assert.Contains("Breadcrumb", body, StringComparison.Ordinal);
         Assert.Contains("Model squad", body, StringComparison.Ordinal);
+        Assert.Contains("Strategies", body, StringComparison.Ordinal);
         Assert.Contains("My squad", body, StringComparison.Ordinal);
+        Assert.Contains(
+            "Compare matchday strategies",
+            body,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "id=\"strategy-list\"",
+            body,
+            StringComparison.Ordinal);
         Assert.Contains("Ask about this exact selection", body, StringComparison.Ordinal);
         Assert.Contains("Player evidence", body, StringComparison.Ordinal);
         Assert.Contains("Back to squad", body, StringComparison.Ordinal);
@@ -131,6 +140,18 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
             StringComparison.Ordinal);
         Assert.Contains(
             "advice.selection.expectedPoints + userDelta",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "/api/v1/selections/current/role-strategies-shadow",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "Preview only; your saved selection is unchanged.",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "baseRevision.forecastArtifactId !== advice.forecastArtifactId",
             script,
             StringComparison.Ordinal);
         Assert.DoesNotContain(

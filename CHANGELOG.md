@@ -48,6 +48,14 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **The decision room now compares fixed-squad matchday strategies.** A
+  responsive evidence board presents the current model roles plus balanced,
+  safer and higher-ceiling XI, bench and captaincy choices with mean, 10th and
+  90th percentiles and paired win/tie/loss context. Previewing changes only the
+  displayed pitch; copying requires an explicit draft action, preserves exact
+  forecast lineage even when an older draft exists, opens the full My Squad
+  builder for review and never sends an action to FPL. Missing or recalculating
+  shadow artifacts remain an honest non-actionable state.
 - **Fixed-squad role strategies now cross the private product boundary.**
   Migration 28 stores one immutable, content-hashed strategy set per exact
   selection-score artifact and search version. The network-isolated worker
