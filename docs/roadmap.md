@@ -589,6 +589,13 @@ Retain the exact appearance-hurdle specification as the next current
 Gameweek 1–8 shadow. Do not silently substitute it into the incumbent
 scenario or opening-squad lineage; rebuild and compare those artifacts under a
 new explicit model identity.
+That current path is now complete as a read-only challenger. It replaces
+Pickford, Rodon and Anderson with Leno, Tarkowski and Rayan while retaining 12
+players, reaches a zero-gap six-week optimum and gains 1.97 mean points on its
+38 paired paths. Those three removed players were independently the three
+least stable incumbent selections. Treat this as the strongest supported
+current opener, but keep the serving handoff explicit and versioned because
+current outcomes remain unavailable.
 
 The SQLite persistence vertical slice is deployed and survives a managed
 container recreate. Operator-triggered fixed-origin official FPL collectors

@@ -157,6 +157,43 @@ class CurrentMultiHorizonJointScenariosTests(unittest.TestCase):
                 week["sourceGameweeksByPath"],
             )
 
+    def test_point_model_appearance_drives_hurdle_paths(self) -> None:
+        helper = joint_helpers.CurrentJointScenarioForecastTests()
+        with helper._database() as database:
+            point, participation, screen = helper._artifacts(database)
+            multi_point = self._multi_point(point)
+            multi_point["artifactVersion"] = "test-hurdle-point-v1"
+            for player in multi_point["players"]:
+                for week in player["gameweeks"]:
+                    week["appearanceProbability"] = 0.8
+            artifact = _build_from_artifacts(
+                database,
+                multi_point,
+                participation,
+                screen,
+                allowed_point_artifact_versions=(
+                    "test-hurdle-point-v1",
+                ),
+            )
+
+        for player in artifact["players"]:
+            self.assertLessEqual(
+                player["gameweeks"][0]["appearanceProbability"],
+                0.8,
+            )
+            self.assertEqual(
+                "point-model-appearance-with-official-ceiling",
+                player["gameweeks"][0]["appearanceVariant"],
+            )
+            self.assertEqual(
+                0.8,
+                player["gameweeks"][1]["appearanceProbability"],
+            )
+            self.assertEqual(
+                "point-model-appearance",
+                player["gameweeks"][1]["appearanceVariant"],
+            )
+
     def test_misaligned_or_incomplete_sources_fail_closed(self) -> None:
         helper = joint_helpers.CurrentJointScenarioForecastTests()
         with helper._database() as database:

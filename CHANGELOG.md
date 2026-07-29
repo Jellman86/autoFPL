@@ -54,6 +54,13 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **The retained hurdle model now produces a complete current opening-squad
+  challenger.** It fits raw appearance and conditional-point components for
+  Gameweeks 1–8, applies Gameweek 1 official availability coherently, rebuilds
+  the retained joint paths and solves the registered six-week policy to zero
+  gap. The first squad replaces Pickford, Rodon and Anderson—the three least
+  stable incumbent picks—with Leno, Tarkowski and Rayan, gaining 1.97 mean
+  points on its paired paths while remaining prospective and non-serving.
 - **Player-point research now includes an explicit appearance hurdle.** A
   read-only identical-fold evaluator compares the retained direct point tree
   with `P(appearance) × E(points | appearance)`, using a fixed classifier on
