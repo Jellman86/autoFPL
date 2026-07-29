@@ -347,6 +347,24 @@ all eight role decisions frozen and is the current decision-room prediction.
 It remains explicitly prospectively unscored and unpromoted. See the
 [best-supported v2 specification](../../docs/research/current-best-supported-opening-squad-v2.md).
 
+The model-level opening-policy screen reconstructs the direct and hurdle
+distributions on identical historical opening targets, globally solves the
+same registered six-Gameweek policy and compares exact eight-Gameweek realised
+FPL scores:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.historical_appearance_hurdle_opening_evaluation \
+  --database /path/to/autofpl.db \
+  --output /path/to/historical-hurdle-opening-evaluation.json
+```
+
+The first fixed run retained the hurdle challenger with a 20.67-point mean
+gain and three wins from three targets. Because those outcomes were already
+opened, the result strengthens the current prospective choice but cannot
+promote it. See the
+[historical hurdle opening-policy evaluation](../../docs/research/historical-appearance-hurdle-opening-policy-evaluation-v1.md).
+
 The conditional-optimality audit distinguishes an exact solver result from a
 robust player choice:
 

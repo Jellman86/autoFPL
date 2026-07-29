@@ -54,6 +54,15 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **The appearance-hurdle model now has complete opening-policy evidence.**
+  A target-outcome-free reconstruction fits its appearance and conditional
+  point components on strictly earlier season archives, rebuilds joint paths
+  and globally solves the same six-Gameweek expected-points policy as the
+  incumbent. On the three historical opening targets it gained 37, 4 and 21
+  realised eight-Gameweek points, passing the fixed +2 mean, two-win and
+  worst-regression gates with a +20.67 mean gain and three wins. The result
+  retains a prospective challenger but cannot promote it because those
+  outcomes were already opened.
 - **The best-supported opening squad now reaches the product as an explicit
   v2 decision.** The worker freezes the hurdle-model squad and all eight role
   decisions, the immutable store retains v1 and v2 side-by-side, and the

@@ -603,6 +603,14 @@ the decision room displays v2's squad, roles and player means. “Use prediction
 as draft” copies the shown GW1 choice before any explicit lock. V2 is therefore
 the best-supported current product prediction, while its status remains
 prospective-unscored and its promotion flag remains false.
+The hurdle model has now also passed a complete historical opening-policy
+screen under the already selected six-Gameweek expected-points decision rule.
+Against the direct-tree incumbent it gained 37, 4 and 21 realised points over
+the first eight Gameweeks of the 2023/24, 2024/25 and 2025/26 targets,
+respectively. The +20.67 mean gain, three target wins and +4 worst-target gain
+clear the fixed materiality and stability gates. This is the strongest
+retrospective decision evidence for v2, but the targets were already opened;
+only frozen 2026/27 outcomes can provide prospective promotion evidence.
 
 The SQLite persistence vertical slice is deployed and survives a managed
 container recreate. Operator-triggered fixed-origin official FPL collectors
