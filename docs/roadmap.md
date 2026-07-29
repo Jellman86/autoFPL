@@ -666,12 +666,17 @@ identical rows. A whole-Gameweek residual candidate has passed its retrospective
 prospective shadow. It remains outside the product until genuinely new outcomes
 score that frozen shadow. The matrix now crosses a strict private application
 boundary through a network-isolated worker, immutable SQLite artifact and
-current/stale/missing readiness contract, but it does not yet feed candidate
-selection scoring.
+current/stale/missing readiness contract. A deterministic read-only selection
+score shadow now binds that matrix to the exact model selection and latest
+user-owned revision, preserves all 38 paired score rows and emits distribution
+and win/tie/loss summaries. It remains an operator artifact until a stable
+application-produced SQLite snapshot handoff and strict product importer are
+implemented.
 
-- Feed the persisted matrix into the existing CPU scorer for the model and
-  user-owned selection, then establish a representative workload before
-  implementing the GPU parity/benchmark path.
+- Persist and expose the current selection score artifact through a stable
+  application-produced database snapshot handoff and strict importer.
+- Establish a representative workload before implementing the GPU
+  parity/benchmark path.
 - Score the frozen matrix prospectively as final outcomes arrive.
 - Generate recommended, safer and higher-ceiling legal selections.
 - Let the user create a draft selection and compare its forecast distribution.

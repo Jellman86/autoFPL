@@ -34,6 +34,13 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **The current model and user selection can now be scored on identical joint
+  scenario rows.** A deterministic read-only shadow binds the exact persisted
+  scenario, official-capture Baseline v0 forecast and latest immutable user
+  revision, then applies the CPU reference's official auto-substitution and
+  captaincy semantics. It emits content-addressed distribution summaries,
+  exact score rows and paired win/tie/loss deltas while remaining unpromoted
+  and unable to influence advice.
 - **Joint scenario matrices now cross a strict private application boundary.**
   Migration 26 stores one append-only, content-hashed matrix per exact official
   capture only after validating the frozen screen, source archive, point
