@@ -74,6 +74,7 @@ still require owner authentication.
 - [Multi-season preseason shadow forecast v1](research/multi-season-preseason-shadow-forecast-v1.md) — exact-capture 2026/27 GW1 raw point comparison from the frozen two-season tree, unable to influence advice.
 - [CPU joint-scenario reference v1](research/cpu-joint-scenario-reference-v1.md) — seeded whole-row sampling and exact auto-substitution, formation and captaincy scoring for paired strategy comparisons.
 - [Current multi-horizon player forecast v1](research/current-multi-horizon-player-forecast-v1.md) — cutoff-bound Gameweek 1–8 point means and registered 3/6/8 opening-squad horizons.
+- [Current multi-horizon joint scenarios v1](research/current-multi-horizon-joint-scenarios-v1.md) — whole-Gameweek dependent residual rows paired into fixed-seed opening-horizon paths.
 - [Joint player-Gameweek scenario shadow v1](research/joint-player-gameweek-scenario-shadow-v1.md) — expanding-origin CRPS screen, whole-Gameweek residual rows and the exact 2026/27 GW1 prospective shadow matrix.
 - [Current selection scenario score shadow v1](research/current-selection-scenario-score-shadow-v1.md) — exact model and user revision scoring on identical joint rows through the strict product handoff.
 - [Current selection role strategies shadow v1](research/current-selection-role-strategies-shadow-v1.md) — bounded balanced, lower-tail and upper-tail XI, bench and captaincy search on the fixed 15-player squad.
