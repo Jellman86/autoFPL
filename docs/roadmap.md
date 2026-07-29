@@ -514,10 +514,15 @@ scenario scoring. Historical horizon/risk-policy selection remains the next
 decision-quality gate; the current artifact recommends no policy.
 
 The pinned historical archive registry now extends back through 2022/23.
-Together with 2023/24, these exact raw archives provide four expanding
-opening-season evaluation targets instead of a scientifically inadequate
-single comparison. Historical `value` is confined to the decision constraint;
-same-Gameweek `xP` remains excluded.
+Together with 2023/24, these exact raw archives provide four seasons and three
+strict expanding-origin opening-season evaluation targets instead of a
+scientifically inadequate single comparison. The 2022/23 archive is the first
+training seed, not an evaluation target. The read-only opening-policy data
+audit verifies exact raw payload hashes, reconstructs each target's Gameweek 1
+cohort and price, joins Gameweek 1–8 outcomes and proves legal-pool feasibility.
+Historical `value` is confined to the decision constraint; same-Gameweek `xP`
+remains excluded. Forecast reconstruction and frozen six-policy comparison
+remain the next decision-quality gate.
 
 The SQLite persistence vertical slice is deployed and survives a managed
 container recreate. Operator-triggered fixed-origin official FPL collectors

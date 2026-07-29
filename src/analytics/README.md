@@ -36,6 +36,27 @@ challenger; it cannot promote or silently replace Baseline v0.
 The design, limitations and first retained result are recorded in the
 [historical preseason specification](../../docs/research/historical-preseason-evaluation-v1.md).
 
+## Historical opening-policy data v1
+
+The opening-policy audit reconstructs the target-season Gameweek 1 player
+cohort and price constraint from the hash-verified immutable raw archive, then
+joins official Gameweek 1–8 outcomes:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.historical_opening_policy_data \
+  --database /path/to/autofpl.db \
+  --output /path/to/historical-opening-policy-data.json
+```
+
+It creates three expanding-season targets: 2023/24 trains on 2022/23, 2024/25
+trains on both earlier seasons, and 2025/26 trains on all three earlier
+seasons. Historical `value` is used only as the target-season budget
+constraint; same-Gameweek `xP` is explicitly excluded. The report verifies
+raw hashes, stable-code joins, legal-pool feasibility and outcome coverage
+without writing SQLite or selecting a policy. See the
+[opening-policy data specification](../../docs/research/historical-opening-policy-data-v1.md).
+
 ## Multi-season expanding-origin evaluation v1
 
 The multi-season evaluator asks whether carrying exact-code 2024/25 history
