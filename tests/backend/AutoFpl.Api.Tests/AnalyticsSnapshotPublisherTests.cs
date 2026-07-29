@@ -46,13 +46,85 @@ public sealed class AnalyticsSnapshotPublisherTests : IDisposable
         Assert.Equal(
             "unchanged",
             await publisher.PublishOnceAsync(cancellationToken));
-
         var readOnly = new SqliteConnectionStringBuilder
         {
             DataSource = snapshotPath,
             Mode = SqliteOpenMode.ReadOnly,
             Pooling = false,
         };
+
+        await using (var source =
+            new SqliteConnection(databaseOptions.ConnectionString))
+        {
+            await source.OpenAsync(cancellationToken);
+            await using SqliteCommand outcome = source.CreateCommand();
+            outcome.CommandText =
+                """
+                INSERT INTO official_fpl_captures (
+                    capture_id, schema_version, source_key, season_code,
+                    bootstrap_url, fixtures_url, retrieved_at_utc,
+                    available_at_utc, bootstrap_sha256, fixtures_sha256,
+                    bootstrap_json, fixtures_json, event_count, team_count,
+                    player_count, fixture_count, next_gameweek_number,
+                    next_deadline_utc, latest_completed_gameweek,
+                    created_at_utc
+                )
+                VALUES (
+                    1, '1.0', 'official-fpl-api/v1', '2026-27',
+                    'https://example.test/bootstrap',
+                    'https://example.test/fixtures',
+                    '2026-08-22T12:00:00Z',
+                    '2026-08-22T12:00:00Z', $bootstrapHash,
+                    $fixturesHash, X'7B7D', X'5B5D', 38, 20, 600, 380,
+                    2, '2026-08-28T17:30:00Z', 1,
+                    '2026-08-22T12:00:00Z'
+                );
+                INSERT INTO official_fpl_outcome_captures (
+                    outcome_capture_id, schema_version, source_key,
+                    season_code, gameweek, reference_capture_id, live_url,
+                    retrieved_at_utc, available_at_utc, live_sha256,
+                    live_json, player_count, gameweek_fixture_count,
+                    created_at_utc
+                )
+                VALUES (
+                    1, '1.0', 'official-fpl-api-event-live/v1',
+                    '2026-27', 1, 1, 'https://example.test/event/1/live',
+                    '2026-08-22T12:00:00Z',
+                    '2026-08-22T12:00:00Z', $liveHash, X'7B7D',
+                    600, 10, '2026-08-22T12:00:00Z'
+                );
+                """;
+            outcome.Parameters.AddWithValue(
+                "$bootstrapHash",
+                new string('a', 64));
+            outcome.Parameters.AddWithValue(
+                "$fixturesHash",
+                new string('b', 64));
+            outcome.Parameters.AddWithValue(
+                "$liveHash",
+                new string('c', 64));
+            await outcome.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        Assert.Equal(
+            "published",
+            await publisher.PublishOnceAsync(cancellationToken));
+        await using (var outcomeSnapshot =
+            new SqliteConnection(readOnly.ToString()))
+        {
+            await outcomeSnapshot.OpenAsync(cancellationToken);
+            await using SqliteCommand count =
+                outcomeSnapshot.CreateCommand();
+            count.CommandText =
+                "SELECT COUNT(*) FROM official_fpl_outcome_captures;";
+            Assert.Equal(
+                1L,
+                await count.ExecuteScalarAsync(cancellationToken));
+        }
+        Assert.Equal(
+            "unchanged",
+            await publisher.PublishOnceAsync(cancellationToken));
+
         await using (var snapshot =
             new SqliteConnection(readOnly.ToString()))
         {

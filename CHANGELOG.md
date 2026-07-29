@@ -54,6 +54,14 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **The initial-squad prediction now has an untouched prospective scoring
+  path.** A deterministic read-only evaluator waits for the later final
+  official outcome, verifies the frozen candidate, scenario, full-cohort
+  Baseline v0 and outcome identities, then scores model and candidate through
+  the exact FPL rules. It also reports point MAE/RMSE/bias, empirical CRPS and
+  appearance Brier/log loss on explicit cohorts without retraining or making a
+  promotion decision. Analytics snapshots now advance when an initial-squad
+  artifact or official outcome arrives.
 - **The current initial-squad optimiser now crosses the private shadow
   boundary.** Migration 30 stores one immutable candidate per exact scenario,
   served forecast and optimiser version. The network-isolated worker
