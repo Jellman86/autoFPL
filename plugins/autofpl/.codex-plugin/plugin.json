@@ -24,13 +24,14 @@
     "capabilities": [
       "Read-only squad prediction",
       "Cutoff-correct player evidence",
-      "Forecast uncertainty"
+      "Forecast uncertainty",
+      "Scenario strategy comparison"
     ],
     "websiteURL": "https://autofpl.pownet.uk",
     "defaultPrompt": [
       "Give me autoFPL's current squad prediction and explain the evidence.",
       "Show the evidence and risks for a player in autoFPL.",
-      "Who are captain and vice-captain in the current prediction?"
+      "Compare autoFPL's current balanced, safer and higher-ceiling strategies."
     ],
     "brandColor": "#063F34"
   },
