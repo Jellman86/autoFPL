@@ -77,6 +77,7 @@ still require owner authentication.
 - [Current multi-horizon joint scenarios v1](research/current-multi-horizon-joint-scenarios-v1.md) — whole-Gameweek dependent residual rows paired into fixed-seed opening-horizon paths.
 - [Current multi-horizon initial squad v1](research/current-multi-horizon-initial-squad-v1.md) — zero-gap legal 3/6/8-week expected-value and lower-tail-CVaR opening-squad policies with exact FPL rescoring.
 - [Current selected opening-squad shadow v1](research/current-selected-opening-squad-shadow-v1.md) — exact historical-policy binding with all eight preseason role decisions frozen for prospective scoring.
+- [Selected opening-squad prospective outcome evaluation v1](research/selected-opening-squad-prospective-outcome-evaluation-v1.md) — preregistered incremental Gameweek 1–8 exact-FPL comparison with frozen same-capture benchmarks and a non-automatic promotion-evidence gate.
 - [Joint player-Gameweek scenario shadow v1](research/joint-player-gameweek-scenario-shadow-v1.md) — expanding-origin CRPS screen, whole-Gameweek residual rows and the exact 2026/27 GW1 prospective shadow matrix.
 - [Current selection scenario score shadow v1](research/current-selection-scenario-score-shadow-v1.md) — exact model and user revision scoring on identical joint rows through the strict product handoff.
 - [Current selection role strategies shadow v1](research/current-selection-role-strategies-shadow-v1.md) — bounded balanced, lower-tail and upper-tail XI, bench and captaincy search on the fixed 15-player squad.

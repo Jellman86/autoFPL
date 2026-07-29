@@ -336,6 +336,22 @@ PYTHONPATH=src/analytics python3 \
   --output /path/to/initial-squad-outcome.json
 ```
 
+The selected multi-Gameweek opening policy has a separate preregistered,
+incremental Gameweek 1–8 evaluator:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.selected_opening_squad_outcome_evaluation \
+  --database /path/to/autofpl.db \
+  --output /path/to/selected-opening-squad-outcome.json
+```
+
+It freezes the final predeadline selected artifact, scores the exact stored
+weekly roles with the reference FPL scorer, and compares them with two
+same-capture GW1 benchmarks held unchanged. Before an official outcome exists
+it exits successfully in a waiting state and writes no artifact. Gameweek 1–7
+reports are partial and cannot pass the promotion-evidence gate.
+
 Before the outcome, the command returns
 `waiting-for-official-outcome` without writing a report. The evaluated report
 uses official points and appearance, exact FPL auto-substitution/captaincy,
