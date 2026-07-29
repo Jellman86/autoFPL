@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "autofpl": {
+      "type": "http",
+      "url": "https://autofpl.pownet.uk/mcp"
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "name": "autofpl",
+  "version": "0.1.0",
+  "description": "Evidence-grounded Fantasy Premier League predictions",
+  "author": {
+    "name": "Jellman86",
+    "url": "https://github.com/Jellman86"
+  },
+  "homepage": "https://autofpl.pownet.uk",
+  "repository": "https://github.com/Jellman86/autoFPL",
+  "license": "AGPL-3.0-only",
+  "keywords": [
+    "fantasy-premier-league",
+    "football",
+    "prediction",
+    "mcp"
+  ],
+  "interface": {
+    "displayName": "autoFPL",
+    "shortDescription": "Evidence-grounded FPL advice",
+    "longDescription": "Inspect autoFPL's current public squad prediction and cutoff-correct player evidence in ChatGPT or Codex. Forecast status, uncertainty and source boundaries remain explicit.",
+    "developerName": "Jellman86",
+    "category": "Productivity",
+    "capabilities": [
+      "Read-only squad prediction",
+      "Cutoff-correct player evidence",
+      "Forecast uncertainty"
+    ],
+    "websiteURL": "https://autofpl.pownet.uk",
+    "defaultPrompt": [
+      "Give me autoFPL's current squad prediction and explain the evidence.",
+      "Show the evidence and risks for a player in autoFPL.",
+      "Who are captain and vice-captain in the current prediction?"
+    ],
+    "brandColor": "#063F34"
+  },
+  "mcpServers": "./.mcp.json"
+}

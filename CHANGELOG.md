@@ -48,6 +48,11 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **autoFPL now has a validated ChatGPT/Codex development plugin package.**
+  The repo-owned manifest connects hosts to the production Streamable HTTP MCP
+  endpoint and offers grounded starter prompts for the public prediction and
+  player evidence tools. The package embeds no credential, keeps owner state
+  out of scope and records the remaining public-submission and OAuth boundary.
 - **ChatGPT and Hermes can now retrieve the current public prediction through
   MCP.** The anonymous `get_current_prediction` tool returns the exact
   persisted model squad, XI, bench, captaincy, cutoff, artifact identity,
