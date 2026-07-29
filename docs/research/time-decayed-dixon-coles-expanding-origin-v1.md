@@ -65,6 +65,34 @@ result-NLL regression, no goal-RMSE regression and a strict majority of fold
 wins. Passing retains its rates for a player-distribution ablation. It cannot
 directly influence advice.
 
+## Retained result
+
+The corrected two-stage fit converged in every fold with 37–52 Poisson
+iterations, final gradient infinity norms between 0.000484 and 0.011487 and
+low-score `rho` estimates between -0.120333 and -0.078834. This confirms that
+the model learned team effects rather than reproducing the baseline.
+
+Across 79 matches in eight 2025/26 folds:
+
+| Metric | League Poisson | Dixon–Coles | Change |
+| --- | ---: | ---: | ---: |
+| Joint-score NLL | 2.888884 | 2.877264 | -0.40% |
+| Result NLL | 1.062630 | 1.011422 | -4.82% |
+| Result Brier | 0.641665 | 0.603593 | -5.93% |
+| Goal RMSE | 1.083032 | 1.080398 | -0.24% |
+| Clean-sheet Brier | 0.183430 | 0.172037 | -6.21% |
+
+The challenger won only three of eight folds and its primary joint-score NLL
+gain was below 1%. The fixed screen therefore returned
+`do-not-use-as-player-feature`. Its stronger result and clean-sheet diagnostics
+are useful evidence, but they do not override the registered gate.
+
+The next separate candidate will estimate latent attack and defence from
+historical player-level expected goals aggregated to each team fixture.
+Expected goals may reduce the outcome noise present in realized goals. That
+candidate must beat both the league baseline and this realized-goal model
+without reinterpreting the current folds as fresh promotion evidence.
+
 ## Reproduction
 
 ```shell
