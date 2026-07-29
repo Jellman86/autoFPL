@@ -285,21 +285,23 @@ specific fields into a forecast.
 
 ## Historical FPL season archive
 
-Run either fixed, commit-pinned historical import as an operator command:
+Run any fixed, commit-pinned historical import as an operator command:
 
 ```text
+dotnet AutoFpl.Api.dll --import-historical-fpl-season 2022-23
+dotnet AutoFpl.Api.dll --import-historical-fpl-season 2023-24
 dotnet AutoFpl.Api.dll --import-historical-fpl-season 2024-25
 dotnet AutoFpl.Api.dll --import-historical-fpl-season 2025-26
 ```
 
 Omitting the season retains the original 2025/26 default. The command accepts
-only the two registered season codes and no URL or revision. It downloads only
-the registered CSV resources, disables redirects, bounds each response to 6
-MiB, verifies exact SHA-256 and normalized row-count identities, maps season
-element IDs to stable official player codes and writes atomically. Exact raw
-bytes stay compressed in private SQLite. The normalized schema deliberately
-has no `xP` column; absent 2024/25 defensive metrics remain null. Re-running a
-pinned revision is idempotent.
+only the four registered season codes and no URL or revision. It downloads
+only the registered CSV resources, disables redirects, bounds each response
+to 6 MiB, verifies exact SHA-256 and normalized row-count identities, maps
+season element IDs to stable official player codes and writes atomically.
+Exact raw bytes stay compressed in private SQLite. The normalized schema
+deliberately has no `xP` column; unavailable defensive metrics remain null.
+Re-running a pinned revision is idempotent.
 
 This archive did not exist in autoFPL at the original Gameweek deadlines.
 Accordingly, it supplies historical outcomes and an early-season durability

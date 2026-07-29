@@ -33,6 +33,22 @@ internal static class HistoricalFplSeasonRegistry
     public static IReadOnlyList<HistoricalFplSeasonDefinition> Seasons { get; } =
     [
         new(
+            "2022-23",
+            SourceRevision,
+            "a874c12817bbf4d454e60a5765629742b528d4ad0c2f39f56e4fc89640605f7f",
+            "b78a6d0456141f9033c32fc4122931baae780ac4a4938683451b1fce7a4fdd15",
+            778,
+            26_505,
+            new(2026, 6, 17, 12, 19, 44, TimeSpan.Zero)),
+        new(
+            "2023-24",
+            SourceRevision,
+            "43d8cf5efb3d901f2499558c40b392b7f0ee22afe28030f36266ad29024c63d9",
+            "e9c09c8856f1c86b4f920f46ddd5033af83409439dfda53be925df2a3e7c8a9e",
+            865,
+            29_725,
+            new(2026, 6, 17, 12, 19, 44, TimeSpan.Zero)),
+        new(
             "2024-25",
             SourceRevision,
             "75686051b265cbe7755ac71213ecaad21b26ee1cc46a8bafbba19c39ce894b05",

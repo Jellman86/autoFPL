@@ -513,6 +513,12 @@ frozen expected-value and worst-20%-CVaR policies, then applies exact FPL
 scenario scoring. Historical horizon/risk-policy selection remains the next
 decision-quality gate; the current artifact recommends no policy.
 
+The pinned historical archive registry now extends back through 2022/23.
+Together with 2023/24, these exact raw archives provide four expanding
+opening-season evaluation targets instead of a scientifically inadequate
+single comparison. Historical `value` is confined to the decision constraint;
+same-Gameweek `xP` remains excluded.
+
 The SQLite persistence vertical slice is deployed and survives a managed
 container recreate. Operator-triggered fixed-origin official FPL collectors
 store exact raw hashes, retrieval-time availability and normalised
