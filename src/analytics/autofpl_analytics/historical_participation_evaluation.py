@@ -291,9 +291,13 @@ def _predict_classifier(
     training: Sequence[Sample],
     target: Sequence[Sample],
     model_name: str,
+    continuous_features: Sequence[str] = FEATURES,
 ) -> Tuple[List[Prediction], Dict[str, Any]]:
-    raw_training, feature_names = _matrix(training, FEATURES)
-    raw_target, _ = _matrix(target, FEATURES)
+    raw_training, feature_names = _matrix(
+        training,
+        continuous_features,
+    )
+    raw_target, _ = _matrix(target, continuous_features)
     selected = [
         index
         for index in range(raw_training.shape[1])

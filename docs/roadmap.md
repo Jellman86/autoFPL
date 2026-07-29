@@ -577,6 +577,18 @@ three of four positions, but missed the fixed 1% MAE gate. It is not retained.
 Do not tune an age weight against the same opened folds merely to bridge the
 0.20-point threshold gap; a separately specified partial-pooling or recency
 model needs independent chronological evidence.
+The next fixed challenger addresses the forecast's zero-inflated structure
+directly. It multiplies a fold-local appearance probability by a point
+regression trained only on appearance-positive rows and compares that
+unconditional mean with the retained direct tree on identical target players.
+This is the first point challenger that makes the already supported
+participation mechanism explicit rather than asking one regression to absorb
+lineup chance and performance simultaneously. The result passed: MAE improved
+by 1.86%, RMSE improved, all eight folds won and every position improved.
+Retain the exact appearance-hurdle specification as the next current
+Gameweek 1–8 shadow. Do not silently substitute it into the incumbent
+scenario or opening-squad lineage; rebuild and compare those artifacts under a
+new explicit model identity.
 
 The SQLite persistence vertical slice is deployed and survives a managed
 container recreate. Operator-triggered fixed-origin official FPL collectors

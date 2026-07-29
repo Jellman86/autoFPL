@@ -54,6 +54,15 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **Player-point research now includes an explicit appearance hurdle.** A
+  read-only identical-fold evaluator compares the retained direct point tree
+  with `P(appearance) × E(points | appearance)`, using a fixed classifier on
+  all earlier rows and a conditional point tree on appearance-positive rows.
+  Unconditional MAE, RMSE, fold and position gates remain authoritative while
+  appearance calibration and conditional-point errors expose component
+  failure modes. The first result passed every gate: MAE improved by 1.86%,
+  RMSE improved, all eight folds won and all four positions improved, retaining
+  the exact specification for a separately versioned current shadow.
 - **The point model now has a fixed training-window screen.** A deterministic
   read-only evaluator compares the retained two-season histogram tree with an
   otherwise unchanged four-season challenger on identical 2025/26
