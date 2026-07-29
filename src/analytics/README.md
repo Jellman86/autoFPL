@@ -78,8 +78,8 @@ distribution and cannot influence selection. See the
 
 The same fixed command is packaged as the non-root
 `ghcr.io/jellman86/autofpl-analytics` companion image. Its default invocation
-polls the read-only `/data/autofpl.db`, does nothing while the exact shadow is
-current, and atomically writes one capture-named JSON artifact to
+polls the read-only `/analytics-snapshot/autofpl.db`, does nothing while the
+exact shadow is current, and atomically writes one capture-named JSON artifact to
 `/analytics-inbox` when the latest supported target is missing. Once the point
 shadow is present, the same worker creates the separately named joint scenario
 handoff; it never skips the point prerequisite or combines the two import
@@ -89,17 +89,19 @@ UID `1654`:
 ```bash
 docker run \
   --read-only \
-  --volume /private/autofpl:/data:ro \
+  --volume /private/autofpl-snapshot:/analytics-snapshot:ro \
   --volume autofpl-analytics-inbox:/analytics-inbox \
   ghcr.io/jellman86/autofpl-analytics:dev
 ```
 
-The worker never writes SQLite, exposes no port and supports only the frozen
-2026/27 GW1 target. The `.NET` application remains the only strict product
-import boundary: when its bounded inbox poll is enabled, it imports at most one
-file of each type per cycle and renames it `.imported` or `.rejected`. The
-worker treats either marker as final for that capture, avoiding a regeneration
-loop.
+The application publishes the standalone integrity-checked snapshot with
+SQLite's online-backup operation and atomically replaces it when relevant
+source identity changes. The worker never writes SQLite, exposes no port and
+supports only the frozen 2026/27 GW1 target. The `.NET` application remains the
+only strict product import boundary: when its bounded inbox poll is enabled, it
+imports at most one file of each type per cycle and renames it `.imported` or
+`.rejected`. The worker treats either marker as final for that exact source
+identity, avoiding a regeneration loop.
 
 ## CPU joint-scenario reference v1
 

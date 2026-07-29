@@ -42,6 +42,13 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **The current fixed squad now has three legal scenario strategies.** A
+  deterministic bounded beam search uses the exact CPU substitution and
+  captaincy reference to compare balanced mean points, worst-20% tail mean and
+  best-20% tail mean objectives while changing only XI, bench order and
+  captaincy. The current GW1 shadow evaluated 4,008 legal candidates in about
+  two seconds and found three distinct role plans, but the in-sample result is
+  explicitly unpromoted and cannot influence advice.
 - **Current selection distributions now cross the private product boundary.**
   Migration 27 stores one immutable content-hashed score per exact scenario,
   Baseline v0 artifact and latest user revision. The network-isolated worker

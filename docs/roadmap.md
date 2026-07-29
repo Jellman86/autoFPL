@@ -675,12 +675,15 @@ mount when relevant source identity changes, removing the live-WAL timing
 dependency. Migration 27, the private inbox and a strict importer now persist
 that score with exact scenario/forecast/revision lineage; a read-only API
 returns it only while all three inputs remain current. It remains shadow
-evidence and cannot influence advice.
+evidence and cannot influence advice. A deterministic three-iteration beam
+search now generates balanced, worst-20%-tail and best-20%-tail role strategies
+on the fixed 15-player squad. The current 4,008-candidate workload completes in
+about two CPU seconds, so GPU acceleration is deferred until transfer-aware or
+multi-Gameweek search demonstrates a measured bottleneck.
 
-- Establish a representative workload before implementing the GPU
-  parity/benchmark path.
 - Score the frozen matrix prospectively as final outcomes arrive.
-- Generate recommended, safer and higher-ceiling legal selections.
+- Persist and expose the fixed-squad strategy artifact through the strict
+  private handoff.
 - Let the user create a draft selection and compare its forecast distribution.
 - Show objective, expected gain/loss, uncertainty and the evidence that changes
   between candidates.
