@@ -704,8 +704,10 @@ endpoint with typed anonymous `get_player_dossier` and
 `get_current_prediction` tools over the same cutoff-correct read services as
 the decision room. They are explicitly read-only, non-destructive and
 closed-world; the prediction tool returns only the public model artifact and
-neither tool exposes owner selection data. Plugin packaging, OAuth,
-user-specific tools and host integration tests remain.
+neither tool exposes owner selection data. A validated repo-owned development
+plugin package now points ChatGPT and Codex at the production MCP endpoint.
+Public submission materials, OAuth, user-specific tools and host prompt tests
+remain.
 
 - Expose typed read-only tools for snapshots, player forecasts, candidate
   comparison, evidence and data freshness.

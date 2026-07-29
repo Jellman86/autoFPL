@@ -57,6 +57,19 @@ and artifact identity. It never returns an owner-authored squad or private
 configuration. User-specific MCP tools remain absent until the
 owner identity and OAuth 2.1 resource-server boundary are implemented.
 
+The repo-owned development plugin package is
+[`plugins/autofpl`](../../plugins/autofpl/README.md). Its manifest connects
+ChatGPT and Codex to the production Streamable HTTP endpoint without embedding
+credentials. Validate it from the plugin-creator skill directory with:
+
+```bash
+python3 scripts/validate_plugin.py /path/to/autoFPL/plugins/autofpl
+```
+
+The package is not yet a public-directory submission. Privacy and terms URLs,
+domain verification, host prompt evaluations and authenticated owner tools
+remain release work.
+
 Decision-snapshot writes require a complete valid squad and selection plus UTC observation, retrieval, availability, deadline and cutoff timestamps. Only the latest revision of each observation with `availableAtUtc <= decisionCutoffUtc` enters the materialised snapshot. Corrections must name the observation and snapshot they supersede; historical rows remain readable. Values are parameterised and decimal observations are stored canonically as text.
 
 On an empty development database, startup creates one clearly labelled synthetic acceptance snapshot (`demo-2026`, Gameweek 1). The decision room reads its snapshot ID, revision, deadline, cutoff and selection state from SQLite while forecast values remain the explicitly synthetic UI fixture. Set `AutoFpl__SeedDemoSnapshot=false` for isolated tests or an operator-managed database.
