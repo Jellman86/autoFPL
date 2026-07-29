@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0",
+  "artifactVersion": "current-joint-scenario-shadow-v1",
+  "status": "prospective-shadow-unscored",
+  "seasonCode": "2026-27",
+  "gameweek": 1,
+  "officialCaptureId": 16,
+  "scenarioModelKey": "joint-gameweek-residual-bootstrap",
+  "appearanceVariant": "officialCeilingFactorized",
+  "pointAvailabilityFusion": "official-appearance-ceiling-ratio-v1",
+  "scenarioCount": 38,
+  "playerCount": 560,
+  "availabilityAdjustedPlayerCount": 32,
+  "scenarioDiagnostics": {
+    "meanAbsolutePointMeanDelta": 0.132295,
+    "maximumAbsolutePointMeanDelta": 0.466027,
+    "meanAbsoluteAppearanceProbabilityDelta": 0.007035,
+    "maximumAbsoluteAppearanceProbabilityDelta": 0.013158,
+    "nonPlayingNonZeroPointCount": 0
+  },
+  "selfDonorAssignments": 16446,
+  "fallbackDonorAssignments": 4834,
+  "scenarioContentSha256": "3d70ef354291fd030c570b5ad72737d29cb973c60b4ce4b4826d06945f8c3097",
+  "dataIdentitySha256": "d879c14ccc626892c3724354eb857ea7789ea066faf17753b82b27bdc517e70c",
+  "runIdentitySha256": "7f9cf933c7de16694e4e463b4a8d93ff0b63ea8cd48364e0ee577f2b2c89a974",
+  "pointForecastRunIdentitySha256": "ad4c3d1c95c048d3d6719cdf2202c498abdce850edb8ea32fa6abf9bcf3738a0",
+  "participationForecastRunIdentitySha256": "e89f6024b443af0762e5f80aed63a6f69a765beeeaea9bdac80c3b42b34d9886",
+  "retrospectiveScreenRunIdentitySha256": "d48e8483dc0af0e85aab254e5919b43d98a1167b5c9956f5988b37e92ef87c78",
+  "isPromoted": false,
+  "influencesAdvice": false
+}

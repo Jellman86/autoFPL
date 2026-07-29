@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1.0",
+  "evaluatorVersion": "historical-joint-scenario-evaluation-v1",
+  "status": "complete",
+  "seasonCode": "2025-26",
+  "historicalCaptureId": 1,
+  "evaluationGameweeks": [31, 32, 33, 34, 35, 36, 37, 38],
+  "foldCount": 8,
+  "playerGameweekCount": 6252,
+  "distributionMeanCrps": {
+    "joint-gameweek-residual-bootstrap": 0.639806,
+    "tree-mean-degenerate": 0.914587,
+    "player-empirical": 0.689157,
+    "position-empirical": 0.921303
+  },
+  "appearanceBrierScore": {
+    "joint-scenario-appearance": 0.084686,
+    "historical-appearance-histogram-classifier": 0.084772,
+    "player-appearance-empirical": 0.111694
+  },
+  "retrospectiveScreen": {
+    "status": "passes-retrospective-screen",
+    "selectedBaseline": "player-empirical",
+    "aggregateCrpsImprovementFraction": 0.071611,
+    "foldWins": 8,
+    "foldCount": 8,
+    "positionCrpsRegressions": {
+      "defender": -0.07281,
+      "forward": -0.059651,
+      "goalkeeper": -0.161762,
+      "midfielder": -0.058066
+    },
+    "isPromoted": false,
+    "mayInfluenceAdvice": false
+  },
+  "dataIdentitySha256": "265fc9e0457273ef51bc247f44943805058e64a99fc9f5178a1eff5a43e27d90",
+  "runIdentitySha256": "d48e8483dc0af0e85aab254e5919b43d98a1167b5c9956f5988b37e92ef87c78"
+}

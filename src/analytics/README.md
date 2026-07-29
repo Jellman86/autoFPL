@@ -118,6 +118,40 @@ uncalibrated intervals and cannot influence advice until calibrated,
 point-in-time scenario inputs are registered. See the
 [CPU reference specification](../../docs/research/cpu-joint-scenario-reference-v1.md).
 
+## Joint player-Gameweek scenario shadow v1
+
+The read-only expanding-origin evaluator compares one whole-Gameweek residual
+row per eligible training Gameweek with degenerate tree, player-empirical and
+position-empirical distributions:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.historical_joint_scenario_evaluation \
+  --database /path/to/autofpl.db \
+  --season 2025-26 \
+  --output /path/to/historical-joint-scenario.json
+```
+
+After that frozen candidate passes its retrospective screen, the current
+command binds the exact point, participation and source-archive artifacts and
+emits a complete matrix for the supported target:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.current_joint_scenario_forecast \
+  --database /path/to/autofpl.db \
+  --season 2026-27 \
+  --gameweek 1 \
+  --output /path/to/current-joint-scenario.json
+```
+
+The current artifact contains integer point and played/not-played rows,
+source-Gameweek provenance, player-column identities, availability-adjusted
+point means, matrix diagnostics and a content hash. It is prospectively
+unscored, cannot influence advice and is not yet imported by the application.
+See the
+[scenario research note](../../docs/research/joint-player-gameweek-scenario-shadow-v1.md).
+
 ## Historical participation evaluation v1
 
 The companion evaluator tests fixed appearance, start, 60-minute and uncapped

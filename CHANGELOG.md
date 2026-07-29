@@ -24,6 +24,14 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **A leakage-safe joint player-Gameweek scenario candidate now has a frozen
+  prospective shadow.** An expanding-origin 2025/26 screen resamples complete
+  prior Gameweeks, preserves shared row shocks, aligns point and appearance
+  outcomes and beats the strongest empirical distribution baseline by 7.1611%
+  CRPS across all eight retained folds. The current 2026/27 GW1 generator
+  binds the exact point, participation, availability and archive identities,
+  emits a content-addressed 38-by-560 matrix and remains explicitly unscored,
+  unpromoted and unable to influence advice.
 - **A seeded CPU joint-scenario reference now fixes the selection-scoring
   semantics before GPU work.** NumPy PCG64 samples complete joint rows rather
   than independent players; the scorer mirrors goalkeeper and ordered
