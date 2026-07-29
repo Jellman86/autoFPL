@@ -33,6 +33,7 @@ RAW_REQUIRED_COLUMNS = frozenset(
 )
 RAW_EXCLUDED_PREDICTIVE_COLUMNS = ("xP",)
 POSITION_MAP = {
+    "GK": "goalkeeper",
     "GKP": "goalkeeper",
     "DEF": "defender",
     "MID": "midfielder",
