@@ -56,9 +56,14 @@ paired delta is exactly zero on every row. That is a useful identity check, not
 evidence that user and model strategies generally perform the same.
 
 The 38 retained rows make central summaries useful for product development but
-tail estimates coarse. The next boundary persists this score artifact through
-the existing private result handoff and then generates legal safer and
-higher-ceiling candidates on the identical rows.
+tail estimates coarse. The score now crosses the existing private result
+handoff automatically. Migration 27 stores one immutable artifact per exact
+scenario, Baseline v0 forecast and latest user revision only after the
+application revalidates source lineage, selection roles, derived summaries and
+paired comparison values. The read-only
+`/api/v1/selections/current/scenario-score-shadow` route refuses stale
+revisions. The next boundary generates legal safer and higher-ceiling
+candidates on the identical rows.
 
 ## Reproduction
 

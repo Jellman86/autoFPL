@@ -158,15 +158,45 @@ class ShadowWorkerTests(unittest.TestCase):
                     INSERT INTO joint_scenario_shadow_artifacts
                         (official_capture_id)
                     VALUES (16);
+                    INSERT INTO baseline_forecast_artifacts
+                        (capture_id)
+                    VALUES (16);
                     """
                 )
 
             target = inspect_target(database)
             self.assertTrue(target["hasExactPointShadow"])
             self.assertTrue(target["hasExactScenarioShadow"])
+            self.assertFalse(target["hasExactSelectionScore"])
+            score = {
+                "officialCaptureId": 16,
+                "model": {"totalPointRows": [10]},
+            }
+            with patch(
+                "autofpl_analytics.shadow_worker."
+                "build_current_scenario_selection_score",
+                return_value=score,
+            ):
+                generated = generate_once(database, root / "inbox")
+            self.assertEqual("generated", generated.status)
+            self.assertTrue(
+                str(generated.outputFile).startswith(
+                    "selection-scenario-score-capture-16-selection-none"
+                )
+            )
+
+            with sqlite3.connect(database) as connection:
+                connection.execute(
+                    """
+                    INSERT INTO selection_scenario_score_shadow_artifacts
+                        (scenario_artifact_id, forecast_artifact_id,
+                         selection_revision_id)
+                    VALUES (1, 1, NULL);
+                    """
+                )
             self.assertEqual(
                 "current",
-                generate_once(database, root / "inbox").status,
+                generate_once(database, root / "empty-inbox").status,
             )
 
             with sqlite3.connect(database) as connection:
@@ -204,6 +234,21 @@ class ShadowWorkerTests(unittest.TestCase):
                 CREATE TABLE joint_scenario_shadow_artifacts (
                     scenario_artifact_id INTEGER PRIMARY KEY,
                     official_capture_id INTEGER NOT NULL
+                );
+                CREATE TABLE baseline_forecast_artifacts (
+                    artifact_id INTEGER PRIMARY KEY,
+                    capture_id INTEGER NOT NULL
+                );
+                CREATE TABLE selection_revisions (
+                    selection_revision_id INTEGER PRIMARY KEY,
+                    revision INTEGER NOT NULL,
+                    forecast_artifact_id INTEGER NOT NULL
+                );
+                CREATE TABLE selection_scenario_score_shadow_artifacts (
+                    score_artifact_id INTEGER PRIMARY KEY,
+                    scenario_artifact_id INTEGER NOT NULL,
+                    forecast_artifact_id INTEGER NOT NULL,
+                    selection_revision_id INTEGER
                 );
                 """
             )

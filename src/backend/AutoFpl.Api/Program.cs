@@ -331,6 +331,22 @@ if (requestedJointScenarioImport && !runJointScenarioImport)
         "Usage: --import-joint-scenario-shadow <json-file>");
     return 2;
 }
+bool requestedSelectionScenarioScoreImport =
+    args.Length > 0
+    && StringComparer.Ordinal.Equals(
+        args[0],
+        "--import-selection-scenario-score-shadow");
+bool runSelectionScenarioScoreImport =
+    requestedSelectionScenarioScoreImport
+    && args.Length == 2
+    && !string.IsNullOrWhiteSpace(args[1]);
+if (requestedSelectionScenarioScoreImport
+    && !runSelectionScenarioScoreImport)
+{
+    await Console.Error.WriteLineAsync(
+        "Usage: --import-selection-scenario-score-shadow <json-file>");
+    return 2;
+}
 
 bool runNonWebCommand =
     runIntegrityCheck
@@ -353,7 +369,8 @@ bool runNonWebCommand =
     || runOfficialFplOutcomeImport
     || runPreseasonPlayerForecastImport
     || runMultiSeasonPlayerForecastImport
-    || runJointScenarioImport;
+    || runJointScenarioImport
+    || runSelectionScenarioScoreImport;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(
     runNonWebCommand ? [] : args);
@@ -429,6 +446,11 @@ builder.Services.AddSingleton(serviceProvider =>
         serviceProvider.GetRequiredService<DatabaseOptions>(),
         serviceProvider.GetRequiredService<TimeProvider>()));
 builder.Services.AddSingleton<JointScenarioShadowImporter>();
+builder.Services.AddSingleton(serviceProvider =>
+    new SelectionScenarioScoreShadowStore(
+        serviceProvider.GetRequiredService<DatabaseOptions>(),
+        serviceProvider.GetRequiredService<TimeProvider>()));
+builder.Services.AddSingleton<SelectionScenarioScoreShadowImporter>();
 builder.Services.AddSingleton(serviceProvider =>
     new SelectionRevisionStore(
         serviceProvider.GetRequiredService<DatabaseOptions>(),
@@ -646,6 +668,7 @@ if (shadowForecastInboxOptions.Enabled)
 {
     builder.Services.AddHostedService<ShadowForecastInboxPoller>();
     builder.Services.AddHostedService<JointScenarioInboxPoller>();
+    builder.Services.AddHostedService<SelectionScenarioScoreInboxPoller>();
 }
 if (analyticsSnapshotOptions.Enabled)
 {
@@ -860,6 +883,32 @@ if (runJointScenarioImport)
     }
     catch (Exception exception)
         when (exception is JointScenarioValidationException
+            or FileNotFoundException
+            or InvalidDataException
+            or JsonException)
+    {
+        await Console.Error.WriteLineAsync(exception.Message);
+        return 2;
+    }
+}
+
+if (runSelectionScenarioScoreImport)
+{
+    try
+    {
+        SelectionScenarioScoreShadowDocument score =
+            await app.Services
+                .GetRequiredService<
+                    SelectionScenarioScoreShadowImporter>()
+                .ImportFileAsync(args[1]);
+        await Console.Out.WriteLineAsync(
+            JsonSerializer.Serialize(
+                score,
+                new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+        return 0;
+    }
+    catch (Exception exception)
+        when (exception is SelectionScenarioScoreValidationException
             or FileNotFoundException
             or InvalidDataException
             or JsonException)
@@ -1325,6 +1374,26 @@ app.MapGet(
         + "and the current deadline. A locked revision becomes frozen at the deadline.")
     .WithTags("Selections")
     .Produces<SelectionRevisionDocument>()
+    .Produces(StatusCodes.Status404NotFound);
+app.MapGet(
+    "/api/v1/selections/current/scenario-score-shadow",
+    async (
+        SelectionScenarioScoreShadowStore store,
+        CancellationToken cancellationToken) =>
+    {
+        SelectionScenarioScoreShadowDocument? score =
+            await store.GetCurrentAsync(cancellationToken);
+        return score is null ? Results.NotFound() : Results.Ok(score);
+    })
+    .WithName("GetCurrentSelectionScenarioScoreShadow")
+    .WithSummary(
+        "Read the current selection's immutable paired scenario distribution.")
+    .WithDescription(
+        "Returns only an exact current scenario, forecast and latest selection "
+        + "revision match. The distribution is prospective shadow evidence, "
+        + "is not promoted and cannot influence advice.")
+    .WithTags("Selections")
+    .Produces<SelectionScenarioScoreShadowDocument>()
     .Produces(StatusCodes.Status404NotFound);
 app.MapGet(
     "/api/v1/selections/{selectionRevisionId:long:min(1)}",

@@ -142,6 +142,10 @@ public sealed class AnalyticsSnapshotPublisher : BackgroundService
                     SELECT MAX(selection_revision_id)
                     FROM selection_revisions
                 ), 0) AS TEXT)
+                || ':' || CAST(COALESCE((
+                    SELECT MAX(score_artifact_id)
+                    FROM selection_scenario_score_shadow_artifacts
+                ), 0) AS TEXT)
                 || ':' || COALESCE((
                     SELECT locked_at_utc
                     FROM selection_revisions

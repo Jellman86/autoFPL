@@ -18,6 +18,9 @@ from .current_joint_scenario_forecast import (
     _build_from_artifacts,
     _retained_screen,
 )
+from .current_scenario_selection_score import (
+    build_current_scenario_selection_score,
+)
 from .multi_season_player_forecast import (
     CURRENT_GAMEWEEK,
     CURRENT_SEASON,
@@ -71,7 +74,55 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
                     FROM joint_scenario_shadow_artifacts AS scenario
                     WHERE scenario.official_capture_id =
                         official_fpl_captures.capture_id
-                ) AS has_exact_scenario_shadow
+                ) AS has_exact_scenario_shadow,
+                (
+                    SELECT selection_revision_id
+                    FROM selection_revisions
+                    WHERE forecast_artifact_id = (
+                        SELECT artifact_id
+                        FROM baseline_forecast_artifacts
+                        WHERE capture_id =
+                            official_fpl_captures.capture_id
+                        ORDER BY artifact_id DESC
+                        LIMIT 1
+                    )
+                    ORDER BY revision DESC, selection_revision_id DESC
+                    LIMIT 1
+                ) AS selection_revision_id,
+                EXISTS (
+                    SELECT 1
+                    FROM selection_scenario_score_shadow_artifacts AS score
+                    WHERE score.scenario_artifact_id = (
+                        SELECT scenario_artifact_id
+                        FROM joint_scenario_shadow_artifacts
+                        WHERE official_capture_id =
+                            official_fpl_captures.capture_id
+                        ORDER BY scenario_artifact_id DESC
+                        LIMIT 1
+                    )
+                    AND score.forecast_artifact_id = (
+                        SELECT artifact_id
+                        FROM baseline_forecast_artifacts
+                        WHERE capture_id =
+                            official_fpl_captures.capture_id
+                        ORDER BY artifact_id DESC
+                        LIMIT 1
+                    )
+                    AND score.selection_revision_id IS (
+                        SELECT selection_revision_id
+                        FROM selection_revisions
+                        WHERE forecast_artifact_id = (
+                            SELECT artifact_id
+                            FROM baseline_forecast_artifacts
+                            WHERE capture_id =
+                                official_fpl_captures.capture_id
+                            ORDER BY artifact_id DESC
+                            LIMIT 1
+                        )
+                        ORDER BY revision DESC, selection_revision_id DESC
+                        LIMIT 1
+                    )
+                ) AS has_exact_selection_score
             FROM official_fpl_captures
             ORDER BY available_at_utc DESC, capture_id DESC
             LIMIT 1;
@@ -92,6 +143,14 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
                 "hasExactScenarioShadow": bool(
                     row["has_exact_scenario_shadow"]
                 ),
+                "selectionRevisionId": (
+                    None
+                    if row["selection_revision_id"] is None
+                    else int(row["selection_revision_id"])
+                ),
+                "hasExactSelectionScore": bool(
+                    row["has_exact_selection_score"]
+                ),
             }
             if row is not None
             else {
@@ -100,6 +159,8 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
                 "gameweek": None,
                 "hasExactPointShadow": False,
                 "hasExactScenarioShadow": False,
+                "selectionRevisionId": None,
+                "hasExactSelectionScore": False,
             }
         )
     except sqlite3.Error as exception:
@@ -123,6 +184,7 @@ def generate_once(
     if (
         target["hasExactPointShadow"]
         and target["hasExactScenarioShadow"]
+        and target["hasExactSelectionScore"]
     ):
         return _result("current", capture_id)
     if (
@@ -133,7 +195,21 @@ def generate_once(
 
     inbox = Path(inbox_path)
     inbox.mkdir(mode=0o700, parents=True, exist_ok=True)
-    if target["hasExactPointShadow"]:
+    if (
+        target["hasExactPointShadow"]
+        and target["hasExactScenarioShadow"]
+    ):
+        selection_key = (
+            "none"
+            if target["selectionRevisionId"] is None
+            else str(target["selectionRevisionId"])
+        )
+        stem = (
+            f"selection-scenario-score-capture-{capture_id}"
+            f"-selection-{selection_key}"
+        )
+        build = build_current_scenario_selection_score
+    elif target["hasExactPointShadow"]:
         stem = f"joint-scenario-shadow-capture-{capture_id}"
         build = _build_joint_scenario_for_worker
     else:
@@ -142,10 +218,14 @@ def generate_once(
     if any(inbox.glob(f"{stem}.*")):
         return _result("handoff-pending", capture_id)
 
-    artifact = build(
-        Path(database_path),
-        CURRENT_SEASON,
-        CURRENT_GAMEWEEK,
+    artifact = (
+        build(Path(database_path))
+        if target["hasExactScenarioShadow"]
+        else build(
+            Path(database_path),
+            CURRENT_SEASON,
+            CURRENT_GAMEWEEK,
+        )
     )
     if int(artifact["officialCaptureId"]) != capture_id:
         return _result("waiting", capture_id, error_code="capture-changed")

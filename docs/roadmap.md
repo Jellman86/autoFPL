@@ -672,11 +672,11 @@ user-owned revision, preserves all 38 paired score rows and emits distribution
 and win/tie/loss summaries. The application now atomically publishes a
 standalone integrity-checked SQLite backup into a dedicated read-only worker
 mount when relevant source identity changes, removing the live-WAL timing
-dependency. The score remains an operator artifact until its strict product
-importer is implemented.
+dependency. Migration 27, the private inbox and a strict importer now persist
+that score with exact scenario/forecast/revision lineage; a read-only API
+returns it only while all three inputs remain current. It remains shadow
+evidence and cannot influence advice.
 
-- Persist and expose the current selection score artifact through the existing
-  private result handoff and a strict importer.
 - Establish a representative workload before implementing the GPU
   parity/benchmark path.
 - Score the frozen matrix prospectively as final outcomes arrive.
