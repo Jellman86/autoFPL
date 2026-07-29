@@ -16,9 +16,9 @@ before outcome comparison:
 | `downside-balanced` | 1.00 | 0.15 |
 
 The lower tail is the worst 20% of paired cumulative scenario outcomes. The
-weight is a challenger, not a promoted preference. Retrospective policy
-evaluation must decide whether its protection is worth any expected-points
-cost.
+historical opening-policy evaluation has now selected the six-Gameweek
+expected-points policy for prospective scoring. The downside weight remains a
+challenger, not a promoted preference.
 
 ## Global optimisation
 
@@ -64,17 +64,19 @@ optimisation, so they compare mechanics and trade-offs but do not select a
 policy. In particular, the 3-Gameweek robust policy improving both displayed
 figures is not prospective evidence.
 
-## Remaining gate
+## Retrospective selection and remaining gate
 
-The artifact deliberately returns `recommendedPolicyKey: null`. The next
-research slice must reconstruct cutoff-safe historical opening decisions with
-the price, identity and fixture information available at each origin, compare
-all six frozen policies on later official outcomes, and select using a
-predeclared aggregate and failure-slice rule.
+The outcome-free registration was frozen before target points and minutes were
+opened. The ensuing three-season comparison retained the six-Gameweek
+expected-points reference because the higher-mean three-Gameweek downside
+leader breached the registered worst-season regression gate. The current v2
+artifact therefore returns `recommendedPolicyKey: 6-expected-points`, marks
+exactly one policy for prospective scoring and binds the complete retained
+evaluation identity.
 
-Only the selected policy then enters the already registered prospective
-2026/27 outcome evaluation. It cannot replace served Baseline v0 until that
-evidence passes the promotion gate.
+This is not a serving recommendation. The selected policy now enters the
+already registered prospective 2026/27 outcome evaluation and cannot replace
+served Baseline v0 until that evidence passes the promotion gate.
 
 Run the current shadow with:
 

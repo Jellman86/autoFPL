@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import sqlite3
 import sys
 import tempfile
@@ -16,7 +17,10 @@ from autofpl_analytics.current_multi_horizon_initial_squad import (  # noqa: E40
     ARTIFACT_TYPE,
     ARTIFACT_VERSION,
     HORIZONS,
+    POLICY_EVALUATION_DATA_IDENTITY,
+    POLICY_EVALUATION_RUN_IDENTITY,
     POLICIES,
+    SELECTED_POLICY_KEY,
     STATUS,
     _build_from_scenario,
     _lower_tail_cvar,
@@ -44,7 +48,27 @@ class CurrentMultiHorizonInitialSquadTests(unittest.TestCase):
         self.assertEqual(STATUS, first["status"])
         self.assertFalse(first["isPromoted"])
         self.assertFalse(first["influencesAdvice"])
-        self.assertIsNone(first["recommendedPolicyKey"])
+        self.assertEqual(
+            SELECTED_POLICY_KEY,
+            first["recommendedPolicyKey"],
+        )
+        self.assertEqual(
+            SELECTED_POLICY_KEY,
+            first["selectedProspectivePolicy"]["evaluationPolicyKey"],
+        )
+        self.assertEqual(
+            POLICY_EVALUATION_DATA_IDENTITY,
+            first["selectedProspectivePolicy"][
+                "retrospectiveEvaluationSource"
+            ]["dataIdentitySha256"],
+        )
+        self.assertEqual(
+            1,
+            sum(
+                bool(policy["isSelectedForProspectiveScoring"])
+                for policy in first["policies"]
+            ),
+        )
         self.assertEqual(
             len(HORIZONS) * len(POLICIES),
             len(first["policies"]),
@@ -105,6 +129,30 @@ class CurrentMultiHorizonInitialSquadTests(unittest.TestCase):
                     roles["viceCaptainPlayerId"],
                 )
                 self.assertEqual(3, len(roles["outfieldSubstitutePlayerIds"]))
+
+    def test_selected_policy_is_bound_to_retained_evaluation(self) -> None:
+        retained = json.loads(
+            (
+                ROOT
+                / "docs"
+                / "research"
+                / "results"
+                / "historical-opening-policy-evaluation-v1.json"
+            ).read_text(encoding="utf-8")
+        )
+
+        self.assertEqual(
+            SELECTED_POLICY_KEY,
+            retained["decision"]["selectedPolicyKey"],
+        )
+        self.assertEqual(
+            POLICY_EVALUATION_DATA_IDENTITY,
+            retained["dataIdentitySha256"],
+        )
+        self.assertEqual(
+            POLICY_EVALUATION_RUN_IDENTITY,
+            retained["runIdentitySha256"],
+        )
 
     def test_fractional_lower_tail_cvar_is_exact(self) -> None:
         self.assertEqual(
