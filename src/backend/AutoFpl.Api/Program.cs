@@ -364,6 +364,22 @@ if (requestedInitialSquadQualityImport
         "Usage: --import-initial-squad-quality-shadow <json-file>");
     return 2;
 }
+bool requestedSelectedOpeningSquadImport =
+    args.Length > 0
+    && StringComparer.Ordinal.Equals(
+        args[0],
+        "--import-selected-opening-squad-shadow");
+bool runSelectedOpeningSquadImport =
+    requestedSelectedOpeningSquadImport
+    && args.Length == 2
+    && !string.IsNullOrWhiteSpace(args[1]);
+if (requestedSelectedOpeningSquadImport
+    && !runSelectedOpeningSquadImport)
+{
+    await Console.Error.WriteLineAsync(
+        "Usage: --import-selected-opening-squad-shadow <json-file>");
+    return 2;
+}
 bool requestedSelectionRoleStrategyImport =
     args.Length > 0
     && StringComparer.Ordinal.Equals(
@@ -404,6 +420,7 @@ bool runNonWebCommand =
     || runMultiSeasonPlayerForecastImport
     || runJointScenarioImport
     || runInitialSquadQualityImport
+    || runSelectedOpeningSquadImport
     || runSelectionScenarioScoreImport
     || runSelectionRoleStrategyImport;
 
@@ -489,6 +506,11 @@ builder.Services.AddSingleton(serviceProvider =>
         serviceProvider.GetRequiredService<DatabaseOptions>(),
         serviceProvider.GetRequiredService<TimeProvider>()));
 builder.Services.AddSingleton<InitialSquadQualityShadowImporter>();
+builder.Services.AddSingleton(serviceProvider =>
+    new SelectedOpeningSquadShadowStore(
+        serviceProvider.GetRequiredService<DatabaseOptions>(),
+        serviceProvider.GetRequiredService<TimeProvider>()));
+builder.Services.AddSingleton<SelectedOpeningSquadShadowImporter>();
 builder.Services.AddSingleton(serviceProvider =>
     new SelectionScenarioScoreShadowStore(
         serviceProvider.GetRequiredService<DatabaseOptions>(),
@@ -717,6 +739,7 @@ if (shadowForecastInboxOptions.Enabled)
     builder.Services.AddHostedService<ShadowForecastInboxPoller>();
     builder.Services.AddHostedService<JointScenarioInboxPoller>();
     builder.Services.AddHostedService<InitialSquadQualityInboxPoller>();
+    builder.Services.AddHostedService<SelectedOpeningSquadInboxPoller>();
     builder.Services.AddHostedService<SelectionScenarioScoreInboxPoller>();
     builder.Services.AddHostedService<SelectionRoleStrategyInboxPoller>();
 }
@@ -985,6 +1008,32 @@ if (runInitialSquadQualityImport)
     }
     catch (Exception exception)
         when (exception is InitialSquadQualityValidationException
+            or FileNotFoundException
+            or InvalidDataException
+            or JsonException)
+    {
+        await Console.Error.WriteLineAsync(exception.Message);
+        return 2;
+    }
+}
+
+if (runSelectedOpeningSquadImport)
+{
+    try
+    {
+        SelectedOpeningSquadShadowDocument candidate =
+            await app.Services
+                .GetRequiredService<
+                    SelectedOpeningSquadShadowImporter>()
+                .ImportFileAsync(args[1]);
+        await Console.Out.WriteLineAsync(
+            JsonSerializer.Serialize(
+                candidate,
+                new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+        return 0;
+    }
+    catch (Exception exception)
+        when (exception is SelectedOpeningSquadValidationException
             or FileNotFoundException
             or InvalidDataException
             or JsonException)
@@ -1480,6 +1529,29 @@ app.MapGet(
         + "the currently served squad.")
     .WithTags("Forecasts")
     .Produces<InitialSquadQualityShadowDocument>()
+    .Produces(StatusCodes.Status404NotFound);
+app.MapGet(
+    "/api/v1/forecasts/selected-opening-squad-shadow/current",
+    async (
+        SelectedOpeningSquadShadowStore store,
+        CancellationToken cancellationToken) =>
+    {
+        SelectedOpeningSquadShadowDocument? candidate =
+            await store.GetCurrentAsync(cancellationToken);
+        return candidate is null
+            ? Results.NotFound()
+            : Results.Ok(candidate);
+    })
+    .WithName("GetCurrentSelectedOpeningSquadShadow")
+    .WithSummary(
+        "Read the frozen selected opening squad for prospective scoring.")
+    .WithDescription(
+        "Returns only the exact latest official-capture artifact bound to the "
+        + "registered historical policy decision. All eight weekly roles are "
+        + "frozen before outcomes. The result remains unpromoted and cannot "
+        + "influence served advice.")
+    .WithTags("Forecasts")
+    .Produces<SelectedOpeningSquadShadowDocument>()
     .Produces(StatusCodes.Status404NotFound);
 app.MapGet(
     "/api/v1/selections/current",

@@ -246,6 +246,33 @@ nothing. The application republishes the standalone snapshot when either an
 initial-squad artifact or official outcome identity changes, so the evaluator
 never needs access to the live WAL database.
 
+## Selected opening-squad prospective shadow
+
+After the exact initial-squad-quality handoff is persisted, the analytics
+worker generates
+`selected-opening-squad-capture-<official-capture-id>.json`. The artifact
+binds the frozen six-Gameweek expected-points policy and fixes all eight
+Gameweek role decisions before outcomes. The application validates the latest
+official capture, player identities, prices, availability, legal squad, legal
+weekly roles, zero-gap solver and retained historical evaluation identity.
+
+The operator equivalent is:
+
+```text
+dotnet AutoFpl.Api.dll \
+  --import-selected-opening-squad-shadow <json-file>
+```
+
+The current exact artifact is available from
+`GET /api/v1/forecasts/selected-opening-squad-shadow/current`. A `404` means
+the latest official capture has not completed the selected-policy handoff.
+Older squads are never substituted. The route is typed in OpenAPI, read-only,
+unpromoted and unable to influence advice.
+
+Insertion changes the analytics snapshot source identity. This preserves the
+exact pre-outcome artifact in the standalone read-only snapshot used by the
+prospective scorer.
+
 ## Official FPL capture
 
 Run the bounded fixed-origin import as an operator command:

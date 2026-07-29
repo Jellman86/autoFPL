@@ -182,6 +182,68 @@ public sealed class AnalyticsSnapshotPublisherTests : IDisposable
             "unchanged",
             await publisher.PublishOnceAsync(cancellationToken));
 
+        await using (var source =
+            new SqliteConnection(databaseOptions.ConnectionString))
+        {
+            await source.OpenAsync(cancellationToken);
+            await using SqliteCommand selected = source.CreateCommand();
+            selected.CommandText =
+                """
+                INSERT INTO selected_opening_squad_shadow_artifacts (
+                    schema_version, artifact_type, artifact_version, status,
+                    official_capture_id, season_code, opening_gameweek,
+                    decision_cutoff_utc, evaluation_policy_key,
+                    evaluation_data_identity_sha256, scenario_count,
+                    candidate_pool_count, budget_tenths,
+                    producer_data_identity_sha256,
+                    producer_run_identity_sha256, document_json,
+                    content_sha256, created_at_utc
+                )
+                VALUES (
+                    '1.0', 'current-selected-opening-squad-shadow',
+                    'current-selected-opening-squad-shadow-v1',
+                    'prospective-shadow-unscored', 1, '2026-27', 1,
+                    '2026-07-29T12:00:00Z', '6-expected-points',
+                    $evaluationIdentity, 38, 600, 980,
+                    $dataIdentity, $runIdentity, '{}', $contentHash,
+                    '2026-07-29T18:00:00Z'
+                );
+                """;
+            selected.Parameters.AddWithValue(
+                "$evaluationIdentity",
+                SelectedOpeningSquadShadowStore.EvaluationDataIdentity);
+            selected.Parameters.AddWithValue(
+                "$dataIdentity",
+                new string('1', 64));
+            selected.Parameters.AddWithValue(
+                "$runIdentity",
+                new string('2', 64));
+            selected.Parameters.AddWithValue(
+                "$contentHash",
+                new string('3', 64));
+            await selected.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        Assert.Equal(
+            "published",
+            await publisher.PublishOnceAsync(cancellationToken));
+        await using (var selectedSnapshot =
+            new SqliteConnection(readOnly.ToString()))
+        {
+            await selectedSnapshot.OpenAsync(cancellationToken);
+            await using SqliteCommand count =
+                selectedSnapshot.CreateCommand();
+            count.CommandText =
+                "SELECT COUNT(*) "
+                + "FROM selected_opening_squad_shadow_artifacts;";
+            Assert.Equal(
+                1L,
+                await count.ExecuteScalarAsync(cancellationToken));
+        }
+        Assert.Equal(
+            "unchanged",
+            await publisher.PublishOnceAsync(cancellationToken));
+
         await using (var snapshot =
             new SqliteConnection(readOnly.ToString()))
         {

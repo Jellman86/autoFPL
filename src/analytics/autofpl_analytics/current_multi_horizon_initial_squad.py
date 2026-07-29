@@ -78,59 +78,7 @@ def _build_from_scenario(
     scenario: Mapping[str, Any],
 ) -> Dict[str, Any]:
     _require_scenario(scenario)
-    official = _load_official(
-        Path(database_path),
-        int(scenario["officialCaptureId"]),
-    )
-    players = scenario["players"]
-    candidates = []
-    for player in players:
-        player_id = int(player["playerId"])
-        current = official.get(player_id)
-        _require(
-            current is not None,
-            "multi-squad.official-player",
-            "A scenario player is missing from the exact official capture.",
-        )
-        _require(
-            int(current["teamId"]) == int(player["teamId"])
-            and str(current["position"]) == str(player["position"]),
-            "multi-squad.official-identity",
-            "A scenario player differs from the exact official capture.",
-        )
-        _require(
-            str(current["status"]) != "u",
-            "multi-squad.ineligible-player",
-            "The scenario cohort contains an officially unavailable player.",
-        )
-        candidates.append(
-            {
-                "playerId": player_id,
-                "columnIndex": int(player["columnIndex"]),
-                "webName": str(player["webName"]),
-                "teamId": int(player["teamId"]),
-                "teamName": str(player["teamName"]),
-                "position": str(player["position"]),
-                "priceTenths": int(current["priceTenths"]),
-                "officialStatus": str(current["status"]),
-                "officialChanceOfPlayingNextRound": current[
-                    "chanceNextRound"
-                ],
-            }
-        )
-    candidates.sort(key=lambda player: int(player["columnIndex"]))
-    _require(
-        [int(player["columnIndex"]) for player in candidates]
-        == list(range(int(scenario["playerCount"]))),
-        "multi-squad.player-column-order",
-        "The scenario player columns are incomplete or out of order.",
-    )
-    _require(
-        len(candidates) >= 15,
-        "multi-squad.candidate-pool",
-        "At least 15 exact-capture candidates are required.",
-    )
-
+    candidates = _build_candidates(Path(database_path), scenario)
     week_matrices = _week_matrices(scenario)
     policy_results = []
     for horizon in HORIZONS:
@@ -294,6 +242,65 @@ def _build_from_scenario(
     )
     artifact["runIdentitySha256"] = _sha256(artifact)
     return artifact
+
+
+def _build_candidates(
+    database_path: Path,
+    scenario: Mapping[str, Any],
+) -> List[Dict[str, Any]]:
+    official = _load_official(
+        Path(database_path),
+        int(scenario["officialCaptureId"]),
+    )
+    players = scenario["players"]
+    candidates = []
+    for player in players:
+        player_id = int(player["playerId"])
+        current = official.get(player_id)
+        _require(
+            current is not None,
+            "multi-squad.official-player",
+            "A scenario player is missing from the exact official capture.",
+        )
+        _require(
+            int(current["teamId"]) == int(player["teamId"])
+            and str(current["position"]) == str(player["position"]),
+            "multi-squad.official-identity",
+            "A scenario player differs from the exact official capture.",
+        )
+        _require(
+            str(current["status"]) != "u",
+            "multi-squad.ineligible-player",
+            "The scenario cohort contains an officially unavailable player.",
+        )
+        candidates.append(
+            {
+                "playerId": player_id,
+                "columnIndex": int(player["columnIndex"]),
+                "webName": str(player["webName"]),
+                "teamId": int(player["teamId"]),
+                "teamName": str(player["teamName"]),
+                "position": str(player["position"]),
+                "priceTenths": int(current["priceTenths"]),
+                "officialStatus": str(current["status"]),
+                "officialChanceOfPlayingNextRound": current[
+                    "chanceNextRound"
+                ],
+            }
+        )
+    candidates.sort(key=lambda player: int(player["columnIndex"]))
+    _require(
+        [int(player["columnIndex"]) for player in candidates]
+        == list(range(int(scenario["playerCount"]))),
+        "multi-squad.player-column-order",
+        "The scenario player columns are incomplete or out of order.",
+    )
+    _require(
+        len(candidates) >= 15,
+        "multi-squad.candidate-pool",
+        "At least 15 exact-capture candidates are required.",
+    )
+    return candidates
 
 
 def _optimise_horizon(

@@ -28,6 +28,9 @@ from .current_scenario_selection_score import (
 from .current_selection_strategies import (
     build_current_selection_strategies,
 )
+from .current_selected_opening_squad import (
+    build_current_selected_opening_squad,
+)
 from .multi_season_player_forecast import (
     CURRENT_GAMEWEEK,
     CURRENT_SEASON,
@@ -103,6 +106,16 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
                     )
                     AND initial.optimizer_version = ?
                 ) AS has_exact_initial_squad_quality,
+                EXISTS (
+                    SELECT 1
+                    FROM selected_opening_squad_shadow_artifacts AS selected
+                    WHERE selected.official_capture_id =
+                        official_fpl_captures.capture_id
+                    AND selected.evaluation_policy_key =
+                        '6-expected-points'
+                    AND selected.evaluation_data_identity_sha256 =
+                        'e99bb4fce3615c91ecaf642037c6cebb3d36efffc2df54857ffbc4c27714e048'
+                ) AS has_exact_selected_opening_squad,
                 (
                     SELECT selection_revision_id
                     FROM selection_revisions
@@ -218,6 +231,9 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
                 "hasExactInitialSquadQuality": bool(
                     row["has_exact_initial_squad_quality"]
                 ),
+                "hasExactSelectedOpeningSquad": bool(
+                    row["has_exact_selected_opening_squad"]
+                ),
                 "selectionRevisionId": (
                     None
                     if row["selection_revision_id"] is None
@@ -238,6 +254,7 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
                 "hasExactPointShadow": False,
                 "hasExactScenarioShadow": False,
                 "hasExactInitialSquadQuality": False,
+                "hasExactSelectedOpeningSquad": False,
                 "selectionRevisionId": None,
                 "hasExactSelectionScore": False,
                 "hasExactSelectionStrategies": False,
@@ -265,6 +282,7 @@ def generate_once(
         target["hasExactPointShadow"]
         and target["hasExactScenarioShadow"]
         and target["hasExactInitialSquadQuality"]
+        and target["hasExactSelectedOpeningSquad"]
         and target["hasExactSelectionScore"]
         and target["hasExactSelectionStrategies"]
     ):
@@ -284,6 +302,14 @@ def generate_once(
     ):
         stem = f"initial-squad-quality-capture-{capture_id}"
         build = build_current_initial_squad_candidate
+    elif (
+        target["hasExactPointShadow"]
+        and target["hasExactScenarioShadow"]
+        and target["hasExactInitialSquadQuality"]
+        and not target["hasExactSelectedOpeningSquad"]
+    ):
+        stem = f"selected-opening-squad-capture-{capture_id}"
+        build = build_current_selected_opening_squad
     elif (
         target["hasExactPointShadow"]
         and target["hasExactScenarioShadow"]

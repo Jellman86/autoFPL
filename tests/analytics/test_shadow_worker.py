@@ -168,6 +168,7 @@ class ShadowWorkerTests(unittest.TestCase):
             self.assertTrue(target["hasExactPointShadow"])
             self.assertTrue(target["hasExactScenarioShadow"])
             self.assertFalse(target["hasExactInitialSquadQuality"])
+            self.assertFalse(target["hasExactSelectedOpeningSquad"])
             self.assertFalse(target["hasExactSelectionScore"])
             candidate = {
                 "officialCaptureId": 16,
@@ -194,6 +195,37 @@ class ShadowWorkerTests(unittest.TestCase):
                          optimizer_version)
                     VALUES (
                         1, 1, 'scipy-highs-linear-squad-surrogate-v1'
+                    );
+                    """
+                )
+            selected = {
+                "officialCaptureId": 16,
+                "selection": {"playerIds": list(range(1, 16))},
+            }
+            with patch(
+                "autofpl_analytics.shadow_worker."
+                "build_current_selected_opening_squad",
+                return_value=selected,
+            ):
+                generated = generate_once(
+                    database,
+                    root / "selected-inbox",
+                )
+            self.assertEqual("generated", generated.status)
+            self.assertTrue(
+                str(generated.outputFile).startswith(
+                    "selected-opening-squad-capture-16"
+                )
+            )
+            with sqlite3.connect(database) as connection:
+                connection.execute(
+                    """
+                    INSERT INTO selected_opening_squad_shadow_artifacts
+                        (official_capture_id, evaluation_policy_key,
+                         evaluation_data_identity_sha256)
+                    VALUES (
+                        16, '6-expected-points',
+                        'e99bb4fce3615c91ecaf642037c6cebb3d36efffc2df54857ffbc4c27714e048'
                     );
                     """
                 )
@@ -306,6 +338,12 @@ class ShadowWorkerTests(unittest.TestCase):
                     selection_revision_id INTEGER PRIMARY KEY,
                     revision INTEGER NOT NULL,
                     forecast_artifact_id INTEGER NOT NULL
+                );
+                CREATE TABLE selected_opening_squad_shadow_artifacts (
+                    selected_opening_squad_artifact_id INTEGER PRIMARY KEY,
+                    official_capture_id INTEGER NOT NULL,
+                    evaluation_policy_key TEXT NOT NULL,
+                    evaluation_data_identity_sha256 TEXT NOT NULL
                 );
                 CREATE TABLE selection_scenario_score_shadow_artifacts (
                     score_artifact_id INTEGER PRIMARY KEY,

@@ -539,7 +539,10 @@ The selected policy remains non-serving and is now frozen for prospective
 evaluation identity, marks only the six-Gameweek expected-points squad as the
 prospective selection and leaves the serving boundary closed. Capturing its
 official 2026/27 outcomes without retrospective reselection is the next
-decision-quality gate.
+decision-quality gate. The selected projection is now an automated immutable
+pipeline stage: every new official opening capture regenerates the exact
+squad, freezes all eight weekly roles, imports through the private inbox and
+appears on a typed read-only OpenAPI route only for the latest capture.
 
 The SQLite persistence vertical slice is deployed and survives a managed
 container recreate. Operator-triggered fixed-origin official FPL collectors
