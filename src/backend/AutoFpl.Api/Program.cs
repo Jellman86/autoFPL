@@ -450,6 +450,9 @@ builder.Services.AddSingleton(researchSourcePollingOptions);
 FbrefMatchLogPollingOptions fbrefMatchLogPollingOptions =
     FbrefMatchLogPollingOptions.FromConfiguration(builder.Configuration);
 builder.Services.AddSingleton(fbrefMatchLogPollingOptions);
+ShadowForecastInboxOptions shadowForecastInboxOptions =
+    ShadowForecastInboxOptions.FromConfiguration(builder.Configuration);
+builder.Services.AddSingleton(shadowForecastInboxOptions);
 builder.Services
     .AddHttpClient<OfficialFplImporter>(
         client =>
@@ -614,6 +617,10 @@ if (researchSourcePollingOptions.Enabled)
 if (fbrefMatchLogPollingOptions.Enabled)
 {
     builder.Services.AddHostedService<FbrefMatchLogPoller>();
+}
+if (shadowForecastInboxOptions.Enabled)
+{
+    builder.Services.AddHostedService<ShadowForecastInboxPoller>();
 }
 builder.Services.AddExceptionHandler<DecisionSnapshotPersistenceExceptionHandler>();
 builder.Services.AddExceptionHandler<DecisionSnapshotValidationExceptionHandler>();

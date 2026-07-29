@@ -776,11 +776,11 @@ in its own immutable artifact family and exposed through OpenAPI and player
 dossiers. A lightweight readiness contract now distinguishes exact-current,
 stale and missing states without serving an older shadow as current. It remains
 outside advice. The frozen generator is also packaged as a separately scanned,
-non-root one-shot analytics image; it still has no automatic import or serving
-authority. The active order is:
+non-root analytics image. A private filesystem handoff now keeps its database
+mount read-only and preserves the application as the sole strict importer; both
+pollers remain opt-in until the Compose slice is deployed. The active order is:
 
-1. add the packaged worker to the private compose stack and automate its
-   bounded handoff when a newer official capture makes the shadow stale,
+1. add the packaged worker and shared private inbox to the Quark Compose stack,
    retaining exact artifact validation and never moving Python model fitting
    into the web request path;
 2. score both forecasts on the first automatically paired 2026/27 result, then
