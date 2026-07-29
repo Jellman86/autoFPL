@@ -620,6 +620,14 @@ produce 195 distinct squads, so the model surface remains flat even though the
 declared optimisation problem is solved exactly. Surface that distinction in
 player explanations and continue improving inputs rather than adding solver
 complexity.
+The hurdle scenario distributions have now passed their separate proper-score
+screen as well. Across 15,712 historical opening player-Gameweeks, CRPS
+improves by 1.38%, all three target seasons win and every position improves.
+Appearance Brier, log loss and calibration error also improve. Retain the
+exact hurdle distributions as the best current scenario input. Their central
+80% interval still covers 87.67% and the 37/38-row donor support is coarse, so
+describe the ranges as empirical scenarios rather than perfectly calibrated
+confidence intervals.
 
 The SQLite persistence vertical slice is deployed and survives a managed
 container recreate. Operator-triggered fixed-origin official FPL collectors
