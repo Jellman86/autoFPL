@@ -27,6 +27,8 @@ COPY --chown=1654:1654 src/analytics/ ./src/analytics/
 
 USER 1654
 ENV PYTHONDONTWRITEBYTECODE=1 \
+    OMP_NUM_THREADS=2 \
+    OPENBLAS_NUM_THREADS=2 \
     PYTHONPATH=/app/python-packages:/app/src/analytics \
     PYTHONUNBUFFERED=1
 

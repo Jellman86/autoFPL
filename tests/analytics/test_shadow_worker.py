@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import sqlite3
 import sys
@@ -13,12 +14,59 @@ if str(ANALYTICS_ROOT) not in sys.path:
     sys.path.insert(0, str(ANALYTICS_ROOT))
 
 from autofpl_analytics.shadow_worker import (  # noqa: E402
+    _load_persisted_point_forecast,
     generate_once,
     inspect_target,
+)
+from autofpl_analytics.temporal_ridge import (  # noqa: E402
+    TemporalRidgeError,
 )
 
 
 class ShadowWorkerTests(unittest.TestCase):
+    def test_persisted_point_input_requires_its_content_hash(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            database = Path(directory) / "autofpl.db"
+            self._create_database(database)
+            document = json.dumps(
+                {"officialCaptureId": 16},
+                separators=(",", ":"),
+            )
+            content_hash = hashlib.sha256(
+                document.encode("utf-8")
+            ).hexdigest()
+            with sqlite3.connect(database) as connection:
+                connection.execute(
+                    """
+                    INSERT INTO multi_season_player_forecast_artifacts (
+                        official_capture_id, decision_cutoff_utc,
+                        document_json, content_sha256
+                    )
+                    VALUES (
+                        16, '2026-07-29T04:38:41Z', ?, ?
+                    );
+                    """,
+                    (document, content_hash),
+                )
+
+            loaded = _load_persisted_point_forecast(database)
+            self.assertEqual(16, loaded["officialCaptureId"])
+
+            with sqlite3.connect(database) as connection:
+                connection.execute(
+                    """
+                    UPDATE multi_season_player_forecast_artifacts
+                    SET content_sha256 = ?;
+                    """,
+                    ("f" * 64,),
+                )
+            with self.assertRaises(TemporalRidgeError) as caught:
+                _load_persisted_point_forecast(database)
+            self.assertEqual(
+                "worker.point-forecast-invalid",
+                caught.exception.code,
+            )
+
     def test_missing_current_and_generated_states_are_explicit(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -75,7 +123,7 @@ class ShadowWorkerTests(unittest.TestCase):
             }
             with patch(
                 "autofpl_analytics.shadow_worker."
-                "build_current_joint_scenario_forecast",
+                "_build_joint_scenario_for_worker",
                 return_value=artifact,
             ):
                 generated = generate_once(database, root / "inbox")
@@ -148,7 +196,10 @@ class ShadowWorkerTests(unittest.TestCase):
                 );
                 CREATE TABLE multi_season_player_forecast_artifacts (
                     forecast_artifact_id INTEGER PRIMARY KEY,
-                    official_capture_id INTEGER NOT NULL
+                    official_capture_id INTEGER NOT NULL,
+                    decision_cutoff_utc TEXT,
+                    document_json TEXT,
+                    content_sha256 TEXT
                 );
                 CREATE TABLE joint_scenario_shadow_artifacts (
                     scenario_artifact_id INTEGER PRIMARY KEY,

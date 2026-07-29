@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import sqlite3
+import subprocess
 import sys
+import tempfile
 import time
 import uuid
 from dataclasses import asdict, dataclass
@@ -12,7 +15,8 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Sequence
 
 from .current_joint_scenario_forecast import (
-    build_current_joint_scenario_forecast,
+    _build_from_artifacts,
+    _retained_screen,
 )
 from .multi_season_player_forecast import (
     CURRENT_GAMEWEEK,
@@ -131,7 +135,7 @@ def generate_once(
     inbox.mkdir(mode=0o700, parents=True, exist_ok=True)
     if target["hasExactPointShadow"]:
         stem = f"joint-scenario-shadow-capture-{capture_id}"
-        build = build_current_joint_scenario_forecast
+        build = _build_joint_scenario_for_worker
     else:
         stem = f"multi-season-shadow-capture-{capture_id}"
         build = build_multi_season_player_forecast
@@ -174,6 +178,103 @@ def generate_once(
         if temporary.exists():
             temporary.unlink()
     return _result("generated", capture_id, output.name)
+
+
+def _build_joint_scenario_for_worker(
+    database_path: Path,
+    season_code: str,
+    gameweek: int,
+) -> Dict[str, Any]:
+    point_forecast = _load_persisted_point_forecast(
+        database_path,
+    )
+    with tempfile.TemporaryDirectory(
+        prefix="autofpl-participation-",
+    ) as directory:
+        output = Path(directory) / "participation.json"
+        command = [
+            sys.executable,
+            "-m",
+            "autofpl_analytics.preseason_participation_forecast",
+            "--database",
+            str(database_path),
+            "--season",
+            season_code,
+            "--gameweek",
+            str(gameweek),
+            "--output",
+            str(output),
+        ]
+        try:
+            subprocess.run(
+                command,
+                check=True,
+                timeout=10 * 60,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+        except (subprocess.SubprocessError, OSError) as exception:
+            raise TemporalRidgeError(
+                "worker.participation-generation-failed",
+                "The isolated participation generator failed.",
+            ) from exception
+        participation_forecast = json.loads(
+            output.read_text(encoding="utf-8")
+        )
+    return _build_from_artifacts(
+        database_path,
+        point_forecast,
+        participation_forecast,
+        _retained_screen(),
+    )
+
+
+def _load_persisted_point_forecast(
+    database_path: Path,
+) -> Dict[str, Any]:
+    connection: Optional[sqlite3.Connection] = None
+    try:
+        connection = sqlite3.connect(
+            f"file:{Path(database_path)}?mode=ro",
+            uri=True,
+        )
+        connection.row_factory = sqlite3.Row
+        connection.execute("PRAGMA query_only = ON;")
+        row = connection.execute(
+            """
+            SELECT document_json, content_sha256
+            FROM multi_season_player_forecast_artifacts
+            ORDER BY
+                julianday(decision_cutoff_utc) DESC,
+                forecast_artifact_id DESC
+            LIMIT 1;
+            """
+        ).fetchone()
+        if row is None:
+            raise TemporalRidgeError(
+                "worker.point-forecast-not-found",
+                "The exact persisted point forecast is unavailable.",
+            )
+        encoded = str(row["document_json"]).encode("utf-8")
+        if (
+            not encoded
+            or len(encoded) > MAXIMUM_ARTIFACT_BYTES
+            or hashlib.sha256(encoded).hexdigest()
+            != str(row["content_sha256"])
+        ):
+            raise TemporalRidgeError(
+                "worker.point-forecast-invalid",
+                "The persisted point forecast failed its content boundary.",
+            )
+        return json.loads(encoded)
+    except sqlite3.Error as exception:
+        raise TemporalRidgeError(
+            "worker.point-forecast-read-failed",
+            "The persisted point forecast could not be read.",
+        ) from exception
+    finally:
+        if connection is not None:
+            connection.close()
 
 
 def main(arguments: Optional[Sequence[str]] = None) -> int:
