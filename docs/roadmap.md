@@ -611,6 +611,15 @@ respectively. The +20.67 mean gain, three target wins and +4 worst-target gain
 clear the fixed materiality and stability gates. This is the strongest
 retrospective decision evidence for v2, but the targets were already opened;
 only frozen 2026/27 outcomes can provide prospective promotion evidence.
+The v2-specific conditional-optimality audit also confirms a zero-gap global
+solve over the current 560-player pool. Leno, Tarkowski, Watkins, Bruno and
+Truffert are bootstrap-core selections. Roefs is the only fragile pick at
+28.5%; the best distinct solution swaps him for Kelleher but loses 0.79 exact
+scenario points and never wins a retained path. The 200 resamples still
+produce 195 distinct squads, so the model surface remains flat even though the
+declared optimisation problem is solved exactly. Surface that distinction in
+player explanations and continue improving inputs rather than adding solver
+complexity.
 
 The SQLite persistence vertical slice is deployed and survives a managed
 container recreate. Operator-triggered fixed-origin official FPL collectors

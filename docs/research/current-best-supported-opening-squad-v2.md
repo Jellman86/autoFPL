@@ -76,3 +76,10 @@ PYTHONPATH=src/analytics python3 \
 The artifact remains subject to the registered prospective GW1–8 outcome
 evaluation. Both the retained v1 comparator and v2 decision must remain
 recoverable; future outcomes may justify promotion, retention or replacement.
+
+The separate
+[v2 conditional-optimality audit](current-appearance-hurdle-opening-optimality-audit-v2.md)
+confirms the capture #19 squad as the zero-gap model optimum. Watkins, Bruno
+Fernandes, Leno, Tarkowski and Truffert are bootstrap-core selections; Roefs is
+the only fragile selection. This is current model robustness evidence, not a
+substitute for prospective outcome scoring.
