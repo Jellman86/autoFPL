@@ -51,7 +51,10 @@ public sealed record SelectedOpeningPolicyDocument(
         SelectedOpeningSolverDocument Solver,
     [property: JsonPropertyName("retrospectiveEvaluationSource")]
         SelectedOpeningEvaluationSourceDocument
-            RetrospectiveEvaluationSource);
+            RetrospectiveEvaluationSource,
+    [property: JsonPropertyName("modelEvaluationSource")]
+        SelectedOpeningEvaluationSourceDocument?
+            ModelEvaluationSource = null);
 
 public sealed record SelectedOpeningSolverDocument(
     [property: JsonPropertyName("optimizerVersion")]
@@ -89,7 +92,13 @@ public sealed record SelectedOpeningPlayerDocument(
     [property: JsonPropertyName("priceTenths")] int PriceTenths,
     [property: JsonPropertyName("officialStatus")] string OfficialStatus,
     [property: JsonPropertyName("officialChanceOfPlayingNextRound")]
-        int? OfficialChanceOfPlayingNextRound);
+        int? OfficialChanceOfPlayingNextRound,
+    [property: JsonPropertyName("modelExpectedPoints")]
+        decimal? ModelExpectedPoints = null,
+    [property: JsonPropertyName("modelAppearanceProbability")]
+        decimal? ModelAppearanceProbability = null,
+    [property: JsonPropertyName("modelSixGameweekExpectedPoints")]
+        decimal? ModelSixGameweekExpectedPoints = null);
 
 public sealed record SelectedOpeningGameweekDocument(
     [property: JsonPropertyName("gameweek")] int Gameweek,

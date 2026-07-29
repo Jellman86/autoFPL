@@ -114,6 +114,66 @@ public sealed class SelectedOpeningSquadShadowStoreTests
         Assert.Equal("gameweek-roles", roles.Code);
     }
 
+    [Fact]
+    public async Task Best_supported_v2_coexists_with_and_precedes_v1()
+    {
+        using var files = new TemporaryFiles();
+        DatabaseOptions options = await CreateDatabaseAsync(files.DatabasePath);
+        var store = new SelectedOpeningSquadShadowStore(
+            options,
+            new FixedTimeProvider(
+                DateTimeOffset.Parse("2026-07-29T18:00:00Z")));
+        SelectedOpeningSquadShadowDocument legacy = CreateRequest();
+        SelectedOpeningSquadShadowDocument bestSupported =
+            CreateBestSupportedRequest();
+
+        SelectedOpeningSquadShadowDocument storedLegacy =
+            await store.ImportAsync(
+                legacy,
+                TestContext.Current.CancellationToken);
+        SelectedOpeningSquadShadowDocument storedBest =
+            await store.ImportAsync(
+                bestSupported,
+                TestContext.Current.CancellationToken);
+        SelectedOpeningSquadShadowDocument? current =
+            await store.GetCurrentAsync(
+                TestContext.Current.CancellationToken);
+
+        Assert.NotEqual(
+            storedLegacy.SelectedOpeningSquadArtifactId,
+            storedBest.SelectedOpeningSquadArtifactId);
+        Assert.Equal(
+            SelectedOpeningSquadShadowStore.BestSupportedArtifactVersion,
+            current!.ArtifactVersion);
+        Assert.Equal(
+            SelectedOpeningSquadShadowStore.ModelEvaluationDataIdentity,
+            current.SelectedPolicy.ModelEvaluationSource!
+                .DataIdentitySha256);
+        Assert.All(
+            current.Selection.Players,
+            player =>
+            {
+                Assert.Equal(4.25m, player.ModelExpectedPoints);
+                Assert.Equal(
+                    0.90m,
+                    player.ModelAppearanceProbability);
+                Assert.Equal(
+                    25.50m,
+                    player.ModelSixGameweekExpectedPoints);
+            });
+
+        await using var connection =
+            new SqliteConnection(options.ConnectionString);
+        await connection.OpenAsync(TestContext.Current.CancellationToken);
+        await using SqliteCommand count = connection.CreateCommand();
+        count.CommandText =
+            "SELECT COUNT(*) FROM selected_opening_squad_shadow_artifacts;";
+        Assert.Equal(
+            2L,
+            await count.ExecuteScalarAsync(
+                TestContext.Current.CancellationToken));
+    }
+
     private static SelectedOpeningSquadShadowDocument CreateRequest()
     {
         string[] positions =
@@ -232,6 +292,46 @@ public sealed class SelectedOpeningSquadShadowStoreTests
             ["Prospective shadow only."],
             new string('c', 64),
             new string('d', 64));
+    }
+
+    private static SelectedOpeningSquadShadowDocument
+        CreateBestSupportedRequest()
+    {
+        SelectedOpeningSquadShadowDocument request = CreateRequest();
+        return request with
+        {
+            ArtifactVersion =
+                SelectedOpeningSquadShadowStore
+                    .BestSupportedArtifactVersion,
+            Status =
+                SelectedOpeningSquadShadowStore.BestSupportedStatus,
+            InfluencesAdvice = true,
+            SelectedPolicy = request.SelectedPolicy with
+            {
+                ModelEvaluationSource = new(
+                    SelectedOpeningSquadShadowStore
+                        .ModelEvaluationArtifactVersion,
+                    SelectedOpeningSquadShadowStore
+                        .ModelEvaluationDataIdentity,
+                    SelectedOpeningSquadShadowStore
+                        .ModelEvaluationRunIdentity),
+            },
+            Selection = request.Selection with
+            {
+                Players =
+                [
+                    .. request.Selection.Players.Select(
+                        player => player with
+                        {
+                            ModelExpectedPoints = 4.25m,
+                            ModelAppearanceProbability = 0.90m,
+                            ModelSixGameweekExpectedPoints = 25.50m,
+                        }),
+                ],
+            },
+            DataIdentitySha256 = new string('e', 64),
+            RunIdentitySha256 = new string('f', 64),
+        };
     }
 
     private static async Task<DatabaseOptions> CreateDatabaseAsync(string path)

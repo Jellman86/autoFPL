@@ -34,6 +34,20 @@ PRIMARY_BENCHMARK_KEY = "served-baseline-v0-gw1-roles-held"
 DIAGNOSTIC_BENCHMARK_KEY = "single-gameweek-optimizer-gw1-roles-held"
 MINIMUM_PRIMARY_DELTA = 2
 MAXIMUM_ARTIFACT_BYTES = 2 * 1024 * 1024
+BEST_SUPPORTED_ARTIFACT_VERSION = (
+    "current-selected-opening-squad-shadow-v2"
+)
+MODEL_EVALUATION_SOURCE = {
+    "artifactVersion": (
+        "historical-appearance-hurdle-points-evaluation-v1"
+    ),
+    "dataIdentitySha256": (
+        "1ef395d722844b1833fb059d606606e0bf1f1d42732377474d671f1a3f17b16e"
+    ),
+    "runIdentitySha256": (
+        "852b3728150cba9ad3bdb46ba24d66e9ac77262b2cf4dc9aae38f0df5cdc7e71"
+    ),
+}
 
 
 def build_selected_opening_squad_outcome_evaluation(
@@ -445,12 +459,30 @@ def _require_selected(
     selected: Mapping[str, Any],
     row: sqlite3.Row,
 ) -> None:
+    artifact_version = selected.get("artifactVersion")
+    model_source = selected.get("selectedPolicy", {}).get(
+        "modelEvaluationSource"
+    )
     _require(
-        selected.get("artifactVersion")
-        == "current-selected-opening-squad-shadow-v1"
-        and selected.get("status") == "prospective-shadow-unscored"
+        artifact_version
+        in {
+            "current-selected-opening-squad-shadow-v1",
+            BEST_SUPPORTED_ARTIFACT_VERSION,
+        }
+        and (
+            model_source == MODEL_EVALUATION_SOURCE
+            if artifact_version == BEST_SUPPORTED_ARTIFACT_VERSION
+            else model_source is None
+        )
+        and selected.get("status")
+        == (
+            "best-supported-current-prospective-unscored"
+            if artifact_version == BEST_SUPPORTED_ARTIFACT_VERSION
+            else "prospective-shadow-unscored"
+        )
         and selected.get("isPromoted") is False
-        and selected.get("influencesAdvice") is False
+        and selected.get("influencesAdvice")
+        is (artifact_version == BEST_SUPPORTED_ARTIFACT_VERSION)
         and int(selected.get("officialCaptureId", 0))
         == int(row["official_capture_id"])
         and selected.get("seasonCode") == str(row["season_code"])

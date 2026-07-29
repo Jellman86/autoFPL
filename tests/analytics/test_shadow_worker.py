@@ -169,6 +169,9 @@ class ShadowWorkerTests(unittest.TestCase):
             self.assertTrue(target["hasExactScenarioShadow"])
             self.assertFalse(target["hasExactInitialSquadQuality"])
             self.assertFalse(target["hasExactSelectedOpeningSquad"])
+            self.assertFalse(
+                target["hasExactBestSupportedOpeningSquad"]
+            )
             self.assertFalse(target["hasExactSelectionScore"])
             candidate = {
                 "officialCaptureId": 16,
@@ -226,6 +229,39 @@ class ShadowWorkerTests(unittest.TestCase):
                     VALUES (
                         16, '6-expected-points',
                         'e99bb4fce3615c91ecaf642037c6cebb3d36efffc2df54857ffbc4c27714e048'
+                    );
+                    """
+                )
+            best_supported = {
+                "officialCaptureId": 16,
+                "artifactVersion": (
+                    "current-selected-opening-squad-shadow-v2"
+                ),
+            }
+            with patch(
+                "autofpl_analytics.shadow_worker."
+                "build_current_best_supported_opening_squad",
+                return_value=best_supported,
+            ):
+                generated = generate_once(
+                    database,
+                    root / "best-supported-inbox",
+                )
+            self.assertEqual("generated", generated.status)
+            self.assertTrue(
+                str(generated.outputFile).startswith(
+                    "selected-opening-squad-capture-16-hurdle-v2"
+                )
+            )
+            with sqlite3.connect(database) as connection:
+                connection.execute(
+                    """
+                    INSERT INTO selected_opening_squad_shadow_artifacts
+                        (official_capture_id, evaluation_policy_key,
+                         evaluation_data_identity_sha256)
+                    VALUES (
+                        16, '6-expected-points',
+                        '1ef395d722844b1833fb059d606606e0bf1f1d42732377474d671f1a3f17b16e'
                     );
                     """
                 )

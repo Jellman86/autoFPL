@@ -4,7 +4,7 @@ internal sealed record DatabaseMigration(int Version, string Name, string Sql);
 
 internal static class DatabaseMigrations
 {
-    public const int CurrentVersion = 32;
+    public const int CurrentVersion = 33;
 
     public static IReadOnlyList<DatabaseMigration> All { get; } =
     [
@@ -2710,6 +2710,103 @@ internal static class DatabaseMigrations
                     evaluation_data_identity_sha256
                 )
             );
+
+            CREATE INDEX selected_opening_squad_shadow_latest_idx
+                ON selected_opening_squad_shadow_artifacts (
+                    season_code,
+                    opening_gameweek,
+                    decision_cutoff_utc DESC,
+                    selected_opening_squad_artifact_id DESC
+                );
+
+            CREATE TRIGGER selected_opening_squad_shadow_immutable
+            BEFORE UPDATE ON selected_opening_squad_shadow_artifacts
+            BEGIN
+                SELECT RAISE(
+                    ABORT,
+                    'selected opening squad shadow artifacts are immutable'
+                );
+            END;
+
+            CREATE TRIGGER selected_opening_squad_shadow_no_delete
+            BEFORE DELETE ON selected_opening_squad_shadow_artifacts
+            BEGIN
+                SELECT RAISE(
+                    ABORT,
+                    'selected opening squad shadow artifacts cannot be deleted'
+                );
+            END;
+            """),
+        new(
+            33,
+            "best-supported-opening-squad-artifact",
+            """
+            PRAGMA defer_foreign_keys = ON;
+
+            CREATE TABLE selected_opening_squad_shadow_artifacts_v33 (
+                selected_opening_squad_artifact_id INTEGER PRIMARY KEY,
+                schema_version TEXT NOT NULL CHECK (schema_version = '1.0'),
+                artifact_type TEXT NOT NULL
+                    CHECK (
+                        artifact_type =
+                            'current-selected-opening-squad-shadow'
+                    ),
+                artifact_version TEXT NOT NULL
+                    CHECK (
+                        artifact_version IN (
+                            'current-selected-opening-squad-shadow-v1',
+                            'current-selected-opening-squad-shadow-v2'
+                        )
+                    ),
+                status TEXT NOT NULL
+                    CHECK (
+                        status IN (
+                            'prospective-shadow-unscored',
+                            'best-supported-current-prospective-unscored'
+                        )
+                    ),
+                official_capture_id INTEGER NOT NULL
+                    REFERENCES official_fpl_captures(capture_id)
+                    ON DELETE RESTRICT,
+                season_code TEXT NOT NULL CHECK (season_code = '2026-27'),
+                opening_gameweek INTEGER NOT NULL
+                    CHECK (opening_gameweek = 1),
+                decision_cutoff_utc TEXT NOT NULL,
+                evaluation_policy_key TEXT NOT NULL
+                    CHECK (evaluation_policy_key = '6-expected-points'),
+                evaluation_data_identity_sha256 TEXT NOT NULL
+                    CHECK (length(evaluation_data_identity_sha256) = 64),
+                scenario_count INTEGER NOT NULL
+                    CHECK (scenario_count BETWEEN 1 AND 512),
+                candidate_pool_count INTEGER NOT NULL
+                    CHECK (candidate_pool_count BETWEEN 15 AND 1024),
+                budget_tenths INTEGER NOT NULL
+                    CHECK (budget_tenths BETWEEN 0 AND 1000),
+                producer_data_identity_sha256 TEXT NOT NULL
+                    CHECK (length(producer_data_identity_sha256) = 64),
+                producer_run_identity_sha256 TEXT NOT NULL
+                    CHECK (length(producer_run_identity_sha256) = 64),
+                document_json TEXT NOT NULL
+                    CHECK (length(document_json) BETWEEN 2 AND 2097152),
+                content_sha256 TEXT NOT NULL UNIQUE
+                    CHECK (length(content_sha256) = 64),
+                created_at_utc TEXT NOT NULL,
+                UNIQUE (
+                    official_capture_id,
+                    evaluation_policy_key,
+                    evaluation_data_identity_sha256
+                )
+            );
+
+            INSERT INTO selected_opening_squad_shadow_artifacts_v33
+            SELECT * FROM selected_opening_squad_shadow_artifacts;
+
+            DROP TRIGGER selected_opening_squad_shadow_immutable;
+            DROP TRIGGER selected_opening_squad_shadow_no_delete;
+            DROP TABLE selected_opening_squad_shadow_artifacts;
+
+            ALTER TABLE selected_opening_squad_shadow_artifacts_v33
+                RENAME TO selected_opening_squad_shadow_artifacts;
 
             CREATE INDEX selected_opening_squad_shadow_latest_idx
                 ON selected_opening_squad_shadow_artifacts (
