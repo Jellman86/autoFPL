@@ -38,6 +38,7 @@ ARTIFACT_TYPE = "current-multi-horizon-initial-squad-shadow"
 ARTIFACT_VERSION = "current-multi-horizon-initial-squad-shadow-v1"
 STATUS = "prospective-shadow-unscored"
 OPTIMIZER_VERSION = "scipy-highs-multi-horizon-mean-cvar-v1"
+MAXIMUM_NUMERICAL_MIP_GAP = 1e-12
 BENCH_WEIGHT = 0.08
 LOWER_TAIL_FRACTION = 0.20
 POLICIES = (
@@ -426,11 +427,16 @@ def _optimise_horizon(
     )
     _require(
         result.success
+        and result.status == 0
         and result.x is not None
         and result.mip_gap is not None
-        and float(result.mip_gap) <= 0.0,
+        and 0.0 <= float(result.mip_gap) <= MAXIMUM_NUMERICAL_MIP_GAP,
         "multi-squad.optimizer",
-        "The global multi-horizon surrogate did not reach an exact optimum.",
+        (
+            "The global multi-horizon surrogate did not reach an exact "
+            f"optimum (status={result.status}, success={result.success}, "
+            f"mipGap={result.mip_gap}, message={result.message})."
+        ),
     )
     values = np.rint(result.x[:binary_count]).astype(np.int8)
     squad_indices = [
@@ -503,7 +509,13 @@ def _optimise_horizon(
             "solver": "scipy.optimize.milp-highs",
             "scipyVersion": str(scipy.__version__),
             "status": "global-linear-mean-cvar-surrogate-optimum",
-            "mipGap": float(result.mip_gap),
+            "mipGap": (
+                0.0
+                if float(result.mip_gap) <= MAXIMUM_NUMERICAL_MIP_GAP
+                else float(result.mip_gap)
+            ),
+            "reportedMipGap": float(result.mip_gap),
+            "maximumNumericalMipGap": MAXIMUM_NUMERICAL_MIP_GAP,
             "objectiveValue": _round(float(-result.fun)),
             "binaryVariableCount": binary_count,
             "continuousVariableCount": variable_count - binary_count,
