@@ -502,6 +502,12 @@ all retained joint rows. It is intentionally shadow-only: the underlying
 distributions are still prospective and the 3/6/8-Gameweek decision horizon is
 not yet implemented.
 
+The opening-decision forecast now extends the unchanged retained two-season
+tree across Gameweeks 1–8 from one exact official cutoff and records cumulative
+3, 6 and 8-Gameweek player means. It does not propagate Gameweek 1 injury
+status through the horizon. Correlated per-Gameweek scenarios and the
+multi-horizon legal squad optimiser remain the next decision-quality gates.
+
 The SQLite persistence vertical slice is deployed and survives a managed
 container recreate. Operator-triggered fixed-origin official FPL collectors
 store exact raw hashes, retrieval-time availability and normalised

@@ -117,6 +117,26 @@ official availability and exact-code identity gaps, has no calibrated
 distribution and cannot influence selection. See the
 [shadow forecast specification](../../docs/research/multi-season-preseason-shadow-forecast-v1.md).
 
+## Current multi-horizon player forecast v1
+
+The opening-decision extension fits the same frozen two-season tree once and
+emits raw player point means for Gameweeks 1–8 plus the registered cumulative
+3, 6 and 8-Gameweek horizons:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.current_multi_horizon_player_forecast \
+  --database /path/to/autofpl.db \
+  --output /path/to/current-multi-horizon-player-forecast.json
+```
+
+Every future fixture must exist in the same official Gameweek 1 cutoff capture.
+Current next-round availability is retained as context but is not incorrectly
+propagated through eight weeks. This prospective shadow is the mean input for
+multi-Gameweek correlated scenarios and the global opening-squad optimiser; it
+cannot yet influence served advice. See the
+[multi-horizon specification](../../docs/research/current-multi-horizon-player-forecast-v1.md).
+
 The same fixed command is packaged as the non-root
 `ghcr.io/jellman86/autofpl-analytics` companion image. Its default invocation
 polls the read-only `/analytics-snapshot/autofpl.db`, does nothing while the
