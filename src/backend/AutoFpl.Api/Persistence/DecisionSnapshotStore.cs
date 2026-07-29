@@ -41,41 +41,76 @@ public sealed class DecisionSnapshotStore
             cancellationToken);
         await ValidateMigrationHistoryAsync(connection, cancellationToken);
 
-        foreach (DatabaseMigration migration in DatabaseMigrations.All)
+        // SQLite table rebuilds cannot disable foreign keys from inside a
+        // transaction. Migrations run on this isolated connection with checks
+        // restored and verified before it can be used for application work.
+        await ExecuteNonQueryAsync(
+            connection,
+            transaction: null,
+            "PRAGMA foreign_keys = OFF;",
+            cancellationToken);
+        try
         {
-            await using SqliteTransaction transaction =
-                connection.BeginTransaction(deferred: false);
-            await using SqliteCommand appliedCommand = connection.CreateCommand();
-            appliedCommand.Transaction = transaction;
-            appliedCommand.CommandText =
-                "SELECT COUNT(*) FROM schema_migrations WHERE version = $version;";
-            appliedCommand.Parameters.AddWithValue("$version", migration.Version);
-            long applied = (long)(await appliedCommand.ExecuteScalarAsync(cancellationToken) ?? 0L);
-            if (applied != 0)
+            foreach (DatabaseMigration migration in DatabaseMigrations.All)
             {
-                await transaction.RollbackAsync(cancellationToken);
-                continue;
-            }
+                await using SqliteTransaction transaction =
+                    connection.BeginTransaction(deferred: false);
+                await using SqliteCommand appliedCommand =
+                    connection.CreateCommand();
+                appliedCommand.Transaction = transaction;
+                appliedCommand.CommandText =
+                    "SELECT COUNT(*) FROM schema_migrations "
+                    + "WHERE version = $version;";
+                appliedCommand.Parameters.AddWithValue(
+                    "$version",
+                    migration.Version);
+                long applied = (long)(
+                    await appliedCommand.ExecuteScalarAsync(cancellationToken)
+                    ?? 0L);
+                if (applied != 0)
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    continue;
+                }
 
+                await ExecuteNonQueryAsync(
+                    connection,
+                    transaction,
+                    migration.Sql,
+                    cancellationToken);
+
+                await using SqliteCommand recordCommand =
+                    connection.CreateCommand();
+                recordCommand.Transaction = transaction;
+                recordCommand.CommandText =
+                    """
+                    INSERT INTO schema_migrations (
+                        version, name, applied_at_utc
+                    )
+                    VALUES ($version, $name, $appliedAtUtc);
+                    """;
+                recordCommand.Parameters.AddWithValue(
+                    "$version",
+                    migration.Version);
+                recordCommand.Parameters.AddWithValue(
+                    "$name",
+                    migration.Name);
+                recordCommand.Parameters.AddWithValue(
+                    "$appliedAtUtc",
+                    FormatUtc(DateTimeOffset.UtcNow));
+                await recordCommand.ExecuteNonQueryAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+            }
+        }
+        finally
+        {
             await ExecuteNonQueryAsync(
                 connection,
-                transaction,
-                migration.Sql,
+                transaction: null,
+                "PRAGMA foreign_keys = ON;",
                 cancellationToken);
-
-            await using SqliteCommand recordCommand = connection.CreateCommand();
-            recordCommand.Transaction = transaction;
-            recordCommand.CommandText =
-                """
-                INSERT INTO schema_migrations (version, name, applied_at_utc)
-                VALUES ($version, $name, $appliedAtUtc);
-                """;
-            recordCommand.Parameters.AddWithValue("$version", migration.Version);
-            recordCommand.Parameters.AddWithValue("$name", migration.Name);
-            recordCommand.Parameters.AddWithValue("$appliedAtUtc", FormatUtc(DateTimeOffset.UtcNow));
-            await recordCommand.ExecuteNonQueryAsync(cancellationToken);
-            await transaction.CommitAsync(cancellationToken);
         }
+        await ValidateForeignKeysAsync(connection, cancellationToken);
     }
 
     public async Task<DecisionSnapshotDocument> CreateSnapshotAsync(
@@ -1136,6 +1171,21 @@ public sealed class DecisionSnapshotStore
             }
 
             index++;
+        }
+    }
+
+    private static async Task ValidateForeignKeysAsync(
+        SqliteConnection connection,
+        CancellationToken cancellationToken)
+    {
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText = "PRAGMA foreign_key_check;";
+        await using SqliteDataReader reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+        if (await reader.ReadAsync(cancellationToken))
+        {
+            throw new InvalidOperationException(
+                "Database migration left an invalid foreign key.");
         }
     }
 

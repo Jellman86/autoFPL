@@ -580,7 +580,7 @@ public sealed class JointScenarioShadowStore
         command.Transaction = transaction;
         command.CommandText =
             """
-            INSERT OR IGNORE INTO joint_scenario_shadow_artifacts (
+            INSERT INTO joint_scenario_shadow_artifacts (
                 schema_version, artifact_type, artifact_version, status,
                 scenario_model_key, official_capture_id,
                 source_historical_capture_id, point_forecast_artifact_id,
@@ -596,7 +596,9 @@ public sealed class JointScenarioShadowStore
                 $seasonCode, $gameweek, $decisionCutoffUtc,
                 $scenarioCount, $playerCount, $scenarioContentSha256,
                 $runIdentity, $documentJson, $contentSha256, $createdAtUtc
-            );
+            )
+            ON CONFLICT (official_capture_id, scenario_model_key)
+            DO NOTHING;
             """;
         command.Parameters.AddWithValue(
             "$schemaVersion",

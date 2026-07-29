@@ -6,6 +6,12 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Changed
 
+- **Unchanged scenario matrices can now advance across official captures.**
+  Migration 29 removes the incorrect global uniqueness constraint from the
+  matrix-content hash while retaining one immutable artifact per capture and
+  model plus a unique canonical artifact hash. The importer no longer hides
+  unrelated constraint failures, and versioned worker handoff names allow a
+  corrected capture to regenerate without deleting a retained rejection file.
 - **The analytics worker now reads an application-produced standalone SQLite
   snapshot instead of the live WAL database.** The API uses SQLite's online
   backup operation, verifies integrity, switches the copy to delete-journal
