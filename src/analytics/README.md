@@ -141,6 +141,23 @@ official player code only. The result is a retrospective shadow-candidate
 screen, never a promotion decision. See the
 [multi-season specification](../../docs/research/multi-season-expanding-origin-v1.md).
 
+The training-window ablation keeps that complete feature and model contract
+fixed while comparing the retained two-season tree with all four pinned
+historical seasons:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.historical_training_window_evaluation \
+  --database /path/to/autofpl.db \
+  --output /path/to/historical-training-window-evaluation.json
+```
+
+Both variants receive the same 2025/26 Gameweek 31–38 target cohorts. The
+fixed gate requires material aggregate MAE improvement, RMSE non-regression,
+majority fold wins and position stability. Reused target outcomes mean a pass
+can retain only a prospective current shadow. See the
+[training-window specification](../../docs/research/historical-training-window-evaluation-v1.md).
+
 The fixture-strength ablation asks whether cutoff-correct recent team output
 and opponent points allowed by position add useful signal to the retained
 two-season tree on the exact same expanding-origin folds:

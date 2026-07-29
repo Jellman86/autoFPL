@@ -54,6 +54,14 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **The point model now has a fixed training-window screen.** A deterministic
+  read-only evaluator compares the retained two-season histogram tree with an
+  otherwise unchanged four-season challenger on identical 2025/26
+  expanding-origin folds and exact player cohorts. Its predeclared MAE, RMSE,
+  fold-win and position-stability gates can retain only a prospective shadow
+  because the target outcomes were already opened. The first result improved
+  MAE by 0.80%, RMSE and seven of eight folds but missed the fixed 1% primary
+  threshold, so the equal-weight four-season window is not retained.
 - **The selected opening squad now exposes conditional optimality rather than
   a bare solver claim.** A read-only audit reproduces the retained six-week
   zero-gap solution, finds the best distinct squad, globally reoptimises after
