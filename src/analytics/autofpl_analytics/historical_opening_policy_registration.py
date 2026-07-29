@@ -39,6 +39,12 @@ def build_historical_opening_policy_registration(
     scenario = build_historical_opening_scenario_reconstruction(
         Path(database_path)
     )
+    return _build_from_scenario(scenario)
+
+
+def _build_from_scenario(
+    scenario: Mapping[str, Any],
+) -> Dict[str, Any]:
     _require_scenario(scenario)
     policies = [
         {
