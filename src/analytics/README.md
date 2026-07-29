@@ -260,16 +260,31 @@ horizon-policy results and marks the retrospectively selected six-Gameweek
 expected-points policy for prospective scoring. It remains non-serving. See the
 [multi-horizon initial-squad specification](../../docs/research/current-multi-horizon-initial-squad-v1.md).
 
+The selected-policy projection freezes the exact squad and all eight weekly
+role decisions before any current-season outcome is available:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.current_selected_opening_squad \
+  --database /path/to/autofpl.db \
+  --output /path/to/current-selected-opening-squad.json
+```
+
+It binds the retained evaluation identities, extends the selected six-week
+policy through Gameweeks 7–8 using the registered preseason-only role rule and
+remains unable to influence advice. See the
+[selected opening-squad specification](../../docs/research/current-selected-opening-squad-shadow-v1.md).
+
 The same fixed command is packaged as the non-root
 `ghcr.io/jellman86/autofpl-analytics` companion image. Its default invocation
 polls the read-only `/analytics-snapshot/autofpl.db`, does nothing while the
-exact shadow is current, and atomically writes one capture-named JSON artifact to
-`/analytics-inbox` when the latest supported target is missing. Once the point
-shadow is present, the same worker creates the separately named joint scenario
-handoff, then the exact selection-score handoff and finally the fixed-squad
-balanced/safer/higher-ceiling role-strategy handoff. It never skips a
-prerequisite or combines import states. Mount the database read-only and a
-separate private inbox writable by UID `1654`:
+exact shadow is current, and atomically writes one capture-named JSON artifact
+to `/analytics-inbox` when the latest supported target is missing. Once the
+point shadow is present, the same worker creates the separately named joint
+scenario and initial-squad-quality handoffs, freezes the selected eight-week
+opening squad, then advances to selection scoring and fixed-squad role
+strategies. It never skips a prerequisite or combines import states. Mount the
+database read-only and a separate private inbox writable by UID `1654`:
 
 ```bash
 docker run \
