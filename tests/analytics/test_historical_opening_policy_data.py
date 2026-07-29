@@ -227,7 +227,7 @@ class HistoricalOpeningPolicyDataTests(unittest.TestCase):
             lineterminator="\n",
         )
         writer.writeheader()
-        positions = ["GKP"] * 2 + ["DEF"] * 5 + ["MID"] * 5 + ["FWD"] * 3
+        positions = ["GK", "GKP"] + ["DEF"] * 5 + ["MID"] * 5 + ["FWD"] * 3
         for element_id, position in enumerate(positions, start=1):
             writer.writerow(
                 {
