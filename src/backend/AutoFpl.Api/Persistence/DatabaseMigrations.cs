@@ -4,7 +4,7 @@ internal sealed record DatabaseMigration(int Version, string Name, string Sql);
 
 internal static class DatabaseMigrations
 {
-    public const int CurrentVersion = 25;
+    public const int CurrentVersion = 26;
 
     public static IReadOnlyList<DatabaseMigration> All { get; } =
     [
@@ -2159,6 +2159,87 @@ internal static class DatabaseMigrations
                 SELECT RAISE(
                     ABORT,
                     'multi-season player forecast artifacts cannot be deleted'
+                );
+            END;
+            """),
+        new(
+            26,
+            "joint-scenario-shadow-artifact",
+            """
+            CREATE TABLE joint_scenario_shadow_artifacts (
+                scenario_artifact_id INTEGER PRIMARY KEY,
+                schema_version TEXT NOT NULL
+                    CHECK (schema_version = '1.0'),
+                artifact_type TEXT NOT NULL
+                    CHECK (
+                        artifact_type =
+                            'current-joint-player-gameweek-scenario-shadow'
+                    ),
+                artifact_version TEXT NOT NULL
+                    CHECK (
+                        artifact_version =
+                            'current-joint-scenario-shadow-v1'
+                    ),
+                status TEXT NOT NULL
+                    CHECK (status = 'prospective-shadow-unscored'),
+                scenario_model_key TEXT NOT NULL
+                    CHECK (
+                        scenario_model_key =
+                            'joint-gameweek-residual-bootstrap'
+                    ),
+                official_capture_id INTEGER NOT NULL
+                    REFERENCES official_fpl_captures(capture_id)
+                    ON DELETE RESTRICT,
+                source_historical_capture_id INTEGER NOT NULL
+                    REFERENCES historical_fpl_season_captures(capture_id)
+                    ON DELETE RESTRICT,
+                point_forecast_artifact_id INTEGER NOT NULL
+                    REFERENCES multi_season_player_forecast_artifacts(
+                        forecast_artifact_id
+                    )
+                    ON DELETE RESTRICT,
+                season_code TEXT NOT NULL CHECK (season_code = '2026-27'),
+                gameweek INTEGER NOT NULL CHECK (gameweek = 1),
+                decision_cutoff_utc TEXT NOT NULL,
+                scenario_count INTEGER NOT NULL
+                    CHECK (scenario_count BETWEEN 1 AND 512),
+                player_count INTEGER NOT NULL
+                    CHECK (player_count BETWEEN 1 AND 1024),
+                scenario_content_sha256 TEXT NOT NULL UNIQUE
+                    CHECK (length(scenario_content_sha256) = 64),
+                producer_run_identity_sha256 TEXT NOT NULL
+                    CHECK (length(producer_run_identity_sha256) = 64),
+                document_json TEXT NOT NULL
+                    CHECK (length(document_json) BETWEEN 2 AND 2097152),
+                content_sha256 TEXT NOT NULL UNIQUE
+                    CHECK (length(content_sha256) = 64),
+                created_at_utc TEXT NOT NULL,
+                UNIQUE (official_capture_id, scenario_model_key)
+            );
+
+            CREATE INDEX joint_scenario_shadow_artifacts_latest_idx
+                ON joint_scenario_shadow_artifacts (
+                    season_code,
+                    gameweek,
+                    decision_cutoff_utc DESC,
+                    scenario_artifact_id DESC
+                );
+
+            CREATE TRIGGER joint_scenario_shadow_artifacts_immutable
+            BEFORE UPDATE ON joint_scenario_shadow_artifacts
+            BEGIN
+                SELECT RAISE(
+                    ABORT,
+                    'joint scenario shadow artifacts are immutable'
+                );
+            END;
+
+            CREATE TRIGGER joint_scenario_shadow_artifacts_no_delete
+            BEFORE DELETE ON joint_scenario_shadow_artifacts
+            BEGIN
+                SELECT RAISE(
+                    ABORT,
+                    'joint scenario shadow artifacts cannot be deleted'
                 );
             END;
             """),

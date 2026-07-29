@@ -11,6 +11,9 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Dict, Optional, Sequence
 
+from .current_joint_scenario_forecast import (
+    build_current_joint_scenario_forecast,
+)
 from .multi_season_player_forecast import (
     CURRENT_GAMEWEEK,
     CURRENT_SEASON,
@@ -58,7 +61,13 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
                     FROM multi_season_player_forecast_artifacts AS artifact
                     WHERE artifact.official_capture_id =
                         official_fpl_captures.capture_id
-                ) AS has_exact_shadow
+                ) AS has_exact_point_shadow,
+                EXISTS (
+                    SELECT 1
+                    FROM joint_scenario_shadow_artifacts AS scenario
+                    WHERE scenario.official_capture_id =
+                        official_fpl_captures.capture_id
+                ) AS has_exact_scenario_shadow
             FROM official_fpl_captures
             ORDER BY available_at_utc DESC, capture_id DESC
             LIMIT 1;
@@ -73,14 +82,20 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
                     if row["next_gameweek_number"] is None
                     else int(row["next_gameweek_number"])
                 ),
-                "hasExactShadow": bool(row["has_exact_shadow"]),
+                "hasExactPointShadow": bool(
+                    row["has_exact_point_shadow"]
+                ),
+                "hasExactScenarioShadow": bool(
+                    row["has_exact_scenario_shadow"]
+                ),
             }
             if row is not None
             else {
                 "officialCaptureId": None,
                 "seasonCode": None,
                 "gameweek": None,
-                "hasExactShadow": False,
+                "hasExactPointShadow": False,
+                "hasExactScenarioShadow": False,
             }
         )
     except sqlite3.Error as exception:
@@ -101,7 +116,10 @@ def generate_once(
     capture_id = target["officialCaptureId"]
     if capture_id is None:
         return _result("waiting", None, error_code="no-official-capture")
-    if target["hasExactShadow"]:
+    if (
+        target["hasExactPointShadow"]
+        and target["hasExactScenarioShadow"]
+    ):
         return _result("current", capture_id)
     if (
         target["seasonCode"] != CURRENT_SEASON
@@ -111,11 +129,16 @@ def generate_once(
 
     inbox = Path(inbox_path)
     inbox.mkdir(mode=0o700, parents=True, exist_ok=True)
-    stem = f"multi-season-shadow-capture-{capture_id}"
+    if target["hasExactPointShadow"]:
+        stem = f"joint-scenario-shadow-capture-{capture_id}"
+        build = build_current_joint_scenario_forecast
+    else:
+        stem = f"multi-season-shadow-capture-{capture_id}"
+        build = build_multi_season_player_forecast
     if any(inbox.glob(f"{stem}.*")):
         return _result("handoff-pending", capture_id)
 
-    artifact = build_multi_season_player_forecast(
+    artifact = build(
         Path(database_path),
         CURRENT_SEASON,
         CURRENT_GAMEWEEK,

@@ -14,6 +14,8 @@ Routes:
 | `GET` | `/api/v1/forecasts/preseason-challenger/latest` | Returns the latest immutable holdout-supported GW1 point-mean challenger; it cannot influence advice |
 | `GET` | `/api/v1/forecasts/multi-season-shadow/latest` | Returns the latest immutable two-season GW1 shadow comparison; Baseline v0 still drives advice |
 | `GET` | `/api/v1/forecasts/multi-season-shadow/readiness` | Reports whether the latest shadow matches the latest official capture, is stale or is missing |
+| `GET` | `/api/v1/forecasts/joint-scenario-shadow/latest` | Returns the latest immutable joint point/appearance matrix; it cannot influence advice |
+| `GET` | `/api/v1/forecasts/joint-scenario-shadow/readiness` | Reports whether the latest scenario matrix matches the latest official capture, is stale or is missing |
 | `GET` | `/api/v1/data/fpl-form-forecast/latest` | Returns provenance and counts for the latest immutable public FPL Form forecast capture |
 | `GET` | `/api/v1/data/fpl-form-forecast/status` | Distinguishes not checked, provider waiting, collection failure and retained forecast states |
 | `GET` | `/api/v1/data/fpl-form-forecast/{captureId}/identity-coverage` | Reports deterministic cutoff-correct official player/fixture coverage for one immutable forecast capture |
@@ -148,11 +150,36 @@ AutoFpl__Analytics__ShadowInboxPath=/analytics-inbox
 The interval is bounded from one through 60 minutes and absent by default.
 The worker reads `/data/autofpl.db` through a read-only mount, checks exact
 official/shadow capture identity every 15 minutes by default and atomically
-writes at most one `multi-season-shadow-capture-<id>.json` file. The application
-imports at most one pending file per cycle through the same strict 2 MiB
-validator used by the operator command, then renames the handoff `.imported` or
-`.rejected`. Neither side follows a public route: the worker cannot write
-SQLite and the web application remains the only import authority.
+writes at most one `multi-season-shadow-capture-<id>.json` file. Once that
+prerequisite is current, it can write one
+`joint-scenario-shadow-capture-<id>.json` file. Separate application pollers
+import at most one pending file of each type per cycle through strict 2 MiB
+validators, then rename each handoff `.imported` or `.rejected`. Neither side
+follows a public write route: the worker cannot write SQLite and the web
+application remains the only import authority.
+
+## Joint scenario shadow
+
+Migration 26 retains the complete scenario matrix in a separate immutable
+table. The import validator requires the exact official target, retained
+2025/26 archive, already imported two-season point artifact, frozen
+retrospective-screen identities and one ordered current-player column set. It
+checks all 38 row widths, integer point bounds, non-player zeroes, donor counts
+and the producer's canonical matrix hash before inserting a content-addressed
+document. Identical input is idempotent and conflicting content fails closed.
+
+The operator equivalent of the private inbox import is:
+
+```text
+dotnet AutoFpl.Api.dll \
+  --import-joint-scenario-shadow <json-file>
+```
+
+`GET /api/v1/forecasts/joint-scenario-shadow/readiness` reports `current` only
+when the matrix and latest official capture IDs match. The latest route exposes
+the complete rows for the future deterministic comparison service, but the
+artifact remains prospectively unscored, unpromoted and unable to alter advice
+or a user selection.
 
 ## Official FPL capture
 

@@ -24,6 +24,14 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **Joint scenario matrices now cross a strict private application boundary.**
+  Migration 26 stores one append-only, content-hashed matrix per exact official
+  capture only after validating the frozen screen, source archive, point
+  forecast, player columns, dimensions, integer bounds, non-player zeros and
+  Python-compatible matrix hash. The network-isolated worker advances from the
+  point-shadow handoff to a separately named scenario handoff; the application
+  quarantines invalid files and exposes read-only latest/readiness OpenAPI
+  routes while `influencesAdvice` remains false.
 - **A leakage-safe joint player-Gameweek scenario candidate now has a frozen
   prospective shadow.** An expanding-origin 2025/26 screen resamples complete
   prior Gameweeks, preserves shared row shocks, aligns point and appearance

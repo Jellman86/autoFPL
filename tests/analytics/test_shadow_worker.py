@@ -51,7 +51,7 @@ class ShadowWorkerTests(unittest.TestCase):
             pending = generate_once(database, inbox)
             self.assertEqual("handoff-pending", pending.status)
 
-    def test_exact_shadow_and_unsupported_target_do_not_generate(self) -> None:
+    def test_point_shadow_advances_to_joint_scenario_handoff(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             database = root / "autofpl.db"
@@ -67,7 +67,55 @@ class ShadowWorkerTests(unittest.TestCase):
                 )
 
             target = inspect_target(database)
-            self.assertTrue(target["hasExactShadow"])
+            self.assertTrue(target["hasExactPointShadow"])
+            self.assertFalse(target["hasExactScenarioShadow"])
+            artifact = {
+                "officialCaptureId": 16,
+                "pointRows": [[1]],
+            }
+            with patch(
+                "autofpl_analytics.shadow_worker."
+                "build_current_joint_scenario_forecast",
+                return_value=artifact,
+            ):
+                generated = generate_once(database, root / "inbox")
+            self.assertEqual("generated", generated.status)
+            self.assertTrue(
+                str(generated.outputFile).startswith(
+                    "joint-scenario-shadow-capture-16"
+                )
+            )
+            self.assertEqual(
+                artifact,
+                json.loads(
+                    (root / "inbox" / str(generated.outputFile))
+                    .read_text()
+                ),
+            )
+
+    def test_exact_shadows_and_unsupported_target_do_not_generate(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            database = root / "autofpl.db"
+            self._create_database(database)
+            self._insert_capture(database, 16)
+            with sqlite3.connect(database) as connection:
+                connection.executescript(
+                    """
+                    INSERT INTO multi_season_player_forecast_artifacts
+                        (official_capture_id)
+                    VALUES (16);
+                    INSERT INTO joint_scenario_shadow_artifacts
+                        (official_capture_id)
+                    VALUES (16);
+                    """
+                )
+
+            target = inspect_target(database)
+            self.assertTrue(target["hasExactPointShadow"])
+            self.assertTrue(target["hasExactScenarioShadow"])
             self.assertEqual(
                 "current",
                 generate_once(database, root / "inbox").status,
@@ -80,6 +128,7 @@ class ShadowWorkerTests(unittest.TestCase):
                     SET next_gameweek_number = 2
                     WHERE capture_id = 16;
                     DELETE FROM multi_season_player_forecast_artifacts;
+                    DELETE FROM joint_scenario_shadow_artifacts;
                     """
                 )
             unsupported = generate_once(database, root / "inbox")
@@ -99,6 +148,10 @@ class ShadowWorkerTests(unittest.TestCase):
                 );
                 CREATE TABLE multi_season_player_forecast_artifacts (
                     forecast_artifact_id INTEGER PRIMARY KEY,
+                    official_capture_id INTEGER NOT NULL
+                );
+                CREATE TABLE joint_scenario_shadow_artifacts (
+                    scenario_artifact_id INTEGER PRIMARY KEY,
                     official_capture_id INTEGER NOT NULL
                 );
                 """

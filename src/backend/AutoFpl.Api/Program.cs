@@ -316,6 +316,21 @@ if (requestedMultiSeasonPlayerForecastImport
         "Usage: --import-multi-season-player-forecast <json-file>");
     return 2;
 }
+bool requestedJointScenarioImport =
+    args.Length > 0
+    && StringComparer.Ordinal.Equals(
+        args[0],
+        "--import-joint-scenario-shadow");
+bool runJointScenarioImport =
+    requestedJointScenarioImport
+    && args.Length == 2
+    && !string.IsNullOrWhiteSpace(args[1]);
+if (requestedJointScenarioImport && !runJointScenarioImport)
+{
+    await Console.Error.WriteLineAsync(
+        "Usage: --import-joint-scenario-shadow <json-file>");
+    return 2;
+}
 
 bool runNonWebCommand =
     runIntegrityCheck
@@ -337,7 +352,8 @@ bool runNonWebCommand =
     || runOfficialExpectedPointsEvaluation
     || runOfficialFplOutcomeImport
     || runPreseasonPlayerForecastImport
-    || runMultiSeasonPlayerForecastImport;
+    || runMultiSeasonPlayerForecastImport
+    || runJointScenarioImport;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(
     runNonWebCommand ? [] : args);
@@ -408,6 +424,11 @@ builder.Services.AddSingleton(serviceProvider =>
         serviceProvider.GetRequiredService<DatabaseOptions>(),
         serviceProvider.GetRequiredService<TimeProvider>()));
 builder.Services.AddSingleton<MultiSeasonPlayerForecastImporter>();
+builder.Services.AddSingleton(serviceProvider =>
+    new JointScenarioShadowStore(
+        serviceProvider.GetRequiredService<DatabaseOptions>(),
+        serviceProvider.GetRequiredService<TimeProvider>()));
+builder.Services.AddSingleton<JointScenarioShadowImporter>();
 builder.Services.AddSingleton(serviceProvider =>
     new SelectionRevisionStore(
         serviceProvider.GetRequiredService<DatabaseOptions>(),
@@ -621,6 +642,7 @@ if (fbrefMatchLogPollingOptions.Enabled)
 if (shadowForecastInboxOptions.Enabled)
 {
     builder.Services.AddHostedService<ShadowForecastInboxPoller>();
+    builder.Services.AddHostedService<JointScenarioInboxPoller>();
 }
 builder.Services.AddExceptionHandler<DecisionSnapshotPersistenceExceptionHandler>();
 builder.Services.AddExceptionHandler<DecisionSnapshotValidationExceptionHandler>();
@@ -806,6 +828,31 @@ if (runMultiSeasonPlayerForecastImport)
     }
     catch (Exception exception)
         when (exception is MultiSeasonPlayerForecastValidationException
+            or FileNotFoundException
+            or InvalidDataException
+            or JsonException)
+    {
+        await Console.Error.WriteLineAsync(exception.Message);
+        return 2;
+    }
+}
+
+if (runJointScenarioImport)
+{
+    try
+    {
+        JointScenarioShadowDocument scenario =
+            await app.Services
+                .GetRequiredService<JointScenarioShadowImporter>()
+                .ImportFileAsync(args[1]);
+        await Console.Out.WriteLineAsync(
+            JsonSerializer.Serialize(
+                scenario,
+                new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+        return 0;
+    }
+    catch (Exception exception)
+        when (exception is JointScenarioValidationException
             or FileNotFoundException
             or InvalidDataException
             or JsonException)
@@ -1218,6 +1265,41 @@ app.MapGet(
         + "and the shadow never influences advice.")
     .WithTags("Forecasts")
     .Produces<MultiSeasonPlayerForecastReadinessDocument>();
+app.MapGet(
+    "/api/v1/forecasts/joint-scenario-shadow/latest",
+    async (
+        JointScenarioShadowStore store,
+        CancellationToken cancellationToken) =>
+    {
+        JointScenarioShadowDocument? scenario =
+            await store.GetLatestAsync(cancellationToken);
+        return scenario is null ? Results.NotFound() : Results.Ok(scenario);
+    })
+    .WithName("GetLatestJointScenarioShadow")
+    .WithSummary(
+        "Read the latest immutable joint player-Gameweek scenario shadow.")
+    .WithDescription(
+        "The complete point and appearance rows are prospective research "
+        + "evidence only. They are unscored, unpromoted and cannot influence "
+        + "advice or mutate a user selection.")
+    .WithTags("Forecasts")
+    .Produces<JointScenarioShadowDocument>()
+    .Produces(StatusCodes.Status404NotFound);
+app.MapGet(
+    "/api/v1/forecasts/joint-scenario-shadow/readiness",
+    async (
+        JointScenarioShadowStore store,
+        CancellationToken cancellationToken) =>
+        Results.Ok(await store.GetReadinessAsync(cancellationToken)))
+    .WithName("GetJointScenarioShadowReadiness")
+    .WithSummary(
+        "Report whether the latest joint scenario matches official evidence.")
+    .WithDescription(
+        "Returns current only for an exact latest official-capture match. "
+        + "Missing or stale matrices never fall back and never influence "
+        + "advice.")
+    .WithTags("Forecasts")
+    .Produces<JointScenarioReadinessDocument>();
 app.MapGet(
     "/api/v1/selections/current",
     async (
