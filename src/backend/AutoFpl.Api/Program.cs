@@ -56,7 +56,8 @@ bool runHistoricalFplSeasonImport =
 if (requestedHistoricalFplSeasonImport && !runHistoricalFplSeasonImport)
 {
     await Console.Error.WriteLineAsync(
-        "Usage: --import-historical-fpl-season [2024-25|2025-26]");
+        "Usage: --import-historical-fpl-season "
+        + "[2022-23|2023-24|2024-25|2025-26]");
     return 2;
 }
 bool runFplFormForecastImport =

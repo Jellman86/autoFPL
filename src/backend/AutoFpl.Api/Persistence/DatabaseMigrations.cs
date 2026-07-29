@@ -4,7 +4,7 @@ internal sealed record DatabaseMigration(int Version, string Name, string Sql);
 
 internal static class DatabaseMigrations
 {
-    public const int CurrentVersion = 30;
+    public const int CurrentVersion = 31;
 
     public static IReadOnlyList<DatabaseMigration> All { get; } =
     [
@@ -2579,6 +2579,83 @@ internal static class DatabaseMigrations
                 SELECT RAISE(
                     ABORT,
                     'initial squad quality shadow artifacts cannot be deleted'
+                );
+            END;
+            """),
+        new(
+            31,
+            "four-season-historical-fpl-archive",
+            """
+            PRAGMA defer_foreign_keys = ON;
+
+            CREATE TABLE historical_fpl_season_captures_v31 (
+                capture_id INTEGER PRIMARY KEY,
+                schema_version TEXT NOT NULL CHECK (schema_version = '1.0'),
+                source_key TEXT NOT NULL
+                    CHECK (source_key = 'vaastav-fpl-historical/v1'),
+                season_code TEXT NOT NULL
+                    CHECK (
+                        season_code IN (
+                            '2022-23',
+                            '2023-24',
+                            '2024-25',
+                            '2025-26'
+                        )
+                    ),
+                source_revision TEXT NOT NULL CHECK (length(source_revision) = 40),
+                players_url TEXT NOT NULL
+                    CHECK (length(players_url) BETWEEN 8 AND 2048),
+                gameweeks_url TEXT NOT NULL
+                    CHECK (length(gameweeks_url) BETWEEN 8 AND 2048),
+                published_at_utc TEXT NOT NULL,
+                retrieved_at_utc TEXT NOT NULL,
+                available_at_utc TEXT NOT NULL,
+                players_sha256 TEXT NOT NULL CHECK (length(players_sha256) = 64),
+                gameweeks_sha256 TEXT NOT NULL
+                    CHECK (length(gameweeks_sha256) = 64),
+                players_csv_brotli BLOB NOT NULL
+                    CHECK (length(players_csv_brotli) BETWEEN 1 AND 8388608),
+                gameweeks_csv_brotli BLOB NOT NULL
+                    CHECK (length(gameweeks_csv_brotli) BETWEEN 1 AND 8388608),
+                player_count INTEGER NOT NULL
+                    CHECK (player_count BETWEEN 1 AND 2000),
+                player_gameweek_count INTEGER NOT NULL
+                    CHECK (player_gameweek_count BETWEEN 1 AND 100000),
+                stable_code_count INTEGER NOT NULL
+                    CHECK (stable_code_count BETWEEN 1 AND 2000),
+                created_at_utc TEXT NOT NULL,
+                UNIQUE (source_key, season_code, source_revision),
+                UNIQUE (players_sha256, gameweeks_sha256),
+                CHECK (published_at_utc <= retrieved_at_utc),
+                CHECK (retrieved_at_utc <= available_at_utc),
+                CHECK (stable_code_count <= player_count)
+            );
+
+            INSERT INTO historical_fpl_season_captures_v31
+            SELECT * FROM historical_fpl_season_captures;
+
+            DROP TRIGGER historical_fpl_season_captures_immutable;
+            DROP TRIGGER historical_fpl_season_captures_no_delete;
+            DROP TABLE historical_fpl_season_captures;
+
+            ALTER TABLE historical_fpl_season_captures_v31
+                RENAME TO historical_fpl_season_captures;
+
+            CREATE TRIGGER historical_fpl_season_captures_immutable
+            BEFORE UPDATE ON historical_fpl_season_captures
+            BEGIN
+                SELECT RAISE(
+                    ABORT,
+                    'historical FPL season captures are immutable'
+                );
+            END;
+
+            CREATE TRIGGER historical_fpl_season_captures_no_delete
+            BEFORE DELETE ON historical_fpl_season_captures
+            BEGIN
+                SELECT RAISE(
+                    ABORT,
+                    'historical FPL season captures cannot be deleted'
                 );
             END;
             """),
