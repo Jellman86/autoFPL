@@ -1,0 +1,34 @@
+ARG PYTHON_BUILDER_IMAGE=docker.io/library/python:3.13-slim-trixie@sha256:6771159cd4fa5d9bba1258caf0b82e6b73458c694d178ad97c5e925c2d0e1a91
+ARG PYTHON_RUNTIME_IMAGE=gcr.io/distroless/python3-debian13@sha256:3f056d8b0189540a15b5a3a125cfd28fb0960af0af2c56cf8bcec613fd771a00
+
+FROM ${PYTHON_BUILDER_IMAGE} AS build
+WORKDIR /build
+
+COPY requirements-analytics.txt ./
+RUN python -m pip install \
+    --disable-pip-version-check \
+    --no-cache-dir \
+    --require-hashes \
+    --requirement requirements-analytics.txt \
+    --target /python-packages
+
+FROM ${PYTHON_RUNTIME_IMAGE} AS runtime
+ARG SOURCE_REVISION=unknown
+
+LABEL org.opencontainers.image.title="autoFPL analytics worker" \
+      org.opencontainers.image.description="Read-only autoFPL shadow forecast generator" \
+      org.opencontainers.image.source="https://github.com/Jellman86/autoFPL" \
+      org.opencontainers.image.revision="${SOURCE_REVISION}" \
+      org.opencontainers.image.licenses="AGPL-3.0-only"
+
+WORKDIR /app
+COPY --from=build --chown=1654:1654 /python-packages/ ./python-packages/
+COPY --chown=1654:1654 src/analytics/ ./src/analytics/
+
+USER 1654
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=/app/python-packages:/app/src/analytics \
+    PYTHONUNBUFFERED=1
+
+ENTRYPOINT ["/usr/bin/python3", "-m", "autofpl_analytics.multi_season_player_forecast"]
+CMD ["--database", "/data/autofpl.db", "--output", "/output/two-season-shadow.json"]

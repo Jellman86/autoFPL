@@ -76,6 +76,24 @@ official availability and exact-code identity gaps, has no calibrated
 distribution and cannot influence selection. See the
 [shadow forecast specification](../../docs/research/multi-season-preseason-shadow-forecast-v1.md).
 
+The same fixed command is packaged as the non-root
+`ghcr.io/jellman86/autofpl-analytics` companion image. Its default invocation
+reads `/data/autofpl.db` and writes `/output/two-season-shadow.json`; mount the
+database read-only and a separate bounded output directory writable by UID
+`1654`. The image is a one-shot generator, not a web service or importer:
+
+```bash
+docker run --rm \
+  --read-only \
+  --volume /private/autofpl:/data:ro \
+  --volume /private/autofpl-analytics:/output \
+  ghcr.io/jellman86/autofpl-analytics:dev
+```
+
+The `.NET` application remains the only strict product import boundary. Compose
+polling and handoff are intentionally a later slice so packaging cannot
+silently turn model fitting into a background mutation.
+
 ## Historical participation evaluation v1
 
 The companion evaluator tests fixed appearance, start, 60-minute and uncapped

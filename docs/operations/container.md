@@ -607,6 +607,29 @@ bash scripts/ci_container_smoke.sh autofpl:local "$(git rev-parse HEAD)"
 
 The smoke test launches the image with a read-only filesystem, all Linux capabilities dropped, `no-new-privileges`, and no fixed host port.
 
+`Dockerfile.analytics` builds hash-locked scientific wheels with a
+digest-pinned Python 3.13 slim Trixie stage, then copies only the runtime
+packages and generator into a digest-pinned distroless Python Debian 13 final
+image. The companion runs as UID `1654`, contains no shell or package manager,
+has a read-only root filesystem, exposes no port and writes only the requested
+artifact to a mounted output directory. Its smoke test imports the exact NumPy
+and scikit-learn versions and starts the real command surface:
+
+```bash
+make analytics-container-verify
+```
+
+Keeping the scientific runtime separate prevents an analytics dependency or
+long-running fit from expanding or taking down the serving image.
+
+The analytics Trivy gate scans both OS and Python packages and fails on
+HIGH/CRITICAL findings for which an actionable fixed version exists. Newly
+disclosed vendor records with no available fix remain covered by every fresh
+Trivy database evaluation but do not make the package permanently
+unpublishable; the final distroless image, read-only filesystem, non-root user,
+dropped capabilities and absence of network listeners bound their runtime
+exposure.
+
 ## CI and publication
 
 `.github/workflows/container.yml` runs on pull requests to `dev`/`main` and pushes to `dev`.
@@ -621,6 +644,16 @@ The smoke test launches the image with a read-only filesystem, all Linux capabil
 6. Tag and push the exact scanned candidate, immutable SHA tag first and mutable `dev` tag second, then verify the SHA tag is readable.
 
 Pull requests never receive registry write permission and never publish images.
+
+The independent `Analytics container` workflow applies the same build, Trivy,
+non-root smoke, SHA-tag and `dev`-tag flow to:
+
+- `ghcr.io/jellman86/autofpl-analytics:dev`
+- `ghcr.io/jellman86/autofpl-analytics:sha-<full-commit-sha>`
+
+It publishes a one-shot generator only. The Dockhand stack does not add it
+until the following compose-handoff slice provides bounded polling, exact
+capture freshness checks and strict `.NET` import.
 
 ## Private Dockhand deployment
 
