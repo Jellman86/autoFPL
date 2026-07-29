@@ -566,6 +566,17 @@ small objective margins and unstable picks without confusing exact solver
 optimality with empirical prediction quality. The resulting player regret and
 selection-frequency fields are intended to ground later card explanations;
 they remain non-serving diagnostics.
+Because the audit exposes a flat forecast surface, prediction work now returns
+to the point model before adding solver complexity. The next fixed ablation
+compares the unchanged retained two-season histogram tree with all four pinned
+historical seasons on the same eight late-2025/26 folds and exact player
+cohorts. It requires material MAE gain, RMSE non-regression, majority fold wins
+and position stability before a four-season current shadow may be retained.
+The four-season result improved MAE by 0.80%, RMSE, seven of eight folds and
+three of four positions, but missed the fixed 1% MAE gate. It is not retained.
+Do not tune an age weight against the same opened folds merely to bridge the
+0.20-point threshold gap; a separately specified partial-pooling or recency
+model needs independent chronological evidence.
 
 The SQLite persistence vertical slice is deployed and survives a managed
 container recreate. Operator-triggered fixed-origin official FPL collectors

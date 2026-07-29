@@ -71,6 +71,7 @@ still require owner authentication.
 - [Cross-season feature ablation v1](research/cross-season-feature-ablation-v1.md) — identical-fold incumbent comparison for prior-season performance and durability candidates.
 - [Historical preseason evaluation v1](research/historical-preseason-evaluation-v1.md) — fixed expanding-origin development and locked-holdout evidence for a provisional archive-trained GW1 bridge.
 - [Multi-season expanding-origin evaluation v1](research/multi-season-expanding-origin-v1.md) — exact-code 2024/25 plus 2025/26 feature table and matched current-only versus multi-season ridge/tree ablation.
+- [Historical training-window evaluation v1](research/historical-training-window-evaluation-v1.md) — fixed identical-fold screen of the retained two-season point model against an otherwise unchanged four-season challenger.
 - [Multi-season preseason shadow forecast v1](research/multi-season-preseason-shadow-forecast-v1.md) — exact-capture 2026/27 GW1 raw point comparison from the frozen two-season tree, unable to influence advice.
 - [CPU joint-scenario reference v1](research/cpu-joint-scenario-reference-v1.md) — seeded whole-row sampling and exact auto-substitution, formation and captaincy scoring for paired strategy comparisons.
 - [Current multi-horizon player forecast v1](research/current-multi-horizon-player-forecast-v1.md) — cutoff-bound Gameweek 1–8 point means and registered 3/6/8 opening-squad horizons.
