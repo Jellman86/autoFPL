@@ -658,7 +658,11 @@ Tracked by [#44](https://github.com/Jellman86/autoFPL/issues/44) and
 **Status:** active — the exact persisted forecast can now become an immutable
 user-owned draft, direct XI/bench/captaincy edits create validated superseding
 revisions, and the user explicitly locks the latest choice; transfer-aware squad
-editing, scenario distributions and alternative generation remain.
+editing, scenario distributions and alternative generation remain. The
+versioned CPU scoring kernel now resolves complete joint outcome rows with
+official auto-substitution and captaincy semantics and compares candidates on
+identical rows. It remains outside the product until a calibrated,
+point-in-time scenario generator supplies those rows.
 
 - Implement reproducible CPU Monte Carlo and the GPU parity/benchmark path.
 - Generate recommended, safer and higher-ceiling legal selections.
@@ -787,8 +791,9 @@ pollers remain opt-in until the Compose slice is deployed. The active order is:
    register subsequent prospective folds without tuning on them;
 3. join only the point, participation and minutes components that pass their
    registered gates, then publish the first calibrated player distributions;
-4. add CPU-reference scenario scoring and compare the model, safer,
-   higher-ceiling and user-authored squads in the interface;
+4. connect calibrated joint rows to the completed CPU-reference scorer, add
+   immutable scenario provenance and compare the model, safer, higher-ceiling
+   and user-authored squads in the interface;
 5. connect the grounded AI surface through read-only MCP first, followed by an
    owner-configured OpenAI-compatible provider; and
 6. add owner authentication and sanitized dashboard sharing before exposing
