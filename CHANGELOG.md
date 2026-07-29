@@ -54,6 +54,13 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **The best-supported v2 squad now has its own optimality audit.** The audit
+  binds the retained point and opening-policy evaluations, repeats the
+  best-distinct and 15 player-exclusion global solves, and runs 200 paired-path
+  bootstraps on the hurdle distributions. Capture #19 remains the zero-gap
+  optimum; Watkins, Bruno, Leno, Tarkowski and Truffert are core, while Roefs
+  is the only fragile pick. The best distinct Roefs-to-Kelleher swap loses
+  0.79 exact scenario points and wins no retained path.
 - **The appearance-hurdle model now has complete opening-policy evidence.**
   A target-outcome-free reconstruction fits its appearance and conditional
   point components on strictly earlier season archives, rebuilds joint paths

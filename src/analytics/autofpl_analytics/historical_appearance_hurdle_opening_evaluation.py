@@ -80,6 +80,12 @@ STATUS = "retrospective-challenger-evaluated-prospective-gate-required"
 SCENARIO_STATUS = "retrospective-input-reconstruction-no-outcomes-opened"
 DECISION_RETAIN = "retain-hurdle-opening-policy-prospective-challenger"
 DECISION_REJECT = "do-not-retain-hurdle-opening-policy"
+RETAINED_DATA_IDENTITY = (
+    "75a4094bec13ae6226f80547344787ad4241405d5b4234720b9f2ba226acd210"
+)
+RETAINED_RUN_IDENTITY = (
+    "ad66dca436de3520b9c73f65440a652d42248ef6eb050e52c4968d86c8a62f04"
+)
 
 
 def build_historical_appearance_hurdle_opening_evaluation(

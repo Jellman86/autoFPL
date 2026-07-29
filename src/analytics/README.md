@@ -381,6 +381,21 @@ regret and selection frequency remain diagnostics of the current forecast,
 not empirical proof or a promotion path. See the
 [optimality-audit specification](../../docs/research/current-opening-squad-optimality-audit-v1.md).
 
+The v2-specific audit runs the same global exclusions and paired-path
+bootstrap on the retained appearance-hurdle distributions and binds the
+complete historical opening-policy evidence:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.current_appearance_hurdle_opening_optimality_audit \
+  --database /path/to/autofpl.db \
+  --output /path/to/current-hurdle-opening-optimality-audit.json
+```
+
+Capture #19 confirms the shown squad as the zero-gap model optimum, classifies
+five core players and identifies Roefs as the only fragile selection. See the
+[v2 optimality-audit specification](../../docs/research/current-appearance-hurdle-opening-optimality-audit-v2.md).
+
 The same fixed command is packaged as the non-root
 `ghcr.io/jellman86/autofpl-analytics` companion image. Its default invocation
 polls the read-only `/analytics-snapshot/autofpl.db`, does nothing while the
