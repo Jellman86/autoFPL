@@ -150,6 +150,14 @@ public sealed class AnalyticsSnapshotPublisher : BackgroundService
                     SELECT MAX(strategy_artifact_id)
                     FROM selection_role_strategy_shadow_artifacts
                 ), 0) AS TEXT)
+                || ':' || CAST(COALESCE((
+                    SELECT MAX(initial_squad_artifact_id)
+                    FROM initial_squad_quality_shadow_artifacts
+                ), 0) AS TEXT)
+                || ':' || CAST(COALESCE((
+                    SELECT MAX(outcome_capture_id)
+                    FROM official_fpl_outcome_captures
+                ), 0) AS TEXT)
                 || ':' || COALESCE((
                     SELECT locked_at_utc
                     FROM selection_revisions

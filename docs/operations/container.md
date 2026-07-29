@@ -231,6 +231,20 @@ latest official capture, scenario and served forecast do not yet have a
 matching zero-gap optimiser artifact. Older results are never substituted.
 This surface is read-only, shadow-only and cannot replace advice.
 
+To score the frozen candidate after its final official result is captured,
+run the read-only evaluator against the standalone analytics snapshot:
+
+```text
+python -m autofpl_analytics.initial_squad_outcome_evaluation \
+  --database /analytics-snapshot/autofpl.db \
+  --output /path/to/initial-squad-outcome.json
+```
+
+Before the result it returns `waiting-for-official-outcome` and writes
+nothing. The application republishes the standalone snapshot when either an
+initial-squad artifact or official outcome identity changes, so the evaluator
+never needs access to the live WAL database.
+
 ## Official FPL capture
 
 Run the bounded fixed-origin import as an operator command:

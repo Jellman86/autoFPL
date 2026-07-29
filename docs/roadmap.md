@@ -834,9 +834,9 @@ explicit copy creates a current-forecast draft before opening the full My Squad
 builder. Exact candidate persistence and its read-only comparison surface are
 now implemented. The active order is:
 
-1. score Baseline v0, the frozen point/participation components and the complete
-   initial-squad candidate on the first automatically paired 2026/27 result,
-   then register subsequent prospective folds without tuning on them;
+1. run the implemented frozen Baseline/component/initial-squad evaluator when
+   the first automatically captured 2026/27 result arrives, then register
+   subsequent prospective folds without tuning on them;
 2. join only the point, participation and minutes components that pass their
    registered gates, publish calibrated player distributions and replace the
    exploratory rows behind the CPU-reference scorer;

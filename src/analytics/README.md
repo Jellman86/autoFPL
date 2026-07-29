@@ -124,6 +124,26 @@ the retained joint rows. It remains prospective shadow evidence and cannot
 replace advice. See the
 [initial-squad shadow specification](../../docs/research/current-initial-squad-quality-shadow-v1.md).
 
+## Initial-squad prospective outcome evaluation v1
+
+The frozen model squad, optimiser candidate, point components and appearance
+probabilities can be scored without retraining once their later final official
+outcome exists:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.initial_squad_outcome_evaluation \
+  --database /path/to/autofpl.db \
+  --output /path/to/initial-squad-outcome.json
+```
+
+Before the outcome, the command returns
+`waiting-for-official-outcome` without writing a report. The evaluated report
+uses official points and appearance, exact FPL auto-substitution/captaincy,
+point MAE/RMSE/bias, empirical CRPS and appearance Brier/log loss. It remains
+one prospective fold rather than a promotion decision. See the
+[prospective evaluation specification](../../docs/research/initial-squad-prospective-outcome-evaluation-v1.md).
+
 ## CPU joint-scenario reference v1
 
 The first simulation kernel scores a complete selection over supplied joint
