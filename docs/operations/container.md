@@ -145,18 +145,26 @@ analytics worker and shared inbox volume are present:
 ```text
 AutoFpl__Analytics__ShadowInboxPollIntervalMinutes=1
 AutoFpl__Analytics__ShadowInboxPath=/analytics-inbox
+AutoFpl__Analytics__SnapshotPollIntervalMinutes=1
+AutoFpl__Analytics__SnapshotPath=/analytics-snapshot/autofpl.db
 ```
 
-The interval is bounded from one through 60 minutes and absent by default.
-The worker reads `/data/autofpl.db` through a read-only mount, checks exact
-official/shadow capture identity every 15 minutes by default and atomically
-writes at most one `multi-season-shadow-capture-<id>.json` file. Once that
-prerequisite is current, it can write one
+Both intervals are bounded from one through 60 minutes and absent by default.
+The application uses SQLite's online-backup API to publish a consistent,
+integrity-checked, delete-journal snapshot through an atomic rename only when
+the relevant capture, forecast, scenario, selection or lock identity changes.
+The worker reads `/analytics-snapshot/autofpl.db` through a dedicated read-only
+mount, checks exact official/shadow capture identity every minute in the
+published image and atomically writes at most one
+`multi-season-shadow-capture-<id>.json` file. Once that prerequisite is
+current, it can write one
 `joint-scenario-shadow-capture-<id>.json` file. Separate application pollers
 import at most one pending file of each type per cycle through strict 2 MiB
 validators, then rename each handoff `.imported` or `.rejected`. Neither side
 follows a public write route: the worker cannot write SQLite and the web
-application remains the only import authority.
+application remains the only import authority. The snapshot and result inbox
+are separate mounts: the worker receives the former read-only and the latter
+writable.
 
 ## Joint scenario shadow
 
@@ -591,7 +599,7 @@ See the [source portfolio](../research/research-source-portfolio-v1.md).
 
 ## SQLite operations
 
-The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies 24 explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
+The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies 26 explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
 
 The root filesystem stays read-only. Production must mount a private, UID
 `1654`-writable persistent directory at `/data`; the CI smoke test uses an

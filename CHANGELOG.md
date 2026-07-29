@@ -6,6 +6,14 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Changed
 
+- **The analytics worker now reads an application-produced standalone SQLite
+  snapshot instead of the live WAL database.** The API uses SQLite's online
+  backup operation, verifies integrity, switches the copy to delete-journal
+  mode and atomically replaces it only when forecast/scenario/selection lineage
+  changes. Compose gives the worker that snapshot through a dedicated
+  read-only mount while retaining a separate writable result inbox; polling is
+  now reliable without granting SQLite write access or treating a changing
+  database as immutable.
 - **Current joint-scenario generation now binds the retained retrospective
   screen instead of recomputing it.** The exact evaluator, data, run, metric
   and fold identities remain fail-closed inputs, while the operator historical

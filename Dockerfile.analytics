@@ -33,4 +33,4 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
 ENTRYPOINT ["/usr/bin/python3", "-m", "autofpl_analytics.shadow_worker"]
-CMD ["--database", "/data/autofpl.db", "--inbox", "/analytics-inbox"]
+CMD ["--database", "/analytics-snapshot/autofpl.db", "--inbox", "/analytics-inbox", "--poll-seconds", "60"]

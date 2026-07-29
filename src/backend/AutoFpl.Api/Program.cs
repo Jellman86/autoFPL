@@ -474,6 +474,9 @@ builder.Services.AddSingleton(fbrefMatchLogPollingOptions);
 ShadowForecastInboxOptions shadowForecastInboxOptions =
     ShadowForecastInboxOptions.FromConfiguration(builder.Configuration);
 builder.Services.AddSingleton(shadowForecastInboxOptions);
+AnalyticsSnapshotOptions analyticsSnapshotOptions =
+    AnalyticsSnapshotOptions.FromConfiguration(builder.Configuration);
+builder.Services.AddSingleton(analyticsSnapshotOptions);
 builder.Services
     .AddHttpClient<OfficialFplImporter>(
         client =>
@@ -643,6 +646,10 @@ if (shadowForecastInboxOptions.Enabled)
 {
     builder.Services.AddHostedService<ShadowForecastInboxPoller>();
     builder.Services.AddHostedService<JointScenarioInboxPoller>();
+}
+if (analyticsSnapshotOptions.Enabled)
+{
+    builder.Services.AddHostedService<AnalyticsSnapshotPublisher>();
 }
 builder.Services.AddExceptionHandler<DecisionSnapshotPersistenceExceptionHandler>();
 builder.Services.AddExceptionHandler<DecisionSnapshotValidationExceptionHandler>();

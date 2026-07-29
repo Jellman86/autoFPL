@@ -26,7 +26,7 @@ from .multi_season_player_forecast import (
 from .temporal_ridge import TemporalRidgeError
 
 SCHEMA_VERSION = "1.0"
-DEFAULT_DATABASE = Path("/data/autofpl.db")
+DEFAULT_DATABASE = Path("/analytics-snapshot/autofpl.db")
 DEFAULT_INBOX = Path("/analytics-inbox")
 DEFAULT_POLL_SECONDS = 15 * 60
 MINIMUM_POLL_SECONDS = 60
