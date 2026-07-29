@@ -97,6 +97,27 @@ import boundary: when its bounded inbox poll is enabled, it imports at most one
 file per cycle and renames it `.imported` or `.rejected`. The worker treats
 either marker as final for that capture, avoiding a regeneration loop.
 
+## CPU joint-scenario reference v1
+
+The first simulation kernel scores a complete selection over supplied joint
+points/participation rows:
+
+```python
+from autofpl_analytics.scenario_reference import (
+    sample_joint_scenarios,
+    score_selection_scenarios,
+)
+```
+
+Sampling uses an explicit PCG64 seed and selects whole support rows, preserving
+their cross-player dependence. Scoring applies the same goalkeeper/outfield
+auto-substitution, formation and captaincy order as the deterministic domain.
+Candidate comparisons are paired on identical rows. The kernel is
+research-only: it does not manufacture a distribution from the current
+uncalibrated intervals and cannot influence advice until calibrated,
+point-in-time scenario inputs are registered. See the
+[CPU reference specification](../../docs/research/cpu-joint-scenario-reference-v1.md).
+
 ## Historical participation evaluation v1
 
 The companion evaluator tests fixed appearance, start, 60-minute and uncapped

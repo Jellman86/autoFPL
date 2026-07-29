@@ -24,6 +24,14 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **A seeded CPU joint-scenario reference now fixes the selection-scoring
+  semantics before GPU work.** NumPy PCG64 samples complete joint rows rather
+  than independent players; the scorer mirrors goalkeeper and ordered
+  outfield substitutions, formation constraints, captain fallback and
+  effective scoring. Paired summaries compare candidates on identical rows.
+  Exact cases and fail-closed validation are implemented, while current
+  uncalibrated forecast intervals remain explicitly ineligible as simulation
+  input and advice is unchanged.
 - **Two-season shadow regeneration now has a bounded private handoff.** The
   analytics worker polls SQLite read-only, generates at most one atomic
   capture-named file only for a supported missing target and never imports it.
