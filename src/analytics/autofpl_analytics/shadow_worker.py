@@ -21,6 +21,9 @@ from .current_joint_scenario_forecast import (
 from .current_scenario_selection_score import (
     build_current_scenario_selection_score,
 )
+from .current_selection_strategies import (
+    build_current_selection_strategies,
+)
 from .multi_season_player_forecast import (
     CURRENT_GAMEWEEK,
     CURRENT_SEASON,
@@ -122,7 +125,50 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
                         ORDER BY revision DESC, selection_revision_id DESC
                         LIMIT 1
                     )
-                ) AS has_exact_selection_score
+                ) AS has_exact_selection_score,
+                EXISTS (
+                    SELECT 1
+                    FROM selection_role_strategy_shadow_artifacts AS strategy
+                    WHERE strategy.score_artifact_id = (
+                        SELECT score.score_artifact_id
+                        FROM selection_scenario_score_shadow_artifacts AS score
+                        WHERE score.scenario_artifact_id = (
+                            SELECT scenario_artifact_id
+                            FROM joint_scenario_shadow_artifacts
+                            WHERE official_capture_id =
+                                official_fpl_captures.capture_id
+                            ORDER BY scenario_artifact_id DESC
+                            LIMIT 1
+                        )
+                        AND score.forecast_artifact_id = (
+                            SELECT artifact_id
+                            FROM baseline_forecast_artifacts
+                            WHERE capture_id =
+                                official_fpl_captures.capture_id
+                            ORDER BY artifact_id DESC
+                            LIMIT 1
+                        )
+                        AND score.selection_revision_id IS (
+                            SELECT selection_revision_id
+                            FROM selection_revisions
+                            WHERE forecast_artifact_id = (
+                                SELECT artifact_id
+                                FROM baseline_forecast_artifacts
+                                WHERE capture_id =
+                                    official_fpl_captures.capture_id
+                                ORDER BY artifact_id DESC
+                                LIMIT 1
+                            )
+                            ORDER BY revision DESC,
+                                selection_revision_id DESC
+                            LIMIT 1
+                        )
+                        ORDER BY score.score_artifact_id DESC
+                        LIMIT 1
+                    )
+                    AND strategy.search_version =
+                        'deterministic-role-beam-v1'
+                ) AS has_exact_selection_strategies
             FROM official_fpl_captures
             ORDER BY available_at_utc DESC, capture_id DESC
             LIMIT 1;
@@ -151,6 +197,9 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
                 "hasExactSelectionScore": bool(
                     row["has_exact_selection_score"]
                 ),
+                "hasExactSelectionStrategies": bool(
+                    row["has_exact_selection_strategies"]
+                ),
             }
             if row is not None
             else {
@@ -161,6 +210,7 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
                 "hasExactScenarioShadow": False,
                 "selectionRevisionId": None,
                 "hasExactSelectionScore": False,
+                "hasExactSelectionStrategies": False,
             }
         )
     except sqlite3.Error as exception:
@@ -185,6 +235,7 @@ def generate_once(
         target["hasExactPointShadow"]
         and target["hasExactScenarioShadow"]
         and target["hasExactSelectionScore"]
+        and target["hasExactSelectionStrategies"]
     ):
         return _result("current", capture_id)
     if (
@@ -196,6 +247,21 @@ def generate_once(
     inbox = Path(inbox_path)
     inbox.mkdir(mode=0o700, parents=True, exist_ok=True)
     if (
+        target["hasExactPointShadow"]
+        and target["hasExactScenarioShadow"]
+        and target["hasExactSelectionScore"]
+    ):
+        selection_key = (
+            "none"
+            if target["selectionRevisionId"] is None
+            else str(target["selectionRevisionId"])
+        )
+        stem = (
+            f"selection-role-strategies-capture-{capture_id}"
+            f"-selection-{selection_key}"
+        )
+        build = build_current_selection_strategies
+    elif (
         target["hasExactPointShadow"]
         and target["hasExactScenarioShadow"]
     ):

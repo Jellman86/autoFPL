@@ -14,6 +14,15 @@ therefore remain identical to the current model and user comparison.
 
 The result is exploratory. It cannot alter advice or a user selection.
 
+Migration 28 persists one immutable set for the exact current selection-score
+artifact and search version. The network-isolated worker writes the
+capture/revision-named handoff only after its score prerequisite is present.
+The application revalidates score lineage, formation and role legality,
+distribution summaries, objective values and paired comparisons before
+storage. `GET /api/v1/selections/current/role-strategies-shadow` returns the
+artifact only while its official capture, scenario, baseline forecast and
+latest user revision are all current.
+
 ## Registered strategies
 
 The v1 search fixes three objectives before examining a candidate:

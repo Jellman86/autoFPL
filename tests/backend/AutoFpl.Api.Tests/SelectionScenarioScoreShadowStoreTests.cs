@@ -122,7 +122,7 @@ public sealed class SelectionScenarioScoreShadowStoreTests
         Assert.Equal("available", response.UserSource.Status);
     }
 
-    private static SelectionScenarioScoreShadowDocument CreateRequest()
+    internal static SelectionScenarioScoreShadowDocument CreateRequest()
     {
         SelectionScenarioDefinitionDocument modelSelection =
             CreateSelection(
@@ -277,7 +277,7 @@ public sealed class SelectionScenarioScoreShadowStoreTests
             viceCaptain);
     }
 
-    private static async Task<DatabaseOptions> CreateDatabaseAsync(
+    internal static async Task<DatabaseOptions> CreateDatabaseAsync(
         string path)
     {
         IConfiguration configuration = new ConfigurationBuilder()
