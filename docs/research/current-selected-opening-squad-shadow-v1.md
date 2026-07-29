@@ -74,7 +74,10 @@ dotnet AutoFpl.Api.dll \
 
 ## Remaining gate
 
-Official 2026/27 outcomes must be joined only after each Gameweek is finished
-and data-checked. The frozen candidate must be compared with predeclared
-benchmarks and failure slices without changing its squad or roles. It cannot
-be promoted into served advice until that prospective rule passes.
+The prospective method and promotion-evidence thresholds are now frozen in
+[selected opening-squad prospective outcome evaluation v1](selected-opening-squad-prospective-outcome-evaluation-v1.md).
+Official 2026/27 outcomes are joined only after each Gameweek is finished and
+data-checked. The evaluator compares the frozen candidate with the exact
+same-capture served and single-Gameweek benchmarks without changing any squad
+or role. It cannot be promoted into served advice until all eight outcomes
+exist and the registered rule passes.

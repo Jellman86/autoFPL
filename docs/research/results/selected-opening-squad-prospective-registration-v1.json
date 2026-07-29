@@ -1,0 +1,61 @@
+{
+  "artifactType": "selected-opening-squad-prospective-registration",
+  "artifactVersion": "selected-opening-squad-prospective-registration-v1",
+  "schemaVersion": "1.0",
+  "status": "registered-before-2026-27-opening-outcomes",
+  "target": {
+    "seasonCode": "2026-27",
+    "openingGameweek": 1,
+    "outcomeGameweeks": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ]
+  },
+  "selectedDecision": {
+    "artifactVersion": "current-selected-opening-squad-shadow-v1",
+    "policyKey": "6-expected-points",
+    "selectionRule": "latest-immutable-artifact-with-decision-cutoff-strictly-before-opening-deadline",
+    "squadPolicy": "fixed-opening-squad-no-transfers",
+    "rolePolicy": "use-the-eight-preseason-frozen-weekly-role-decisions"
+  },
+  "benchmarks": {
+    "sourceArtifactVersion": "current-initial-squad-quality-shadow-v1",
+    "sourceRule": "exact-same-official-capture-as-selected-decision",
+    "primary": {
+      "benchmarkKey": "served-baseline-v0-gw1-roles-held",
+      "selectionField": "model.selection",
+      "rolePolicy": "freeze-and-hold-the-exact-gw1-squad-xi-bench-and-captaincy"
+    },
+    "diagnostic": {
+      "benchmarkKey": "single-gameweek-optimizer-gw1-roles-held",
+      "selectionField": "candidate.selection",
+      "rolePolicy": "freeze-and-hold-the-exact-gw1-squad-xi-bench-and-captaincy"
+    }
+  },
+  "outcomes": {
+    "sourceKey": "official-fpl-api-event-live/v1",
+    "correctionRule": "latest-immutable-eligible-outcome-for-each-gameweek",
+    "availabilityRule": "outcome-available-at-strictly-after-recorded-gameweek-deadline",
+    "scorer": "cpu-joint-scenario-reference-v1",
+    "captaincy": "exact-captain-fallback",
+    "substitutions": "ordered-formation-preserving-auto-substitution"
+  },
+  "promotionEvidenceGate": {
+    "evaluationTiming": "only-after-all-eight-outcomes-are-available",
+    "minimumPrimaryBenchmarkDeltaPoints": 2,
+    "downsideSafetyRule": "selected-realised-cumulative-score-at-or-above-frozen-preseason-p10",
+    "decision": "passing-permits-a-separate-promotion-review-and-never-promotes-automatically"
+  },
+  "limitations": [
+    "The primary benchmark is the current single-Gameweek served advice held unchanged, not a separately optimised multi-Gameweek policy.",
+    "One prospective season checks direction and downside safety but cannot precisely estimate a policy-wide effect.",
+    "Transfers, chips and price changes are excluded from every compared policy."
+  ],
+  "dataIdentitySha256": "7b875e15eef7672d2b177f35c74c85bc59151cbce930abd8ed2e5ce01c09c887"
+}

@@ -543,6 +543,13 @@ decision-quality gate. The selected projection is now an automated immutable
 pipeline stage: every new official opening capture regenerates the exact
 squad, freezes all eight weekly roles, imports through the private inbox and
 appears on a typed read-only OpenAPI route only for the latest capture.
+The prospective outcome method is also now preregistered before any target
+result: it selects the final predeadline artifact deterministically, holds its
+eight role decisions, and compares exact realised FPL scores with the
+same-capture served Baseline v0 and single-Gameweek optimiser held unchanged.
+Partial Gameweek 1–7 reports cannot pass. After Gameweek 8, a promotion review
+requires at least a two-point gain over the served benchmark and no breach of
+the frozen preseason cumulative p10; the evaluator itself never promotes.
 
 The SQLite persistence vertical slice is deployed and survives a managed
 container recreate. Operator-triggered fixed-origin official FPL collectors
@@ -876,9 +883,10 @@ explicit copy creates a current-forecast draft before opening the full My Squad
 builder. Exact candidate persistence and its read-only comparison surface are
 now implemented. The active order is:
 
-1. run the implemented frozen Baseline/component/initial-squad evaluator when
-   the first automatically captured 2026/27 result arrives, then register
-   subsequent prospective folds without tuning on them;
+1. run the implemented frozen Baseline/component and selected opening-squad
+   evaluators as automatically captured 2026/27 results arrive, retaining
+   every partial fold without tuning and applying the preregistered decision
+   gate only after Gameweek 8;
 2. join only the point, participation and minutes components that pass their
    registered gates, publish calibrated player distributions and replace the
    exploratory rows behind the CPU-reference scorer;
