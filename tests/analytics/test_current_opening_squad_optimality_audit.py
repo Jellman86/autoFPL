@@ -16,6 +16,14 @@ from autofpl_analytics.current_multi_horizon_initial_squad import (  # noqa: E40
     _optimise_horizon,
     _week_matrices,
 )
+from autofpl_analytics.current_appearance_hurdle_opening_optimality_audit import (  # noqa: E402
+    ARTIFACT_VERSION as HURDLE_AUDIT_ARTIFACT_VERSION,
+    _build_from_scenario as _build_hurdle_audit,
+)
+from autofpl_analytics.current_appearance_hurdle_player_forecast import (  # noqa: E402
+    HISTORICAL_EVALUATION_DATA_IDENTITY,
+    HISTORICAL_EVALUATION_RUN_IDENTITY,
+)
 from autofpl_analytics.current_multi_horizon_joint_scenarios import (  # noqa: E402
     ARTIFACT_VERSION as SCENARIO_ARTIFACT_VERSION,
     STATUS as SCENARIO_STATUS,
@@ -119,6 +127,74 @@ class CurrentOpeningSquadOptimalityAuditTests(unittest.TestCase):
 
         self.assertEqual(
             "multi-squad.conditional-conflict",
+            caught.exception.code,
+        )
+
+    def test_hurdle_v2_audit_requires_exact_model_lineage(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            database = Path(temporary) / "autofpl.db"
+            scenario = self._database_and_scenario(database)
+            scenario["variant"] = {
+                "variantKey": "appearance-hurdle-points",
+                "pointModelKey": (
+                    "multi-season-appearance-hurdle-points"
+                ),
+                "historicalEvaluation": {
+                    "evaluatorVersion": (
+                        "historical-appearance-hurdle-points-"
+                        "evaluation-v1"
+                    ),
+                    "dataIdentitySha256": (
+                        HISTORICAL_EVALUATION_DATA_IDENTITY
+                    ),
+                    "runIdentitySha256": (
+                        HISTORICAL_EVALUATION_RUN_IDENTITY
+                    ),
+                    "decision": (
+                        "retain-appearance-hurdle-prospective-shadow"
+                    ),
+                },
+            }
+
+            first = _build_hurdle_audit(
+                database,
+                scenario,
+                bootstrap_replicates=2,
+            )
+            second = _build_hurdle_audit(
+                database,
+                scenario,
+                bootstrap_replicates=2,
+            )
+            scenario["variant"]["historicalEvaluation"][
+                "dataIdentitySha256"
+            ] = "0" * 64
+            with self.assertRaises(TemporalRidgeError) as caught:
+                _build_hurdle_audit(
+                    database,
+                    scenario,
+                    bootstrap_replicates=2,
+                )
+
+        self.assertEqual(first, second)
+        self.assertEqual(
+            HURDLE_AUDIT_ARTIFACT_VERSION,
+            first["artifactVersion"],
+        )
+        self.assertEqual(
+            "appearance-hurdle-points",
+            first["modelVariant"]["variantKey"],
+        )
+        self.assertEqual(
+            "historical-appearance-hurdle-opening-policy-evaluation-v1",
+            first["modelVariant"]["openingPolicyEvaluationSource"][
+                "artifactVersion"
+            ],
+        )
+        self.assertEqual(
+            "hurdle-opening-audit.scenario",
             caught.exception.code,
         )
 
