@@ -43,6 +43,28 @@ NLL, avoid result-NLL and goal-RMSE regression, and win a strict majority of
 folds against each. Passing retains it only for player-distribution ablation;
 promotion remains prohibited.
 
+## Result
+
+The Quark run at application revision
+`0af00788e12ace8c98e5a8ddc8032fd698a5fef2` completed all eight registered
+folds and scored 79 matches:
+
+| Model | Joint NLL | Outcome NLL | Goal RMSE | Fold wins by xG |
+|---|---:|---:|---:|---:|
+| League home/away Poisson | 2.888884 | 1.062630 | 1.083032 | 5/8 |
+| Realized-goal Dixon–Coles | 2.877264 | 1.011422 | 1.080398 | 6/8 |
+| Expected-goals Dixon–Coles | **2.866422** | 1.016645 | **1.075289** | — |
+
+Expected goals improved joint NLL by 0.7775% against the league baseline and
+0.3768% against realized-goal Dixon–Coles. It improved goal RMSE against both,
+but missed the fixed 1% joint-NLL threshold against both and regressed outcome
+NLL by 0.005223 against realized goals.
+
+The screen therefore failed. The expected-goals rates remain excluded from
+player forecasts and initial-squad advice. The ranking is informative candidate
+evidence, but these already-opened folds must not be used to relax the gate or
+tune a blend.
+
 ## Reproduction
 
 ```shell
