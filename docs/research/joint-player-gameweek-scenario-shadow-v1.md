@@ -93,9 +93,14 @@ Only 38 source rows are available, and missing stable-code histories use
 counted same-position donors. Integer and appearance quantisation leave a
 small finite-row difference between requested and generated marginal means.
 
-The next product slice is a bounded, private application handoff with strict
-identity and content validation. The matrix can then feed the existing CPU
-selection scorer for model, safer, higher-ceiling and user-owned candidates.
-Promotion still requires scoring the frozen artifact against genuinely new
-2026/27 outcomes. GPU implementation remains conditional on exact CPU parity
-and a measured representative workload.
+The bounded private application handoff is now implemented. Migration 26
+revalidates the exact official target, source archive, point artifact, player
+columns, matrix dimensions, domain bounds and canonical matrix hash before an
+immutable insert. Separate latest/readiness routes remain read-only, and the
+network-isolated worker cannot write SQLite.
+
+The next slice can feed that persisted matrix into the existing CPU selection
+scorer for model and user-owned candidates. Promotion still requires scoring
+the frozen artifact against genuinely new 2026/27 outcomes. GPU implementation
+remains conditional on exact CPU parity and a measured representative
+workload.

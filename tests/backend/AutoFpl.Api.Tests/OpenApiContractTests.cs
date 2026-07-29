@@ -263,6 +263,26 @@ public sealed class OpenApiContractTests : IClassFixture<WebApplicationFactory<P
                 .GetString());
         Assert.True(
             paths.TryGetProperty(
+                "/api/v1/forecasts/joint-scenario-shadow/latest",
+                out JsonElement jointScenarioPath));
+        Assert.Equal(
+            "GetLatestJointScenarioShadow",
+            jointScenarioPath
+                .GetProperty("get")
+                .GetProperty("operationId")
+                .GetString());
+        Assert.True(
+            paths.TryGetProperty(
+                "/api/v1/forecasts/joint-scenario-shadow/readiness",
+                out JsonElement jointScenarioReadinessPath));
+        Assert.Equal(
+            "GetJointScenarioShadowReadiness",
+            jointScenarioReadinessPath
+                .GetProperty("get")
+                .GetProperty("operationId")
+                .GetString());
+        Assert.True(
+            paths.TryGetProperty(
                 "/api/v1/data/fpl-form-forecast/{captureId}/identity-coverage",
                 out JsonElement fplFormIdentityCoveragePath));
         Assert.Equal(

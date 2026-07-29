@@ -80,8 +80,11 @@ The same fixed command is packaged as the non-root
 `ghcr.io/jellman86/autofpl-analytics` companion image. Its default invocation
 polls the read-only `/data/autofpl.db`, does nothing while the exact shadow is
 current, and atomically writes one capture-named JSON artifact to
-`/analytics-inbox` when the latest supported target is missing. Mount the
-database read-only and a separate private inbox writable by UID `1654`:
+`/analytics-inbox` when the latest supported target is missing. Once the point
+shadow is present, the same worker creates the separately named joint scenario
+handoff; it never skips the point prerequisite or combines the two import
+states. Mount the database read-only and a separate private inbox writable by
+UID `1654`:
 
 ```bash
 docker run \
@@ -94,8 +97,9 @@ docker run \
 The worker never writes SQLite, exposes no port and supports only the frozen
 2026/27 GW1 target. The `.NET` application remains the only strict product
 import boundary: when its bounded inbox poll is enabled, it imports at most one
-file per cycle and renames it `.imported` or `.rejected`. The worker treats
-either marker as final for that capture, avoiding a regeneration loop.
+file of each type per cycle and renames it `.imported` or `.rejected`. The
+worker treats either marker as final for that capture, avoiding a regeneration
+loop.
 
 ## CPU joint-scenario reference v1
 
@@ -148,8 +152,8 @@ PYTHONPATH=src/analytics python3 \
 The current artifact contains integer point and played/not-played rows,
 source-Gameweek provenance, player-column identities, availability-adjusted
 point means, matrix diagnostics and a content hash. It is prospectively
-unscored, cannot influence advice and is not yet imported by the application.
-See the
+unscored and cannot influence advice. The application imports it only through
+the strict private handoff described in the operations guide. See the
 [scenario research note](../../docs/research/joint-player-gameweek-scenario-shadow-v1.md).
 
 ## Historical participation evaluation v1

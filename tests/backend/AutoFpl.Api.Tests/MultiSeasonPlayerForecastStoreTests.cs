@@ -289,7 +289,7 @@ public sealed class MultiSeasonPlayerForecastStoreTests
                 TestContext.Current.CancellationToken));
     }
 
-    private static async Task<(
+    internal static async Task<(
         DatabaseOptions Options,
         MultiSeasonPlayerForecastDocument Request)> CreateDatabaseAsync(
         string databasePath)

@@ -664,13 +664,15 @@ official auto-substitution and captaincy semantics and compares candidates on
 identical rows. A whole-Gameweek residual candidate has passed its retrospective
 2025/26 CRPS screen and now emits an exact, content-addressed 2026/27 GW1
 prospective shadow. It remains outside the product until genuinely new outcomes
-score that frozen shadow and the matrix crosses the strict application import
-boundary.
+score that frozen shadow. The matrix now crosses a strict private application
+boundary through a network-isolated worker, immutable SQLite artifact and
+current/stale/missing readiness contract, but it does not yet feed candidate
+selection scoring.
 
-- Import and persist the frozen joint scenario matrix through a bounded private
-  handoff, then score it prospectively as final outcomes arrive.
-- Feed the matrix into the existing CPU scorer and establish a representative
-  workload before implementing the GPU parity/benchmark path.
+- Feed the persisted matrix into the existing CPU scorer for the model and
+  user-owned selection, then establish a representative workload before
+  implementing the GPU parity/benchmark path.
+- Score the frozen matrix prospectively as final outcomes arrive.
 - Generate recommended, safer and higher-ceiling legal selections.
 - Let the user create a draft selection and compare its forecast distribution.
 - Show objective, expected gain/loss, uncertainty and the evidence that changes
