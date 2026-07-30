@@ -839,6 +839,18 @@ public sealed class ResearchSourceSnapshotTests
             <tr>
               <th data-stat="date"></th>
             </tr>
+            <tr class="thead">
+              <th data-stat="date">Date</th>
+              <td data-stat="comp">Comp</td>
+              <td data-stat="round">Round</td>
+              <td data-stat="venue">Venue</td>
+              <td data-stat="result">Result</td>
+              <td data-stat="team">Squad</td>
+              <td data-stat="opponent">Opponent</td>
+              <td data-stat="game_started">Start</td>
+              <td data-stat="minutes">Min</td>
+              <td data-stat="match_report">Match Report</td>
+            </tr>
             <tr>
               <th data-stat="date">2025-08-16</th>
               <td data-stat="comp">Championship</td>

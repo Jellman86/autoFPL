@@ -216,6 +216,10 @@ public sealed class FbrefPlayerMatchLogExtractor
             {
                 continue;
             }
+            if (StringComparer.Ordinal.Equals(dateText, "Date"))
+            {
+                continue;
+            }
             if (!DateOnly.TryParseExact(
                     dateText,
                     "yyyy-MM-dd",
