@@ -54,6 +54,13 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **Clean-sheet probability improves, but its replacement point mean is
+  rejected.** A three-target player-level factorization combines the retained
+  appearance and 60-minute models with shared team clean-sheet rates. The
+  Dixon–Coles component improves Brier score by 2.70%, log loss, calibration
+  and 14/24 folds, but improves total-point MAE by only 0.0975%, wins 12/24
+  point folds and loses MAE to the league-rate component. It advances only to
+  a mean-preserving distribution screen; served v2 remains unchanged.
 - **The fixed scoreline model now passes a three-season replication.** Across
   247 target matches and 24 expanding-origin folds, the unchanged time-decayed
   Dixon–Coles challenger improves joint-score likelihood by 3.24%,
