@@ -1064,9 +1064,15 @@ registered blank and double Gameweeks, but worsens aggregate opening CRPS by
 0.20%, wins only one of three targets and regresses goalkeeper CRPS by 0.98%.
 Reject it without running a policy screen and preserve the retained hurdle
 paths. The active component slice is now conditional player goal/assist
-allocation from shared team scoring state, passed through the exact scorer and
-the unchanged opening-distribution and full 3/6/8-Gameweek policy gates.
-Lineup sources remain participation evidence, not an arbitrary points
+allocation from shared team scoring state. That marked-Poisson allocation
+improves goal and assist NLL/Brier, calibration, every position and 15/24
+folds, while beating both league-rate and position-share controls. Its combined
+NLL gain is nevertheless only 0.53%, below the fixed 1% materiality gate.
+Reject it without reconstructing opening points; preserve it only for
+prospective evidence. The active initial-squad slice is now the registered
+historical 3/6/8-Gameweek decision-horizon comparison on the retained
+distributions, with exact global constraints and eight-Gameweek FPL outcome
+scoring. Lineup sources remain participation evidence, not an arbitrary points
 adjustment.
 Do not add another standalone governance, universal contract, infrastructure
 or AI-orchestrator project ahead of these slices.
