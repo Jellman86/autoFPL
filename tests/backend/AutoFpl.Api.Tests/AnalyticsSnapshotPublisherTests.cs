@@ -244,6 +244,137 @@ public sealed class AnalyticsSnapshotPublisherTests : IDisposable
             "unchanged",
             await publisher.PublishOnceAsync(cancellationToken));
 
+        await using (var source =
+            new SqliteConnection(databaseOptions.ConnectionString))
+        {
+            await source.OpenAsync(cancellationToken);
+            await using SqliteCommand evidence = source.CreateCommand();
+            evidence.CommandText =
+                """
+                INSERT INTO official_fpl_teams (
+                    capture_id, team_id, code, name, short_name
+                )
+                VALUES (1, 1, 10, 'Team 1', 'T1');
+
+                INSERT INTO official_fpl_players (
+                    capture_id, player_id, code, team_id, position,
+                    first_name, second_name, web_name, price_tenths, status,
+                    news, news_added_utc, chance_next_round,
+                    selected_by_percent, total_points, minutes, starts,
+                    photo_identifier, expected_points_next
+                )
+                VALUES (
+                    1, 1, 10001, 1, 'defender', 'Player', 'One',
+                    'Player 1', 50, 'a', '', NULL, NULL, '1.0',
+                    0, 0, 0, '1.jpg', NULL
+                );
+
+                INSERT INTO evidence_claims (
+                    schema_version, status, source_key, canonical_url, author,
+                    published_at_utc, retrieved_at_utc, available_at_utc,
+                    content_sha256, source_revision, season_code, gameweek,
+                    deadline_utc, player_id, identity_capture_id, claim_type,
+                    availability_status, start_status, forecast_probability,
+                    expected_minutes, role, directness, source_span,
+                    extraction_method, extraction_version,
+                    extraction_confidence, duplicate_cluster_key,
+                    claim_content_sha256, created_at_utc
+                )
+                VALUES (
+                    '1.0', 'quarantined', 'ffscout-predicted-lineups',
+                    'https://example.test/lineups', 'FFScout', NULL,
+                    '2026-07-30T12:00:00Z', '2026-07-30T12:00:00Z',
+                    $evidenceHash, 1, '2026-27', 1,
+                    '2026-08-28T17:30:00Z', 1, 1, 'start', NULL,
+                    'does-not-start', NULL, NULL, NULL, 'reported',
+                    'Player 1 omitted', 'deterministic', 'test/v1', '1',
+                    $clusterHash, $claimHash, '2026-07-30T12:00:00Z'
+                );
+                """;
+            evidence.Parameters.AddWithValue(
+                "$evidenceHash",
+                new string('4', 64));
+            evidence.Parameters.AddWithValue(
+                "$clusterHash",
+                new string('5', 64));
+            evidence.Parameters.AddWithValue(
+                "$claimHash",
+                new string('6', 64));
+            await evidence.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        Assert.Equal(
+            "published",
+            await publisher.PublishOnceAsync(cancellationToken));
+        await using (var evidenceSnapshot =
+            new SqliteConnection(readOnly.ToString()))
+        {
+            await evidenceSnapshot.OpenAsync(cancellationToken);
+            await using SqliteCommand count =
+                evidenceSnapshot.CreateCommand();
+            count.CommandText = "SELECT COUNT(*) FROM evidence_claims;";
+            Assert.Equal(
+                1L,
+                await count.ExecuteScalarAsync(cancellationToken));
+        }
+        Assert.Equal(
+            "unchanged",
+            await publisher.PublishOnceAsync(cancellationToken));
+
+        await using (var source =
+            new SqliteConnection(databaseOptions.ConnectionString))
+        {
+            await source.OpenAsync(cancellationToken);
+            await using SqliteCommand stress = source.CreateCommand();
+            stress.CommandText =
+                """
+                INSERT INTO external_evidence_stress_artifacts (
+                    schema_version, artifact_type, artifact_version, status,
+                    official_capture_id, season_code, opening_gameweek,
+                    evidence_cutoff_utc, producer_data_identity_sha256,
+                    producer_run_identity_sha256, document_json,
+                    content_sha256, created_at_utc
+                )
+                VALUES (
+                    '1.0', 'current-external-evidence-stress',
+                    'current-external-evidence-stress-v1',
+                    'external-evidence-stress-non-serving',
+                    1, '2026-27', 1, '2026-07-30T12:00:00Z',
+                    $dataIdentity, $runIdentity, '{}', $contentHash,
+                    '2026-07-30T12:01:00Z'
+                );
+                """;
+            stress.Parameters.AddWithValue(
+                "$dataIdentity",
+                new string('7', 64));
+            stress.Parameters.AddWithValue(
+                "$runIdentity",
+                new string('8', 64));
+            stress.Parameters.AddWithValue(
+                "$contentHash",
+                new string('9', 64));
+            await stress.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        Assert.Equal(
+            "published",
+            await publisher.PublishOnceAsync(cancellationToken));
+        await using (var stressSnapshot =
+            new SqliteConnection(readOnly.ToString()))
+        {
+            await stressSnapshot.OpenAsync(cancellationToken);
+            await using SqliteCommand count =
+                stressSnapshot.CreateCommand();
+            count.CommandText =
+                "SELECT COUNT(*) FROM external_evidence_stress_artifacts;";
+            Assert.Equal(
+                1L,
+                await count.ExecuteScalarAsync(cancellationToken));
+        }
+        Assert.Equal(
+            "unchanged",
+            await publisher.PublishOnceAsync(cancellationToken));
+
         await using (var snapshot =
             new SqliteConnection(readOnly.ToString()))
         {

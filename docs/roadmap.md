@@ -669,6 +669,18 @@ source-feature start/substitute/zero-minutes challenger. Until then, evidence
 remains a visible risk signal and cannot silently mutate the forecast.
 Continue refreshing it through the deadline; do not replace forecast work
 with further optimiser complexity.
+The external-evidence stress bridge is now implemented and automated. For each
+new cutoff-safe supported claim revision it sets affected players to a
+Gameweek 1 zero-minute extreme, preserves Gameweeks 2–6 and globally re-solves
+the registered policy. The first retained source-wide result identifies a
+conditional Van Hecke-to-Milenković alternative worth +0.71 points if the
+FFScout adverse world is right and costing 0.53 if it is wrong. The official
+injury world leaves the squad unchanged. Source-inconsistent alternatives are
+rejected, dependent Straight Red consensus is excluded from the independent
+world, and no source probability is invented. Surface this stress in the
+decision room while keeping v2 central. The next modelling gate remains the
+registered prospective source-feature ablation once real outcomes exist,
+followed by the CPU generative Monte Carlo reference.
 
 The SQLite persistence vertical slice is deployed and survives a managed
 container recreate. Operator-triggered fixed-origin official FPL collectors

@@ -25,6 +25,9 @@ from .current_initial_squad_candidate import (
 from .current_best_supported_opening_squad import (
     build_current_best_supported_opening_squad,
 )
+from .current_external_evidence_stress import (
+    build_current_external_evidence_stress,
+)
 from .current_scenario_selection_score import (
     build_current_scenario_selection_score,
 )
@@ -76,6 +79,7 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
                 capture_id,
                 season_code,
                 next_gameweek_number,
+                available_at_utc,
                 EXISTS (
                     SELECT 1
                     FROM multi_season_player_forecast_artifacts AS artifact
@@ -226,6 +230,58 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
             """,
             (INITIAL_SQUAD_OPTIMIZER_VERSION,),
         ).fetchone()
+        evidence = (
+            None
+            if row is None or row["next_gameweek_number"] is None
+            else connection.execute(
+                """
+                SELECT claim_id, available_at_utc
+                FROM evidence_claims
+                WHERE season_code = ?
+                  AND gameweek = ?
+                  AND status = 'quarantined'
+                  AND source_key IN (
+                      'ffscout-predicted-lineups',
+                      'premier-league-injuries',
+                      'straightred-lineup-consensus'
+                  )
+                  AND julianday(available_at_utc) <= julianday((
+                      SELECT next_deadline_utc
+                      FROM official_fpl_captures
+                      WHERE capture_id = ?
+                  ))
+                ORDER BY julianday(available_at_utc) DESC, claim_id DESC
+                LIMIT 1;
+                """,
+                (
+                    str(row["season_code"]),
+                    int(row["next_gameweek_number"]),
+                    int(row["capture_id"]),
+                ),
+            ).fetchone()
+        )
+        evidence_cutoff = (
+            str(row["available_at_utc"])
+            if evidence is None
+            else str(evidence["available_at_utc"])
+        ) if row is not None else None
+        has_exact_external_evidence_stress = (
+            False
+            if row is None
+            else connection.execute(
+                """
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM external_evidence_stress_artifacts
+                    WHERE official_capture_id = ?
+                      AND julianday(evidence_cutoff_utc)
+                            = julianday(?)
+                );
+                """,
+                (int(row["capture_id"]), evidence_cutoff),
+            ).fetchone()[0]
+            == 1
+        )
         return (
             {
                 "officialCaptureId": int(row["capture_id"]),
@@ -250,6 +306,13 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
                 "hasExactBestSupportedOpeningSquad": bool(
                     row["has_exact_best_supported_opening_squad"]
                 ),
+                "latestEvidenceClaimId": (
+                    None if evidence is None else int(evidence["claim_id"])
+                ),
+                "latestEvidenceCutoffUtc": evidence_cutoff,
+                "hasExactExternalEvidenceStress": bool(
+                    has_exact_external_evidence_stress
+                ),
                 "selectionRevisionId": (
                     None
                     if row["selection_revision_id"] is None
@@ -272,6 +335,9 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
                 "hasExactInitialSquadQuality": False,
                 "hasExactSelectedOpeningSquad": False,
                 "hasExactBestSupportedOpeningSquad": False,
+                "latestEvidenceClaimId": None,
+                "latestEvidenceCutoffUtc": None,
+                "hasExactExternalEvidenceStress": False,
                 "selectionRevisionId": None,
                 "hasExactSelectionScore": False,
                 "hasExactSelectionStrategies": False,
@@ -301,6 +367,7 @@ def generate_once(
         and target["hasExactInitialSquadQuality"]
         and target["hasExactSelectedOpeningSquad"]
         and target["hasExactBestSupportedOpeningSquad"]
+        and target["hasExactExternalEvidenceStress"]
         and target["hasExactSelectionScore"]
         and target["hasExactSelectionStrategies"]
     ):
@@ -340,6 +407,30 @@ def generate_once(
             "-hurdle-v2"
         )
         build = build_current_best_supported_opening_squad
+    elif (
+        target["hasExactPointShadow"]
+        and target["hasExactScenarioShadow"]
+        and target["hasExactInitialSquadQuality"]
+        and target["hasExactSelectedOpeningSquad"]
+        and target["hasExactBestSupportedOpeningSquad"]
+        and not target["hasExactExternalEvidenceStress"]
+    ):
+        evidence_key = (
+            "none"
+            if target["latestEvidenceClaimId"] is None
+            else str(target["latestEvidenceClaimId"])
+        )
+        stem = (
+            f"external-evidence-stress-capture-{capture_id}"
+            f"-claim-{evidence_key}"
+        )
+        evidence_cutoff = str(target["latestEvidenceCutoffUtc"])
+
+        def build(path: Path) -> Dict[str, Any]:
+            return build_current_external_evidence_stress(
+                path,
+                evidence_cutoff_utc=evidence_cutoff,
+            )
     elif (
         target["hasExactPointShadow"]
         and target["hasExactScenarioShadow"]

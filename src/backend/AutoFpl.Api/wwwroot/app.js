@@ -7,6 +7,7 @@ let selectionStrategies = null;
 let selectionScenarioScore = null;
 let playerForecast = null;
 let selectedOpeningSquad = null;
+let externalEvidenceStress = null;
 let displayedPlayers = [];
 let selectionEditDraft = null;
 let editingRevisionId = null;
@@ -899,6 +900,180 @@ function applySelectedOpeningSquad() {
       ? "The hurdle point model improved every historical position group and the exact solver found this squad at zero gap. It is still prospectively unscored."
       : "This remains the immutable comparator while the versioned hurdle candidate is generated.";
   renderSquadPlayers(modelSquadPlayers());
+}
+
+function externalSourceLabel(sourceKey) {
+  return {
+    "ffscout-predicted-lineups": "FFScout lineups",
+    "premier-league-injuries": "Premier League injuries",
+    "straightred-lineup-consensus": "Straight Red consensus",
+  }[sourceKey] ?? sourceKey.replaceAll("-", " ");
+}
+
+function setEvidenceStressState(state, label, title, summary) {
+  const panel = document.querySelector("#evidence-stress");
+  panel.dataset.state = state;
+  document.querySelector("#evidence-stress-state").textContent = label;
+  document.querySelector("#evidence-stress-title").textContent = title;
+  document.querySelector("#evidence-stress-summary").textContent = summary;
+}
+
+function evidenceStressPlayer(player, role) {
+  const card = document.createElement("div");
+  card.className = "evidence-stress-player";
+  card.dataset.role = role;
+  const action = document.createElement("span");
+  action.textContent = role === "out" ? "Move out" : "Bring in";
+  const name = document.createElement("strong");
+  name.textContent = player.webName;
+  const detail = document.createElement("small");
+  detail.textContent =
+    `${player.teamName} · £${(Number(player.priceTenths) / 10).toFixed(1)}m`;
+  card.append(action, name, detail);
+  return card;
+}
+
+function renderExternalEvidenceStress(artifact) {
+  externalEvidenceStress = artifact;
+  const result = document.querySelector("#evidence-stress-result");
+  result.replaceChildren();
+
+  const relevant = artifact.stressScenarios.find(
+    (scenario) =>
+      scenario.scenarioKey === "all-independent-sources"
+      && scenario.stressDecision === "consider-alternative-if-source-trusted",
+  ) ?? artifact.stressScenarios.find(
+    (scenario) =>
+      scenario.stressDecision === "consider-alternative-if-source-trusted",
+  );
+
+  const selectedNames = artifact.selectedAdversePlayers
+    .map((player) => player.webName);
+  const sourceWide = artifact.stressScenarios.filter(
+    (scenario) => scenario.scenarioType === "source-wide-extreme",
+  );
+  const stableSources = sourceWide.filter((scenario) => !scenario.squadChanged);
+
+  setEvidenceStressState(
+    relevant ? "review" : "ready",
+    relevant ? "Review" : "Held",
+    relevant
+      ? "One source case changes the optimal squad."
+      : "The model squad holds under the tested source cases.",
+    selectedNames.length
+      ? `${selectedNames.join(" and ")} carry adverse pre-deadline evidence. The model has tested the exact zero-minute extreme for Gameweek 1.`
+      : "No selected player carries an adverse claim at this evidence cutoff.",
+  );
+
+  if (!relevant) {
+    const stable = document.createElement("p");
+    stable.className = "evidence-stress-empty";
+    stable.textContent =
+      `${artifact.coverage.stressScenarioCount} source cases tested; none produced a source-consistent squad improvement.`;
+    result.append(stable);
+    return;
+  }
+
+  const swap = document.createElement("div");
+  swap.className = "evidence-stress-swap";
+  const swapLabel = document.createElement("span");
+  swapLabel.className = "evidence-stress-label";
+  swapLabel.textContent = "Conditional alternative";
+  const playerFlow = document.createElement("div");
+  playerFlow.className = "evidence-stress-player-flow";
+  relevant.removedPlayers.forEach((player) => {
+    playerFlow.append(evidenceStressPlayer(player, "out"));
+  });
+  const arrow = document.createElement("span");
+  arrow.className = "evidence-stress-arrow";
+  arrow.setAttribute("aria-hidden", "true");
+  arrow.textContent = "→";
+  playerFlow.append(arrow);
+  relevant.addedPlayers.forEach((player) => {
+    playerFlow.append(evidenceStressPlayer(player, "in"));
+  });
+  const sourceLine = document.createElement("p");
+  const sourceVerb = relevant.sourceKeys.length === 1 ? "is" : "are";
+  sourceLine.textContent =
+    `Only if ${relevant.sourceKeys.map(externalSourceLabel).join(" + ")} ${sourceVerb} treated as correct.`;
+  swap.append(swapLabel, playerFlow, sourceLine);
+
+  const scores = document.createElement("dl");
+  scores.className = "evidence-stress-scores";
+  const scoreRows = [
+    [
+      "If source is right",
+      relevant.exactScenarioMeanDifferenceIfStressTruePoints,
+      "Alternative advantage",
+    ],
+    [
+      "If source is wrong",
+      relevant.exactScenarioMeanDifferenceIfStressFalsePoints,
+      "Alternative cost",
+    ],
+  ];
+  scoreRows.forEach(([label, value, description]) => {
+    const row = document.createElement("div");
+    const term = document.createElement("dt");
+    term.textContent = label;
+    const points = document.createElement("dd");
+    const numericValue = Number(value);
+    points.textContent =
+      `${numericValue >= 0 ? "+" : ""}${numericValue.toFixed(2)} pts`;
+    const note = document.createElement("small");
+    note.textContent = description;
+    row.append(term, points, note);
+    scores.append(row);
+  });
+
+  const audit = document.createElement("div");
+  audit.className = "evidence-stress-audit";
+  const checked = document.createElement("span");
+  checked.textContent =
+    `${artifact.coverage.latestClaimCount} latest claims · ${artifact.coverage.stressScenarioCount} exact cases`;
+  const stable = document.createElement("span");
+  stable.textContent = stableSources.length
+    ? `${stableSources.map((scenario) => scenario.sourceKeys.map(externalSourceLabel).join(" + ")).join(", ")} did not change the squad`
+    : "Every independent source case is shown above";
+  const cutoff = document.createElement("span");
+  cutoff.textContent =
+    `Evidence cutoff ${formatCompactInstant(artifact.evidenceDecisionCutoffUtc)}`;
+  audit.append(checked, stable, cutoff);
+
+  result.append(swap, scores, audit);
+}
+
+async function loadExternalEvidenceStress() {
+  externalEvidenceStress = null;
+  try {
+    const response = await fetch(
+      "/api/v1/forecasts/external-evidence-stress/current",
+      { headers: { Accept: "application/json" } },
+    );
+    if (response.status === 404) {
+      setEvidenceStressState(
+        "waiting",
+        "Queued",
+        "Evidence stress test is being prepared.",
+        "The core squad remains available while the exact evidence-linked solve completes.",
+      );
+      return;
+    }
+    if (!response.ok) {
+      throw new Error(
+        `Evidence stress request failed with ${response.status}`,
+      );
+    }
+    renderExternalEvidenceStress(await response.json());
+  } catch (error) {
+    setEvidenceStressState(
+      "error",
+      "Unavailable",
+      "Evidence stress test could not be loaded.",
+      "The core prediction is unchanged; external claims are not being used as hidden model inputs.",
+    );
+    console.error(error);
+  }
 }
 
 function strategyDefinition(strategyId) {
@@ -2061,6 +2236,7 @@ async function loadAdvice() {
     await Promise.all([
       loadPlayerForecast(),
       loadSelectedOpeningSquad(),
+      loadExternalEvidenceStress(),
     ]);
     applySelectedOpeningSquad();
     await loadSelectionState();

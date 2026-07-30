@@ -512,6 +512,11 @@ builder.Services.AddSingleton(serviceProvider =>
         serviceProvider.GetRequiredService<TimeProvider>()));
 builder.Services.AddSingleton<SelectedOpeningSquadShadowImporter>();
 builder.Services.AddSingleton(serviceProvider =>
+    new ExternalEvidenceStressStore(
+        serviceProvider.GetRequiredService<DatabaseOptions>(),
+        serviceProvider.GetRequiredService<TimeProvider>()));
+builder.Services.AddSingleton<ExternalEvidenceStressImporter>();
+builder.Services.AddSingleton(serviceProvider =>
     new SelectionScenarioScoreShadowStore(
         serviceProvider.GetRequiredService<DatabaseOptions>(),
         serviceProvider.GetRequiredService<TimeProvider>()));
@@ -741,6 +746,7 @@ if (shadowForecastInboxOptions.Enabled)
     builder.Services.AddHostedService<JointScenarioInboxPoller>();
     builder.Services.AddHostedService<InitialSquadQualityInboxPoller>();
     builder.Services.AddHostedService<SelectedOpeningSquadInboxPoller>();
+    builder.Services.AddHostedService<ExternalEvidenceStressInboxPoller>();
     builder.Services.AddHostedService<SelectionScenarioScoreInboxPoller>();
     builder.Services.AddHostedService<SelectionRoleStrategyInboxPoller>();
 }
@@ -1555,6 +1561,27 @@ app.MapGet(
         + "unscored.")
     .WithTags("Forecasts")
     .Produces<SelectedOpeningSquadShadowDocument>()
+    .Produces(StatusCodes.Status404NotFound);
+app.MapGet(
+    "/api/v1/forecasts/external-evidence-stress/current",
+    async (
+        ExternalEvidenceStressStore store,
+        CancellationToken cancellationToken) =>
+    {
+        ExternalEvidenceStressDocument? stress =
+            await store.GetCurrentAsync(cancellationToken);
+        return stress is null ? Results.NotFound() : Results.Ok(stress);
+    })
+    .WithName("GetCurrentExternalEvidenceStress")
+    .WithSummary(
+        "Read exact opening-squad stress tests bound to external evidence.")
+    .WithDescription(
+        "Returns only the latest official-capture stress artifact. Each "
+        + "scenario globally re-optimises after setting adverse evidence "
+        + "players to zero Gameweek 1 minutes without assigning a source "
+        + "probability or mutating the central prediction.")
+    .WithTags("Forecasts")
+    .Produces<ExternalEvidenceStressDocument>()
     .Produces(StatusCodes.Status404NotFound);
 app.MapGet(
     "/api/v1/selections/current",

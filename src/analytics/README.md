@@ -1015,6 +1015,28 @@ until an eligible official fold exists.
 See the
 [official underlying feature ablation specification](../../docs/research/official-underlying-feature-ablation-v1.md).
 
+## Current external-evidence stress v1
+
+The current stress bridge globally re-solves the best-supported six-Gameweek
+opening squad after forcing supported adverse external claims to zero Gameweek
+1 minutes and points:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.current_external_evidence_stress \
+  --database /path/to/autofpl.db \
+  --evidence-cutoff-utc 2026-07-30T05:35:00Z \
+  --output /path/to/current-external-evidence-stress.json
+```
+
+Later Gameweeks remain unchanged. The artifact reports both the exact
+alternative advantage when a source-adverse world is imposed and its exact
+cost under the unchanged forecast world. It assigns no source probability and
+cannot mutate the central prediction. In production the analytics worker
+generates a new immutable inbox handoff when the latest supported pre-deadline
+claim changes. See the
+[external-evidence stress specification](../../docs/research/current-external-evidence-stress-v1.md).
+
 ## Temporal ridge challenger v1
 
 The first feature-consuming challenger fits a fixed regularised linear model
