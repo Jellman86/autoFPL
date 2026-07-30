@@ -47,6 +47,14 @@ mixture must then pass the existing proper-score evaluation and unchanged
 given an arbitrary probability merely because it is relevant to a selected
 player.
 
+That first fixed mixture has now been
+[evaluated](historical-start-state-hurdle-points-evaluation-v1.md). Its
+coherent start probability improves start Brier and log loss, but the resulting
+point mean improves MAE by only 0.0811%, regresses RMSE and wins 4/8 folds. It
+is rejected. Lineup state remains a valid participation input; the next point
+challenger must reconstruct scoring components rather than further retune this
+aggregate conditional tree.
+
 strAIghtred remains explicitly classified as dependent consensus. Where it is
 available, its agreement or disagreement is visible, but it is never counted
 as an additional independent vote.

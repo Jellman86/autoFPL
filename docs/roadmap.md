@@ -1037,6 +1037,14 @@ probability. The next active forecast challenger therefore decomposes start,
 substitute appearance and zero minutes, scores source reliability by lead time,
 and must pass the unchanged proper-score and full 3/6/8-Gameweek policy screens
 before changing the served squad.
+The first fixed start-state point challenger has now tested that decomposition.
+Its coherence rule improves start Brier and log loss, but the complete point
+mean improves MAE by only 0.0811%, regresses RMSE and wins 4/8 folds. It is
+rejected without tuning. This closes another aggregate-tree variation: the
+next accuracy slice reconstructs fixture-level scoring components conditional
+on participation and team/opponent state, then passes the same distribution
+and initial-squad policy screens. Lineup sources remain participation evidence,
+not an arbitrary points adjustment.
 Do not add another standalone governance, universal contract, infrastructure
 or AI-orchestrator project ahead of these slices.
 
