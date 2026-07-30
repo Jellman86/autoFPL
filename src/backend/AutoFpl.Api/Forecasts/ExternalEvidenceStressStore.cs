@@ -22,6 +22,7 @@ public sealed class ExternalEvidenceStressStore
         "scipy-highs-multi-horizon-mean-cvar-v1";
     private const string OptimizerStatus =
         "global-linear-mean-cvar-surrogate-optimum";
+    private const decimal BenchWeight = 0.08m;
     private const decimal NumericMipGapLimit = 0.000000000001m;
 
     private static readonly JsonSerializerOptions JsonOptions =
@@ -230,7 +231,7 @@ public sealed class ExternalEvidenceStressStore
                 && document.Policy.HorizonGameweeks == 6
                 && document.Policy.OptimizerPolicyKey == "expected-points"
                 && document.Policy.OptimizerVersion == OptimizerVersion
-                && document.Policy.BenchWeight == 0.15m
+                && document.Policy.BenchWeight == BenchWeight
                 && document.Policy.CvarWeight == 0m,
             "policy",
             "policy");
