@@ -1,0 +1,5594 @@
+{
+  "artifactType": "historical-appearance-hurdle-multi-horizon-policy-evaluation",
+  "artifactVersion": "historical-appearance-hurdle-multi-horizon-policy-evaluation-v1",
+  "commonOutcomeScoring": {
+    "gameweeks": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "primaryMetric": "mean-realised-eight-gameweek-fpl-points-across-targets",
+    "realisedScorer": "exact-fpl-captain-fallback-and-ordered-auto-substitution",
+    "rolesAfterOptimisationHorizon": "choose-legal-maximum-preseason-scenario-mean-xi-and-captain-with-deterministic-bench-order",
+    "rolesWithinOptimisationHorizon": "use-policy-optimised-weekly-xi-captain-vice-and-bench",
+    "squadMembership": "fixed-opening-squad-no-transfers-for-all-eight-gameweeks",
+    "targetWeighting": "equal-weight-per-season"
+  },
+  "dataIdentitySha256": "68d240ac32219092b8171ce5e28d0b8315ca2c19542a213bdec803c3ed354d14",
+  "decision": {
+    "decisionReason": "original-reference-retained-by-stability-gates",
+    "prospectiveChallengerDiffersFromReference": false,
+    "prospectiveChallengerPolicyKey": "6-expected-points",
+    "referencePolicyKey": "6-expected-points",
+    "servedPolicyChanged": false
+  },
+  "limitations": [
+    "The same three target seasons were opened by the original policy experiment and later hurdle-model evaluations. A passing result can freeze a prospective challenger only.",
+    "Three seasons provide weak policy-selection power. The original materiality, target-win and worst-regression gates remain unchanged.",
+    "All policies hold one opening squad for eight Gameweeks. The experiment does not select transfers, chips or price change responses.",
+    "Historical opening availability remains unavailable and target fixtures use the registered final-archive proxy."
+  ],
+  "policySummary": [
+    {
+      "evaluationPolicyKey": "3-downside-balanced",
+      "horizonGameweeks": 3,
+      "meanDifferenceFromReferencePoints": 2.333333,
+      "meanPoints": 412.666667,
+      "optimizerPolicyKey": "downside-balanced",
+      "targetScores": [
+        {
+          "differenceFromReferencePoints": 0,
+          "targetSeasonCode": "2023-24",
+          "totalPoints": 461
+        },
+        {
+          "differenceFromReferencePoints": 1,
+          "targetSeasonCode": "2024-25",
+          "totalPoints": 393
+        },
+        {
+          "differenceFromReferencePoints": 6,
+          "targetSeasonCode": "2025-26",
+          "totalPoints": 384
+        }
+      ],
+      "targetWinsOverReference": 2,
+      "worstTargetDifferenceFromReferencePoints": 0,
+      "worstTargetPoints": 384
+    },
+    {
+      "evaluationPolicyKey": "3-expected-points",
+      "horizonGameweeks": 3,
+      "meanDifferenceFromReferencePoints": 5.333333,
+      "meanPoints": 415.666667,
+      "optimizerPolicyKey": "expected-points",
+      "targetScores": [
+        {
+          "differenceFromReferencePoints": 0,
+          "targetSeasonCode": "2023-24",
+          "totalPoints": 461
+        },
+        {
+          "differenceFromReferencePoints": 16,
+          "targetSeasonCode": "2024-25",
+          "totalPoints": 408
+        },
+        {
+          "differenceFromReferencePoints": 0,
+          "targetSeasonCode": "2025-26",
+          "totalPoints": 378
+        }
+      ],
+      "targetWinsOverReference": 1,
+      "worstTargetDifferenceFromReferencePoints": 0,
+      "worstTargetPoints": 378
+    },
+    {
+      "evaluationPolicyKey": "6-downside-balanced",
+      "horizonGameweeks": 6,
+      "meanDifferenceFromReferencePoints": -5.666667,
+      "meanPoints": 404.666667,
+      "optimizerPolicyKey": "downside-balanced",
+      "targetScores": [
+        {
+          "differenceFromReferencePoints": 3,
+          "targetSeasonCode": "2023-24",
+          "totalPoints": 464
+        },
+        {
+          "differenceFromReferencePoints": -52,
+          "targetSeasonCode": "2024-25",
+          "totalPoints": 340
+        },
+        {
+          "differenceFromReferencePoints": 32,
+          "targetSeasonCode": "2025-26",
+          "totalPoints": 410
+        }
+      ],
+      "targetWinsOverReference": 2,
+      "worstTargetDifferenceFromReferencePoints": -52,
+      "worstTargetPoints": 340
+    },
+    {
+      "evaluationPolicyKey": "6-expected-points",
+      "horizonGameweeks": 6,
+      "meanDifferenceFromReferencePoints": 0.0,
+      "meanPoints": 410.333333,
+      "optimizerPolicyKey": "expected-points",
+      "targetScores": [
+        {
+          "differenceFromReferencePoints": 0,
+          "targetSeasonCode": "2023-24",
+          "totalPoints": 461
+        },
+        {
+          "differenceFromReferencePoints": 0,
+          "targetSeasonCode": "2024-25",
+          "totalPoints": 392
+        },
+        {
+          "differenceFromReferencePoints": 0,
+          "targetSeasonCode": "2025-26",
+          "totalPoints": 378
+        }
+      ],
+      "targetWinsOverReference": 0,
+      "worstTargetDifferenceFromReferencePoints": 0,
+      "worstTargetPoints": 378
+    },
+    {
+      "evaluationPolicyKey": "8-downside-balanced",
+      "horizonGameweeks": 8,
+      "meanDifferenceFromReferencePoints": 1.0,
+      "meanPoints": 411.333333,
+      "optimizerPolicyKey": "downside-balanced",
+      "targetScores": [
+        {
+          "differenceFromReferencePoints": 0,
+          "targetSeasonCode": "2023-24",
+          "totalPoints": 461
+        },
+        {
+          "differenceFromReferencePoints": -2,
+          "targetSeasonCode": "2024-25",
+          "totalPoints": 390
+        },
+        {
+          "differenceFromReferencePoints": 5,
+          "targetSeasonCode": "2025-26",
+          "totalPoints": 383
+        }
+      ],
+      "targetWinsOverReference": 1,
+      "worstTargetDifferenceFromReferencePoints": -2,
+      "worstTargetPoints": 383
+    },
+    {
+      "evaluationPolicyKey": "8-expected-points",
+      "horizonGameweeks": 8,
+      "meanDifferenceFromReferencePoints": 2.0,
+      "meanPoints": 412.333333,
+      "optimizerPolicyKey": "expected-points",
+      "targetScores": [
+        {
+          "differenceFromReferencePoints": 0,
+          "targetSeasonCode": "2023-24",
+          "totalPoints": 461
+        },
+        {
+          "differenceFromReferencePoints": 6,
+          "targetSeasonCode": "2024-25",
+          "totalPoints": 398
+        },
+        {
+          "differenceFromReferencePoints": 0,
+          "targetSeasonCode": "2025-26",
+          "totalPoints": 378
+        }
+      ],
+      "targetWinsOverReference": 1,
+      "worstTargetDifferenceFromReferencePoints": 0,
+      "worstTargetPoints": 378
+    }
+  ],
+  "prospectiveBoundary": {
+    "isPromoted": false,
+    "mayInfluenceAdvice": false,
+    "nextRequirement": "continue-prospective-scoring-of-the-reference-policy"
+  },
+  "registrationSource": {
+    "artifactVersion": "historical-opening-policy-evaluation-registration-v1",
+    "commonOutcomeScoring": {
+      "gameweeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "primaryMetric": "mean-realised-eight-gameweek-fpl-points-across-targets",
+      "realisedScorer": "exact-fpl-captain-fallback-and-ordered-auto-substitution",
+      "rolesAfterOptimisationHorizon": "choose-legal-maximum-preseason-scenario-mean-xi-and-captain-with-deterministic-bench-order",
+      "rolesWithinOptimisationHorizon": "use-policy-optimised-weekly-xi-captain-vice-and-bench",
+      "squadMembership": "fixed-opening-squad-no-transfers-for-all-eight-gameweeks",
+      "targetWeighting": "equal-weight-per-season"
+    },
+    "dataIdentitySha256": "b9d28cac497af35fc0762b7080db7e369759678872f78d47135e050f1920b675",
+    "registeredPolicies": [
+      {
+        "cvarWeight": 0.0,
+        "evaluationPolicyKey": "3-expected-points",
+        "horizonGameweeks": 3,
+        "optimizerPolicyKey": "expected-points"
+      },
+      {
+        "cvarWeight": 0.15,
+        "evaluationPolicyKey": "3-downside-balanced",
+        "horizonGameweeks": 3,
+        "optimizerPolicyKey": "downside-balanced"
+      },
+      {
+        "cvarWeight": 0.0,
+        "evaluationPolicyKey": "6-expected-points",
+        "horizonGameweeks": 6,
+        "optimizerPolicyKey": "expected-points"
+      },
+      {
+        "cvarWeight": 0.15,
+        "evaluationPolicyKey": "6-downside-balanced",
+        "horizonGameweeks": 6,
+        "optimizerPolicyKey": "downside-balanced"
+      },
+      {
+        "cvarWeight": 0.0,
+        "evaluationPolicyKey": "8-expected-points",
+        "horizonGameweeks": 8,
+        "optimizerPolicyKey": "expected-points"
+      },
+      {
+        "cvarWeight": 0.15,
+        "evaluationPolicyKey": "8-downside-balanced",
+        "horizonGameweeks": 8,
+        "optimizerPolicyKey": "downside-balanced"
+      }
+    ],
+    "runIdentitySha256": "3a571e0813079b30fe721f48f670bc619252966ad949d8d1bfb0134771823b45",
+    "selectionRule": {
+      "decision": "select-the-ranked-leader-only-if-all-stability-gates-pass;otherwise-retain-the-predeclared-reference",
+      "leaderRanking": "higher-mean-then-higher-worst-target-then-expected-points-then-shorter-horizon-then-policy-key",
+      "maximumWorstTargetRegressionPoints": 2.0,
+      "minimumMeanImprovementOverReferencePoints": 2.0,
+      "minimumTargetWinsOverReference": 2,
+      "referencePolicyKey": "6-expected-points"
+    }
+  },
+  "researchStatus": "reused-opened-targets-no-promotion",
+  "retainedDistributionSource": {
+    "evaluationDataIdentitySha256": "af3e964f3f936b06f542ab6b19ecb996d2f1c97584298a5aff7877aa8837ada1",
+    "evaluationRunIdentitySha256": "00808a1062b294785ebb5be506a7787198722598720d736436c969e003fb2234",
+    "scenarioArtifactVersion": "historical-appearance-hurdle-opening-scenario-reconstruction-v1",
+    "scenarioDataIdentitySha256": "589ca66b5add2d04d2380a9688db58508de1f3b179eeff057b9c427240384b2c",
+    "scenarioRunIdentitySha256": "691f24f902818d54227c2c7f9b69a0436ce36a91bdd46f94b92fdda42bbbce5f"
+  },
+  "retrospectiveSelection": {
+    "decisionReason": "ranked-leader-failed-registered-stability-gate",
+    "rankedLeaderPolicyKey": "3-expected-points",
+    "referencePolicyKey": "6-expected-points",
+    "referenceRetained": true,
+    "selectedPolicyKey": "6-expected-points",
+    "stabilityGates": {
+      "meanImprovement": true,
+      "targetWins": false,
+      "worstTargetRegression": true
+    }
+  },
+  "runIdentitySha256": "1f4d8abcdeaf7b886b1f734eaa177798de0e80f4efed969adebc5793be5549b6",
+  "schemaVersion": "1.0",
+  "selectionRule": {
+    "decision": "select-the-ranked-leader-only-if-all-stability-gates-pass;otherwise-retain-the-predeclared-reference",
+    "leaderRanking": "higher-mean-then-higher-worst-target-then-expected-points-then-shorter-horizon-then-policy-key",
+    "maximumWorstTargetRegressionPoints": 2.0,
+    "minimumMeanImprovementOverReferencePoints": 2.0,
+    "minimumTargetWinsOverReference": 2,
+    "referencePolicyKey": "6-expected-points"
+  },
+  "status": "retrospective-reused-outcomes-prospective-challenger-only",
+  "targetOutcomesOpened": true,
+  "targets": [
+    {
+      "playerCount": 658,
+      "policies": [
+        {
+          "evaluationPolicyKey": "3-expected-points",
+          "horizonGameweeks": 3,
+          "optimizerPolicyKey": "expected-points",
+          "realisedOutcome": {
+            "totalPoints": 461,
+            "weekly": [
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 3,
+                "gameweek": 1,
+                "points": 56,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 5,
+                "gameweek": 2,
+                "points": 59,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 3,
+                "captainBonusPoints": 12,
+                "gameweek": 3,
+                "points": 49,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 3,
+                "captainBonusPoints": 8,
+                "gameweek": 4,
+                "points": 43,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 1,
+                "gameweek": 5,
+                "points": 60,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 10,
+                "gameweek": 6,
+                "points": 80,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 2,
+                "gameweek": 7,
+                "points": 65,
+                "unreplacedStarterCount": 1
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 2,
+                "gameweek": 8,
+                "points": 49,
+                "unreplacedStarterCount": 2
+              }
+            ]
+          },
+          "selection": {
+            "budgetTenths": 1000,
+            "gameweeks": [
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 1,
+                "outfieldSubstitutePlayerIds": [
+                  230046,
+                  167074,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 80201,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  118748,
+                  141746,
+                  154561,
+                  178301,
+                  216646,
+                  220237,
+                  226597,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 118748
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 2,
+                "outfieldSubstitutePlayerIds": [
+                  216646,
+                  226597,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  80201,
+                  118748,
+                  141746,
+                  167074,
+                  178301,
+                  220237,
+                  230046,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 78830
+              },
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 3,
+                "outfieldSubstitutePlayerIds": [
+                  230046,
+                  167074,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 80201,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  118748,
+                  141746,
+                  154561,
+                  178301,
+                  216646,
+                  220237,
+                  226597,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 118748
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 4,
+                "outfieldSubstitutePlayerIds": [
+                  230046,
+                  167074,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 80201,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  118748,
+                  141746,
+                  154561,
+                  178301,
+                  216646,
+                  220237,
+                  226597,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 141746
+              },
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 5,
+                "outfieldSubstitutePlayerIds": [
+                  216646,
+                  226597,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  80201,
+                  118748,
+                  141746,
+                  167074,
+                  178301,
+                  220237,
+                  230046,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 78830
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 6,
+                "outfieldSubstitutePlayerIds": [
+                  230046,
+                  167074,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 80201,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  118748,
+                  141746,
+                  154561,
+                  178301,
+                  216646,
+                  220237,
+                  226597,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 141746
+              },
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 7,
+                "outfieldSubstitutePlayerIds": [
+                  216646,
+                  226597,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  80201,
+                  118748,
+                  141746,
+                  167074,
+                  178301,
+                  220237,
+                  230046,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 78830
+              },
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 8,
+                "outfieldSubstitutePlayerIds": [
+                  220237,
+                  216646,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  80201,
+                  118748,
+                  141746,
+                  167074,
+                  178301,
+                  226597,
+                  230046,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 118748
+              }
+            ],
+            "playerIds": [
+              77794,
+              78830,
+              80201,
+              118748,
+              141746,
+              154561,
+              167074,
+              178301,
+              216646,
+              220237,
+              226597,
+              230046,
+              232413,
+              437468,
+              446008
+            ]
+          },
+          "solver": {
+            "binaryVariableCount": 4606,
+            "continuousVariableCount": 0,
+            "maximumNumericalMipGap": 1e-12,
+            "mipGap": 0.0,
+            "objectiveValue": 181.385946,
+            "optimizerVersion": "scipy-highs-multi-horizon-mean-cvar-v1",
+            "reportedMipGap": 0.0,
+            "scipyVersion": "1.18.0",
+            "solver": "scipy.optimize.milp-highs",
+            "status": "global-linear-mean-cvar-surrogate-optimum"
+          }
+        },
+        {
+          "evaluationPolicyKey": "3-downside-balanced",
+          "horizonGameweeks": 3,
+          "optimizerPolicyKey": "downside-balanced",
+          "realisedOutcome": {
+            "totalPoints": 461,
+            "weekly": [
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 3,
+                "gameweek": 1,
+                "points": 56,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 5,
+                "gameweek": 2,
+                "points": 59,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 3,
+                "captainBonusPoints": 12,
+                "gameweek": 3,
+                "points": 49,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 3,
+                "captainBonusPoints": 8,
+                "gameweek": 4,
+                "points": 43,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 1,
+                "gameweek": 5,
+                "points": 60,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 10,
+                "gameweek": 6,
+                "points": 80,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 2,
+                "gameweek": 7,
+                "points": 65,
+                "unreplacedStarterCount": 1
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 2,
+                "gameweek": 8,
+                "points": 49,
+                "unreplacedStarterCount": 2
+              }
+            ]
+          },
+          "selection": {
+            "budgetTenths": 1000,
+            "gameweeks": [
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 1,
+                "outfieldSubstitutePlayerIds": [
+                  230046,
+                  167074,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 80201,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  118748,
+                  141746,
+                  154561,
+                  178301,
+                  216646,
+                  220237,
+                  226597,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 118748
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 2,
+                "outfieldSubstitutePlayerIds": [
+                  216646,
+                  226597,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  80201,
+                  118748,
+                  141746,
+                  167074,
+                  178301,
+                  220237,
+                  230046,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 78830
+              },
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 3,
+                "outfieldSubstitutePlayerIds": [
+                  230046,
+                  167074,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 80201,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  118748,
+                  141746,
+                  154561,
+                  178301,
+                  216646,
+                  220237,
+                  226597,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 118748
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 4,
+                "outfieldSubstitutePlayerIds": [
+                  230046,
+                  167074,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 80201,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  118748,
+                  141746,
+                  154561,
+                  178301,
+                  216646,
+                  220237,
+                  226597,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 141746
+              },
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 5,
+                "outfieldSubstitutePlayerIds": [
+                  216646,
+                  226597,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  80201,
+                  118748,
+                  141746,
+                  167074,
+                  178301,
+                  220237,
+                  230046,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 78830
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 6,
+                "outfieldSubstitutePlayerIds": [
+                  230046,
+                  167074,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 80201,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  118748,
+                  141746,
+                  154561,
+                  178301,
+                  216646,
+                  220237,
+                  226597,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 141746
+              },
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 7,
+                "outfieldSubstitutePlayerIds": [
+                  216646,
+                  226597,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  80201,
+                  118748,
+                  141746,
+                  167074,
+                  178301,
+                  220237,
+                  230046,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 78830
+              },
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 8,
+                "outfieldSubstitutePlayerIds": [
+                  220237,
+                  216646,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  80201,
+                  118748,
+                  141746,
+                  167074,
+                  178301,
+                  226597,
+                  230046,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 118748
+              }
+            ],
+            "playerIds": [
+              77794,
+              78830,
+              80201,
+              118748,
+              141746,
+              154561,
+              167074,
+              178301,
+              216646,
+              220237,
+              226597,
+              230046,
+              232413,
+              437468,
+              446008
+            ]
+          },
+          "solver": {
+            "binaryVariableCount": 4606,
+            "continuousVariableCount": 38,
+            "maximumNumericalMipGap": 1e-12,
+            "mipGap": 0.0,
+            "objectiveValue": 203.462703,
+            "optimizerVersion": "scipy-highs-multi-horizon-mean-cvar-v1",
+            "reportedMipGap": 0.0,
+            "scipyVersion": "1.18.0",
+            "solver": "scipy.optimize.milp-highs",
+            "status": "global-linear-mean-cvar-surrogate-optimum"
+          }
+        },
+        {
+          "evaluationPolicyKey": "6-expected-points",
+          "horizonGameweeks": 6,
+          "optimizerPolicyKey": "expected-points",
+          "realisedOutcome": {
+            "totalPoints": 461,
+            "weekly": [
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 3,
+                "gameweek": 1,
+                "points": 56,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 5,
+                "gameweek": 2,
+                "points": 59,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 3,
+                "captainBonusPoints": 12,
+                "gameweek": 3,
+                "points": 49,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 3,
+                "captainBonusPoints": 8,
+                "gameweek": 4,
+                "points": 43,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 1,
+                "gameweek": 5,
+                "points": 60,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 10,
+                "gameweek": 6,
+                "points": 80,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 2,
+                "gameweek": 7,
+                "points": 65,
+                "unreplacedStarterCount": 1
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 2,
+                "gameweek": 8,
+                "points": 49,
+                "unreplacedStarterCount": 2
+              }
+            ]
+          },
+          "selection": {
+            "budgetTenths": 1000,
+            "gameweeks": [
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 1,
+                "outfieldSubstitutePlayerIds": [
+                  230046,
+                  167074,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 80201,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  118748,
+                  141746,
+                  154561,
+                  178301,
+                  216646,
+                  220237,
+                  226597,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 118748
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 2,
+                "outfieldSubstitutePlayerIds": [
+                  216646,
+                  226597,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  80201,
+                  118748,
+                  141746,
+                  167074,
+                  178301,
+                  220237,
+                  230046,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 78830
+              },
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 3,
+                "outfieldSubstitutePlayerIds": [
+                  230046,
+                  167074,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 80201,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  118748,
+                  141746,
+                  154561,
+                  178301,
+                  216646,
+                  220237,
+                  226597,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 118748
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 4,
+                "outfieldSubstitutePlayerIds": [
+                  230046,
+                  167074,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 80201,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  118748,
+                  141746,
+                  154561,
+                  178301,
+                  216646,
+                  220237,
+                  226597,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 141746
+              },
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 5,
+                "outfieldSubstitutePlayerIds": [
+                  216646,
+                  226597,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  80201,
+                  118748,
+                  141746,
+                  167074,
+                  178301,
+                  220237,
+                  230046,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 78830
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 6,
+                "outfieldSubstitutePlayerIds": [
+                  230046,
+                  167074,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 80201,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  118748,
+                  141746,
+                  154561,
+                  178301,
+                  216646,
+                  220237,
+                  226597,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 141746
+              },
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 7,
+                "outfieldSubstitutePlayerIds": [
+                  216646,
+                  226597,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  80201,
+                  118748,
+                  141746,
+                  167074,
+                  178301,
+                  220237,
+                  230046,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 78830
+              },
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 8,
+                "outfieldSubstitutePlayerIds": [
+                  220237,
+                  216646,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  80201,
+                  118748,
+                  141746,
+                  167074,
+                  178301,
+                  226597,
+                  230046,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 118748
+              }
+            ],
+            "playerIds": [
+              77794,
+              78830,
+              80201,
+              118748,
+              141746,
+              154561,
+              167074,
+              178301,
+              216646,
+              220237,
+              226597,
+              230046,
+              232413,
+              437468,
+              446008
+            ]
+          },
+          "solver": {
+            "binaryVariableCount": 8554,
+            "continuousVariableCount": 0,
+            "maximumNumericalMipGap": 1e-12,
+            "mipGap": 0.0,
+            "objectiveValue": 362.096216,
+            "optimizerVersion": "scipy-highs-multi-horizon-mean-cvar-v1",
+            "reportedMipGap": 0.0,
+            "scipyVersion": "1.18.0",
+            "solver": "scipy.optimize.milp-highs",
+            "status": "global-linear-mean-cvar-surrogate-optimum"
+          }
+        },
+        {
+          "evaluationPolicyKey": "6-downside-balanced",
+          "horizonGameweeks": 6,
+          "optimizerPolicyKey": "downside-balanced",
+          "realisedOutcome": {
+            "totalPoints": 464,
+            "weekly": [
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 3,
+                "gameweek": 1,
+                "points": 56,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 5,
+                "gameweek": 2,
+                "points": 59,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 12,
+                "gameweek": 3,
+                "points": 49,
+                "unreplacedStarterCount": 1
+              },
+              {
+                "activatedSubstituteCount": 3,
+                "captainBonusPoints": 8,
+                "gameweek": 4,
+                "points": 47,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 1,
+                "gameweek": 5,
+                "points": 59,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 10,
+                "gameweek": 6,
+                "points": 80,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 2,
+                "gameweek": 7,
+                "points": 65,
+                "unreplacedStarterCount": 1
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 2,
+                "gameweek": 8,
+                "points": 49,
+                "unreplacedStarterCount": 2
+              }
+            ]
+          },
+          "selection": {
+            "budgetTenths": 1000,
+            "gameweeks": [
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 1,
+                "outfieldSubstitutePlayerIds": [
+                  230046,
+                  149484,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 80201,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  118748,
+                  141746,
+                  154561,
+                  178301,
+                  216646,
+                  220237,
+                  226597,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 118748
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 2,
+                "outfieldSubstitutePlayerIds": [
+                  216646,
+                  226597,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  80201,
+                  118748,
+                  141746,
+                  149484,
+                  178301,
+                  220237,
+                  230046,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 78830
+              },
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 3,
+                "outfieldSubstitutePlayerIds": [
+                  230046,
+                  149484,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 80201,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  118748,
+                  141746,
+                  154561,
+                  178301,
+                  216646,
+                  220237,
+                  226597,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 118748
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 4,
+                "outfieldSubstitutePlayerIds": [
+                  230046,
+                  149484,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 80201,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  118748,
+                  141746,
+                  154561,
+                  178301,
+                  216646,
+                  220237,
+                  226597,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 141746
+              },
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 5,
+                "outfieldSubstitutePlayerIds": [
+                  216646,
+                  226597,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  80201,
+                  118748,
+                  141746,
+                  149484,
+                  178301,
+                  220237,
+                  230046,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 78830
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 6,
+                "outfieldSubstitutePlayerIds": [
+                  230046,
+                  149484,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 80201,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  118748,
+                  141746,
+                  154561,
+                  178301,
+                  216646,
+                  220237,
+                  226597,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 141746
+              },
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 7,
+                "outfieldSubstitutePlayerIds": [
+                  216646,
+                  226597,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  80201,
+                  118748,
+                  141746,
+                  149484,
+                  178301,
+                  220237,
+                  230046,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 78830
+              },
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 8,
+                "outfieldSubstitutePlayerIds": [
+                  216646,
+                  149484,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  80201,
+                  118748,
+                  141746,
+                  178301,
+                  220237,
+                  226597,
+                  230046,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 118748
+              }
+            ],
+            "playerIds": [
+              77794,
+              78830,
+              80201,
+              118748,
+              141746,
+              149484,
+              154561,
+              178301,
+              216646,
+              220237,
+              226597,
+              230046,
+              232413,
+              437468,
+              446008
+            ]
+          },
+          "solver": {
+            "binaryVariableCount": 8554,
+            "continuousVariableCount": 38,
+            "maximumNumericalMipGap": 1e-12,
+            "mipGap": 0.0,
+            "objectiveValue": 408.428324,
+            "optimizerVersion": "scipy-highs-multi-horizon-mean-cvar-v1",
+            "reportedMipGap": 0.0,
+            "scipyVersion": "1.18.0",
+            "solver": "scipy.optimize.milp-highs",
+            "status": "global-linear-mean-cvar-surrogate-optimum"
+          }
+        },
+        {
+          "evaluationPolicyKey": "8-expected-points",
+          "horizonGameweeks": 8,
+          "optimizerPolicyKey": "expected-points",
+          "realisedOutcome": {
+            "totalPoints": 461,
+            "weekly": [
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 3,
+                "gameweek": 1,
+                "points": 56,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 5,
+                "gameweek": 2,
+                "points": 59,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 3,
+                "captainBonusPoints": 12,
+                "gameweek": 3,
+                "points": 49,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 3,
+                "captainBonusPoints": 8,
+                "gameweek": 4,
+                "points": 43,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 1,
+                "gameweek": 5,
+                "points": 60,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 10,
+                "gameweek": 6,
+                "points": 80,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 2,
+                "gameweek": 7,
+                "points": 65,
+                "unreplacedStarterCount": 1
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 2,
+                "gameweek": 8,
+                "points": 49,
+                "unreplacedStarterCount": 2
+              }
+            ]
+          },
+          "selection": {
+            "budgetTenths": 1000,
+            "gameweeks": [
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 1,
+                "outfieldSubstitutePlayerIds": [
+                  230046,
+                  167074,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 80201,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  118748,
+                  141746,
+                  154561,
+                  178301,
+                  216646,
+                  220237,
+                  226597,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 118748
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 2,
+                "outfieldSubstitutePlayerIds": [
+                  216646,
+                  226597,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  80201,
+                  118748,
+                  141746,
+                  167074,
+                  178301,
+                  220237,
+                  230046,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 78830
+              },
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 3,
+                "outfieldSubstitutePlayerIds": [
+                  230046,
+                  167074,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 80201,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  118748,
+                  141746,
+                  154561,
+                  178301,
+                  216646,
+                  220237,
+                  226597,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 118748
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 4,
+                "outfieldSubstitutePlayerIds": [
+                  230046,
+                  167074,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 80201,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  118748,
+                  141746,
+                  154561,
+                  178301,
+                  216646,
+                  220237,
+                  226597,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 141746
+              },
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 5,
+                "outfieldSubstitutePlayerIds": [
+                  216646,
+                  226597,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  80201,
+                  118748,
+                  141746,
+                  167074,
+                  178301,
+                  220237,
+                  230046,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 78830
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 6,
+                "outfieldSubstitutePlayerIds": [
+                  230046,
+                  167074,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 80201,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  118748,
+                  141746,
+                  154561,
+                  178301,
+                  216646,
+                  220237,
+                  226597,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 141746
+              },
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 7,
+                "outfieldSubstitutePlayerIds": [
+                  216646,
+                  226597,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  80201,
+                  118748,
+                  141746,
+                  167074,
+                  178301,
+                  220237,
+                  230046,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 78830
+              },
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 8,
+                "outfieldSubstitutePlayerIds": [
+                  220237,
+                  216646,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  80201,
+                  118748,
+                  141746,
+                  167074,
+                  178301,
+                  226597,
+                  230046,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 118748
+              }
+            ],
+            "playerIds": [
+              77794,
+              78830,
+              80201,
+              118748,
+              141746,
+              154561,
+              167074,
+              178301,
+              216646,
+              220237,
+              226597,
+              230046,
+              232413,
+              437468,
+              446008
+            ]
+          },
+          "solver": {
+            "binaryVariableCount": 11186,
+            "continuousVariableCount": 0,
+            "maximumNumericalMipGap": 1e-12,
+            "mipGap": 0.0,
+            "objectiveValue": 481.008649,
+            "optimizerVersion": "scipy-highs-multi-horizon-mean-cvar-v1",
+            "reportedMipGap": 0.0,
+            "scipyVersion": "1.18.0",
+            "solver": "scipy.optimize.milp-highs",
+            "status": "global-linear-mean-cvar-surrogate-optimum"
+          }
+        },
+        {
+          "evaluationPolicyKey": "8-downside-balanced",
+          "horizonGameweeks": 8,
+          "optimizerPolicyKey": "downside-balanced",
+          "realisedOutcome": {
+            "totalPoints": 461,
+            "weekly": [
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 3,
+                "gameweek": 1,
+                "points": 56,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 5,
+                "gameweek": 2,
+                "points": 59,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 3,
+                "captainBonusPoints": 12,
+                "gameweek": 3,
+                "points": 49,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 3,
+                "captainBonusPoints": 8,
+                "gameweek": 4,
+                "points": 43,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 1,
+                "gameweek": 5,
+                "points": 60,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 10,
+                "gameweek": 6,
+                "points": 80,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 2,
+                "gameweek": 7,
+                "points": 65,
+                "unreplacedStarterCount": 1
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 2,
+                "gameweek": 8,
+                "points": 49,
+                "unreplacedStarterCount": 2
+              }
+            ]
+          },
+          "selection": {
+            "budgetTenths": 1000,
+            "gameweeks": [
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 1,
+                "outfieldSubstitutePlayerIds": [
+                  230046,
+                  167074,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 80201,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  118748,
+                  141746,
+                  154561,
+                  178301,
+                  216646,
+                  220237,
+                  226597,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 118748
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 2,
+                "outfieldSubstitutePlayerIds": [
+                  216646,
+                  226597,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  80201,
+                  118748,
+                  141746,
+                  167074,
+                  178301,
+                  220237,
+                  230046,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 78830
+              },
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 3,
+                "outfieldSubstitutePlayerIds": [
+                  230046,
+                  167074,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 80201,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  118748,
+                  141746,
+                  154561,
+                  178301,
+                  216646,
+                  220237,
+                  226597,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 118748
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 4,
+                "outfieldSubstitutePlayerIds": [
+                  230046,
+                  167074,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 80201,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  118748,
+                  141746,
+                  154561,
+                  178301,
+                  216646,
+                  220237,
+                  226597,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 141746
+              },
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 5,
+                "outfieldSubstitutePlayerIds": [
+                  216646,
+                  226597,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  80201,
+                  118748,
+                  141746,
+                  167074,
+                  178301,
+                  220237,
+                  230046,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 78830
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 6,
+                "outfieldSubstitutePlayerIds": [
+                  230046,
+                  167074,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 80201,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  118748,
+                  141746,
+                  154561,
+                  178301,
+                  216646,
+                  220237,
+                  226597,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 141746
+              },
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 7,
+                "outfieldSubstitutePlayerIds": [
+                  216646,
+                  226597,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  80201,
+                  118748,
+                  141746,
+                  167074,
+                  178301,
+                  220237,
+                  230046,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 78830
+              },
+              {
+                "captainPlayerId": 141746,
+                "gameweek": 8,
+                "outfieldSubstitutePlayerIds": [
+                  220237,
+                  216646,
+                  437468
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  77794,
+                  78830,
+                  80201,
+                  118748,
+                  141746,
+                  167074,
+                  178301,
+                  226597,
+                  230046,
+                  232413,
+                  446008
+                ],
+                "viceCaptainPlayerId": 118748
+              }
+            ],
+            "playerIds": [
+              77794,
+              78830,
+              80201,
+              118748,
+              141746,
+              154561,
+              167074,
+              178301,
+              216646,
+              220237,
+              226597,
+              230046,
+              232413,
+              437468,
+              446008
+            ]
+          },
+          "solver": {
+            "binaryVariableCount": 11186,
+            "continuousVariableCount": 38,
+            "maximumNumericalMipGap": 1e-12,
+            "mipGap": 0.0,
+            "objectiveValue": 542.797784,
+            "optimizerVersion": "scipy-highs-multi-horizon-mean-cvar-v1",
+            "reportedMipGap": 0.0,
+            "scipyVersion": "1.18.0",
+            "solver": "scipy.optimize.milp-highs",
+            "status": "global-linear-mean-cvar-surrogate-optimum"
+          }
+        }
+      ],
+      "rawGameweeksSha256": "e9c09c8856f1c86b4f920f46ddd5033af83409439dfda53be925df2a3e7c8a9e",
+      "scenarioContentSha256": "fa886178d066ef6b334fa243dfef276b2317ed0bc475b4712d8ba3cae81dd7eb",
+      "scenarioCount": 37,
+      "targetCaptureId": 4,
+      "targetSeasonCode": "2023-24"
+    },
+    {
+      "playerCount": 616,
+      "policies": [
+        {
+          "evaluationPolicyKey": "3-expected-points",
+          "horizonGameweeks": 3,
+          "optimizerPolicyKey": "expected-points",
+          "realisedOutcome": {
+            "totalPoints": 408,
+            "weekly": [
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 3,
+                "gameweek": 1,
+                "points": 58,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 17,
+                "gameweek": 2,
+                "points": 61,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 2,
+                "gameweek": 3,
+                "points": 53,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 13,
+                "gameweek": 4,
+                "points": 59,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 9,
+                "gameweek": 5,
+                "points": 54,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 2,
+                "gameweek": 6,
+                "points": 50,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 2,
+                "gameweek": 7,
+                "points": 31,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 2,
+                "gameweek": 8,
+                "points": 42,
+                "unreplacedStarterCount": 0
+              }
+            ]
+          },
+          "selection": {
+            "budgetTenths": 1000,
+            "gameweeks": [
+              {
+                "captainPlayerId": 184029,
+                "gameweek": 1,
+                "outfieldSubstitutePlayerIds": [
+                  165809,
+                  218218,
+                  94147
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  60689,
+                  116216,
+                  154561,
+                  178301,
+                  184029,
+                  208706,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 223094
+              },
+              {
+                "captainPlayerId": 223094,
+                "gameweek": 2,
+                "outfieldSubstitutePlayerIds": [
+                  60689,
+                  218218,
+                  94147
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  116216,
+                  165809,
+                  172649,
+                  178301,
+                  184029,
+                  208706,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 232413
+              },
+              {
+                "captainPlayerId": 184029,
+                "gameweek": 3,
+                "outfieldSubstitutePlayerIds": [
+                  165809,
+                  218218,
+                  94147
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  60689,
+                  116216,
+                  154561,
+                  178301,
+                  184029,
+                  208706,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 223094
+              },
+              {
+                "captainPlayerId": 223094,
+                "gameweek": 4,
+                "outfieldSubstitutePlayerIds": [
+                  60689,
+                  218218,
+                  94147
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  116216,
+                  165809,
+                  172649,
+                  178301,
+                  184029,
+                  208706,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 232413
+              },
+              {
+                "captainPlayerId": 223094,
+                "gameweek": 5,
+                "outfieldSubstitutePlayerIds": [
+                  60689,
+                  218218,
+                  94147
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  116216,
+                  165809,
+                  172649,
+                  178301,
+                  184029,
+                  208706,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 232413
+              },
+              {
+                "captainPlayerId": 184029,
+                "gameweek": 6,
+                "outfieldSubstitutePlayerIds": [
+                  165809,
+                  218218,
+                  94147
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  60689,
+                  116216,
+                  154561,
+                  178301,
+                  184029,
+                  208706,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 223094
+              },
+              {
+                "captainPlayerId": 223094,
+                "gameweek": 7,
+                "outfieldSubstitutePlayerIds": [
+                  60689,
+                  218218,
+                  94147
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  116216,
+                  154561,
+                  165809,
+                  178301,
+                  184029,
+                  208706,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 184029
+              },
+              {
+                "captainPlayerId": 223094,
+                "gameweek": 8,
+                "outfieldSubstitutePlayerIds": [
+                  116216,
+                  218218,
+                  94147
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  60689,
+                  154561,
+                  165809,
+                  178301,
+                  184029,
+                  208706,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 184029
+              }
+            ],
+            "playerIds": [
+              60689,
+              94147,
+              116216,
+              154561,
+              165809,
+              172649,
+              178301,
+              184029,
+              208706,
+              218218,
+              223094,
+              232413,
+              247348,
+              441164,
+              477424
+            ]
+          },
+          "solver": {
+            "binaryVariableCount": 4312,
+            "continuousVariableCount": 0,
+            "maximumNumericalMipGap": 1e-12,
+            "mipGap": 0.0,
+            "objectiveValue": 164.623158,
+            "optimizerVersion": "scipy-highs-multi-horizon-mean-cvar-v1",
+            "reportedMipGap": 0.0,
+            "scipyVersion": "1.18.0",
+            "solver": "scipy.optimize.milp-highs",
+            "status": "global-linear-mean-cvar-surrogate-optimum"
+          }
+        },
+        {
+          "evaluationPolicyKey": "3-downside-balanced",
+          "horizonGameweeks": 3,
+          "optimizerPolicyKey": "downside-balanced",
+          "realisedOutcome": {
+            "totalPoints": 393,
+            "weekly": [
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 3,
+                "gameweek": 1,
+                "points": 59,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 17,
+                "gameweek": 2,
+                "points": 55,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 2,
+                "gameweek": 3,
+                "points": 53,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 13,
+                "gameweek": 4,
+                "points": 59,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 9,
+                "gameweek": 5,
+                "points": 55,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 2,
+                "gameweek": 6,
+                "points": 40,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 2,
+                "gameweek": 7,
+                "points": 32,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 2,
+                "gameweek": 8,
+                "points": 40,
+                "unreplacedStarterCount": 0
+              }
+            ]
+          },
+          "selection": {
+            "budgetTenths": 1000,
+            "gameweeks": [
+              {
+                "captainPlayerId": 184029,
+                "gameweek": 1,
+                "outfieldSubstitutePlayerIds": [
+                  165809,
+                  487838,
+                  218218
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  60689,
+                  154561,
+                  178301,
+                  184029,
+                  208706,
+                  222531,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 223094
+              },
+              {
+                "captainPlayerId": 223094,
+                "gameweek": 2,
+                "outfieldSubstitutePlayerIds": [
+                  222531,
+                  218218,
+                  487838
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  60689,
+                  165809,
+                  172649,
+                  178301,
+                  184029,
+                  208706,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 232413
+              },
+              {
+                "captainPlayerId": 184029,
+                "gameweek": 3,
+                "outfieldSubstitutePlayerIds": [
+                  165809,
+                  247348,
+                  218218
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  60689,
+                  154561,
+                  178301,
+                  184029,
+                  208706,
+                  222531,
+                  223094,
+                  232413,
+                  441164,
+                  477424,
+                  487838
+                ],
+                "viceCaptainPlayerId": 223094
+              },
+              {
+                "captainPlayerId": 223094,
+                "gameweek": 4,
+                "outfieldSubstitutePlayerIds": [
+                  222531,
+                  218218,
+                  487838
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  60689,
+                  165809,
+                  172649,
+                  178301,
+                  184029,
+                  208706,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 232413
+              },
+              {
+                "captainPlayerId": 223094,
+                "gameweek": 5,
+                "outfieldSubstitutePlayerIds": [
+                  222531,
+                  218218,
+                  487838
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  60689,
+                  165809,
+                  172649,
+                  178301,
+                  184029,
+                  208706,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 232413
+              },
+              {
+                "captainPlayerId": 184029,
+                "gameweek": 6,
+                "outfieldSubstitutePlayerIds": [
+                  165809,
+                  487838,
+                  218218
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  60689,
+                  154561,
+                  178301,
+                  184029,
+                  208706,
+                  222531,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 223094
+              },
+              {
+                "captainPlayerId": 223094,
+                "gameweek": 7,
+                "outfieldSubstitutePlayerIds": [
+                  222531,
+                  218218,
+                  487838
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  60689,
+                  154561,
+                  165809,
+                  178301,
+                  184029,
+                  208706,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 184029
+              },
+              {
+                "captainPlayerId": 223094,
+                "gameweek": 8,
+                "outfieldSubstitutePlayerIds": [
+                  165809,
+                  487838,
+                  218218
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  60689,
+                  154561,
+                  178301,
+                  184029,
+                  208706,
+                  222531,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 184029
+              }
+            ],
+            "playerIds": [
+              60689,
+              154561,
+              165809,
+              172649,
+              178301,
+              184029,
+              208706,
+              218218,
+              222531,
+              223094,
+              232413,
+              247348,
+              441164,
+              477424,
+              487838
+            ]
+          },
+          "solver": {
+            "binaryVariableCount": 4312,
+            "continuousVariableCount": 39,
+            "maximumNumericalMipGap": 1e-12,
+            "mipGap": 0.0,
+            "objectiveValue": 183.352632,
+            "optimizerVersion": "scipy-highs-multi-horizon-mean-cvar-v1",
+            "reportedMipGap": 0.0,
+            "scipyVersion": "1.18.0",
+            "solver": "scipy.optimize.milp-highs",
+            "status": "global-linear-mean-cvar-surrogate-optimum"
+          }
+        },
+        {
+          "evaluationPolicyKey": "6-expected-points",
+          "horizonGameweeks": 6,
+          "optimizerPolicyKey": "expected-points",
+          "realisedOutcome": {
+            "totalPoints": 392,
+            "weekly": [
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 3,
+                "gameweek": 1,
+                "points": 66,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 17,
+                "gameweek": 2,
+                "points": 56,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 2,
+                "gameweek": 3,
+                "points": 52,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 13,
+                "gameweek": 4,
+                "points": 57,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 9,
+                "gameweek": 5,
+                "points": 52,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 2,
+                "gameweek": 6,
+                "points": 43,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 2,
+                "gameweek": 7,
+                "points": 31,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 2,
+                "gameweek": 8,
+                "points": 35,
+                "unreplacedStarterCount": 0
+              }
+            ]
+          },
+          "selection": {
+            "budgetTenths": 1000,
+            "gameweeks": [
+              {
+                "captainPlayerId": 184029,
+                "gameweek": 1,
+                "outfieldSubstitutePlayerIds": [
+                  180135,
+                  218218,
+                  171771
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  154561,
+                  165809,
+                  178301,
+                  184029,
+                  208706,
+                  219847,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 223094
+              },
+              {
+                "captainPlayerId": 223094,
+                "gameweek": 2,
+                "outfieldSubstitutePlayerIds": [
+                  180135,
+                  218218,
+                  171771
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  165809,
+                  172649,
+                  178301,
+                  184029,
+                  208706,
+                  219847,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 232413
+              },
+              {
+                "captainPlayerId": 184029,
+                "gameweek": 3,
+                "outfieldSubstitutePlayerIds": [
+                  165809,
+                  218218,
+                  171771
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  154561,
+                  178301,
+                  180135,
+                  184029,
+                  208706,
+                  219847,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 223094
+              },
+              {
+                "captainPlayerId": 223094,
+                "gameweek": 4,
+                "outfieldSubstitutePlayerIds": [
+                  180135,
+                  218218,
+                  171771
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  165809,
+                  172649,
+                  178301,
+                  184029,
+                  208706,
+                  219847,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 232413
+              },
+              {
+                "captainPlayerId": 223094,
+                "gameweek": 5,
+                "outfieldSubstitutePlayerIds": [
+                  180135,
+                  218218,
+                  171771
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  165809,
+                  172649,
+                  178301,
+                  184029,
+                  208706,
+                  219847,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 232413
+              },
+              {
+                "captainPlayerId": 184029,
+                "gameweek": 6,
+                "outfieldSubstitutePlayerIds": [
+                  180135,
+                  218218,
+                  171771
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  154561,
+                  165809,
+                  178301,
+                  184029,
+                  208706,
+                  219847,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 223094
+              },
+              {
+                "captainPlayerId": 223094,
+                "gameweek": 7,
+                "outfieldSubstitutePlayerIds": [
+                  180135,
+                  218218,
+                  171771
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  154561,
+                  165809,
+                  178301,
+                  184029,
+                  208706,
+                  219847,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 184029
+              },
+              {
+                "captainPlayerId": 223094,
+                "gameweek": 8,
+                "outfieldSubstitutePlayerIds": [
+                  180135,
+                  218218,
+                  171771
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  154561,
+                  165809,
+                  178301,
+                  184029,
+                  208706,
+                  219847,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 184029
+              }
+            ],
+            "playerIds": [
+              154561,
+              165809,
+              171771,
+              172649,
+              178301,
+              180135,
+              184029,
+              208706,
+              218218,
+              219847,
+              223094,
+              232413,
+              247348,
+              441164,
+              477424
+            ]
+          },
+          "solver": {
+            "binaryVariableCount": 8008,
+            "continuousVariableCount": 0,
+            "maximumNumericalMipGap": 1e-12,
+            "mipGap": 0.0,
+            "objectiveValue": 331.373684,
+            "optimizerVersion": "scipy-highs-multi-horizon-mean-cvar-v1",
+            "reportedMipGap": 0.0,
+            "scipyVersion": "1.18.0",
+            "solver": "scipy.optimize.milp-highs",
+            "status": "global-linear-mean-cvar-surrogate-optimum"
+          }
+        },
+        {
+          "evaluationPolicyKey": "6-downside-balanced",
+          "horizonGameweeks": 6,
+          "optimizerPolicyKey": "downside-balanced",
+          "realisedOutcome": {
+            "totalPoints": 340,
+            "weekly": [
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 3,
+                "gameweek": 1,
+                "points": 59,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 2,
+                "gameweek": 2,
+                "points": 31,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 2,
+                "gameweek": 3,
+                "points": 50,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 2,
+                "gameweek": 4,
+                "points": 34,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 3,
+                "gameweek": 5,
+                "points": 38,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 11,
+                "gameweek": 6,
+                "points": 52,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 2,
+                "gameweek": 7,
+                "points": 31,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 8,
+                "gameweek": 8,
+                "points": 45,
+                "unreplacedStarterCount": 0
+              }
+            ]
+          },
+          "selection": {
+            "budgetTenths": 1000,
+            "gameweeks": [
+              {
+                "captainPlayerId": 184029,
+                "gameweek": 1,
+                "outfieldSubstitutePlayerIds": [
+                  165809,
+                  122798,
+                  218218
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  154561,
+                  178301,
+                  184029,
+                  208706,
+                  209244,
+                  219168,
+                  219847,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 178301
+              },
+              {
+                "captainPlayerId": 232413,
+                "gameweek": 2,
+                "outfieldSubstitutePlayerIds": [
+                  219168,
+                  247348,
+                  218218
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  122798,
+                  165809,
+                  172649,
+                  178301,
+                  184029,
+                  208706,
+                  209244,
+                  219847,
+                  232413,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 209244
+              },
+              {
+                "captainPlayerId": 184029,
+                "gameweek": 3,
+                "outfieldSubstitutePlayerIds": [
+                  165809,
+                  122798,
+                  218218
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  154561,
+                  178301,
+                  184029,
+                  208706,
+                  209244,
+                  219168,
+                  219847,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 178301
+              },
+              {
+                "captainPlayerId": 232413,
+                "gameweek": 4,
+                "outfieldSubstitutePlayerIds": [
+                  219168,
+                  247348,
+                  218218
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  122798,
+                  165809,
+                  172649,
+                  178301,
+                  184029,
+                  208706,
+                  209244,
+                  219847,
+                  232413,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 209244
+              },
+              {
+                "captainPlayerId": 232413,
+                "gameweek": 5,
+                "outfieldSubstitutePlayerIds": [
+                  219168,
+                  247348,
+                  218218
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  122798,
+                  165809,
+                  172649,
+                  178301,
+                  184029,
+                  208706,
+                  209244,
+                  219847,
+                  232413,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 209244
+              },
+              {
+                "captainPlayerId": 184029,
+                "gameweek": 6,
+                "outfieldSubstitutePlayerIds": [
+                  165809,
+                  122798,
+                  218218
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  154561,
+                  178301,
+                  184029,
+                  208706,
+                  209244,
+                  219168,
+                  219847,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 178301
+              },
+              {
+                "captainPlayerId": 184029,
+                "gameweek": 7,
+                "outfieldSubstitutePlayerIds": [
+                  219168,
+                  122798,
+                  218218
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  154561,
+                  165809,
+                  178301,
+                  184029,
+                  208706,
+                  209244,
+                  219847,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 232413
+              },
+              {
+                "captainPlayerId": 184029,
+                "gameweek": 8,
+                "outfieldSubstitutePlayerIds": [
+                  165809,
+                  247348,
+                  218218
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  122798,
+                  154561,
+                  178301,
+                  184029,
+                  208706,
+                  209244,
+                  219168,
+                  219847,
+                  232413,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 178301
+              }
+            ],
+            "playerIds": [
+              122798,
+              154561,
+              165809,
+              172649,
+              178301,
+              184029,
+              208706,
+              209244,
+              218218,
+              219168,
+              219847,
+              232413,
+              247348,
+              441164,
+              477424
+            ]
+          },
+          "solver": {
+            "binaryVariableCount": 8008,
+            "continuousVariableCount": 39,
+            "maximumNumericalMipGap": 1e-12,
+            "mipGap": 0.0,
+            "objectiveValue": 372.358105,
+            "optimizerVersion": "scipy-highs-multi-horizon-mean-cvar-v1",
+            "reportedMipGap": 0.0,
+            "scipyVersion": "1.18.0",
+            "solver": "scipy.optimize.milp-highs",
+            "status": "global-linear-mean-cvar-surrogate-optimum"
+          }
+        },
+        {
+          "evaluationPolicyKey": "8-expected-points",
+          "horizonGameweeks": 8,
+          "optimizerPolicyKey": "expected-points",
+          "realisedOutcome": {
+            "totalPoints": 398,
+            "weekly": [
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 3,
+                "gameweek": 1,
+                "points": 66,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 17,
+                "gameweek": 2,
+                "points": 56,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 2,
+                "gameweek": 3,
+                "points": 58,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 13,
+                "gameweek": 4,
+                "points": 57,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 9,
+                "gameweek": 5,
+                "points": 52,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 2,
+                "gameweek": 6,
+                "points": 43,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 2,
+                "gameweek": 7,
+                "points": 31,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 2,
+                "gameweek": 8,
+                "points": 35,
+                "unreplacedStarterCount": 0
+              }
+            ]
+          },
+          "selection": {
+            "budgetTenths": 1000,
+            "gameweeks": [
+              {
+                "captainPlayerId": 184029,
+                "gameweek": 1,
+                "outfieldSubstitutePlayerIds": [
+                  180135,
+                  218218,
+                  171771
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  154561,
+                  165809,
+                  178301,
+                  184029,
+                  208706,
+                  219847,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 223094
+              },
+              {
+                "captainPlayerId": 223094,
+                "gameweek": 2,
+                "outfieldSubstitutePlayerIds": [
+                  180135,
+                  218218,
+                  171771
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  165809,
+                  172649,
+                  178301,
+                  184029,
+                  208706,
+                  219847,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 232413
+              },
+              {
+                "captainPlayerId": 184029,
+                "gameweek": 3,
+                "outfieldSubstitutePlayerIds": [
+                  180135,
+                  218218,
+                  171771
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  154561,
+                  165809,
+                  178301,
+                  184029,
+                  208706,
+                  219847,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 223094
+              },
+              {
+                "captainPlayerId": 223094,
+                "gameweek": 4,
+                "outfieldSubstitutePlayerIds": [
+                  180135,
+                  218218,
+                  171771
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  165809,
+                  172649,
+                  178301,
+                  184029,
+                  208706,
+                  219847,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 232413
+              },
+              {
+                "captainPlayerId": 223094,
+                "gameweek": 5,
+                "outfieldSubstitutePlayerIds": [
+                  180135,
+                  218218,
+                  171771
+                ],
+                "replacementGoalkeeperPlayerId": 154561,
+                "startingPlayerIds": [
+                  165809,
+                  172649,
+                  178301,
+                  184029,
+                  208706,
+                  219847,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 232413
+              },
+              {
+                "captainPlayerId": 184029,
+                "gameweek": 6,
+                "outfieldSubstitutePlayerIds": [
+                  165809,
+                  218218,
+                  171771
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  154561,
+                  178301,
+                  180135,
+                  184029,
+                  208706,
+                  219847,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 223094
+              },
+              {
+                "captainPlayerId": 223094,
+                "gameweek": 7,
+                "outfieldSubstitutePlayerIds": [
+                  180135,
+                  218218,
+                  171771
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  154561,
+                  165809,
+                  178301,
+                  184029,
+                  208706,
+                  219847,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 184029
+              },
+              {
+                "captainPlayerId": 223094,
+                "gameweek": 8,
+                "outfieldSubstitutePlayerIds": [
+                  165809,
+                  218218,
+                  171771
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  154561,
+                  178301,
+                  180135,
+                  184029,
+                  208706,
+                  219847,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 184029
+              }
+            ],
+            "playerIds": [
+              154561,
+              165809,
+              171771,
+              172649,
+              178301,
+              180135,
+              184029,
+              208706,
+              218218,
+              219847,
+              223094,
+              232413,
+              247348,
+              441164,
+              477424
+            ]
+          },
+          "solver": {
+            "binaryVariableCount": 10472,
+            "continuousVariableCount": 0,
+            "maximumNumericalMipGap": 1e-12,
+            "mipGap": 0.0,
+            "objectiveValue": 440.454737,
+            "optimizerVersion": "scipy-highs-multi-horizon-mean-cvar-v1",
+            "reportedMipGap": 0.0,
+            "scipyVersion": "1.18.0",
+            "solver": "scipy.optimize.milp-highs",
+            "status": "global-linear-mean-cvar-surrogate-optimum"
+          }
+        },
+        {
+          "evaluationPolicyKey": "8-downside-balanced",
+          "horizonGameweeks": 8,
+          "optimizerPolicyKey": "downside-balanced",
+          "realisedOutcome": {
+            "totalPoints": 390,
+            "weekly": [
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 3,
+                "gameweek": 1,
+                "points": 61,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 17,
+                "gameweek": 2,
+                "points": 56,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 2,
+                "gameweek": 3,
+                "points": 53,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 13,
+                "gameweek": 4,
+                "points": 57,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 9,
+                "gameweek": 5,
+                "points": 45,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 2,
+                "gameweek": 6,
+                "points": 47,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 2,
+                "gameweek": 7,
+                "points": 32,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 2,
+                "gameweek": 8,
+                "points": 39,
+                "unreplacedStarterCount": 0
+              }
+            ]
+          },
+          "selection": {
+            "budgetTenths": 1000,
+            "gameweeks": [
+              {
+                "captainPlayerId": 184029,
+                "gameweek": 1,
+                "outfieldSubstitutePlayerIds": [
+                  180135,
+                  218218,
+                  441428
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  80201,
+                  165809,
+                  178301,
+                  184029,
+                  208706,
+                  219847,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 223094
+              },
+              {
+                "captainPlayerId": 223094,
+                "gameweek": 2,
+                "outfieldSubstitutePlayerIds": [
+                  180135,
+                  441428,
+                  218218
+                ],
+                "replacementGoalkeeperPlayerId": 80201,
+                "startingPlayerIds": [
+                  165809,
+                  172649,
+                  178301,
+                  184029,
+                  208706,
+                  219847,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 232413
+              },
+              {
+                "captainPlayerId": 184029,
+                "gameweek": 3,
+                "outfieldSubstitutePlayerIds": [
+                  165809,
+                  218218,
+                  441428
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  80201,
+                  178301,
+                  180135,
+                  184029,
+                  208706,
+                  219847,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 223094
+              },
+              {
+                "captainPlayerId": 223094,
+                "gameweek": 4,
+                "outfieldSubstitutePlayerIds": [
+                  180135,
+                  441428,
+                  218218
+                ],
+                "replacementGoalkeeperPlayerId": 80201,
+                "startingPlayerIds": [
+                  165809,
+                  172649,
+                  178301,
+                  184029,
+                  208706,
+                  219847,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 232413
+              },
+              {
+                "captainPlayerId": 223094,
+                "gameweek": 5,
+                "outfieldSubstitutePlayerIds": [
+                  180135,
+                  247348,
+                  218218
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  80201,
+                  165809,
+                  178301,
+                  184029,
+                  208706,
+                  219847,
+                  223094,
+                  232413,
+                  441164,
+                  441428,
+                  477424
+                ],
+                "viceCaptainPlayerId": 232413
+              },
+              {
+                "captainPlayerId": 184029,
+                "gameweek": 6,
+                "outfieldSubstitutePlayerIds": [
+                  165809,
+                  218218,
+                  441428
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  80201,
+                  178301,
+                  180135,
+                  184029,
+                  208706,
+                  219847,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 223094
+              },
+              {
+                "captainPlayerId": 223094,
+                "gameweek": 7,
+                "outfieldSubstitutePlayerIds": [
+                  180135,
+                  218218,
+                  441428
+                ],
+                "replacementGoalkeeperPlayerId": 80201,
+                "startingPlayerIds": [
+                  165809,
+                  172649,
+                  178301,
+                  184029,
+                  208706,
+                  219847,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 184029
+              },
+              {
+                "captainPlayerId": 223094,
+                "gameweek": 8,
+                "outfieldSubstitutePlayerIds": [
+                  165809,
+                  441428,
+                  218218
+                ],
+                "replacementGoalkeeperPlayerId": 172649,
+                "startingPlayerIds": [
+                  80201,
+                  178301,
+                  180135,
+                  184029,
+                  208706,
+                  219847,
+                  223094,
+                  232413,
+                  247348,
+                  441164,
+                  477424
+                ],
+                "viceCaptainPlayerId": 184029
+              }
+            ],
+            "playerIds": [
+              80201,
+              165809,
+              172649,
+              178301,
+              180135,
+              184029,
+              208706,
+              218218,
+              219847,
+              223094,
+              232413,
+              247348,
+              441164,
+              441428,
+              477424
+            ]
+          },
+          "solver": {
+            "binaryVariableCount": 10472,
+            "continuousVariableCount": 39,
+            "maximumNumericalMipGap": 1e-12,
+            "mipGap": 0.0,
+            "objectiveValue": 495.836684,
+            "optimizerVersion": "scipy-highs-multi-horizon-mean-cvar-v1",
+            "reportedMipGap": 0.0,
+            "scipyVersion": "1.18.0",
+            "solver": "scipy.optimize.milp-highs",
+            "status": "global-linear-mean-cvar-surrogate-optimum"
+          }
+        }
+      ],
+      "rawGameweeksSha256": "5bbbcba6353b4c72ad273adcc8e3aa451946a826564679788f45b1cb3325b84e",
+      "scenarioContentSha256": "d05dce32eb887945285010e8ed14cc7679b6d17bbcf66cf847797129a0702248",
+      "scenarioCount": 38,
+      "targetCaptureId": 2,
+      "targetSeasonCode": "2024-25"
+    },
+    {
+      "playerCount": 690,
+      "policies": [
+        {
+          "evaluationPolicyKey": "3-expected-points",
+          "horizonGameweeks": 3,
+          "optimizerPolicyKey": "expected-points",
+          "realisedOutcome": {
+            "totalPoints": 378,
+            "weekly": [
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 8,
+                "gameweek": 1,
+                "points": 59,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 5,
+                "gameweek": 2,
+                "points": 37,
+                "unreplacedStarterCount": 2
+              },
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 3,
+                "gameweek": 3,
+                "points": 52,
+                "unreplacedStarterCount": 2
+              },
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 9,
+                "gameweek": 4,
+                "points": 47,
+                "unreplacedStarterCount": 3
+              },
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 5,
+                "gameweek": 5,
+                "points": 41,
+                "unreplacedStarterCount": 3
+              },
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 2,
+                "gameweek": 6,
+                "points": 40,
+                "unreplacedStarterCount": 2
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 2,
+                "gameweek": 7,
+                "points": 54,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 2,
+                "gameweek": 8,
+                "points": 48,
+                "unreplacedStarterCount": 0
+              }
+            ]
+          },
+          "selection": {
+            "budgetTenths": 1000,
+            "gameweeks": [
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 1,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 2,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 3,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 4,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 5,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 6,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 7,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 8,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              }
+            ],
+            "playerIds": [
+              78916,
+              118748,
+              149065,
+              154561,
+              178186,
+              178301,
+              180804,
+              198869,
+              214590,
+              216646,
+              232185,
+              232413,
+              247348,
+              437742,
+              446008
+            ]
+          },
+          "solver": {
+            "binaryVariableCount": 4830,
+            "continuousVariableCount": 0,
+            "maximumNumericalMipGap": 1e-12,
+            "mipGap": 0.0,
+            "objectiveValue": 160.066316,
+            "optimizerVersion": "scipy-highs-multi-horizon-mean-cvar-v1",
+            "reportedMipGap": 0.0,
+            "scipyVersion": "1.18.0",
+            "solver": "scipy.optimize.milp-highs",
+            "status": "global-linear-mean-cvar-surrogate-optimum"
+          }
+        },
+        {
+          "evaluationPolicyKey": "3-downside-balanced",
+          "horizonGameweeks": 3,
+          "optimizerPolicyKey": "downside-balanced",
+          "realisedOutcome": {
+            "totalPoints": 384,
+            "weekly": [
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 8,
+                "gameweek": 1,
+                "points": 58,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 2,
+                "gameweek": 2,
+                "points": 32,
+                "unreplacedStarterCount": 2
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 3,
+                "gameweek": 3,
+                "points": 56,
+                "unreplacedStarterCount": 1
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 9,
+                "gameweek": 4,
+                "points": 55,
+                "unreplacedStarterCount": 2
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 5,
+                "gameweek": 5,
+                "points": 47,
+                "unreplacedStarterCount": 2
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 2,
+                "gameweek": 6,
+                "points": 42,
+                "unreplacedStarterCount": 1
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 2,
+                "gameweek": 7,
+                "points": 56,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 2,
+                "gameweek": 8,
+                "points": 38,
+                "unreplacedStarterCount": 0
+              }
+            ]
+          },
+          "selection": {
+            "budgetTenths": 1000,
+            "gameweeks": [
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 1,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  199798,
+                  437742
+                ],
+                "replacementGoalkeeperPlayerId": 109745,
+                "startingPlayerIds": [
+                  78916,
+                  98747,
+                  118748,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 446008,
+                "gameweek": 2,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  199798,
+                  437742
+                ],
+                "replacementGoalkeeperPlayerId": 109745,
+                "startingPlayerIds": [
+                  78916,
+                  98747,
+                  118748,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 118748
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 3,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  199798,
+                  437742
+                ],
+                "replacementGoalkeeperPlayerId": 109745,
+                "startingPlayerIds": [
+                  78916,
+                  98747,
+                  118748,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 4,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  199798,
+                  437742
+                ],
+                "replacementGoalkeeperPlayerId": 109745,
+                "startingPlayerIds": [
+                  78916,
+                  98747,
+                  118748,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 5,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  199798,
+                  437742
+                ],
+                "replacementGoalkeeperPlayerId": 109745,
+                "startingPlayerIds": [
+                  78916,
+                  98747,
+                  118748,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 6,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  199798,
+                  437742
+                ],
+                "replacementGoalkeeperPlayerId": 109745,
+                "startingPlayerIds": [
+                  78916,
+                  98747,
+                  118748,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 7,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  199798,
+                  437742
+                ],
+                "replacementGoalkeeperPlayerId": 109745,
+                "startingPlayerIds": [
+                  78916,
+                  98747,
+                  118748,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 8,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  199798,
+                  437742
+                ],
+                "replacementGoalkeeperPlayerId": 109745,
+                "startingPlayerIds": [
+                  78916,
+                  98747,
+                  118748,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              }
+            ],
+            "playerIds": [
+              78916,
+              98747,
+              109745,
+              118748,
+              178186,
+              178301,
+              198869,
+              199798,
+              214590,
+              216646,
+              232185,
+              232413,
+              247348,
+              437742,
+              446008
+            ]
+          },
+          "solver": {
+            "binaryVariableCount": 4830,
+            "continuousVariableCount": 39,
+            "maximumNumericalMipGap": 1e-12,
+            "mipGap": 0.0,
+            "objectiveValue": 178.305368,
+            "optimizerVersion": "scipy-highs-multi-horizon-mean-cvar-v1",
+            "reportedMipGap": 0.0,
+            "scipyVersion": "1.18.0",
+            "solver": "scipy.optimize.milp-highs",
+            "status": "global-linear-mean-cvar-surrogate-optimum"
+          }
+        },
+        {
+          "evaluationPolicyKey": "6-expected-points",
+          "horizonGameweeks": 6,
+          "optimizerPolicyKey": "expected-points",
+          "realisedOutcome": {
+            "totalPoints": 378,
+            "weekly": [
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 8,
+                "gameweek": 1,
+                "points": 59,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 5,
+                "gameweek": 2,
+                "points": 37,
+                "unreplacedStarterCount": 2
+              },
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 3,
+                "gameweek": 3,
+                "points": 52,
+                "unreplacedStarterCount": 2
+              },
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 9,
+                "gameweek": 4,
+                "points": 47,
+                "unreplacedStarterCount": 3
+              },
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 5,
+                "gameweek": 5,
+                "points": 41,
+                "unreplacedStarterCount": 3
+              },
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 2,
+                "gameweek": 6,
+                "points": 40,
+                "unreplacedStarterCount": 2
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 2,
+                "gameweek": 7,
+                "points": 54,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 2,
+                "gameweek": 8,
+                "points": 48,
+                "unreplacedStarterCount": 0
+              }
+            ]
+          },
+          "selection": {
+            "budgetTenths": 1000,
+            "gameweeks": [
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 1,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 2,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 3,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 4,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 5,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 6,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 7,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 8,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              }
+            ],
+            "playerIds": [
+              78916,
+              118748,
+              149065,
+              154561,
+              178186,
+              178301,
+              180804,
+              198869,
+              214590,
+              216646,
+              232185,
+              232413,
+              247348,
+              437742,
+              446008
+            ]
+          },
+          "solver": {
+            "binaryVariableCount": 8970,
+            "continuousVariableCount": 0,
+            "maximumNumericalMipGap": 1e-12,
+            "mipGap": 0.0,
+            "objectiveValue": 318.290526,
+            "optimizerVersion": "scipy-highs-multi-horizon-mean-cvar-v1",
+            "reportedMipGap": 0.0,
+            "scipyVersion": "1.18.0",
+            "solver": "scipy.optimize.milp-highs",
+            "status": "global-linear-mean-cvar-surrogate-optimum"
+          }
+        },
+        {
+          "evaluationPolicyKey": "6-downside-balanced",
+          "horizonGameweeks": 6,
+          "optimizerPolicyKey": "downside-balanced",
+          "realisedOutcome": {
+            "totalPoints": 410,
+            "weekly": [
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 8,
+                "gameweek": 1,
+                "points": 65,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 5,
+                "gameweek": 2,
+                "points": 47,
+                "unreplacedStarterCount": 2
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 3,
+                "gameweek": 3,
+                "points": 53,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 6,
+                "gameweek": 4,
+                "points": 53,
+                "unreplacedStarterCount": 1
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 5,
+                "gameweek": 5,
+                "points": 42,
+                "unreplacedStarterCount": 1
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 2,
+                "gameweek": 6,
+                "points": 36,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 2,
+                "gameweek": 7,
+                "points": 60,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 2,
+                "gameweek": 8,
+                "points": 54,
+                "unreplacedStarterCount": 0
+              }
+            ]
+          },
+          "selection": {
+            "budgetTenths": 1000,
+            "gameweeks": [
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 1,
+                "outfieldSubstitutePlayerIds": [
+                  435973,
+                  199798,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 109745,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  243298,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 2,
+                "outfieldSubstitutePlayerIds": [
+                  435973,
+                  199798,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 109745,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  243298,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 3,
+                "outfieldSubstitutePlayerIds": [
+                  435973,
+                  199798,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 109745,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  243298,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 232413,
+                "gameweek": 4,
+                "outfieldSubstitutePlayerIds": [
+                  435973,
+                  199798,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 109745,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  243298,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 118748
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 5,
+                "outfieldSubstitutePlayerIds": [
+                  435973,
+                  199798,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 109745,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  243298,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 6,
+                "outfieldSubstitutePlayerIds": [
+                  435973,
+                  199798,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 109745,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  243298,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 7,
+                "outfieldSubstitutePlayerIds": [
+                  435973,
+                  199798,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 109745,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  243298,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 8,
+                "outfieldSubstitutePlayerIds": [
+                  435973,
+                  199798,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 109745,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  243298,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              }
+            ],
+            "playerIds": [
+              78916,
+              109745,
+              118748,
+              154561,
+              178301,
+              180804,
+              198869,
+              199798,
+              216646,
+              232185,
+              232413,
+              243298,
+              247348,
+              435973,
+              446008
+            ]
+          },
+          "solver": {
+            "binaryVariableCount": 8970,
+            "continuousVariableCount": 39,
+            "maximumNumericalMipGap": 1e-12,
+            "mipGap": 0.0,
+            "objectiveValue": 357.893526,
+            "optimizerVersion": "scipy-highs-multi-horizon-mean-cvar-v1",
+            "reportedMipGap": 0.0,
+            "scipyVersion": "1.18.0",
+            "solver": "scipy.optimize.milp-highs",
+            "status": "global-linear-mean-cvar-surrogate-optimum"
+          }
+        },
+        {
+          "evaluationPolicyKey": "8-expected-points",
+          "horizonGameweeks": 8,
+          "optimizerPolicyKey": "expected-points",
+          "realisedOutcome": {
+            "totalPoints": 378,
+            "weekly": [
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 8,
+                "gameweek": 1,
+                "points": 59,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 5,
+                "gameweek": 2,
+                "points": 37,
+                "unreplacedStarterCount": 2
+              },
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 3,
+                "gameweek": 3,
+                "points": 52,
+                "unreplacedStarterCount": 2
+              },
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 9,
+                "gameweek": 4,
+                "points": 47,
+                "unreplacedStarterCount": 3
+              },
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 5,
+                "gameweek": 5,
+                "points": 41,
+                "unreplacedStarterCount": 3
+              },
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 2,
+                "gameweek": 6,
+                "points": 40,
+                "unreplacedStarterCount": 2
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 2,
+                "gameweek": 7,
+                "points": 54,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 2,
+                "gameweek": 8,
+                "points": 48,
+                "unreplacedStarterCount": 0
+              }
+            ]
+          },
+          "selection": {
+            "budgetTenths": 1000,
+            "gameweeks": [
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 1,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 2,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 3,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 4,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 5,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 6,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 7,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 8,
+                "outfieldSubstitutePlayerIds": [
+                  214590,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              }
+            ],
+            "playerIds": [
+              78916,
+              118748,
+              149065,
+              154561,
+              178186,
+              178301,
+              180804,
+              198869,
+              214590,
+              216646,
+              232185,
+              232413,
+              247348,
+              437742,
+              446008
+            ]
+          },
+          "solver": {
+            "binaryVariableCount": 11730,
+            "continuousVariableCount": 0,
+            "maximumNumericalMipGap": 1e-12,
+            "mipGap": 0.0,
+            "objectiveValue": 424.387368,
+            "optimizerVersion": "scipy-highs-multi-horizon-mean-cvar-v1",
+            "reportedMipGap": 0.0,
+            "scipyVersion": "1.18.0",
+            "solver": "scipy.optimize.milp-highs",
+            "status": "global-linear-mean-cvar-surrogate-optimum"
+          }
+        },
+        {
+          "evaluationPolicyKey": "8-downside-balanced",
+          "horizonGameweeks": 8,
+          "optimizerPolicyKey": "downside-balanced",
+          "realisedOutcome": {
+            "totalPoints": 383,
+            "weekly": [
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 8,
+                "gameweek": 1,
+                "points": 61,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 0,
+                "captainBonusPoints": 2,
+                "gameweek": 2,
+                "points": 34,
+                "unreplacedStarterCount": 3
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 3,
+                "gameweek": 3,
+                "points": 53,
+                "unreplacedStarterCount": 1
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 2,
+                "gameweek": 4,
+                "points": 46,
+                "unreplacedStarterCount": 2
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 5,
+                "gameweek": 5,
+                "points": 43,
+                "unreplacedStarterCount": 2
+              },
+              {
+                "activatedSubstituteCount": 1,
+                "captainBonusPoints": 2,
+                "gameweek": 6,
+                "points": 42,
+                "unreplacedStarterCount": 1
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 2,
+                "gameweek": 7,
+                "points": 55,
+                "unreplacedStarterCount": 0
+              },
+              {
+                "activatedSubstituteCount": 2,
+                "captainBonusPoints": 2,
+                "gameweek": 8,
+                "points": 49,
+                "unreplacedStarterCount": 0
+              }
+            ]
+          },
+          "selection": {
+            "budgetTenths": 1000,
+            "gameweeks": [
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 1,
+                "outfieldSubstitutePlayerIds": [
+                  199798,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 446008,
+                "gameweek": 2,
+                "outfieldSubstitutePlayerIds": [
+                  199798,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 118748
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 3,
+                "outfieldSubstitutePlayerIds": [
+                  199798,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 446008,
+                "gameweek": 4,
+                "outfieldSubstitutePlayerIds": [
+                  199798,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 118748
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 5,
+                "outfieldSubstitutePlayerIds": [
+                  199798,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 216646,
+                "gameweek": 6,
+                "outfieldSubstitutePlayerIds": [
+                  199798,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 118748
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 7,
+                "outfieldSubstitutePlayerIds": [
+                  199798,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              },
+              {
+                "captainPlayerId": 118748,
+                "gameweek": 8,
+                "outfieldSubstitutePlayerIds": [
+                  199798,
+                  437742,
+                  180804
+                ],
+                "replacementGoalkeeperPlayerId": 149065,
+                "startingPlayerIds": [
+                  78916,
+                  118748,
+                  154561,
+                  178186,
+                  178301,
+                  198869,
+                  216646,
+                  232185,
+                  232413,
+                  247348,
+                  446008
+                ],
+                "viceCaptainPlayerId": 216646
+              }
+            ],
+            "playerIds": [
+              78916,
+              118748,
+              149065,
+              154561,
+              178186,
+              178301,
+              180804,
+              198869,
+              199798,
+              216646,
+              232185,
+              232413,
+              247348,
+              437742,
+              446008
+            ]
+          },
+          "solver": {
+            "binaryVariableCount": 11730,
+            "continuousVariableCount": 39,
+            "maximumNumericalMipGap": 1e-12,
+            "mipGap": 0.0,
+            "objectiveValue": 479.380421,
+            "optimizerVersion": "scipy-highs-multi-horizon-mean-cvar-v1",
+            "reportedMipGap": 0.0,
+            "scipyVersion": "1.18.0",
+            "solver": "scipy.optimize.milp-highs",
+            "status": "global-linear-mean-cvar-surrogate-optimum"
+          }
+        }
+      ],
+      "rawGameweeksSha256": "0d09f1f1cb1b5520ec8e2f25238aa652efe2a263d8ca7cb2b6538b27bf86727d",
+      "scenarioContentSha256": "3263270b4a7919e26479a2b56e899e9eefc66381437f423a5f6ac6bda74806e8",
+      "scenarioCount": 38,
+      "targetCaptureId": 1,
+      "targetSeasonCode": "2025-26"
+    }
+  ]
+}

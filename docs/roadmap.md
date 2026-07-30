@@ -1071,9 +1071,16 @@ NLL gain is nevertheless only 0.53%, below the fixed 1% materiality gate.
 Reject it without reconstructing opening points; preserve it only for
 prospective evidence. The active initial-squad slice is now the registered
 historical 3/6/8-Gameweek decision-horizon comparison on the retained
-distributions, with exact global constraints and eight-Gameweek FPL outcome
-scoring. Lineup sources remain participation evidence, not an arbitrary points
-adjustment.
+distributions. That solve is now complete: three-Gameweek expected points leads
+the retrospective mean by 5.33 points but wins only one target, so it fails the
+original stability gate. Three-Gameweek downside-balanced is stable at +2.33
+mean points, two wins and no regression, but it is not the ranked leader and
+the preregistered rule does not search passing runners-up after its leader
+fails. Preserve the six-Gameweek expected-points policy without post-hoc rule
+changes. The active current-squad slice is exact optimality and robustness
+around the selected six-week squad under near-boundary exclusions, availability
+evidence and bounded input perturbations. Lineup sources remain participation
+evidence, not an arbitrary points adjustment.
 Do not add another standalone governance, universal contract, infrastructure
 or AI-orchestrator project ahead of these slices.
 
