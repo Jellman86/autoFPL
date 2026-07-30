@@ -1,0 +1,234 @@
+{
+  "acceptanceGate": {
+    "allRegisteredSeasonsRequired": true,
+    "minimumExactReconstructionFraction": 0.999,
+    "passed": true
+  },
+  "aggregate": {
+    "exactReconstructionCount": 113260,
+    "exactReconstructionFraction": 1.0,
+    "mae": 0.0,
+    "rmse": 0.0,
+    "rowCount": 113260
+  },
+  "artifactType": "historical-scoring-component-reconstruction-audit",
+  "auditorVersion": "historical-scoring-component-reconstruction-audit-v1",
+  "dataIdentitySha256": "00fc49d961f07e4d908d5d25f05b5d369105782e95f1f74b09281c534ebf5311",
+  "decision": "retain-scoring-reconstruction-as-event-model-target",
+  "influencesAdvice": false,
+  "isPromoted": false,
+  "limitations": [
+    "This is a deterministic outcome reconstruction audit, not a predictive model and not evidence that any event component can yet be forecast accurately.",
+    "Final archived bonus and assist awards are treated as observed scoring components; future models must predict their uncertainty without using post-kickoff information.",
+    "Season-specific rule changes are explicit. A future-season forecast must bind to the rules applicable at its decision cutoff instead of silently inheriting this audit."
+  ],
+  "registeredSeasonCodes": [
+    "2022-23",
+    "2023-24",
+    "2024-25",
+    "2025-26"
+  ],
+  "runIdentitySha256": "f3bd2e7057039c3cd7d34b76af926328d9c30dd75cf43f63dacb138695d3b663",
+  "schemaVersion": "1.0",
+  "scoringRules": {
+    "appearance": {
+      "oneToFiftyNineMinutes": 1,
+      "sixtyOrMoreMinutes": 2
+    },
+    "assistPoints": 3,
+    "bonusPoints": "archived-final-fixture-value",
+    "cleanSheetPointsByPosition": {
+      "defender": 4,
+      "forward": 0,
+      "goalkeeper": 4,
+      "midfielder": 1
+    },
+    "defensiveContributionFrom2025-26": {
+      "capPerFixture": 2,
+      "defenderThreshold": 10,
+      "midfielderAndForwardThreshold": 12,
+      "points": 2
+    },
+    "goalConcededDeduction": {
+      "pointsPerTwoGoals": -1,
+      "positions": [
+        "goalkeeper",
+        "defender"
+      ]
+    },
+    "goalPointsByPosition": {
+      "defender": 6,
+      "forward": 4,
+      "goalkeeperBefore2024-25": 6,
+      "goalkeeperFrom2024-25": 10,
+      "midfielder": 5
+    },
+    "ownGoalPoints": -2,
+    "penaltyMissPoints": -2,
+    "penaltySavePoints": 5,
+    "redCardPoints": -3,
+    "savePoints": {
+      "pointsPerThreeSaves": 1
+    },
+    "yellowCardPoints": -1
+  },
+  "seasonAudits": [
+    {
+      "absoluteErrorPoints": 0,
+      "componentPointTotals": {
+        "appearance": 19187,
+        "assists": 2781,
+        "bonus": 2437,
+        "cleanSheets": 5215,
+        "defensiveContributions": 0,
+        "goals": 4957,
+        "goalsConceded": -1832,
+        "ownGoals": -92,
+        "penaltyMisses": -50,
+        "penaltySaves": 85,
+        "redCards": -90,
+        "saves": 495,
+        "yellowCards": -1369
+      },
+      "exactDuplicateRawRowCount": 0,
+      "exactReconstructionCount": 26505,
+      "exactReconstructionFraction": 1.0,
+      "gameweeksSha256": "b78a6d0456141f9033c32fc4122931baae780ac4a4938683451b1fce7a4fdd15",
+      "mae": 0.0,
+      "passed": true,
+      "playersSha256": "a874c12817bbf4d454e60a5765629742b528d4ad0c2f39f56e4fc89640605f7f",
+      "positionRowCounts": {
+        "defender": 9183,
+        "forward": 3113,
+        "goalkeeper": 2791,
+        "midfielder": 11418
+      },
+      "residualCounts": {
+        "0": 26505
+      },
+      "rmse": 0.0,
+      "rowCount": 26505,
+      "seasonCode": "2022-23",
+      "sourceRevision": "f9ed3e8839b0f970e0d5d4a83c5628f6eaee755a",
+      "squaredErrorPoints": 0
+    },
+    {
+      "absoluteErrorPoints": 0,
+      "componentPointTotals": {
+        "appearance": 19236,
+        "assists": 3213,
+        "bonus": 2432,
+        "cleanSheets": 4098,
+        "defensiveContributions": 0,
+        "goals": 5769,
+        "goalsConceded": -2201,
+        "ownGoals": -100,
+        "penaltyMisses": -22,
+        "penaltySaves": 40,
+        "redCards": -174,
+        "saves": 574,
+        "yellowCards": -1594
+      },
+      "exactDuplicateRawRowCount": 0,
+      "exactReconstructionCount": 29725,
+      "exactReconstructionFraction": 1.0,
+      "gameweeksSha256": "e9c09c8856f1c86b4f920f46ddd5033af83409439dfda53be925df2a3e7c8a9e",
+      "mae": 0.0,
+      "passed": true,
+      "playersSha256": "43d8cf5efb3d901f2499558c40b392b7f0ee22afe28030f36266ad29024c63d9",
+      "positionRowCounts": {
+        "defender": 9611,
+        "forward": 3854,
+        "goalkeeper": 3413,
+        "midfielder": 12847
+      },
+      "residualCounts": {
+        "0": 29725
+      },
+      "rmse": 0.0,
+      "rowCount": 29725,
+      "seasonCode": "2023-24",
+      "sourceRevision": "f9ed3e8839b0f970e0d5d4a83c5628f6eaee755a",
+      "squaredErrorPoints": 0
+    },
+    {
+      "absoluteErrorPoints": 0,
+      "componentPointTotals": {
+        "appearance": 19386,
+        "assists": 2934,
+        "bonus": 2401,
+        "cleanSheets": 4484,
+        "defensiveContributions": 0,
+        "goals": 5201,
+        "goalsConceded": -1901,
+        "ownGoals": -68,
+        "penaltyMisses": -28,
+        "penaltySaves": 70,
+        "redCards": -156,
+        "saves": 514,
+        "yellowCards": -1547
+      },
+      "exactDuplicateRawRowCount": 0,
+      "exactReconstructionCount": 27283,
+      "exactReconstructionFraction": 1.0,
+      "gameweeksSha256": "5bbbcba6353b4c72ad273adcc8e3aa451946a826564679788f45b1cb3325b84e",
+      "mae": 0.0,
+      "passed": true,
+      "playersSha256": "75686051b265cbe7755ac71213ecaad21b26ee1cc46a8bafbba19c39ce894b05",
+      "positionRowCounts": {
+        "defender": 9146,
+        "forward": 3018,
+        "goalkeeper": 2869,
+        "midfielder": 12250
+      },
+      "residualCounts": {
+        "0": 27283
+      },
+      "rmse": 0.0,
+      "rowCount": 27283,
+      "seasonCode": "2024-25",
+      "sourceRevision": "f9ed3e8839b0f970e0d5d4a83c5628f6eaee755a",
+      "squaredErrorPoints": 0
+    },
+    {
+      "absoluteErrorPoints": 0,
+      "componentPointTotals": {
+        "appearance": 19305,
+        "assists": 2826,
+        "bonus": 2415,
+        "cleanSheets": 5050,
+        "defensiveContributions": 2834,
+        "goals": 4827,
+        "goalsConceded": -1714,
+        "ownGoals": -80,
+        "penaltyMisses": -30,
+        "penaltySaves": 55,
+        "redCards": -132,
+        "saves": 448,
+        "yellowCards": -1422
+      },
+      "exactDuplicateRawRowCount": 10,
+      "exactReconstructionCount": 29747,
+      "exactReconstructionFraction": 1.0,
+      "gameweeksSha256": "0d09f1f1cb1b5520ec8e2f25238aa652efe2a263d8ca7cb2b6538b27bf86727d",
+      "mae": 0.0,
+      "passed": true,
+      "playersSha256": "412ce0172016f8f98f25177dc6de9f3cd2a8ec7a6135f9aa638d7fdee784d67b",
+      "positionRowCounts": {
+        "defender": 9733,
+        "forward": 3278,
+        "goalkeeper": 3427,
+        "midfielder": 13309
+      },
+      "residualCounts": {
+        "0": 29747
+      },
+      "rmse": 0.0,
+      "rowCount": 29747,
+      "seasonCode": "2025-26",
+      "sourceRevision": "f9ed3e8839b0f970e0d5d4a83c5628f6eaee755a",
+      "squaredErrorPoints": 0
+    }
+  ],
+  "status": "complete"
+}
