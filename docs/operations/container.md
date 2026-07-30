@@ -476,7 +476,10 @@ The command uses Quark's hardened Spider MCP endpoint, defaulting to
 `AutoFpl__Research__SpiderMcpUrl` only when the internal endpoint differs. The
 application must share only the dedicated Spider MCP Docker network required
 to reach that private service; Spider retains its separate Chromium and
-research-egress trust domains.
+research-egress trust domains. The Premier League injury source enables
+rendering, waits for `.injury-news__table-body` and rejects retained content
+smaller than 1,000 bytes. This deliberately fails closed when the browser
+returns only the site's application shell.
 
 Set `AutoFpl__Research__ResearchSourcePollIntervalMinutes` to an integer from
 `60` through `1440` to refresh the complete fixed inventory in the background.

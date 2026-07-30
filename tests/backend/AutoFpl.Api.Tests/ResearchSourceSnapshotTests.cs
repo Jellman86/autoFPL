@@ -93,6 +93,60 @@ public sealed class ResearchSourceSnapshotTests
     }
 
     [Fact]
+    public async Task Rendered_injury_capture_waits_for_rows_and_rejects_the_page_shell()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = await CreateDatabaseAsync(files.DatabasePath);
+        string renderedContent =
+            "Premier League Latest Injury News\n"
+            + "Player | Injury | Latest\n"
+            + string.Join(
+                '\n',
+                Enumerable.Repeat(
+                    "William Saliba | Back | Details",
+                    40));
+        var handler = new SpiderMcpHandler(
+            renderedContent,
+            acceptRegisteredSources: true);
+        using var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("http://spider-mcp:8080/mcp"),
+        };
+        var importer = new ResearchSourceSnapshotImporter(
+            new SpiderMcpClient(httpClient),
+            new ResearchSourceSnapshotStore(
+                options,
+                new FixedTimeProvider(RetrievalTime)));
+
+        ResearchSourceSnapshotDocument snapshot = await importer.ImportAsync(
+            "premier-league-injuries",
+            TestContext.Current.CancellationToken);
+
+        Assert.True(handler.LastHeadless);
+        Assert.Equal(
+            ".injury-news__table-body",
+            handler.LastWaitForSelector);
+        Assert.True(snapshot.ContentBytes >= 1000);
+
+        var incompleteHandler = new SpiderMcpHandler(
+            "Premier League Latest Injury News shell",
+            acceptRegisteredSources: true);
+        using var incompleteClient = new HttpClient(incompleteHandler)
+        {
+            BaseAddress = new Uri("http://spider-mcp:8080/mcp"),
+        };
+        await Assert.ThrowsAsync<ResearchSourceSnapshotException>(
+            async () => await new ResearchSourceSnapshotImporter(
+                    new SpiderMcpClient(incompleteClient),
+                    new ResearchSourceSnapshotStore(
+                        options,
+                        new FixedTimeProvider(RetrievalTime.AddMinutes(1))))
+                .ImportAsync(
+                    "premier-league-injuries",
+                    TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
     public async Task Byparr_capture_uses_only_the_registered_url_and_retains_transport_provenance()
     {
         using var files = new TemporaryDatabaseFiles();
@@ -1616,6 +1670,13 @@ public sealed class ResearchSourceSnapshotTests
                     3-5-2
                     ### Recently Updated
                     """,
+                ["https://www.premierleague.com/en/latest-player-injuries"] =
+                    "Premier League Latest Injury News\nPlayer | Injury | Latest\n"
+                    + string.Join(
+                        '\n',
+                        Enumerable.Repeat(
+                            "William Saliba | Back | See the latest update",
+                            40)),
             });
         using var httpClient = new HttpClient(handler)
         {
@@ -2317,6 +2378,10 @@ public sealed class ResearchSourceSnapshotTests
 
         public int DeleteCalls { get; private set; }
 
+        public bool? LastHeadless { get; private set; }
+
+        public string? LastWaitForSelector { get; private set; }
+
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken)
@@ -2363,6 +2428,12 @@ public sealed class ResearchSourceSnapshotTests
                 parameters.GetProperty("name").GetString());
             JsonElement arguments = parameters.GetProperty("arguments");
             string requestedUrl = arguments.GetProperty("url").GetString()!;
+            LastHeadless = arguments.GetProperty("headless").GetBoolean();
+            LastWaitForSelector =
+                arguments.GetProperty("wait_for").ValueKind
+                    == JsonValueKind.Null
+                ? null
+                : arguments.GetProperty("wait_for").GetString();
             if (acceptRegisteredSources)
             {
                 Assert.Contains(

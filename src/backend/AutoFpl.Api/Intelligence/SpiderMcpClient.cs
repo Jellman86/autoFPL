@@ -74,6 +74,7 @@ public sealed class SpiderMcpClient
                     url = source.CanonicalUri.AbsoluteUri,
                     return_format = "markdown",
                     headless = source.RequiresRendering,
+                    wait_for = source.WaitForSelector,
                 },
                 cancellationToken);
             return ParseScrapeResult(output, source);
@@ -391,7 +392,8 @@ public sealed class SpiderMcpClient
 
         string value = content.GetString() ?? string.Empty;
         int contentBytes = Encoding.UTF8.GetByteCount(value);
-        if (contentBytes is <= 0 or > MaximumScrapeContentBytes)
+        if (contentBytes is <= 0 or > MaximumScrapeContentBytes
+            || !source.HasRequiredContent(value))
         {
             throw Invalid(
                 "Spider MCP returned unsupported research content dimensions.");

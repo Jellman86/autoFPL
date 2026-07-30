@@ -13,7 +13,9 @@ public sealed record ResearchSourceDefinition(
     string TransportKey = SpiderMcpClient.TransportKey,
     IReadOnlyList<Uri>? AllowedFinalUris = null,
     IReadOnlyList<string>? RequiredContentMarkers = null,
-    bool PollAutomatically = true)
+    bool PollAutomatically = true,
+    string? WaitForSelector = null,
+    int MinimumContentBytes = 1)
 {
     public bool AllowsFinalUri(Uri actual)
     {
@@ -25,8 +27,10 @@ public sealed record ResearchSourceDefinition(
     public bool HasRequiredContent(string content)
     {
         ArgumentNullException.ThrowIfNull(content);
-        return (RequiredContentMarkers ?? []).All(
-            marker => content.Contains(marker, StringComparison.Ordinal));
+        return System.Text.Encoding.UTF8.GetByteCount(content)
+                >= MinimumContentBytes
+            && (RequiredContentMarkers ?? []).All(
+                marker => content.Contains(marker, StringComparison.Ordinal));
     }
 
     public ResearchSourceDefinitionDocument ToDocument() =>
@@ -77,7 +81,9 @@ public static class ResearchSourceRegistry
             [
                 "The page aggregates club reporting and may lag a direct manager statement.",
                 "An injury listing does not by itself quantify start or minutes probability.",
-            ]),
+            ],
+            WaitForSelector: ".injury-news__table-body",
+            MinimumContentBytes: 1000),
         new(
             "ffscout-predicted-lineups",
             "specialist-predicted-lineup",
