@@ -54,6 +54,14 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **Promoted-player history now has a leakage-safe historical source
+  boundary.** Five fixed FBref Championship playing-time populations cover
+  2021/22 through 2025/26 through the existing Byparr transport. Historical
+  pages retain season-qualified URLs and parse to bounded identity-free
+  populations; only the current 2025/26 source can use the reviewed current
+  player bridge. This creates an earlier training class and three registered
+  historical opening targets for measuring the league translation before
+  current Championship rates can affect the initial squad.
 - **All 60 captured promoted-player FBref histories now pass deterministic
   match-log extraction.** FBref repeats a literal column-header row inside
   longer player tables; parser v1 now ignores only that exact structural row

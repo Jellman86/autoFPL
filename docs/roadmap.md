@@ -1005,6 +1005,14 @@ the incumbent only if it increases out-of-time accuracy or decision utility.
 Reviewed FBref player-history capture is automatically schedulable in bounded
 batches; unresolved source identities remain a separate fail-closed review
 queue rather than being guessed from names.
+The same bounded Byparr boundary now registers Championship playing-time
+populations from 2021/22 through 2025/26. The earlier four populations are the
+source side of an expanding-season promoted-player evaluation: 2021/22 trains
+the first translation, 2022/23–2024/25 precede registered historical opening
+targets, and 2025/26 remains the current cohort. Historical rows stay
+identity-free until reviewed against each target FPL roster; they cannot be
+inserted into the current hurdle model as if Championship rates were already
+Premier-League calibrated.
 Do not add another standalone governance, universal contract, infrastructure
 or AI-orchestrator project ahead of these slices.
 

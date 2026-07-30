@@ -162,6 +162,100 @@ public sealed class ResearchSourceSnapshotTests
     }
 
     [Fact]
+    public void Fbref_playing_time_sources_cover_all_registered_opening_folds()
+    {
+        FbrefPlayingTimeSource[] sources =
+            FbrefPlayingTimeSources.All.ToArray();
+
+        Assert.Equal(
+            ["2021-22", "2022-23", "2023-24", "2024-25", "2025-26"],
+            sources.Select(source => source.CompetitionSeason));
+        Assert.Equal(
+            5,
+            sources.Select(source => source.SourceKey).Distinct().Count());
+        Assert.Single(sources, source => source.IsCurrentTargetSource);
+        Assert.All(
+            sources,
+            source =>
+            {
+                Assert.Equal(
+                    ByparrClient.TransportKey,
+                    source.Definition.TransportKey);
+                Assert.False(source.Definition.PollAutomatically);
+                Assert.Equal(
+                    "prior-competition-playing-time",
+                    source.Definition.SourceClass);
+                Assert.Contains(
+                    $"/{source.FbrefSeason}/playingtime/",
+                    source.Definition.CanonicalUri.AbsolutePath,
+                    StringComparison.Ordinal);
+            });
+    }
+
+    [Fact]
+    public async Task Historical_fbref_playing_time_capture_extracts_population_without_current_identity()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = await CreateDatabaseAsync(files.DatabasePath);
+        FbrefPlayingTimeSource historical =
+            FbrefPlayingTimeSources.Get(
+                "fbref-championship-playing-time-2022-23");
+        string content =
+            "<html><head><title>2022-2023 Championship Playing Time "
+            + "| FBref.com</title></head><body>"
+            + CreateFbrefPlayingTimeHtml(fbrefSeason: historical.FbrefSeason)
+            + "</body></html>";
+        var handler = new ByparrHandler(
+            historical.Definition,
+            content,
+            historical.Definition.CanonicalUri.AbsoluteUri);
+        using var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("http://192.168.213.101:8191/"),
+        };
+        using var spiderHttpClient = new HttpClient(
+            new SpiderMcpHandler("unused"))
+        {
+            BaseAddress = new Uri("http://spider-mcp:8080/mcp"),
+        };
+        var store = new ResearchSourceSnapshotStore(
+            options,
+            new FixedTimeProvider(RetrievalTime));
+        var importer = new ResearchSourceSnapshotImporter(
+            new SpiderMcpClient(spiderHttpClient),
+            new ByparrClient(httpClient),
+            store);
+
+        ResearchSourceSnapshotDocument snapshot =
+            await importer.ImportAsync(
+                historical.SourceKey,
+                TestContext.Current.CancellationToken);
+        FbrefPlayingTimeDocument? extraction =
+            await new FbrefPlayingTimeExtractor(store).GetAsync(
+                snapshot.SnapshotId,
+                TestContext.Current.CancellationToken);
+
+        Assert.NotNull(extraction);
+        Assert.Equal("2022-23", extraction.CompetitionSeason);
+        Assert.Equal(500, extraction.RowCount);
+        Assert.Null(extraction.IdentityBridgeVersion);
+        Assert.Equal(0, extraction.ExactCurrentTeamMatchCount);
+        Assert.Equal(0, extraction.ReviewedIdentityCount);
+        Assert.Equal(0, extraction.ExactCurrentTeamProposalCount);
+        Assert.Empty(extraction.CurrentTeamCoverage);
+        Assert.All(
+            extraction.Players,
+            player => Assert.Equal("not-in-scope", player.IdentityStatus));
+        Assert.All(
+            extraction.Players,
+            player => Assert.Contains(
+                "/matchlogs/2022-2023/summary/",
+                player.MatchLogsUrl,
+                StringComparison.Ordinal));
+        Assert.Equal(1, handler.RequestCount);
+    }
+
+    [Fact]
     public void Fbref_playing_time_parser_is_bounded_and_identity_bridge_is_exact()
     {
         string content = CreateFbrefPlayingTimeHtml(
@@ -1607,7 +1701,7 @@ public sealed class ResearchSourceSnapshotTests
                 TestContext.Current.CancellationToken);
 
         Assert.NotNull(inventory);
-        Assert.Equal(7, inventory.Sources.Count);
+        Assert.Equal(11, inventory.Sources.Count);
         Assert.Contains(
             inventory.Sources,
             item => item.SourceClass == "official-availability-aggregation");
@@ -1617,9 +1711,11 @@ public sealed class ResearchSourceSnapshotTests
         Assert.Contains(
             inventory.Sources,
             item => item.SourceClass == "derived-predicted-lineup-consensus");
-        Assert.Contains(
-            inventory.Sources,
-            item => item.SourceClass == "prior-competition-playing-time");
+        Assert.Equal(
+            5,
+            inventory.Sources.Count(
+                item => item.SourceClass
+                    == "prior-competition-playing-time"));
         Assert.Equal(
             3,
             inventory.Sources.Count(
@@ -2145,7 +2241,8 @@ public sealed class ResearchSourceSnapshotTests
 
     private static string CreateFbrefPlayingTimeHtml(
         bool duplicateCommentedTable = false,
-        bool duplicatePlayerTeamRow = false)
+        bool duplicatePlayerTeamRow = false,
+        string fbrefSeason = "2025-2026")
     {
         var table = new StringBuilder(
             """
@@ -2193,7 +2290,7 @@ public sealed class ResearchSourceSnapshotTests
                  <td data-stat="games">46</td>
                  <td data-stat="minutes">3,600</td>
                  <td data-stat="games_starts">40</td>
-                 <td data-stat="matches"><a href="/en/players/{playerId}/matchlogs/2025-2026/summary/Player-Match-Logs">Matches</a></td>
+                 <td data-stat="matches"><a href="/en/players/{playerId}/matchlogs/{fbrefSeason}/summary/Player-Match-Logs">Matches</a></td>
                  </tr>
                  """);
         }

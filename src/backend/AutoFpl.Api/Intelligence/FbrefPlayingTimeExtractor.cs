@@ -9,7 +9,8 @@ namespace AutoFpl.Api.Intelligence;
 public sealed class FbrefPlayingTimeExtractor
 {
     public const string SourceKey =
-        "fbref-championship-playing-time-2025-26";
+        FbrefPlayingTimeSources.SourceKeyPrefix
+        + FbrefPlayingTimeSources.CurrentCompetitionSeason;
     public const string ExtractionVersion =
         "fbref-championship-playing-time/v1";
 
@@ -44,10 +45,23 @@ public sealed class FbrefPlayingTimeExtractor
         }
 
         ResearchSourceSnapshotDocument snapshot = retained.Snapshot;
-        if (!StringComparer.Ordinal.Equals(snapshot.SourceKey, SourceKey))
+        FbrefPlayingTimeSource source =
+            FbrefPlayingTimeSources.Get(snapshot.SourceKey);
+        if (!StringComparer.Ordinal.Equals(
+                snapshot.SourceClass,
+                source.Definition.SourceClass)
+            || !StringComparer.Ordinal.Equals(
+                snapshot.CanonicalUrl,
+                source.Definition.CanonicalUri.AbsoluteUri)
+            || !Uri.TryCreate(
+                snapshot.FinalUrl,
+                UriKind.Absolute,
+                out Uri? finalUri)
+            || !source.Definition.AllowsFinalUri(finalUri))
         {
             throw Invalid(
-                $"Snapshot {snapshotId} is not the registered FBref playing-time source.");
+                $"Snapshot {snapshotId} no longer matches its registered "
+                + "FBref playing-time source.");
         }
         if (!StringComparer.Ordinal.Equals(snapshot.Status, "shadow-only")
             || !snapshot.IsPreDeadline)
@@ -56,17 +70,26 @@ public sealed class FbrefPlayingTimeExtractor
                 "Only pre-deadline shadow FBref snapshots can produce playing-time evidence.");
         }
 
-        IReadOnlyList<FbrefPlayingTimeRow> rows = Parse(retained.Content);
+        IReadOnlyList<FbrefPlayingTimeRow> rows =
+            Parse(retained.Content, source);
         IReadOnlyList<ResearchOfficialPlayerIdentity> identities =
-            await _snapshotStore.GetPlayerIdentitiesAsync(
-                snapshot.IdentityCaptureId,
-                cancellationToken);
-        return BuildDocument(snapshot, rows, identities);
+            source.IsCurrentTargetSource
+                ? await _snapshotStore.GetPlayerIdentitiesAsync(
+                    snapshot.IdentityCaptureId,
+                    cancellationToken)
+                : [];
+        return BuildDocument(snapshot, source, rows, identities);
     }
 
-    internal static IReadOnlyList<FbrefPlayingTimeRow> Parse(string content)
+    internal static IReadOnlyList<FbrefPlayingTimeRow> Parse(string content) =>
+        Parse(content, FbrefPlayingTimeSources.Current);
+
+    internal static IReadOnlyList<FbrefPlayingTimeRow> Parse(
+        string content,
+        FbrefPlayingTimeSource source)
     {
         ArgumentNullException.ThrowIfNull(content);
+        ArgumentNullException.ThrowIfNull(source);
         content = RemoveHtmlComments(content);
         string table = FindUniqueElement(
             content,
@@ -134,7 +157,8 @@ public sealed class FbrefPlayingTimeExtractor
                 teamHref,
                 "squads");
             if (!matchesHref.StartsWith(
-                    $"/en/players/{sourcePlayerId}/matchlogs/2025-2026/summary/",
+                    $"/en/players/{sourcePlayerId}/matchlogs/"
+                    + $"{source.FbrefSeason}/summary/",
                     StringComparison.Ordinal)
                 || matchesHref.Contains('?', StringComparison.Ordinal)
                 || matchesHref.Contains('#', StringComparison.Ordinal))
@@ -194,7 +218,9 @@ public sealed class FbrefPlayingTimeExtractor
             throw Invalid(
                 "The FBref playing-time table did not contain the expected bounded player population.");
         }
-        foreach (string teamName in TargetTeamNames)
+        foreach (string teamName in source.IsCurrentTargetSource
+            ? TargetTeamNames
+            : [])
         {
             if (rows.Count(row => StringComparer.Ordinal.Equals(
                     row.TeamName,
@@ -239,14 +265,27 @@ public sealed class FbrefPlayingTimeExtractor
     internal static FbrefPlayingTimeDocument BuildDocument(
         ResearchSourceSnapshotDocument snapshot,
         IReadOnlyList<FbrefPlayingTimeRow> rows,
+        IReadOnlyList<ResearchOfficialPlayerIdentity> identities) =>
+        BuildDocument(
+            snapshot,
+            FbrefPlayingTimeSources.Current,
+            rows,
+            identities);
+
+    internal static FbrefPlayingTimeDocument BuildDocument(
+        ResearchSourceSnapshotDocument snapshot,
+        FbrefPlayingTimeSource source,
+        IReadOnlyList<FbrefPlayingTimeRow> rows,
         IReadOnlyList<ResearchOfficialPlayerIdentity> identities)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
+        ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(rows);
         ArgumentNullException.ThrowIfNull(identities);
 
-        HashSet<string> targetTeams =
-            TargetTeamNames.ToHashSet(StringComparer.Ordinal);
+        HashSet<string> targetTeams = source.IsCurrentTargetSource
+            ? TargetTeamNames.ToHashSet(StringComparer.Ordinal)
+            : [];
         Dictionary<(string TeamName, string PlayerName),
             ResearchOfficialPlayerIdentity[]> identitiesByTeamAndName =
             identities
@@ -262,8 +301,8 @@ public sealed class FbrefPlayingTimeExtractor
         IReadOnlyDictionary<int, ResearchOfficialPlayerIdentity>
             identitiesByCode = identities.ToDictionary(
                 identity => identity.PlayerCode);
-        bool reviewedBridgeApplies =
-            FbrefPlayerIdentityBridge.AppliesTo(snapshot);
+        bool reviewedBridgeApplies = source.IsCurrentTargetSource
+            && FbrefPlayerIdentityBridge.AppliesTo(snapshot);
         var matchedOfficialPlayers =
             new HashSet<(string TeamName, int PlayerCode)>();
         var players = new List<FbrefPlayingTimePlayerDocument>(rows.Count);
@@ -336,7 +375,7 @@ public sealed class FbrefPlayingTimeExtractor
         }
 
         var coverage = new List<FbrefPlayingTimeTeamCoverageDocument>();
-        foreach (string teamName in TargetTeamNames)
+        foreach (string teamName in targetTeams.Order(StringComparer.Ordinal))
         {
             ResearchOfficialPlayerIdentity[] officialPlayers = identities
                 .Where(identity => StringComparer.Ordinal.Equals(
@@ -393,7 +432,7 @@ public sealed class FbrefPlayingTimeExtractor
             snapshot.IdentityCaptureId,
             snapshot.RetrievedAtUtc,
             "Championship",
-            "2025-26",
+            source.CompetitionSeason,
             players.Count,
             players.Select(player => player.SourcePlayerId).Distinct().Count(),
             players.Count(player => player.OfficialPlayerCode.HasValue),
