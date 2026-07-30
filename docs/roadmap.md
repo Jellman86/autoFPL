@@ -1021,9 +1021,13 @@ globally constrained six-Gameweek policy gained only one realised point per
 target on average with one win. That misses the fixed +2 mean and two-win
 decision gates. The feature remains retrospective and non-serving; neither its
 blend nor its gate may be retuned on these opened outcomes. Preserve it for
-current sensitivity and genuinely prospective 2026/27 scoring while the active
-initial-squad work advances to higher-decision-impact temporal, availability
-and registered robust-horizon challengers.
+current sensitivity and genuinely prospective 2026/27 scoring. The current
+sensitivity is now complete: none of the 60 reviewed Coventry, Hull and
+Ipswich players is selected by either v2 or the translated challenger, and the
+global solve returns the same 15 players and identical path scores. Aggregate
+promoted-player playing time therefore leaves the active initial-squad path;
+work advances to higher-decision-impact temporal, availability and registered
+robust-horizon challengers that can affect selected or near-boundary players.
 Do not add another standalone governance, universal contract, infrastructure
 or AI-orchestrator project ahead of these slices.
 
