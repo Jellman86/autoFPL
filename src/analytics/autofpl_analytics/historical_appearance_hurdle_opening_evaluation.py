@@ -371,6 +371,7 @@ def _reconstruct_hurdle_target_from_samples(
             Sequence[Prediction],
         ]
     ] = None,
+    joint_generator: Callable[..., Any] = generate_joint_fold,
 ) -> Dict[str, Any]:
     ordered_origins = sorted(samples_by_origin)
     _require(
@@ -498,7 +499,7 @@ def _reconstruct_hurdle_target_from_samples(
             model_name=conditional_model,
         )
         hurdle = _combine_hurdle(target, appearance, conditional)
-        joint = generate_joint_fold(
+        joint = joint_generator(
             donor_points,
             donor_appearance,
             target,
