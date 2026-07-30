@@ -634,9 +634,20 @@ creativity and threat improved CRPS by 0.62% and won all three season
 distribution comparisons, but missed the fixed 1% materiality threshold.
 More importantly, its selected squads lost six realised points on average,
 won only one target and regressed by 31 points in the worst target. Reject the
-feature set and leave v2 unchanged. The next player-model challenger should
-address cutoff-safe team and opponent strength per fixture rather than tune
-another subset on the same opened outcomes.
+feature set and leave v2 unchanged.
+The first cutoff-safe team/opponent challenger has now also been tested.
+It reconstructed venue-specific attack and defence rates from official
+player-summed expected goals, used a 180-day half-life and five-match prior,
+and exposed only two matchup features to the conditional-point model.
+Appearance scores remained exactly unchanged, but CRPS regressed by 1.125%,
+all three season comparisons lost and selected squads lost 31.67 realised
+points on average. Reject this representation and leave v2 unchanged. Do not
+tune its decay, shrinkage or formula on the same opened targets. A later
+team-strength candidate must use a genuinely different point-in-time signal
+or registered hierarchical component model and prove standalone temporal
+accuracy before the same opening-distribution and complete-policy screen.
+Current cutoff-safe availability extraction can proceed independently because
+it changes a different forecast component.
 
 The SQLite persistence vertical slice is deployed and survives a managed
 container recreate. Operator-triggered fixed-origin official FPL collectors

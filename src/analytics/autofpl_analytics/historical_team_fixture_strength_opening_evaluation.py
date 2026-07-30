@@ -37,6 +37,9 @@ from .historical_appearance_hurdle_points_evaluation import (
 from .historical_joint_scenario_evaluation import (
     MODEL_NAME as SCENARIO_MODEL,
 )
+from .historical_official_creative_opening_evaluation import (
+    _distribution_screen,
+)
 from .historical_opening_forecast_reconstruction import (
     FIXTURE_PROXY,
     TARGET_GAMEWEEKS,
@@ -56,67 +59,69 @@ from .historical_opening_policy_registration import (
     REFERENCE_POLICY_KEY,
 )
 from .multi_season_evaluation import (
+    FEATURES,
     Observation,
     _load_observations,
 )
-from .official_creative_features import (
-    FEATURES_WITH_OFFICIAL_CREATIVE,
-    OFFICIAL_CREATIVE_FEATURES,
-    add_official_creative_features,
-    build_official_creative_feature_table,
-    load_official_creative_histories,
+from .team_fixture_strength_features import (
+    FEATURES_WITH_TEAM_FIXTURE_STRENGTH,
+    TEAM_FIXTURE_STRENGTH_FEATURES,
+    add_team_fixture_strength_features,
+    build_team_fixture_strength_feature_table,
+    build_team_rate_state,
+    load_fixture_contexts,
+    team_fixture_strength,
 )
+from .team_goal_strength_evaluation import _instant, _load_matches
 from .temporal_ridge import (
     TemporalRidgeError,
     _open_connection,
-    _round,
     _sha256,
     _write_report,
 )
 from .temporal_tree import TREE_CONFIGURATION
 
 SCHEMA_VERSION = "1.0"
-ARTIFACT_TYPE = "historical-official-creative-opening-evaluation"
-ARTIFACT_VERSION = "historical-official-creative-opening-evaluation-v1"
+ARTIFACT_TYPE = "historical-team-fixture-strength-opening-evaluation"
+ARTIFACT_VERSION = "historical-team-fixture-strength-opening-evaluation-v1"
 SCENARIO_ARTIFACT_TYPE = (
-    "historical-official-creative-opening-scenario-reconstruction"
+    "historical-team-fixture-strength-opening-scenario-reconstruction"
 )
 SCENARIO_ARTIFACT_VERSION = (
-    "historical-official-creative-opening-scenario-reconstruction-v1"
+    "historical-team-fixture-strength-opening-scenario-reconstruction-v1"
 )
-STATUS = "retrospective-enrichment-challenger-evaluated"
+STATUS = "retrospective-fixture-strength-challenger-evaluated"
 SCENARIO_STATUS = "retrospective-input-reconstruction-no-outcomes-opened"
 CHALLENGER_POINT_MODEL = (
-    "multi-season-appearance-hurdle-points-official-creative"
-)
-CHALLENGER_APPEARANCE_MODEL = (
-    "multi-season-appearance-classifier-official-creative"
+    "multi-season-appearance-hurdle-points-team-fixture-strength"
 )
 CHALLENGER_CONDITIONAL_MODEL = (
-    "multi-season-appearance-conditional-points-official-creative"
+    "multi-season-appearance-conditional-points-team-fixture-strength"
 )
 INCUMBENT_DISTRIBUTION = (
     "appearance-hurdle-opening-joint-distribution"
 )
 CHALLENGER_DISTRIBUTION = (
-    "appearance-hurdle-official-creative-opening-joint-distribution"
+    "appearance-hurdle-team-fixture-strength-opening-joint-distribution"
 )
 INCUMBENT_APPEARANCE = "appearance-hurdle-opening-appearance"
 CHALLENGER_APPEARANCE = (
-    "appearance-hurdle-official-creative-opening-appearance"
+    "appearance-hurdle-team-fixture-strength-opening-appearance"
 )
 DECISION_RETAIN = (
-    "retain-official-creative-opening-challenger-prospective-shadow"
+    "retain-team-fixture-strength-opening-challenger-prospective-shadow"
 )
-DECISION_REJECT = "do-not-retain-official-creative-opening-challenger"
+DECISION_REJECT = "do-not-retain-team-fixture-strength-opening-challenger"
 
 
-def build_historical_official_creative_opening_evaluation(
+def build_historical_team_fixture_strength_opening_evaluation(
     database_path: Path,
 ) -> Dict[str, Any]:
     path = Path(database_path)
     incumbent = build_historical_appearance_hurdle_opening_scenarios(path)
-    challenger = build_historical_official_creative_opening_scenarios(path)
+    challenger = build_historical_team_fixture_strength_opening_scenarios(
+        path
+    )
     _require_scenario_pair(incumbent, challenger)
 
     connection = _open_connection(path)
@@ -177,9 +182,7 @@ def build_historical_official_creative_opening_evaluation(
             *incumbent_appearance,
             *challenger_appearance,
         ]
-        distribution_predictions.extend(
-            target_distribution_predictions
-        )
+        distribution_predictions.extend(target_distribution_predictions)
         appearance_predictions.extend(target_appearance_predictions)
         distribution_targets.append(
             {
@@ -240,6 +243,11 @@ def build_historical_official_creative_opening_evaluation(
         distribution_models,
         appearance_models,
         distribution_targets,
+        incumbent_distribution=INCUMBENT_DISTRIBUTION,
+        challenger_distribution=CHALLENGER_DISTRIBUTION,
+        incumbent_appearance=INCUMBENT_APPEARANCE,
+        challenger_appearance=CHALLENGER_APPEARANCE,
+        error_prefix="team-fixture-strength",
     )
     policy_screen = _policy_screen(policy_targets)
     passes = bool(
@@ -253,8 +261,9 @@ def build_historical_official_creative_opening_evaluation(
         "researchStatus": "reused-opened-targets-no-promotion",
         "targetOutcomesOpened": True,
         "candidateRationale": (
-            "OpenFPL-inspired official creative and BPS summaries added "
-            "to the retained hurdle model under the same opening folds"
+            "Cutoff-safe, time-decayed and prior-shrunk team attack and "
+            "opponent defence expected-goal rates added to the conditional "
+            "point model under the retained opening folds"
         ),
         "incumbentSource": {
             "pointModel": HURDLE_MODEL,
@@ -266,46 +275,14 @@ def build_historical_official_creative_opening_evaluation(
         },
         "challengerSource": {
             "pointModel": CHALLENGER_POINT_MODEL,
-            "appearanceModel": CHALLENGER_APPEARANCE_MODEL,
+            "appearanceModel": APPEARANCE_MODEL,
             "conditionalPointModel": CHALLENGER_CONDITIONAL_MODEL,
             "artifactVersion": challenger["artifactVersion"],
             "dataIdentitySha256": challenger["dataIdentitySha256"],
             "runIdentitySha256": challenger["runIdentitySha256"],
-            "addedFeatures": list(OFFICIAL_CREATIVE_FEATURES),
+            "addedFeatures": list(TEAM_FIXTURE_STRENGTH_FEATURES),
         },
-        "fixedScreen": {
-            "distribution": {
-                "primaryMetric": "aggregate-player-gameweek-mean-crps",
-                "minimumCrpsImprovementFraction": (
-                    MINIMUM_CRPS_IMPROVEMENT_FRACTION
-                ),
-                "minimumTargetSeasonWins": (
-                    MINIMUM_DISTRIBUTION_TARGET_WINS
-                ),
-                "maximumPositionCrpsRegressionFraction": (
-                    MAXIMUM_POSITION_CRPS_REGRESSION_FRACTION
-                ),
-                "maximumAppearanceBrierDelta": (
-                    MAXIMUM_APPEARANCE_BRIER_DELTA
-                ),
-                "maximumAppearanceLogLossDelta": (
-                    MAXIMUM_APPEARANCE_LOG_LOSS_DELTA
-                ),
-            },
-            "policy": {
-                "evaluationPolicyKey": REFERENCE_POLICY_KEY,
-                "minimumMeanImprovementPoints": (
-                    MINIMUM_MEAN_IMPROVEMENT_POINTS
-                ),
-                "minimumTargetWins": MINIMUM_POLICY_TARGET_WINS,
-                "maximumWorstTargetRegressionPoints": (
-                    MAXIMUM_WORST_TARGET_REGRESSION_POINTS
-                ),
-            },
-            "jointDecisionRule": (
-                "all-distribution-and-policy-gates-must-pass"
-            ),
-        },
+        "fixedScreen": _fixed_screen(),
         "distributionModels": distribution_models,
         "appearanceModels": appearance_models,
         "distributionTargets": distribution_targets,
@@ -318,22 +295,22 @@ def build_historical_official_creative_opening_evaluation(
         "influencesAdvice": False,
         "limitations": [
             (
-                "The three opening targets were already opened. The result "
-                "can retain a prospective challenger but cannot promote it."
-            ),
-            (
-                "The candidate is inspired by OpenFPL's public feature "
-                "portfolio, not a reproduction of its unpublished training "
-                "pipeline or a claim about its Gameweek 1 performance."
+                "The three opening targets were previously opened. This "
+                "result can retain a prospective challenger but cannot "
+                "promote it."
             ),
             (
                 "Historical opening health is unavailable and fixture "
                 "structure remains the registered final-archive proxy."
             ),
             (
-                "Official BPS, influence, creativity and threat share event "
-                "information with FPL points and expected-event fields; the "
-                "fixed out-of-season screen, not novelty, decides retention."
+                "Team expected goals are reconstructed by summing official "
+                "player expected goals; they are not an independent market "
+                "or event-provider estimate."
+            ),
+            (
+                "Promoted and otherwise unseen teams receive the venue "
+                "league prior until their own prior evidence accumulates."
             ),
         ],
     }
@@ -352,7 +329,7 @@ def build_historical_official_creative_opening_evaluation(
     return artifact
 
 
-def build_historical_official_creative_opening_scenarios(
+def build_historical_team_fixture_strength_opening_scenarios(
     database_path: Path,
 ) -> Dict[str, Any]:
     path = Path(database_path)
@@ -387,7 +364,7 @@ def build_historical_official_creative_opening_scenarios(
         "artifactVersion": SCENARIO_ARTIFACT_VERSION,
         "status": SCENARIO_STATUS,
         "pointModel": CHALLENGER_POINT_MODEL,
-        "appearanceModel": CHALLENGER_APPEARANCE_MODEL,
+        "appearanceModel": APPEARANCE_MODEL,
         "conditionalPointModel": CHALLENGER_CONDITIONAL_MODEL,
         "scenarioModel": SCENARIO_MODEL,
         "targetGameweeks": list(TARGET_GAMEWEEKS),
@@ -395,28 +372,35 @@ def build_historical_official_creative_opening_scenarios(
             "componentTrainingRule": (
                 "strictly-earlier-season-archives-only"
             ),
+            "teamRateTrainingRule": (
+                "strictly-prior-matches-at-each-origin"
+            ),
+            "teamRateDecayHalfLifeDays": 180,
+            "teamRatePriorMatchEquivalent": 5,
             "conditionalPointTrainingRows": (
                 "strictly-earlier-appearance-positive-player-gameweeks"
             ),
+            "appearanceFeatureContract": "retained-base-features-unchanged",
             "scenarioDonorRule": "latest-strictly-earlier-season-only",
             "targetPerformanceFieldsRead": False,
             "targetOutcomeFieldsRead": [],
             "targetFixtureInput": FIXTURE_PROXY,
+            "targetFixtureFieldsRead": [
+                "gameweek",
+                "fixture-id",
+                "kickoff",
+                "team",
+                "venue",
+            ],
             "weeklyPathPairing": (
                 "fixed-current-engine-independent-weekly-permutation"
             ),
         },
         "modelConfiguration": dict(TREE_CONFIGURATION),
         "featureContract": {
-            "baseFeatureCount": (
-                len(FEATURES_WITH_OFFICIAL_CREATIVE)
-                - len(OFFICIAL_CREATIVE_FEATURES)
-            ),
-            "addedFeatureCount": len(OFFICIAL_CREATIVE_FEATURES),
-            "addedFeatures": list(OFFICIAL_CREATIVE_FEATURES),
-            "historyAvailability": (
-                "strictly-prior-player-gameweeks-only"
-            ),
+            "baseFeatureCount": len(FEATURES),
+            "addedFeatureCount": len(TEAM_FIXTURE_STRENGTH_FEATURES),
+            "addedFeatures": list(TEAM_FIXTURE_STRENGTH_FEATURES),
         },
         "targets": targets,
     }
@@ -443,7 +427,7 @@ def _reconstruct_target(
     connection: Any,
     fold: OpeningFold,
 ) -> Dict[str, Any]:
-    samples_by_origin = build_official_creative_feature_table(
+    samples_by_origin = build_team_fixture_strength_feature_table(
         connection,
         fold.training_captures,
     )
@@ -452,21 +436,42 @@ def _reconstruct_target(
         fold.training_captures,
     )
     histories: DefaultDict[int, list[Observation]] = defaultdict(list)
+    matches = []
     for season_index, capture in enumerate(fold.training_captures):
-        for observation in _load_observations(
+        histories_rows = _load_observations(
             connection,
             capture,
             season_index,
-        ):
+        )
+        for observation in histories_rows:
             histories[observation.player_code].append(observation)
-    creative_histories = load_official_creative_histories(
-        connection,
-        fold.training_captures,
-    )
-    fixtures = _load_fixture_proxy(
+        matches.extend(_load_matches(connection, capture, season_index))
+    fixture_proxy = _load_fixture_proxy(
         connection,
         fold.target_capture.capture_id,
     )
+    all_target_fixtures = load_fixture_contexts(
+        connection,
+        fold.target_capture,
+        len(fold.training_captures),
+    )
+    fixtures_by_gameweek = {
+        gameweek: [
+            fixture
+            for fixture in all_target_fixtures
+            if fixture.gameweek == gameweek
+        ]
+        for gameweek in TARGET_GAMEWEEKS
+    }
+    rate_states = {}
+    for gameweek, fixtures in fixtures_by_gameweek.items():
+        _require(
+            bool(fixtures),
+            "team-fixture-strength.target-fixtures",
+            "A target Gameweek has no fixture identity.",
+        )
+        cutoff = min(_instant(fixture.kickoff_utc) for fixture in fixtures)
+        rate_states[gameweek] = build_team_rate_state(matches, cutoff)
 
     def target_sample(gameweek: int, player: Any) -> Any:
         base = _target_sample(
@@ -475,11 +480,15 @@ def _reconstruct_target(
             gameweek,
             player,
             histories.get(player.player_code, ()),
-            fixtures,
+            fixture_proxy,
         )
-        return add_official_creative_features(
+        return add_team_fixture_strength_features(
             base,
-            creative_histories.get(player.player_code, ()),
+            team_fixture_strength(
+                rate_states[gameweek],
+                fixtures_by_gameweek[gameweek],
+                player.team_name,
+            ),
         )
 
     return _reconstruct_hurdle_target_from_samples(
@@ -488,149 +497,40 @@ def _reconstruct_target(
         samples_by_origin,
         observations_by_origin,
         target_sample,
-        FEATURES_WITH_OFFICIAL_CREATIVE,
-        FEATURES_WITH_OFFICIAL_CREATIVE,
-        CHALLENGER_APPEARANCE_MODEL,
+        FEATURES,
+        FEATURES_WITH_TEAM_FIXTURE_STRENGTH,
+        APPEARANCE_MODEL,
         CHALLENGER_CONDITIONAL_MODEL,
     )
 
 
-def _distribution_screen(
-    distribution_models: Sequence[Mapping[str, Any]],
-    appearance_models: Sequence[Mapping[str, Any]],
-    targets: Sequence[Mapping[str, Any]],
-    *,
-    incumbent_distribution: str = INCUMBENT_DISTRIBUTION,
-    challenger_distribution: str = CHALLENGER_DISTRIBUTION,
-    incumbent_appearance: str = INCUMBENT_APPEARANCE,
-    challenger_appearance: str = CHALLENGER_APPEARANCE,
-    error_prefix: str = "official-creative",
-) -> Dict[str, Any]:
-    distributions = {
-        str(model["name"]): model for model in distribution_models
-    }
-    appearances = {
-        str(model["name"]): model for model in appearance_models
-    }
-    _require(
-        set(distributions)
-        == {incumbent_distribution, challenger_distribution}
-        and set(appearances)
-        == {incumbent_appearance, challenger_appearance},
-        f"{error_prefix}.models",
-        "The fixed model pair is incomplete.",
-    )
-    incumbent = distributions[incumbent_distribution]
-    challenger = distributions[challenger_distribution]
-    incumbent_crps = float(incumbent["metrics"]["meanCrps"])
-    challenger_crps = float(challenger["metrics"]["meanCrps"])
-    crps_improvement = (
-        (incumbent_crps - challenger_crps) / incumbent_crps
-        if incumbent_crps > 0.0
-        else 0.0
-    )
-    target_rows = []
-    for target in targets:
-        by_name = {
-            str(model["name"]): model
-            for model in target["distributionModels"]
-        }
-        incumbent_target = float(
-            by_name[incumbent_distribution]["metrics"]["meanCrps"]
-        )
-        challenger_target = float(
-            by_name[challenger_distribution]["metrics"]["meanCrps"]
-        )
-        target_rows.append(
-            {
-                "targetSeasonCode": target["targetSeasonCode"],
-                "incumbentMeanCrps": _round(incumbent_target),
-                "challengerMeanCrps": _round(challenger_target),
-                "challengerWins": (
-                    challenger_target < incumbent_target
-                ),
-            }
-        )
-    incumbent_positions = incumbent["slices"]["position"]
-    challenger_positions = challenger["slices"]["position"]
-    _require(
-        set(incumbent_positions) == set(challenger_positions),
-        f"{error_prefix}.positions",
-        "The position slices differ.",
-    )
-    position_rows = []
-    maximum_position_regression = float("-inf")
-    for position in sorted(incumbent_positions):
-        incumbent_position = float(
-            incumbent_positions[position]["meanCrps"]
-        )
-        challenger_position = float(
-            challenger_positions[position]["meanCrps"]
-        )
-        regression = (
-            (challenger_position - incumbent_position)
-            / incumbent_position
-            if incumbent_position > 0.0
-            else 0.0
-        )
-        maximum_position_regression = max(
-            maximum_position_regression,
-            regression,
-        )
-        position_rows.append(
-            {
-                "position": position,
-                "incumbentMeanCrps": _round(incumbent_position),
-                "challengerMeanCrps": _round(challenger_position),
-                "crpsRegressionFraction": _round(regression),
-            }
-        )
-    incumbent_probability = appearances[incumbent_appearance][
-        "metrics"
-    ]
-    challenger_probability = appearances[challenger_appearance][
-        "metrics"
-    ]
-    brier_delta = (
-        float(challenger_probability["brierScore"])
-        - float(incumbent_probability["brierScore"])
-    )
-    log_loss_delta = (
-        float(challenger_probability["logLoss"])
-        - float(incumbent_probability["logLoss"])
-    )
-    target_wins = sum(bool(row["challengerWins"]) for row in target_rows)
-    gates = {
-        "aggregateCrpsImprovement": (
-            crps_improvement >= MINIMUM_CRPS_IMPROVEMENT_FRACTION
-        ),
-        "targetSeasonWins": (
-            target_wins >= MINIMUM_DISTRIBUTION_TARGET_WINS
-        ),
-        "positionCrpsStability": (
-            maximum_position_regression
-            <= MAXIMUM_POSITION_CRPS_REGRESSION_FRACTION
-        ),
-        "appearanceBrierNonRegression": (
-            brier_delta <= MAXIMUM_APPEARANCE_BRIER_DELTA
-        ),
-        "appearanceLogLossNonRegression": (
-            log_loss_delta <= MAXIMUM_APPEARANCE_LOG_LOSS_DELTA
-        ),
-    }
+def _fixed_screen() -> Dict[str, Any]:
     return {
-        "aggregateCrpsImprovementFraction": _round(crps_improvement),
-        "targetSeasonWins": target_wins,
-        "targetSeasonCount": len(target_rows),
-        "targetComparisons": target_rows,
-        "positionComparisons": position_rows,
-        "maximumPositionCrpsRegressionFraction": _round(
-            maximum_position_regression
-        ),
-        "appearanceBrierDelta": _round(brier_delta),
-        "appearanceLogLossDelta": _round(log_loss_delta),
-        "gates": gates,
-        "passes": all(gates.values()),
+        "distribution": {
+            "primaryMetric": "aggregate-player-gameweek-mean-crps",
+            "minimumCrpsImprovementFraction": (
+                MINIMUM_CRPS_IMPROVEMENT_FRACTION
+            ),
+            "minimumTargetSeasonWins": MINIMUM_DISTRIBUTION_TARGET_WINS,
+            "maximumPositionCrpsRegressionFraction": (
+                MAXIMUM_POSITION_CRPS_REGRESSION_FRACTION
+            ),
+            "maximumAppearanceBrierDelta": (
+                MAXIMUM_APPEARANCE_BRIER_DELTA
+            ),
+            "maximumAppearanceLogLossDelta": (
+                MAXIMUM_APPEARANCE_LOG_LOSS_DELTA
+            ),
+        },
+        "policy": {
+            "evaluationPolicyKey": REFERENCE_POLICY_KEY,
+            "minimumMeanImprovementPoints": MINIMUM_MEAN_IMPROVEMENT_POINTS,
+            "minimumTargetWins": MINIMUM_POLICY_TARGET_WINS,
+            "maximumWorstTargetRegressionPoints": (
+                MAXIMUM_WORST_TARGET_REGRESSION_POINTS
+            ),
+        },
+        "jointDecisionRule": "all-distribution-and-policy-gates-must-pass",
     }
 
 
@@ -660,7 +560,7 @@ def _require_scenario_pair(
             "targetPerformanceFieldsRead"
         )
         is False,
-        "official-creative.scenario-pair",
+        "team-fixture-strength.scenario-pair",
         "The fixed target-outcome-free scenario pair is unavailable.",
     )
 
@@ -673,7 +573,7 @@ def _require(condition: bool, code: str, message: str) -> None:
 def main(arguments: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         description=(
-            "Evaluate official BPS and creative-history enrichment on fixed "
+            "Evaluate cutoff-safe team and opponent fixture strength in "
             "historical opening distributions and squad policy."
         )
     )
@@ -681,8 +581,10 @@ def main(arguments: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--output", type=Path)
     options = parser.parse_args(arguments)
     try:
-        artifact = build_historical_official_creative_opening_evaluation(
-            options.database
+        artifact = (
+            build_historical_team_fixture_strength_opening_evaluation(
+                options.database
+            )
         )
         _write_report(artifact, options.output)
         return 0
