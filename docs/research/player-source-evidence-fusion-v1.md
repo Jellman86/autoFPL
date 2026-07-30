@@ -135,6 +135,13 @@ season.
    claims, source counts, categorical conflicts and linked evidence clusters as
    a quarantined research tape. Reliability learning, material forecast
    movement and the same boundary in AI tools remain.
+9. **Selected-squad boundary audit implemented:** collapse immutable claim
+   revisions to the latest exact-capture player/source/target row and inspect
+   the selected 15 before any forecast mutation. The first current audit finds
+   complete FFScout coverage, with 13 predicted starters and Enzo and Van Hecke
+   omitted. Because the retained model predicts appearance rather than start,
+   the claims remain risk flags until a start/substitute/zero-minutes mixture
+   passes temporal proper-score and complete-policy evaluation.
 
 ## Research basis
 
