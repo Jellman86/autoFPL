@@ -30,7 +30,7 @@ The focused [player and source evidence-fusion programme](player-source-evidence
 - [Bhatt et al., ICWSM 2019](https://doi.org/10.1609/icwsm.v13i01.3213) — crowd diversity and captaincy decisions.
 - [Ramezani, 2025 preprint](https://arxiv.org/abs/2505.02170) — integer/robust optimisation and simulation; useful design evidence, not peer-reviewed proof.
 - [Open FPL Solver](https://github.com/solioanalytics/open-fpl-solver) — active Apache-2.0 reference implementation; pin and audit before reuse.
-- [Groos, OpenFPL 2025](https://arxiv.org/abs/2508.09992) and its [MIT implementation](https://github.com/daniegr/OpenFPL) — prospective public-data FPL/Understat position ensembles and a valuable feature benchmark; local temporal reproduction and ablation remain required.
+- [Groos, OpenFPL 2025](https://arxiv.org/abs/2508.09992) and its [MIT implementation](https://github.com/daniegr/OpenFPL) — prospective public-data FPL/Understat position ensembles and a valuable feature benchmark; the public artifact lacks its training/feature-construction pipeline and evaluates only 2024/25 Gameweeks 32–38. autoFPL's fixed opening-season BPS/creative-feature ablation failed its distribution materiality and full-squad policy gates, so no OpenFPL-derived input is admitted.
 - [Vaastav FPL Historical Dataset](https://github.com/vaastav/Fantasy-Premier-League) — useful historical FPL/Understat backfill whose maintainers explicitly warn that same-Gameweek `xP` may contain post-match lookahead; exclude that field unless a pre-deadline capture proves its timing.
 
 ## Engineering and supply chain

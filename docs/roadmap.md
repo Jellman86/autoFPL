@@ -628,6 +628,15 @@ exact hurdle distributions as the best current scenario input. Their central
 80% interval still covers 87.67% and the 37/38-row donor support is coarse, so
 describe the ranges as empirical scenarios rather than perfectly calibrated
 confidence intervals.
+The OpenFPL-inspired official creative-history challenger has also been
+screened without weakening those gates. Adding prior BPS, influence,
+creativity and threat improved CRPS by 0.62% and won all three season
+distribution comparisons, but missed the fixed 1% materiality threshold.
+More importantly, its selected squads lost six realised points on average,
+won only one target and regressed by 31 points in the worst target. Reject the
+feature set and leave v2 unchanged. The next player-model challenger should
+address cutoff-safe team and opponent strength per fixture rather than tune
+another subset on the same opened outcomes.
 
 The SQLite persistence vertical slice is deployed and survives a managed
 container recreate. Operator-triggered fixed-origin official FPL collectors

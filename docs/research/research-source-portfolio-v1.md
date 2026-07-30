@@ -26,6 +26,15 @@ Sporadic team reveals are constrained decisions and may be unavailable before
 the relevant deadline. They are therefore scored as an author-specific policy
 signal only when a stable, attributable, point-in-time source exists.
 
+OpenFPL has now been inspected at repository revision
+`ad055ba7270145ce8ecc1f19581423493b1357e7`. The public artifact contains
+inference weights but no training or feature-construction pipeline, and its
+prospective paper evaluation covers Gameweeks 32–38 rather than Gameweek 1.
+It is therefore a method/feature benchmark, not a directly admitted opening
+forecast. A fixed autoFPL ablation of its official BPS and creative-history
+idea improved distribution CRPS by only 0.62% and lost six realised squad
+points on average, so that enrichment was rejected.
+
 ## Prior-season and current-health state
 
 External sources complement rather than replace player history. The model
