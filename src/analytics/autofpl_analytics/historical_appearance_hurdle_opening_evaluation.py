@@ -5,7 +5,15 @@ import json
 import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, DefaultDict, Dict, Mapping, Optional, Sequence
+from typing import (
+    Any,
+    Callable,
+    DefaultDict,
+    Dict,
+    Mapping,
+    Optional,
+    Sequence,
+)
 
 import numpy as np
 
@@ -315,6 +323,47 @@ def _reconstruct_hurdle_target(
         connection,
         fold.training_captures,
     )
+    histories: DefaultDict[int, list[Observation]] = defaultdict(list)
+    for season_index, capture in enumerate(fold.training_captures):
+        for observation in _load_observations(
+            connection,
+            capture,
+            season_index,
+        ):
+            histories[observation.player_code].append(observation)
+    fixtures = _load_fixture_proxy(
+        connection,
+        fold.target_capture.capture_id,
+    )
+    return _reconstruct_hurdle_target_from_samples(
+        connection,
+        fold,
+        samples_by_origin,
+        observations_by_origin,
+        lambda gameweek, player: _target_sample(
+            fold.target_capture.season_code,
+            len(fold.training_captures),
+            gameweek,
+            player,
+            histories.get(player.player_code, ()),
+            fixtures,
+        ),
+        FEATURES,
+        APPEARANCE_MODEL,
+        CONDITIONAL_MODEL,
+    )
+
+
+def _reconstruct_hurdle_target_from_samples(
+    connection: Any,
+    fold: OpeningFold,
+    samples_by_origin: Mapping[Any, Sequence[Sample]],
+    observations_by_origin: Mapping[Any, Mapping[int, Any]],
+    target_sample: Callable[[int, Any], Sample],
+    continuous_features: Sequence[str],
+    appearance_model: str,
+    conditional_model: str,
+) -> Dict[str, Any]:
     ordered_origins = sorted(samples_by_origin)
     _require(
         ordered_origins
@@ -349,18 +398,6 @@ def _reconstruct_hurdle_target(
         "The fixed hurdle training cohorts are incomplete.",
     )
 
-    histories: DefaultDict[int, list[Observation]] = defaultdict(list)
-    for season_index, capture in enumerate(fold.training_captures):
-        for observation in _load_observations(
-            connection,
-            capture,
-            season_index,
-        ):
-            histories[observation.player_code].append(observation)
-    fixtures = _load_fixture_proxy(
-        connection,
-        fold.target_capture.capture_id,
-    )
     latest_prior = fold.training_captures[-1]
     donor_points = _build_samples(
         connection,
@@ -391,14 +428,7 @@ def _reconstruct_hurdle_target(
     scenario_count: Optional[int] = None
     for gameweek in TARGET_GAMEWEEKS:
         target = [
-            _target_sample(
-                fold.target_capture.season_code,
-                len(fold.training_captures),
-                gameweek,
-                player,
-                histories.get(player.player_code, ()),
-                fixtures,
-            )
+            target_sample(gameweek, player)
             for player in ordered_players
         ]
         appearance, appearance_diagnostics = _predict_classifier(
@@ -414,14 +444,14 @@ def _reconstruct_hurdle_target(
                 )
                 for sample in target
             ],
-            APPEARANCE_MODEL,
-            continuous_features=FEATURES,
+            appearance_model,
+            continuous_features=continuous_features,
         )
         conditional, conditional_diagnostics = _predict_tree(
             conditional_training,
             target,
-            continuous_features=FEATURES,
-            model_name=CONDITIONAL_MODEL,
+            continuous_features=continuous_features,
+            model_name=conditional_model,
         )
         hurdle = _combine_hurdle(target, appearance, conditional)
         joint = generate_joint_fold(

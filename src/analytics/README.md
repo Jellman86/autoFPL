@@ -380,6 +380,22 @@ all four positions, and improved appearance Brier and log loss. The empirical
 ranges remain conservative and finite-sample limited. See the
 [historical hurdle opening-distribution evaluation](../../docs/research/historical-appearance-hurdle-opening-distribution-evaluation-v1.md).
 
+The next fixed feature ablation adds only prior BPS, influence, creativity and
+threat summaries inspired by OpenFPL's public feature portfolio:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.historical_official_creative_opening_evaluation \
+  --database /path/to/autofpl.db \
+  --output /path/to/historical-official-creative-opening-evaluation.json
+```
+
+It must improve both player-distribution proper scores and the complete
+six-week opening policy. The first run improved CRPS by 0.62% but lost six
+realised squad points on average and regressed by 31 in the worst season, so
+the enrichment is rejected and does not alter v2. See the
+[official-creative opening evaluation](../../docs/research/historical-official-creative-opening-evaluation-v1.md).
+
 The conditional-optimality audit distinguishes an exact solver result from a
 robust player choice:
 

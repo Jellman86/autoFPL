@@ -54,6 +54,14 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **An OpenFPL-inspired opening feature set has been measured and rejected.**
+  A deterministic read-only evaluator adds strictly prior BPS, influence,
+  creativity and threat summaries to the retained appearance-hurdle model,
+  rebuilds both target-outcome-free scenario families and applies fixed proper
+  score plus complete-squad policy gates. CRPS improved by 0.62%, below the
+  1% gate, while the resulting squads lost six realised points on average and
+  regressed by 31 in the worst target. The negative result is retained and
+  the served v2 prediction is unchanged.
 - **The hurdle scenario distributions now pass a proper-score screen.** A
   target-outcome-free reconstruction compares direct and hurdle empirical
   paths across 15,712 historical opening player-Gameweeks. Hurdle CRPS improves
