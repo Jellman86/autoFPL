@@ -56,6 +56,21 @@ public sealed class ResearchSourceSnapshotStore
                 capture.TransportVersion),
             cancellationToken);
 
+    public Task<ResearchSourceSnapshotDocument> PersistAsync(
+        ResearchSourceDefinition source,
+        PlaywrightResearchSourceCaptureResult capture,
+        CancellationToken cancellationToken = default) =>
+        PersistCaptureAsync(
+            source,
+            new ResearchSourceCapture(
+                capture.FinalUri,
+                capture.StatusCode,
+                capture.Content,
+                capture.ContentTrust,
+                PremierLeagueInjuryPlaywrightCollector.TransportKey,
+                capture.TransportVersion),
+            cancellationToken);
+
     private async Task<ResearchSourceSnapshotDocument> PersistCaptureAsync(
         ResearchSourceDefinition source,
         ResearchSourceCapture scrape,

@@ -6,26 +6,33 @@ public sealed class ResearchSourceSnapshotImporter
 {
     private readonly SpiderMcpClient _spiderClient;
     private readonly ByparrClient? _byparrClient;
+    private readonly PremierLeagueInjuryPlaywrightCollector?
+        _premierLeagueInjuryCollector;
     private readonly ResearchSourceSnapshotStore _store;
 
     public ResearchSourceSnapshotImporter(
         SpiderMcpClient spiderClient,
         ByparrClient byparrClient,
-        ResearchSourceSnapshotStore store)
+        ResearchSourceSnapshotStore store,
+        PremierLeagueInjuryPlaywrightCollector? premierLeagueInjuryCollector = null)
     {
         _spiderClient =
             spiderClient ?? throw new ArgumentNullException(nameof(spiderClient));
         _byparrClient =
             byparrClient ?? throw new ArgumentNullException(nameof(byparrClient));
+        _premierLeagueInjuryCollector =
+            premierLeagueInjuryCollector;
         _store = store ?? throw new ArgumentNullException(nameof(store));
     }
 
     internal ResearchSourceSnapshotImporter(
         SpiderMcpClient spiderClient,
-        ResearchSourceSnapshotStore store)
+        ResearchSourceSnapshotStore store,
+        PremierLeagueInjuryPlaywrightCollector? premierLeagueInjuryCollector = null)
     {
         _spiderClient =
             spiderClient ?? throw new ArgumentNullException(nameof(spiderClient));
+        _premierLeagueInjuryCollector = premierLeagueInjuryCollector;
         _store = store ?? throw new ArgumentNullException(nameof(store));
     }
 
@@ -42,6 +49,22 @@ public sealed class ResearchSourceSnapshotImporter
                 ?? throw new ResearchSourceSnapshotException(
                     "The registered Byparr source requires a configured Byparr transport.");
             ByparrCaptureResult capture =
+                await client.CaptureAsync(source, cancellationToken);
+            return await _store.PersistAsync(
+                source,
+                capture,
+                cancellationToken);
+        }
+
+        if (StringComparer.Ordinal.Equals(
+                source.TransportKey,
+                PremierLeagueInjuryPlaywrightCollector.TransportKey))
+        {
+            PremierLeagueInjuryPlaywrightCollector client =
+                _premierLeagueInjuryCollector
+                ?? throw new ResearchSourceSnapshotException(
+                    "The registered Premier League injury source requires Playwright MCP.");
+            PlaywrightResearchSourceCaptureResult capture =
                 await client.CaptureAsync(source, cancellationToken);
             return await _store.PersistAsync(
                 source,

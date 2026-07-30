@@ -86,11 +86,13 @@ part of the research record.
 
 ## Implemented boundary
 
-The fixed inventory currently supports explicit Spider MCP shadow capture of
-the Premier League injury page, FFScout predicted line-ups and the strAIghtred
-consensus page. Captures are private, compressed, immutable, content-deduplicated
-and tied to the latest cutoff-eligible official target. The read API exposes
-metadata and limitations, never retained source text.
+The fixed inventory currently supports Playwright MCP shadow capture of the
+client-rendered Premier League injury page, Spider MCP capture of FFScout
+predicted line-ups and the strAIghtred consensus page, and bounded Byparr
+capture of registered FBref sources. Captures are private, compressed,
+immutable, content-deduplicated and tied to the latest cutoff-eligible official
+target. The read API exposes metadata and limitations, never retained source
+text.
 
 Deterministic extraction now populates only quarantined FFScout start and
 availability claims plus dependent strAIghtred start-probability claims.
@@ -98,8 +100,10 @@ FFScout non-starter complements are derived only when a complete eleven-player
 lineup resolves to one official team; partial or unresolved team blocks remain
 unknown. The two start sources share player/target duplicate clusters so
 consensus is never counted as an extra independent vote. The Premier League
-page is client-rendered: its capture now waits for the injury table and rejects
-the short application shell before persistence. A Quark recapture must confirm
-the retained row format before the deterministic injury adapter is frozen.
-Premier League injury extraction, source reliability and any forecast
-influence remain future slices.
+page is client-rendered. Quark's existing isolated Playwright MCP has confirmed
+20 club sections and 53 current player rows; four rows currently have no linked
+club update. The fixed collector now waits for the complete structure and
+retains a bounded club/player/injury/optional-update-link payload plus a hash of
+the exact rendered widget; partial clubs, malformed rows and the short
+application shell fail closed. Premier League injury extraction, source
+reliability and any forecast influence remain future slices.
