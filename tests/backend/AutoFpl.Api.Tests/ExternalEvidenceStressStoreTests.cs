@@ -144,7 +144,7 @@ public sealed class ExternalEvidenceStressStoreTests
                     optimizerPolicyKey = "expected-points",
                     optimizerVersion =
                         "scipy-highs-multi-horizon-mean-cvar-v1",
-                    benchWeight = 0.15m,
+                    benchWeight = 0.08m,
                     cvarWeight = 0m,
                 },
                 incumbent = new
