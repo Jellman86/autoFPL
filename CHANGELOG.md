@@ -54,6 +54,13 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **The fixed scoreline model now passes a three-season replication.** Across
+  247 target matches and 24 expanding-origin folds, the unchanged time-decayed
+  Dixon–Coles challenger improves joint-score likelihood by 3.24%,
+  clean-sheet Brier score by 6.36%, goal RMSE and result likelihood, while
+  winning 17 clean-sheet folds without a target-season regression. It is
+  retained only for the next player clean-sheet/goals-conceded distribution
+  ablation and does not yet influence advice.
 - **Four seasons of archived fixture events now reproduce FPL points exactly.**
   A deterministic, season-versioned audit verifies the raw archive hashes and
   reconstructs every one of 113,260 player-fixture totals from appearance,

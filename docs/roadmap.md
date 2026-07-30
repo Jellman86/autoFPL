@@ -1048,10 +1048,15 @@ conceded, saves, penalties, cards, own goals, bonus and the applicable
 defensive-contribution rule. The active accuracy slice can therefore model
 components conditional on participation and shared team/opponent state, pass
 their simulated events through an exact scorer and then apply the unchanged
-distribution and initial-squad policy screens. Team scoreline and
-clean-sheet/goals-conceded state come first, followed by conditional player
-goal/assist allocation; lineup sources remain participation evidence, not an
-arbitrary points adjustment.
+distribution and initial-squad policy screens. The unchanged time-decayed
+Dixon–Coles model now passes a broader three-target replication: over 247
+matches it improves joint-score NLL by 3.24%, clean-sheet Brier by 6.36%,
+wins 17/24 clean-sheet folds and does not regress a target season. Retain that
+shared scoreline state for the next player-level clean-sheet/goals-conceded
+ablation, not direct advice. Conditional player goal/assist allocation follows
+only after that component passes complete point-distribution and squad-policy
+screens; lineup sources remain participation evidence, not an arbitrary points
+adjustment.
 Do not add another standalone governance, universal contract, infrastructure
 or AI-orchestrator project ahead of these slices.
 
