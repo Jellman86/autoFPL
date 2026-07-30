@@ -54,6 +54,13 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **Four seasons of archived fixture events now reproduce FPL points exactly.**
+  A deterministic, season-versioned audit verifies the raw archive hashes and
+  reconstructs every one of 113,260 player-fixture totals from appearance,
+  goals, assists, clean sheets, goals conceded, saves, penalties, cards, own
+  goals, bonus and defensive contributions with zero residual. This establishes
+  the exact scoring boundary for the next shared-match-state component model;
+  it is an outcome audit and does not itself alter the served forecast.
 - **The current v2 squad is insensitive to aggregate promoted-player playing
   time.** A non-serving diagnostic applies the frozen Championship appearance
   pool to 60 reviewed Coventry, Hull and Ipswich players, rebuilds joint paths

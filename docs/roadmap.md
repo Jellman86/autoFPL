@@ -1041,10 +1041,17 @@ The first fixed start-state point challenger has now tested that decomposition.
 Its coherence rule improves start Brier and log loss, but the complete point
 mean improves MAE by only 0.0811%, regresses RMSE and wins 4/8 folds. It is
 rejected without tuning. This closes another aggregate-tree variation: the
-next accuracy slice reconstructs fixture-level scoring components conditional
-on participation and team/opponent state, then passes the same distribution
-and initial-squad policy screens. Lineup sources remain participation evidence,
-not an arbitrary points adjustment.
+fixture-level scoring boundary is now proven instead. A deterministic,
+season-versioned scorer reproduces all 113,260 player-fixture totals across
+four pinned seasons exactly from minutes, goals, assists, clean sheets, goals
+conceded, saves, penalties, cards, own goals, bonus and the applicable
+defensive-contribution rule. The active accuracy slice can therefore model
+components conditional on participation and shared team/opponent state, pass
+their simulated events through an exact scorer and then apply the unchanged
+distribution and initial-squad policy screens. Team scoreline and
+clean-sheet/goals-conceded state come first, followed by conditional player
+goal/assist allocation; lineup sources remain participation evidence, not an
+arbitrary points adjustment.
 Do not add another standalone governance, universal contract, infrastructure
 or AI-orchestrator project ahead of these slices.
 
