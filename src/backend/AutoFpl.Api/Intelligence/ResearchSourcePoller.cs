@@ -6,6 +6,7 @@ public sealed class ResearchSourcePoller : BackgroundService
         new HashSet<string>(
             [
                 ResearchSourceClaimExtractor.FfScoutSourceKey,
+                ResearchSourceClaimExtractor.PremierLeagueInjurySourceKey,
                 ResearchSourceClaimExtractor.StraightredSourceKey,
             ],
             StringComparer.Ordinal);

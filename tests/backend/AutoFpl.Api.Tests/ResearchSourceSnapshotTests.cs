@@ -1287,6 +1287,99 @@ public sealed class ResearchSourceSnapshotTests
     }
 
     [Fact]
+    public async Task Premier_league_injury_extractor_is_team_scoped_and_idempotent()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = await CreateDatabaseAsync(files.DatabasePath);
+        var snapshotStore = new ResearchSourceSnapshotStore(
+            options,
+            new FixedTimeProvider(RetrievalTime));
+        ResearchSourceDefinition source =
+            ResearchSourceRegistry.Get("premier-league-injuries");
+        ResearchSourceSnapshotDocument snapshot = await snapshotStore.PersistAsync(
+            source,
+            new PlaywrightResearchSourceCaptureResult(
+                source.CanonicalUri,
+                200,
+                CreatePremierLeagueInjuryExtractionEvidence(),
+                "untrusted_remote_content",
+                PremierLeagueInjuryPlaywrightCollector.TransportVersion),
+            TestContext.Current.CancellationToken);
+        var extractor = new ResearchSourceClaimExtractor(
+            snapshotStore,
+            new EvidenceClaimStore(
+                options,
+                new FixedTimeProvider(RetrievalTime.AddMinutes(1))));
+
+        ResearchSourceClaimExtractionDocument first =
+            await extractor.ExtractAsync(
+                snapshot.SnapshotId,
+                TestContext.Current.CancellationToken);
+        ResearchSourceClaimExtractionDocument duplicate =
+            await extractor.ExtractAsync(
+                snapshot.SnapshotId,
+                TestContext.Current.CancellationToken);
+
+        Assert.Equal(first, duplicate);
+        Assert.Equal(
+            ResearchSourceClaimExtractor.PremierLeagueInjuryExtractionVersion,
+            first.ExtractionVersion);
+        Assert.Equal(3, first.CandidateCount);
+        Assert.Equal(0, first.StartClaimCount);
+        Assert.Equal(3, first.AvailabilityCandidateCount);
+        Assert.Equal(2, first.AvailabilityClaimCount);
+        Assert.Equal(1, first.UnresolvedAvailabilityCount);
+        Assert.Equal(2, first.ClaimCount);
+        Assert.Empty(first.UnresolvedPlayerCodes);
+
+        EvidenceClaimSetDocument claims =
+            await new EvidenceClaimStore(options, TimeProvider.System)
+                .GetForGameweekAsync(
+                    "2026-27",
+                    1,
+                    RetrievalTime,
+                    TestContext.Current.CancellationToken);
+        Assert.Equal(2, claims.Claims.Count);
+        Assert.All(
+            claims.Claims,
+            claim =>
+            {
+                Assert.Equal("premier-league-injuries", claim.SourceKey);
+                Assert.Equal("Premier League", claim.Author);
+                Assert.Equal("availability", claim.ClaimType);
+                Assert.Equal("doubtful", claim.AvailabilityStatus);
+                Assert.Null(claim.ForecastProbability);
+                Assert.Equal("reported", claim.Directness);
+                Assert.Equal("deterministic", claim.ExtractionMethod);
+                Assert.Equal(
+                    ResearchSourceClaimExtractor
+                        .PremierLeagueInjuryExtractionVersion,
+                    claim.ExtractionVersion);
+                Assert.Equal(1m, claim.ExtractionConfidence);
+                Assert.NotNull(claim.DuplicateClusterKey);
+            });
+        Assert.Contains(
+            claims.Claims,
+            claim => claim.PlayerId == 101
+                && claim.SourceSpan
+                    == "Home injury list: Test Player — Back");
+        Assert.Contains(
+            claims.Claims,
+            claim => claim.PlayerId == 102
+                && claim.SourceSpan
+                    == "Home injury list: Amadou Onana — Knee");
+    }
+
+    [Fact]
+    public void Premier_league_injury_parser_rejects_incomplete_club_coverage()
+    {
+        Assert.Throws<ResearchSourceSnapshotException>(
+            () => ResearchSourceClaimExtractor
+                .ExtractPremierLeagueInjuryCandidates(
+                    CreatePremierLeagueInjuryEvidence(clubCount: 19)));
+    }
+
+    [Fact]
     public async Task Ffscout_extractor_uses_official_photo_code_and_is_idempotent()
     {
         using var files = new TemporaryDatabaseFiles();
@@ -2423,6 +2516,50 @@ public sealed class ResearchSourceSnapshotTests
                                                     + $"news/player-{player:D2}",
                                     })
                                 .ToArray(),
+                        })
+                    .ToArray(),
+            });
+
+    private static string CreatePremierLeagueInjuryExtractionEvidence() =>
+        JsonSerializer.Serialize(
+            new
+            {
+                schemaVersion = "premier-league-injury-dom/v1",
+                sourceUrl =
+                    "https://www.premierleague.com/en/latest-player-injuries",
+                pageTitle =
+                    "Premier League Latest Injury News - Club by Club Updates",
+                renderedWidgetSha256 = new string('b', 64),
+                clubs = Enumerable.Range(1, 20)
+                    .Select(
+                        club => new
+                        {
+                            teamName = club == 1 ? "Home" : $"Club {club:D2}",
+                            rows = club == 1
+                                ? (object[])
+                                [
+                                    (object)new
+                                    {
+                                        playerName = "Test Player",
+                                        injury = "Back",
+                                        updateUrl = (string?)null,
+                                    },
+                                    new
+                                    {
+                                        playerName = "Amadou Onana",
+                                        injury = "Knee",
+                                        updateUrl =
+                                            "https://home.example/update",
+                                    },
+                                    new
+                                    {
+                                        playerName = "Unknown Trialist",
+                                        injury = "Knock",
+                                        updateUrl =
+                                            "https://home.example/unknown",
+                                    },
+                                ]
+                                : Array.Empty<object>(),
                         })
                     .ToArray(),
             });

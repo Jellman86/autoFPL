@@ -94,8 +94,9 @@ immutable, content-deduplicated and tied to the latest cutoff-eligible official
 target. The read API exposes metadata and limitations, never retained source
 text.
 
-Deterministic extraction now populates only quarantined FFScout start and
-availability claims plus dependent strAIghtred start-probability claims.
+Deterministic extraction now populates quarantined FFScout start and
+availability claims, dependent strAIghtred start-probability claims and
+official Premier League `doubtful` availability claims.
 FFScout non-starter complements are derived only when a complete eleven-player
 lineup resolves to one official team; partial or unresolved team blocks remain
 unknown. The two start sources share player/target duplicate clusters so
@@ -105,5 +106,7 @@ page is client-rendered. Quark's existing isolated Playwright MCP has confirmed
 club update. The fixed collector now waits for the complete structure and
 retains a bounded club/player/injury/optional-update-link payload plus a hash of
 the exact rendered widget; partial clubs, malformed rows and the short
-application shell fail closed. Premier League injury extraction, source
-reliability and any forecast influence remain future slices.
+application shell fail closed. Its typed extractor uses team-scoped official
+identity, reports unresolved names and maps a listing only to `doubtful`; it
+does not infer a probability, return date or absence. Source reliability and
+any forecast influence remain future slices.
