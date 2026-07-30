@@ -1,0 +1,5513 @@
+{
+  "affectedAppearanceModels": [
+    {
+      "calibrationBins": [
+        {
+          "absoluteGap": 0.273441,
+          "count": 240,
+          "lowerBoundInclusive": 0.0,
+          "meanProbability": 0.072392,
+          "observedRate": 0.345833,
+          "upperBound": 0.2,
+          "upperBoundInclusive": false
+        },
+        {
+          "absoluteGap": 0.071873,
+          "count": 428,
+          "lowerBoundInclusive": 0.2,
+          "meanProbability": 0.335892,
+          "observedRate": 0.264019,
+          "upperBound": 0.4,
+          "upperBoundInclusive": false
+        },
+        {
+          "absoluteGap": 0.100149,
+          "count": 789,
+          "lowerBoundInclusive": 0.4,
+          "meanProbability": 0.457564,
+          "observedRate": 0.357414,
+          "upperBound": 0.6,
+          "upperBoundInclusive": false
+        },
+        {
+          "absoluteGap": 0.148629,
+          "count": 71,
+          "lowerBoundInclusive": 0.6,
+          "meanProbability": 0.697924,
+          "observedRate": 0.549296,
+          "upperBound": 0.8,
+          "upperBoundInclusive": false
+        },
+        {
+          "absoluteGap": 0.274671,
+          "count": 96,
+          "lowerBoundInclusive": 0.8,
+          "meanProbability": 0.868421,
+          "observedRate": 0.59375,
+          "upperBound": 1.0,
+          "upperBoundInclusive": true
+        }
+      ],
+      "metrics": {
+        "brierScore": 0.244891,
+        "count": 1624,
+        "expectedCalibrationError": 0.130743,
+        "logLoss": 0.724989,
+        "meanProbability": 0.403371,
+        "observedRate": 0.353448
+      },
+      "name": "appearance-hurdle-opening-appearance",
+      "slices": {
+        "position": {
+          "defender": {
+            "brierScore": 0.237072,
+            "count": 512,
+            "expectedCalibrationError": 0.060544,
+            "logLoss": 0.686818,
+            "meanProbability": 0.404711,
+            "observedRate": 0.427734
+          },
+          "forward": {
+            "brierScore": 0.23292,
+            "count": 256,
+            "expectedCalibrationError": 0.117513,
+            "logLoss": 0.65165,
+            "meanProbability": 0.47442,
+            "observedRate": 0.371094
+          },
+          "goalkeeper": {
+            "brierScore": 0.182283,
+            "count": 208,
+            "expectedCalibrationError": 0.246365,
+            "logLoss": 0.585456,
+            "meanProbability": 0.329361,
+            "observedRate": 0.115385
+          },
+          "midfielder": {
+            "brierScore": 0.275895,
+            "count": 648,
+            "expectedCalibrationError": 0.183882,
+            "logLoss": 0.828911,
+            "meanProbability": 0.398,
+            "observedRate": 0.364198
+          }
+        }
+      }
+    },
+    {
+      "calibrationBins": [
+        {
+          "absoluteGap": 0.04249,
+          "count": 259,
+          "lowerBoundInclusive": 0.0,
+          "meanProbability": 0.142876,
+          "observedRate": 0.100386,
+          "upperBound": 0.2,
+          "upperBoundInclusive": false
+        },
+        {
+          "absoluteGap": 0.053325,
+          "count": 680,
+          "lowerBoundInclusive": 0.2,
+          "meanProbability": 0.294502,
+          "observedRate": 0.241176,
+          "upperBound": 0.4,
+          "upperBoundInclusive": false
+        },
+        {
+          "absoluteGap": 0.020457,
+          "count": 475,
+          "lowerBoundInclusive": 0.4,
+          "meanProbability": 0.504667,
+          "observedRate": 0.484211,
+          "upperBound": 0.6,
+          "upperBoundInclusive": false
+        },
+        {
+          "absoluteGap": 0.025783,
+          "count": 175,
+          "lowerBoundInclusive": 0.6,
+          "meanProbability": 0.665645,
+          "observedRate": 0.691429,
+          "upperBound": 0.8,
+          "upperBoundInclusive": false
+        },
+        {
+          "absoluteGap": 0.106015,
+          "count": 35,
+          "lowerBoundInclusive": 0.8,
+          "meanProbability": 0.836842,
+          "observedRate": 0.942857,
+          "upperBound": 1.0,
+          "upperBoundInclusive": true
+        }
+      ],
+      "metrics": {
+        "brierScore": 0.187812,
+        "count": 1624,
+        "expectedCalibrationError": 0.040151,
+        "logLoss": 0.558233,
+        "meanProbability": 0.383473,
+        "observedRate": 0.353448
+      },
+      "name": "appearance-hurdle-promoted-equal-weight-opening-appearance",
+      "slices": {
+        "position": {
+          "defender": {
+            "brierScore": 0.202608,
+            "count": 512,
+            "expectedCalibrationError": 0.066406,
+            "logLoss": 0.588802,
+            "meanProbability": 0.45335,
+            "observedRate": 0.427734
+          },
+          "forward": {
+            "brierScore": 0.196871,
+            "count": 256,
+            "expectedCalibrationError": 0.062105,
+            "logLoss": 0.580234,
+            "meanProbability": 0.420314,
+            "observedRate": 0.371094
+          },
+          "goalkeeper": {
+            "brierScore": 0.111476,
+            "count": 208,
+            "expectedCalibrationError": 0.111309,
+            "logLoss": 0.391729,
+            "meanProbability": 0.210896,
+            "observedRate": 0.115385
+          },
+          "midfielder": {
+            "brierScore": 0.197044,
+            "count": 648,
+            "expectedCalibrationError": 0.060445,
+            "logLoss": 0.578833,
+            "meanProbability": 0.369103,
+            "observedRate": 0.364198
+          }
+        }
+      }
+    }
+  ],
+  "affectedDistributionModels": [
+    {
+      "metrics": {
+        "centralIntervals": [
+          {
+            "meanWidth": 0.863454,
+            "nominalCoverage": 0.5,
+            "observedCoverage": 0.760468
+          },
+          {
+            "meanWidth": 3.091379,
+            "nominalCoverage": 0.8,
+            "observedCoverage": 0.899631
+          },
+          {
+            "meanWidth": 6.584698,
+            "nominalCoverage": 0.95,
+            "observedCoverage": 0.941502
+          }
+        ],
+        "count": 1624,
+        "meanCrps": 0.700624,
+        "meanDistributionSampleCount": 37.655172,
+        "meanPinballLoss": 0.355382,
+        "medianMae": 0.833744,
+        "quantileCalibration": [
+          {
+            "absoluteGap": 0.537931,
+            "observedAtOrBelowRate": 0.637931,
+            "quantile": 0.1
+          },
+          {
+            "absoluteGap": 0.431034,
+            "observedAtOrBelowRate": 0.681034,
+            "quantile": 0.25
+          },
+          {
+            "absoluteGap": 0.200123,
+            "observedAtOrBelowRate": 0.700123,
+            "quantile": 0.5
+          },
+          {
+            "absoluteGap": 0.034483,
+            "observedAtOrBelowRate": 0.784483,
+            "quantile": 0.75
+          },
+          {
+            "absoluteGap": 0.005172,
+            "observedAtOrBelowRate": 0.905172,
+            "quantile": 0.9
+          }
+        ]
+      },
+      "name": "appearance-hurdle-opening-joint-distribution",
+      "slices": {
+        "position": {
+          "defender": {
+            "centralIntervals": [
+              {
+                "meanWidth": 0.870117,
+                "nominalCoverage": 0.5,
+                "observedCoverage": 0.765625
+              },
+              {
+                "meanWidth": 3.395703,
+                "nominalCoverage": 0.8,
+                "observedCoverage": 0.892578
+              },
+              {
+                "meanWidth": 6.421484,
+                "nominalCoverage": 0.95,
+                "observedCoverage": 0.9375
+              }
+            ],
+            "count": 512,
+            "meanCrps": 0.780915,
+            "meanDistributionSampleCount": 37.65625,
+            "meanPinballLoss": 0.398803,
+            "medianMae": 0.951172,
+            "quantileCalibration": [
+              {
+                "absoluteGap": 0.507422,
+                "observedAtOrBelowRate": 0.607422,
+                "quantile": 0.1
+              },
+              {
+                "absoluteGap": 0.40625,
+                "observedAtOrBelowRate": 0.65625,
+                "quantile": 0.25
+              },
+              {
+                "absoluteGap": 0.169922,
+                "observedAtOrBelowRate": 0.669922,
+                "quantile": 0.5
+              },
+              {
+                "absoluteGap": 0.042969,
+                "observedAtOrBelowRate": 0.792969,
+                "quantile": 0.75
+              },
+              {
+                "absoluteGap": 0.00625,
+                "observedAtOrBelowRate": 0.90625,
+                "quantile": 0.9
+              }
+            ]
+          },
+          "forward": {
+            "centralIntervals": [
+              {
+                "meanWidth": 0.891602,
+                "nominalCoverage": 0.5,
+                "observedCoverage": 0.789062
+              },
+              {
+                "meanWidth": 4.303516,
+                "nominalCoverage": 0.8,
+                "observedCoverage": 0.9375
+              },
+              {
+                "meanWidth": 8.489453,
+                "nominalCoverage": 0.95,
+                "observedCoverage": 0.984375
+              }
+            ],
+            "count": 256,
+            "meanCrps": 0.738107,
+            "meanDistributionSampleCount": 37.5625,
+            "meanPinballLoss": 0.36526,
+            "medianMae": 0.882812,
+            "quantileCalibration": [
+              {
+                "absoluteGap": 0.384375,
+                "observedAtOrBelowRate": 0.484375,
+                "quantile": 0.1
+              },
+              {
+                "absoluteGap": 0.382812,
+                "observedAtOrBelowRate": 0.632812,
+                "quantile": 0.25
+              },
+              {
+                "absoluteGap": 0.175781,
+                "observedAtOrBelowRate": 0.675781,
+                "quantile": 0.5
+              },
+              {
+                "absoluteGap": 0.046875,
+                "observedAtOrBelowRate": 0.796875,
+                "quantile": 0.75
+              },
+              {
+                "absoluteGap": 0.041406,
+                "observedAtOrBelowRate": 0.941406,
+                "quantile": 0.9
+              }
+            ]
+          },
+          "goalkeeper": {
+            "centralIntervals": [
+              {
+                "meanWidth": 0.722356,
+                "nominalCoverage": 0.5,
+                "observedCoverage": 0.850962
+              },
+              {
+                "meanWidth": 3.047115,
+                "nominalCoverage": 0.8,
+                "observedCoverage": 0.971154
+              },
+              {
+                "meanWidth": 6.444832,
+                "nominalCoverage": 0.95,
+                "observedCoverage": 0.985577
+              }
+            ],
+            "count": 208,
+            "meanCrps": 0.396605,
+            "meanDistributionSampleCount": 37.653846,
+            "meanPinballLoss": 0.205714,
+            "medianMae": 0.379808,
+            "quantileCalibration": [
+              {
+                "absoluteGap": 0.794231,
+                "observedAtOrBelowRate": 0.894231,
+                "quantile": 0.1
+              },
+              {
+                "absoluteGap": 0.644231,
+                "observedAtOrBelowRate": 0.894231,
+                "quantile": 0.25
+              },
+              {
+                "absoluteGap": 0.399038,
+                "observedAtOrBelowRate": 0.899038,
+                "quantile": 0.5
+              },
+              {
+                "absoluteGap": 0.149038,
+                "observedAtOrBelowRate": 0.899038,
+                "quantile": 0.75
+              },
+              {
+                "absoluteGap": 0.071154,
+                "observedAtOrBelowRate": 0.971154,
+                "quantile": 0.9
+              }
+            ]
+          },
+          "midfielder": {
+            "centralIntervals": [
+              {
+                "meanWidth": 0.892361,
+                "nominalCoverage": 0.5,
+                "observedCoverage": 0.716049
+              },
+              {
+                "meanWidth": 2.386265,
+                "nominalCoverage": 0.8,
+                "observedCoverage": 0.867284
+              },
+              {
+                "meanWidth": 6.006057,
+                "nominalCoverage": 0.95,
+                "observedCoverage": 0.91358
+              }
+            ],
+            "count": 648,
+            "meanCrps": 0.719964,
+            "meanDistributionSampleCount": 37.691358,
+            "meanPinballLoss": 0.365214,
+            "medianMae": 0.867284,
+            "quantileCalibration": [
+              {
+                "absoluteGap": 0.540432,
+                "observedAtOrBelowRate": 0.640432,
+                "quantile": 0.1
+              },
+              {
+                "absoluteGap": 0.401235,
+                "observedAtOrBelowRate": 0.651235,
+                "quantile": 0.25
+              },
+              {
+                "absoluteGap": 0.169753,
+                "observedAtOrBelowRate": 0.669753,
+                "quantile": 0.5
+              },
+              {
+                "absoluteGap": 0.013889,
+                "observedAtOrBelowRate": 0.736111,
+                "quantile": 0.75
+              },
+              {
+                "absoluteGap": 0.031173,
+                "observedAtOrBelowRate": 0.868827,
+                "quantile": 0.9
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "metrics": {
+        "centralIntervals": [
+          {
+            "meanWidth": 0.779711,
+            "nominalCoverage": 0.5,
+            "observedCoverage": 0.797414
+          },
+          {
+            "meanWidth": 2.842303,
+            "nominalCoverage": 0.8,
+            "observedCoverage": 0.910714
+          },
+          {
+            "meanWidth": 6.431912,
+            "nominalCoverage": 0.95,
+            "observedCoverage": 0.971675
+          }
+        ],
+        "count": 1624,
+        "meanCrps": 0.63799,
+        "meanDistributionSampleCount": 37.655172,
+        "meanPinballLoss": 0.322907,
+        "medianMae": 0.778017,
+        "quantileCalibration": [
+          {
+            "absoluteGap": 0.521921,
+            "observedAtOrBelowRate": 0.621921,
+            "quantile": 0.1
+          },
+          {
+            "absoluteGap": 0.431034,
+            "observedAtOrBelowRate": 0.681034,
+            "quantile": 0.25
+          },
+          {
+            "absoluteGap": 0.208744,
+            "observedAtOrBelowRate": 0.708744,
+            "quantile": 0.5
+          },
+          {
+            "absoluteGap": 0.054187,
+            "observedAtOrBelowRate": 0.804187,
+            "quantile": 0.75
+          },
+          {
+            "absoluteGap": 0.016256,
+            "observedAtOrBelowRate": 0.916256,
+            "quantile": 0.9
+          }
+        ]
+      },
+      "name": "appearance-hurdle-promoted-opening-joint-distribution",
+      "slices": {
+        "position": {
+          "defender": {
+            "centralIntervals": [
+              {
+                "meanWidth": 1.026367,
+                "nominalCoverage": 0.5,
+                "observedCoverage": 0.804688
+              },
+              {
+                "meanWidth": 3.552344,
+                "nominalCoverage": 0.8,
+                "observedCoverage": 0.912109
+              },
+              {
+                "meanWidth": 6.775537,
+                "nominalCoverage": 0.95,
+                "observedCoverage": 0.964844
+              }
+            ],
+            "count": 512,
+            "meanCrps": 0.753443,
+            "meanDistributionSampleCount": 37.65625,
+            "meanPinballLoss": 0.379357,
+            "medianMae": 0.905273,
+            "quantileCalibration": [
+              {
+                "absoluteGap": 0.468359,
+                "observedAtOrBelowRate": 0.568359,
+                "quantile": 0.1
+              },
+              {
+                "absoluteGap": 0.402344,
+                "observedAtOrBelowRate": 0.652344,
+                "quantile": 0.25
+              },
+              {
+                "absoluteGap": 0.197266,
+                "observedAtOrBelowRate": 0.697266,
+                "quantile": 0.5
+              },
+              {
+                "absoluteGap": 0.070312,
+                "observedAtOrBelowRate": 0.820312,
+                "quantile": 0.75
+              },
+              {
+                "absoluteGap": 0.025781,
+                "observedAtOrBelowRate": 0.925781,
+                "quantile": 0.9
+              }
+            ]
+          },
+          "forward": {
+            "centralIntervals": [
+              {
+                "meanWidth": 0.849609,
+                "nominalCoverage": 0.5,
+                "observedCoverage": 0.789062
+              },
+              {
+                "meanWidth": 3.753516,
+                "nominalCoverage": 0.8,
+                "observedCoverage": 0.9375
+              },
+              {
+                "meanWidth": 7.97627,
+                "nominalCoverage": 0.95,
+                "observedCoverage": 0.992188
+              }
+            ],
+            "count": 256,
+            "meanCrps": 0.695382,
+            "meanDistributionSampleCount": 37.5625,
+            "meanPinballLoss": 0.351652,
+            "medianMae": 0.871094,
+            "quantileCalibration": [
+              {
+                "absoluteGap": 0.411719,
+                "observedAtOrBelowRate": 0.511719,
+                "quantile": 0.1
+              },
+              {
+                "absoluteGap": 0.394531,
+                "observedAtOrBelowRate": 0.644531,
+                "quantile": 0.25
+              },
+              {
+                "absoluteGap": 0.167969,
+                "observedAtOrBelowRate": 0.667969,
+                "quantile": 0.5
+              },
+              {
+                "absoluteGap": 0.046875,
+                "observedAtOrBelowRate": 0.796875,
+                "quantile": 0.75
+              },
+              {
+                "absoluteGap": 0.041406,
+                "observedAtOrBelowRate": 0.941406,
+                "quantile": 0.9
+              }
+            ]
+          },
+          "goalkeeper": {
+            "centralIntervals": [
+              {
+                "meanWidth": 0.201923,
+                "nominalCoverage": 0.5,
+                "observedCoverage": 0.899038
+              },
+              {
+                "meanWidth": 1.748077,
+                "nominalCoverage": 0.8,
+                "observedCoverage": 0.966346
+              },
+              {
+                "meanWidth": 5.217308,
+                "nominalCoverage": 0.95,
+                "observedCoverage": 0.985577
+              }
+            ],
+            "count": 208,
+            "meanCrps": 0.280945,
+            "meanDistributionSampleCount": 37.653846,
+            "meanPinballLoss": 0.137558,
+            "medianMae": 0.283654,
+            "quantileCalibration": [
+              {
+                "absoluteGap": 0.794231,
+                "observedAtOrBelowRate": 0.894231,
+                "quantile": 0.1
+              },
+              {
+                "absoluteGap": 0.644231,
+                "observedAtOrBelowRate": 0.894231,
+                "quantile": 0.25
+              },
+              {
+                "absoluteGap": 0.394231,
+                "observedAtOrBelowRate": 0.894231,
+                "quantile": 0.5
+              },
+              {
+                "absoluteGap": 0.149038,
+                "observedAtOrBelowRate": 0.899038,
+                "quantile": 0.75
+              },
+              {
+                "absoluteGap": 0.066346,
+                "observedAtOrBelowRate": 0.966346,
+                "quantile": 0.9
+              }
+            ]
+          },
+          "midfielder": {
+            "centralIntervals": [
+              {
+                "meanWidth": 0.74267,
+                "nominalCoverage": 0.5,
+                "observedCoverage": 0.762346
+              },
+              {
+                "meanWidth": 2.272531,
+                "nominalCoverage": 0.8,
+                "observedCoverage": 0.881173
+              },
+              {
+                "meanWidth": 5.940162,
+                "nominalCoverage": 0.95,
+                "observedCoverage": 0.964506
+              }
+            ],
+            "count": 648,
+            "meanCrps": 0.638702,
+            "meanDistributionSampleCount": 37.691358,
+            "meanPinballLoss": 0.326442,
+            "medianMae": 0.799383,
+            "quantileCalibration": [
+              {
+                "absoluteGap": 0.52037,
+                "observedAtOrBelowRate": 0.62037,
+                "quantile": 0.1
+              },
+              {
+                "absoluteGap": 0.399691,
+                "observedAtOrBelowRate": 0.649691,
+                "quantile": 0.25
+              },
+              {
+                "absoluteGap": 0.174383,
+                "observedAtOrBelowRate": 0.674383,
+                "quantile": 0.5
+              },
+              {
+                "absoluteGap": 0.013889,
+                "observedAtOrBelowRate": 0.763889,
+                "quantile": 0.75
+              },
+              {
+                "absoluteGap": 0.017284,
+                "observedAtOrBelowRate": 0.882716,
+                "quantile": 0.9
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "allPlayerNonRegression": {
+    "appearanceBrierDelta": -0.005899999999999989,
+    "appearanceLogLossDelta": -0.01723600000000003,
+    "appearanceModels": [
+      {
+        "calibrationBins": [
+          {
+            "absoluteGap": 0.077881,
+            "count": 4233,
+            "lowerBoundInclusive": 0.0,
+            "meanProbability": 0.070241,
+            "observedRate": 0.148122,
+            "upperBound": 0.2,
+            "upperBoundInclusive": false
+          },
+          {
+            "absoluteGap": 0.032428,
+            "count": 2561,
+            "lowerBoundInclusive": 0.2,
+            "meanProbability": 0.326025,
+            "observedRate": 0.358454,
+            "upperBound": 0.4,
+            "upperBoundInclusive": false
+          },
+          {
+            "absoluteGap": 0.03247,
+            "count": 3118,
+            "lowerBoundInclusive": 0.4,
+            "meanProbability": 0.467364,
+            "observedRate": 0.434894,
+            "upperBound": 0.6,
+            "upperBoundInclusive": false
+          },
+          {
+            "absoluteGap": 0.120157,
+            "count": 1954,
+            "lowerBoundInclusive": 0.6,
+            "meanProbability": 0.720975,
+            "observedRate": 0.600819,
+            "upperBound": 0.8,
+            "upperBoundInclusive": false
+          },
+          {
+            "absoluteGap": 0.144412,
+            "count": 3846,
+            "lowerBoundInclusive": 0.8,
+            "meanProbability": 0.883101,
+            "observedRate": 0.73869,
+            "upperBound": 1.0,
+            "upperBoundInclusive": true
+          }
+        ],
+        "metrics": {
+          "brierScore": 0.203814,
+          "count": 15712,
+          "expectedCalibrationError": 0.083004,
+          "logLoss": 0.609646,
+          "meanProbability": 0.470641,
+          "observedRate": 0.440173
+        },
+        "name": "appearance-hurdle-opening-appearance",
+        "slices": {
+          "position": {
+            "defender": {
+              "brierScore": 0.220618,
+              "count": 5184,
+              "expectedCalibrationError": 0.102255,
+              "logLoss": 0.643743,
+              "meanProbability": 0.470539,
+              "observedRate": 0.452932
+            },
+            "forward": {
+              "brierScore": 0.212785,
+              "count": 1848,
+              "expectedCalibrationError": 0.10368,
+              "logLoss": 0.638066,
+              "meanProbability": 0.489554,
+              "observedRate": 0.435065
+            },
+            "goalkeeper": {
+              "brierScore": 0.158321,
+              "count": 1784,
+              "expectedCalibrationError": 0.109485,
+              "logLoss": 0.500204,
+              "meanProbability": 0.328787,
+              "observedRate": 0.265135
+            },
+            "midfielder": {
+              "brierScore": 0.200546,
+              "count": 6896,
+              "expectedCalibrationError": 0.084987,
+              "logLoss": 0.604712,
+              "meanProbability": 0.502348,
+              "observedRate": 0.477233
+            }
+          }
+        }
+      },
+      {
+        "calibrationBins": [
+          {
+            "absoluteGap": 0.059511,
+            "count": 4252,
+            "lowerBoundInclusive": 0.0,
+            "meanProbability": 0.074544,
+            "observedRate": 0.134055,
+            "upperBound": 0.2,
+            "upperBoundInclusive": false
+          },
+          {
+            "absoluteGap": 0.027568,
+            "count": 2813,
+            "lowerBoundInclusive": 0.2,
+            "meanProbability": 0.316904,
+            "observedRate": 0.344472,
+            "upperBound": 0.4,
+            "upperBoundInclusive": false
+          },
+          {
+            "absoluteGap": 0.011391,
+            "count": 2804,
+            "lowerBoundInclusive": 0.4,
+            "meanProbability": 0.476441,
+            "observedRate": 0.46505,
+            "upperBound": 0.6,
+            "upperBoundInclusive": false
+          },
+          {
+            "absoluteGap": 0.106764,
+            "count": 2058,
+            "lowerBoundInclusive": 0.6,
+            "meanProbability": 0.717066,
+            "observedRate": 0.610301,
+            "upperBound": 0.8,
+            "upperBoundInclusive": false
+          },
+          {
+            "absoluteGap": 0.138792,
+            "count": 3785,
+            "lowerBoundInclusive": 0.8,
+            "meanProbability": 0.883046,
+            "observedRate": 0.744254,
+            "upperBound": 1.0,
+            "upperBoundInclusive": true
+          }
+        ],
+        "metrics": {
+          "brierScore": 0.197914,
+          "count": 15712,
+          "expectedCalibrationError": 0.070493,
+          "logLoss": 0.59241,
+          "meanProbability": 0.468585,
+          "observedRate": 0.440173
+        },
+        "name": "appearance-hurdle-promoted-equal-weight-opening-appearance",
+        "slices": {
+          "position": {
+            "defender": {
+              "brierScore": 0.217214,
+              "count": 5184,
+              "expectedCalibrationError": 0.091666,
+              "logLoss": 0.634062,
+              "meanProbability": 0.475343,
+              "observedRate": 0.452932
+            },
+            "forward": {
+              "brierScore": 0.207791,
+              "count": 1848,
+              "expectedCalibrationError": 0.086259,
+              "logLoss": 0.628172,
+              "meanProbability": 0.482059,
+              "observedRate": 0.435065
+            },
+            "goalkeeper": {
+              "brierScore": 0.150065,
+              "count": 1784,
+              "expectedCalibrationError": 0.074008,
+              "logLoss": 0.477617,
+              "meanProbability": 0.314975,
+              "observedRate": 0.265135
+            },
+            "midfielder": {
+              "brierScore": 0.193137,
+              "count": 6896,
+              "expectedCalibrationError": 0.065876,
+              "logLoss": 0.581212,
+              "meanProbability": 0.499632,
+              "observedRate": 0.477233
+            }
+          }
+        }
+      }
+    ],
+    "crpsDelta": -0.00647399999999998,
+    "distributionModels": [
+      {
+        "metrics": {
+          "centralIntervals": [
+            {
+              "meanWidth": 1.274344,
+              "nominalCoverage": 0.5,
+              "observedCoverage": 0.716395
+            },
+            {
+              "meanWidth": 3.409063,
+              "nominalCoverage": 0.8,
+              "observedCoverage": 0.876718
+            },
+            {
+              "meanWidth": 6.283651,
+              "nominalCoverage": 0.95,
+              "observedCoverage": 0.946219
+            }
+          ],
+          "count": 15712,
+          "meanCrps": 0.905546,
+          "meanDistributionSampleCount": 37.664969,
+          "meanPinballLoss": 0.45444,
+          "medianMae": 1.159591,
+          "quantileCalibration": [
+            {
+              "absoluteGap": 0.472047,
+              "observedAtOrBelowRate": 0.572047,
+              "quantile": 0.1
+            },
+            {
+              "absoluteGap": 0.40224,
+              "observedAtOrBelowRate": 0.65224,
+              "quantile": 0.25
+            },
+            {
+              "absoluteGap": 0.210603,
+              "observedAtOrBelowRate": 0.710603,
+              "quantile": 0.5
+            },
+            {
+              "absoluteGap": 0.057154,
+              "observedAtOrBelowRate": 0.807154,
+              "quantile": 0.75
+            },
+            {
+              "absoluteGap": 0.001158,
+              "observedAtOrBelowRate": 0.901158,
+              "quantile": 0.9
+            }
+          ]
+        },
+        "name": "appearance-hurdle-opening-joint-distribution",
+        "slices": {
+          "position": {
+            "defender": {
+              "centralIntervals": [
+                {
+                  "meanWidth": 1.306761,
+                  "nominalCoverage": 0.5,
+                  "observedCoverage": 0.717785
+                },
+                {
+                  "meanWidth": 3.514159,
+                  "nominalCoverage": 0.8,
+                  "observedCoverage": 0.876157
+                },
+                {
+                  "meanWidth": 6.199325,
+                  "nominalCoverage": 0.95,
+                  "observedCoverage": 0.942708
+                }
+              ],
+              "count": 5184,
+              "meanCrps": 0.952849,
+              "meanDistributionSampleCount": 37.665123,
+              "meanPinballLoss": 0.478497,
+              "medianMae": 1.220968,
+              "quantileCalibration": [
+                {
+                  "absoluteGap": 0.474267,
+                  "observedAtOrBelowRate": 0.574267,
+                  "quantile": 0.1
+                },
+                {
+                  "absoluteGap": 0.389275,
+                  "observedAtOrBelowRate": 0.639275,
+                  "quantile": 0.25
+                },
+                {
+                  "absoluteGap": 0.189236,
+                  "observedAtOrBelowRate": 0.689236,
+                  "quantile": 0.5
+                },
+                {
+                  "absoluteGap": 0.043596,
+                  "observedAtOrBelowRate": 0.793596,
+                  "quantile": 0.75
+                },
+                {
+                  "absoluteGap": 0.007639,
+                  "observedAtOrBelowRate": 0.892361,
+                  "quantile": 0.9
+                }
+              ]
+            },
+            "forward": {
+              "centralIntervals": [
+                {
+                  "meanWidth": 1.347132,
+                  "nominalCoverage": 0.5,
+                  "observedCoverage": 0.705087
+                },
+                {
+                  "meanWidth": 4.062608,
+                  "nominalCoverage": 0.8,
+                  "observedCoverage": 0.87987
+                },
+                {
+                  "meanWidth": 7.516653,
+                  "nominalCoverage": 0.95,
+                  "observedCoverage": 0.955628
+                }
+              ],
+              "count": 1848,
+              "meanCrps": 1.004698,
+              "meanDistributionSampleCount": 37.623377,
+              "meanPinballLoss": 0.503657,
+              "medianMae": 1.272727,
+              "quantileCalibration": [
+                {
+                  "absoluteGap": 0.424351,
+                  "observedAtOrBelowRate": 0.524351,
+                  "quantile": 0.1
+                },
+                {
+                  "absoluteGap": 0.378788,
+                  "observedAtOrBelowRate": 0.628788,
+                  "quantile": 0.25
+                },
+                {
+                  "absoluteGap": 0.198052,
+                  "observedAtOrBelowRate": 0.698052,
+                  "quantile": 0.5
+                },
+                {
+                  "absoluteGap": 0.031926,
+                  "observedAtOrBelowRate": 0.781926,
+                  "quantile": 0.75
+                },
+                {
+                  "absoluteGap": 0.006926,
+                  "observedAtOrBelowRate": 0.906926,
+                  "quantile": 0.9
+                }
+              ]
+            },
+            "goalkeeper": {
+              "centralIntervals": [
+                {
+                  "meanWidth": 1.028027,
+                  "nominalCoverage": 0.5,
+                  "observedCoverage": 0.799888
+                },
+                {
+                  "meanWidth": 2.614686,
+                  "nominalCoverage": 0.8,
+                  "observedCoverage": 0.900224
+                },
+                {
+                  "meanWidth": 4.961267,
+                  "nominalCoverage": 0.95,
+                  "observedCoverage": 0.95796
+                }
+              ],
+              "count": 1784,
+              "meanCrps": 0.69092,
+              "meanDistributionSampleCount": 37.659193,
+              "meanPinballLoss": 0.351173,
+              "medianMae": 0.849776,
+              "quantileCalibration": [
+                {
+                  "absoluteGap": 0.644955,
+                  "observedAtOrBelowRate": 0.744955,
+                  "quantile": 0.1
+                },
+                {
+                  "absoluteGap": 0.522422,
+                  "observedAtOrBelowRate": 0.772422,
+                  "quantile": 0.25
+                },
+                {
+                  "absoluteGap": 0.308296,
+                  "observedAtOrBelowRate": 0.808296,
+                  "quantile": 0.5
+                },
+                {
+                  "absoluteGap": 0.113229,
+                  "observedAtOrBelowRate": 0.863229,
+                  "quantile": 0.75
+                },
+                {
+                  "absoluteGap": 0.020404,
+                  "observedAtOrBelowRate": 0.920404,
+                  "quantile": 0.9
+                }
+              ]
+            },
+            "midfielder": {
+              "centralIntervals": [
+                {
+                  "meanWidth": 1.294192,
+                  "nominalCoverage": 0.5,
+                  "observedCoverage": 0.696781
+                },
+                {
+                  "meanWidth": 3.360426,
+                  "nominalCoverage": 0.8,
+                  "observedCoverage": 0.870215
+                },
+                {
+                  "meanWidth": 6.358722,
+                  "nominalCoverage": 0.95,
+                  "observedCoverage": 0.9433
+                }
+              ],
+              "count": 6896,
+              "meanCrps": 0.898939,
+              "meanDistributionSampleCount": 37.677494,
+              "meanPinballLoss": 0.449882,
+              "medianMae": 1.163283,
+              "quantileCalibration": [
+                {
+                  "absoluteGap": 0.438428,
+                  "observedAtOrBelowRate": 0.538428,
+                  "quantile": 0.1
+                },
+                {
+                  "absoluteGap": 0.387181,
+                  "observedAtOrBelowRate": 0.637181,
+                  "quantile": 0.25
+                },
+                {
+                  "absoluteGap": 0.204756,
+                  "observedAtOrBelowRate": 0.704756,
+                  "quantile": 0.5
+                },
+                {
+                  "absoluteGap": 0.0596,
+                  "observedAtOrBelowRate": 0.8096,
+                  "quantile": 0.75
+                },
+                {
+                  "absoluteGap": 0.001247,
+                  "observedAtOrBelowRate": 0.901247,
+                  "quantile": 0.9
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "metrics": {
+          "centralIntervals": [
+            {
+              "meanWidth": 1.265689,
+              "nominalCoverage": 0.5,
+              "observedCoverage": 0.720214
+            },
+            {
+              "meanWidth": 3.383318,
+              "nominalCoverage": 0.8,
+              "observedCoverage": 0.877864
+            },
+            {
+              "meanWidth": 6.267859,
+              "nominalCoverage": 0.95,
+              "observedCoverage": 0.949338
+            }
+          ],
+          "count": 15712,
+          "meanCrps": 0.899072,
+          "meanDistributionSampleCount": 37.664969,
+          "meanPinballLoss": 0.451084,
+          "medianMae": 1.153831,
+          "quantileCalibration": [
+            {
+              "absoluteGap": 0.470392,
+              "observedAtOrBelowRate": 0.570392,
+              "quantile": 0.1
+            },
+            {
+              "absoluteGap": 0.40224,
+              "observedAtOrBelowRate": 0.65224,
+              "quantile": 0.25
+            },
+            {
+              "absoluteGap": 0.211494,
+              "observedAtOrBelowRate": 0.711494,
+              "quantile": 0.5
+            },
+            {
+              "absoluteGap": 0.05919,
+              "observedAtOrBelowRate": 0.80919,
+              "quantile": 0.75
+            },
+            {
+              "absoluteGap": 0.002304,
+              "observedAtOrBelowRate": 0.902304,
+              "quantile": 0.9
+            }
+          ]
+        },
+        "name": "appearance-hurdle-promoted-opening-joint-distribution",
+        "slices": {
+          "position": {
+            "defender": {
+              "centralIntervals": [
+                {
+                  "meanWidth": 1.322193,
+                  "nominalCoverage": 0.5,
+                  "observedCoverage": 0.721644
+                },
+                {
+                  "meanWidth": 3.52963,
+                  "nominalCoverage": 0.8,
+                  "observedCoverage": 0.878086
+                },
+                {
+                  "meanWidth": 6.234293,
+                  "nominalCoverage": 0.95,
+                  "observedCoverage": 0.945409
+                }
+              ],
+              "count": 5184,
+              "meanCrps": 0.950135,
+              "meanDistributionSampleCount": 37.665123,
+              "meanPinballLoss": 0.476577,
+              "medianMae": 1.216435,
+              "quantileCalibration": [
+                {
+                  "absoluteGap": 0.470409,
+                  "observedAtOrBelowRate": 0.570409,
+                  "quantile": 0.1
+                },
+                {
+                  "absoluteGap": 0.388889,
+                  "observedAtOrBelowRate": 0.638889,
+                  "quantile": 0.25
+                },
+                {
+                  "absoluteGap": 0.191937,
+                  "observedAtOrBelowRate": 0.691937,
+                  "quantile": 0.5
+                },
+                {
+                  "absoluteGap": 0.046296,
+                  "observedAtOrBelowRate": 0.796296,
+                  "quantile": 0.75
+                },
+                {
+                  "absoluteGap": 0.00571,
+                  "observedAtOrBelowRate": 0.89429,
+                  "quantile": 0.9
+                }
+              ]
+            },
+            "forward": {
+              "centralIntervals": [
+                {
+                  "meanWidth": 1.341315,
+                  "nominalCoverage": 0.5,
+                  "observedCoverage": 0.705087
+                },
+                {
+                  "meanWidth": 3.986418,
+                  "nominalCoverage": 0.8,
+                  "observedCoverage": 0.87987
+                },
+                {
+                  "meanWidth": 7.445563,
+                  "nominalCoverage": 0.95,
+                  "observedCoverage": 0.95671
+                }
+              ],
+              "count": 1848,
+              "meanCrps": 0.99878,
+              "meanDistributionSampleCount": 37.623377,
+              "meanPinballLoss": 0.501772,
+              "medianMae": 1.271104,
+              "quantileCalibration": [
+                {
+                  "absoluteGap": 0.428139,
+                  "observedAtOrBelowRate": 0.528139,
+                  "quantile": 0.1
+                },
+                {
+                  "absoluteGap": 0.380411,
+                  "observedAtOrBelowRate": 0.630411,
+                  "quantile": 0.25
+                },
+                {
+                  "absoluteGap": 0.19697,
+                  "observedAtOrBelowRate": 0.69697,
+                  "quantile": 0.5
+                },
+                {
+                  "absoluteGap": 0.031926,
+                  "observedAtOrBelowRate": 0.781926,
+                  "quantile": 0.75
+                },
+                {
+                  "absoluteGap": 0.006926,
+                  "observedAtOrBelowRate": 0.906926,
+                  "quantile": 0.9
+                }
+              ]
+            },
+            "goalkeeper": {
+              "centralIntervals": [
+                {
+                  "meanWidth": 0.967349,
+                  "nominalCoverage": 0.5,
+                  "observedCoverage": 0.805493
+                },
+                {
+                  "meanWidth": 2.463229,
+                  "nominalCoverage": 0.8,
+                  "observedCoverage": 0.899664
+                },
+                {
+                  "meanWidth": 4.818147,
+                  "nominalCoverage": 0.95,
+                  "observedCoverage": 0.95796
+                }
+              ],
+              "count": 1784,
+              "meanCrps": 0.677435,
+              "meanDistributionSampleCount": 37.659193,
+              "meanPinballLoss": 0.343226,
+              "medianMae": 0.838565,
+              "quantileCalibration": [
+                {
+                  "absoluteGap": 0.644955,
+                  "observedAtOrBelowRate": 0.744955,
+                  "quantile": 0.1
+                },
+                {
+                  "absoluteGap": 0.522422,
+                  "observedAtOrBelowRate": 0.772422,
+                  "quantile": 0.25
+                },
+                {
+                  "absoluteGap": 0.307735,
+                  "observedAtOrBelowRate": 0.807735,
+                  "quantile": 0.5
+                },
+                {
+                  "absoluteGap": 0.113229,
+                  "observedAtOrBelowRate": 0.863229,
+                  "quantile": 0.75
+                },
+                {
+                  "absoluteGap": 0.019843,
+                  "observedAtOrBelowRate": 0.919843,
+                  "quantile": 0.9
+                }
+              ]
+            },
+            "midfielder": {
+              "centralIntervals": [
+                {
+                  "meanWidth": 1.280126,
+                  "nominalCoverage": 0.5,
+                  "observedCoverage": 0.701131
+                },
+                {
+                  "meanWidth": 3.349739,
+                  "nominalCoverage": 0.8,
+                  "observedCoverage": 0.87152
+                },
+                {
+                  "meanWidth": 6.35253,
+                  "nominalCoverage": 0.95,
+                  "observedCoverage": 0.948086
+                }
+              ],
+              "count": 6896,
+              "meanCrps": 0.891303,
+              "meanDistributionSampleCount": 37.677494,
+              "meanPinballLoss": 0.446239,
+              "medianMae": 1.156903,
+              "quantileCalibration": [
+                {
+                  "absoluteGap": 0.436543,
+                  "observedAtOrBelowRate": 0.536543,
+                  "quantile": 0.1
+                },
+                {
+                  "absoluteGap": 0.387036,
+                  "observedAtOrBelowRate": 0.637036,
+                  "quantile": 0.25
+                },
+                {
+                  "absoluteGap": 0.205191,
+                  "observedAtOrBelowRate": 0.705191,
+                  "quantile": 0.5
+                },
+                {
+                  "absoluteGap": 0.06221,
+                  "observedAtOrBelowRate": 0.81221,
+                  "quantile": 0.75
+                },
+                {
+                  "absoluteGap": 0.002552,
+                  "observedAtOrBelowRate": 0.902552,
+                  "quantile": 0.9
+                }
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "gates": {
+      "appearanceBrierNonRegression": true,
+      "appearanceLogLossNonRegression": true,
+      "crpsNonRegression": true
+    },
+    "passes": true
+  },
+  "artifactType": "historical-promoted-opening-evaluation",
+  "artifactVersion": "historical-promoted-opening-evaluation-v1",
+  "challengerSource": {
+    "artifactVersion": "historical-promoted-opening-scenario-reconstruction-v1",
+    "dataIdentitySha256": "8a50484985a26f5206a3cfdfeaea8fba7975670bafa4f4483ba673481b8022e9",
+    "runIdentitySha256": "7982d3addeae7e9b28bebf351b3df063c6d47644ad2a1319b1e3da29931b5e0b"
+  },
+  "dataIdentitySha256": "f35f876a39d7d8766513d83a8a63596b03003dcdc0d83b7889324d451eef707c",
+  "decision": "do-not-retain-promoted-appearance-opening-challenger",
+  "distributionScreen": {
+    "aggregateCrpsImprovementFraction": 0.089397,
+    "appearanceBrierDelta": -0.057079,
+    "appearanceLogLossDelta": -0.166756,
+    "gates": {
+      "aggregateCrpsImprovement": true,
+      "appearanceBrierNonRegression": true,
+      "appearanceLogLossNonRegression": true,
+      "positionCrpsStability": true,
+      "targetSeasonWins": true
+    },
+    "maximumPositionCrpsRegressionFraction": -0.035179,
+    "passes": true,
+    "positionComparisons": [
+      {
+        "challengerMeanCrps": 0.753443,
+        "crpsRegressionFraction": -0.035179,
+        "incumbentMeanCrps": 0.780915,
+        "position": "defender"
+      },
+      {
+        "challengerMeanCrps": 0.695382,
+        "crpsRegressionFraction": -0.057885,
+        "incumbentMeanCrps": 0.738107,
+        "position": "forward"
+      },
+      {
+        "challengerMeanCrps": 0.280945,
+        "crpsRegressionFraction": -0.291625,
+        "incumbentMeanCrps": 0.396605,
+        "position": "goalkeeper"
+      },
+      {
+        "challengerMeanCrps": 0.638702,
+        "crpsRegressionFraction": -0.11287,
+        "incumbentMeanCrps": 0.719964,
+        "position": "midfielder"
+      }
+    ],
+    "targetComparisons": [
+      {
+        "challengerMeanCrps": 0.552313,
+        "challengerWins": true,
+        "incumbentMeanCrps": 0.604752,
+        "targetSeasonCode": "2023-24"
+      },
+      {
+        "challengerMeanCrps": 0.657808,
+        "challengerWins": true,
+        "incumbentMeanCrps": 0.748512,
+        "targetSeasonCode": "2024-25"
+      },
+      {
+        "challengerMeanCrps": 0.706528,
+        "challengerWins": true,
+        "incumbentMeanCrps": 0.753469,
+        "targetSeasonCode": "2025-26"
+      }
+    ],
+    "targetSeasonCount": 3,
+    "targetSeasonWins": 3
+  },
+  "distributionTargets": [
+    {
+      "affectedPlayerCount": 70,
+      "affectedPlayerGameweekCount": 560,
+      "appearanceModels": [
+        {
+          "calibrationBins": [
+            {
+              "absoluteGap": 0.847973,
+              "count": 8,
+              "lowerBoundInclusive": 0.0,
+              "meanProbability": 0.027027,
+              "observedRate": 0.875,
+              "upperBound": 0.2,
+              "upperBoundInclusive": false
+            },
+            {
+              "absoluteGap": 0.056016,
+              "count": 124,
+              "lowerBoundInclusive": 0.2,
+              "meanProbability": 0.346338,
+              "observedRate": 0.290323,
+              "upperBound": 0.4,
+              "upperBoundInclusive": false
+            },
+            {
+              "absoluteGap": 0.139429,
+              "count": 428,
+              "lowerBoundInclusive": 0.4,
+              "meanProbability": 0.475878,
+              "observedRate": 0.336449,
+              "upperBound": 0.6,
+              "upperBoundInclusive": false
+            }
+          ],
+          "metrics": {
+            "brierScore": 0.244164,
+            "count": 560,
+            "expectedCalibrationError": 0.131081,
+            "logLoss": 0.699261,
+            "meanProbability": 0.440782,
+            "observedRate": 0.333929
+          },
+          "name": "appearance-hurdle-opening-appearance",
+          "slices": {
+            "position": {
+              "defender": {
+                "brierScore": 0.258043,
+                "count": 176,
+                "expectedCalibrationError": 0.067875,
+                "logLoss": 0.709636,
+                "meanProbability": 0.432125,
+                "observedRate": 0.5
+              },
+              "forward": {
+                "brierScore": 0.247893,
+                "count": 112,
+                "expectedCalibrationError": 0.135376,
+                "logLoss": 0.688887,
+                "meanProbability": 0.483591,
+                "observedRate": 0.348214
+              },
+              "goalkeeper": {
+                "brierScore": 0.144641,
+                "count": 72,
+                "expectedCalibrationError": 0.212087,
+                "logLoss": 0.474263,
+                "meanProbability": 0.323198,
+                "observedRate": 0.111111
+              },
+              "midfielder": {
+                "brierScore": 0.26569,
+                "count": 200,
+                "expectedCalibrationError": 0.274595,
+                "logLoss": 0.776941,
+                "meanProbability": 0.466757,
+                "observedRate": 0.26
+              }
+            }
+          }
+        },
+        {
+          "calibrationBins": [
+            {
+              "absoluteGap": 0.067568,
+              "count": 62,
+              "lowerBoundInclusive": 0.0,
+              "meanProbability": 0.164342,
+              "observedRate": 0.096774,
+              "upperBound": 0.2,
+              "upperBoundInclusive": false
+            },
+            {
+              "absoluteGap": 0.108816,
+              "count": 229,
+              "lowerBoundInclusive": 0.2,
+              "meanProbability": 0.300956,
+              "observedRate": 0.19214,
+              "upperBound": 0.4,
+              "upperBoundInclusive": false
+            },
+            {
+              "absoluteGap": 0.037145,
+              "count": 195,
+              "lowerBoundInclusive": 0.4,
+              "meanProbability": 0.503812,
+              "observedRate": 0.466667,
+              "upperBound": 0.6,
+              "upperBoundInclusive": false
+            },
+            {
+              "absoluteGap": 0.034332,
+              "count": 74,
+              "lowerBoundInclusive": 0.6,
+              "meanProbability": 0.655953,
+              "observedRate": 0.621622,
+              "upperBound": 0.8,
+              "upperBoundInclusive": false
+            }
+          ],
+          "metrics": {
+            "brierScore": 0.196357,
+            "count": 560,
+            "expectedCalibrationError": 0.06945,
+            "logLoss": 0.578708,
+            "meanProbability": 0.403378,
+            "observedRate": 0.333929
+          },
+          "name": "appearance-hurdle-promoted-equal-weight-opening-appearance",
+          "slices": {
+            "position": {
+              "defender": {
+                "brierScore": 0.230232,
+                "count": 176,
+                "expectedCalibrationError": 0.053593,
+                "logLoss": 0.651005,
+                "meanProbability": 0.496468,
+                "observedRate": 0.5
+              },
+              "forward": {
+                "brierScore": 0.221819,
+                "count": 112,
+                "expectedCalibrationError": 0.069739,
+                "logLoss": 0.634225,
+                "meanProbability": 0.417954,
+                "observedRate": 0.348214
+              },
+              "goalkeeper": {
+                "brierScore": 0.089471,
+                "count": 72,
+                "expectedCalibrationError": 0.177553,
+                "logLoss": 0.323856,
+                "meanProbability": 0.193318,
+                "observedRate": 0.111111
+              },
+              "midfielder": {
+                "brierScore": 0.190767,
+                "count": 200,
+                "expectedCalibrationError": 0.180541,
+                "logLoss": 0.575743,
+                "meanProbability": 0.388919,
+                "observedRate": 0.26
+              }
+            }
+          }
+        }
+      ],
+      "distributionModels": [
+        {
+          "metrics": {
+            "centralIntervals": [
+              {
+                "meanWidth": 1.007143,
+                "nominalCoverage": 0.5,
+                "observedCoverage": 0.823214
+              },
+              {
+                "meanWidth": 3.707857,
+                "nominalCoverage": 0.8,
+                "observedCoverage": 0.941071
+              },
+              {
+                "meanWidth": 7.365,
+                "nominalCoverage": 0.95,
+                "observedCoverage": 0.971429
+              }
+            ],
+            "count": 560,
+            "meanCrps": 0.604752,
+            "meanDistributionSampleCount": 37.0,
+            "meanPinballLoss": 0.307229,
+            "medianMae": 0.725,
+            "quantileCalibration": [
+              {
+                "absoluteGap": 0.575,
+                "observedAtOrBelowRate": 0.675,
+                "quantile": 0.1
+              },
+              {
+                "absoluteGap": 0.455357,
+                "observedAtOrBelowRate": 0.705357,
+                "quantile": 0.25
+              },
+              {
+                "absoluteGap": 0.226786,
+                "observedAtOrBelowRate": 0.726786,
+                "quantile": 0.5
+              },
+              {
+                "absoluteGap": 0.085714,
+                "observedAtOrBelowRate": 0.835714,
+                "quantile": 0.75
+              },
+              {
+                "absoluteGap": 0.053571,
+                "observedAtOrBelowRate": 0.953571,
+                "quantile": 0.9
+              }
+            ]
+          },
+          "name": "appearance-hurdle-opening-joint-distribution",
+          "slices": {
+            "position": {
+              "defender": {
+                "centralIntervals": [
+                  {
+                    "meanWidth": 0.778409,
+                    "nominalCoverage": 0.5,
+                    "observedCoverage": 0.761364
+                  },
+                  {
+                    "meanWidth": 4.053409,
+                    "nominalCoverage": 0.8,
+                    "observedCoverage": 0.943182
+                  },
+                  {
+                    "meanWidth": 7.488068,
+                    "nominalCoverage": 0.95,
+                    "observedCoverage": 0.965909
+                  }
+                ],
+                "count": 176,
+                "meanCrps": 0.67199,
+                "meanDistributionSampleCount": 37.0,
+                "meanPinballLoss": 0.335784,
+                "medianMae": 0.835227,
+                "quantileCalibration": [
+                  {
+                    "absoluteGap": 0.485227,
+                    "observedAtOrBelowRate": 0.585227,
+                    "quantile": 0.1
+                  },
+                  {
+                    "absoluteGap": 0.357955,
+                    "observedAtOrBelowRate": 0.607955,
+                    "quantile": 0.25
+                  },
+                  {
+                    "absoluteGap": 0.107955,
+                    "observedAtOrBelowRate": 0.607955,
+                    "quantile": 0.5
+                  },
+                  {
+                    "absoluteGap": 0.039773,
+                    "observedAtOrBelowRate": 0.789773,
+                    "quantile": 0.75
+                  },
+                  {
+                    "absoluteGap": 0.071591,
+                    "observedAtOrBelowRate": 0.971591,
+                    "quantile": 0.9
+                  }
+                ]
+              },
+              "forward": {
+                "centralIntervals": [
+                  {
+                    "meanWidth": 0.839286,
+                    "nominalCoverage": 0.5,
+                    "observedCoverage": 0.776786
+                  },
+                  {
+                    "meanWidth": 4.271429,
+                    "nominalCoverage": 0.8,
+                    "observedCoverage": 0.901786
+                  },
+                  {
+                    "meanWidth": 9.405357,
+                    "nominalCoverage": 0.95,
+                    "observedCoverage": 0.982143
+                  }
+                ],
+                "count": 112,
+                "meanCrps": 0.853895,
+                "meanDistributionSampleCount": 37.0,
+                "meanPinballLoss": 0.430071,
+                "medianMae": 1.026786,
+                "quantileCalibration": [
+                  {
+                    "absoluteGap": 0.4625,
+                    "observedAtOrBelowRate": 0.5625,
+                    "quantile": 0.1
+                  },
+                  {
+                    "absoluteGap": 0.392857,
+                    "observedAtOrBelowRate": 0.642857,
+                    "quantile": 0.25
+                  },
+                  {
+                    "absoluteGap": 0.1875,
+                    "observedAtOrBelowRate": 0.6875,
+                    "quantile": 0.5
+                  },
+                  {
+                    "absoluteGap": 0.035714,
+                    "observedAtOrBelowRate": 0.785714,
+                    "quantile": 0.75
+                  },
+                  {
+                    "absoluteGap": 0.010714,
+                    "observedAtOrBelowRate": 0.910714,
+                    "quantile": 0.9
+                  }
+                ]
+              },
+              "goalkeeper": {
+                "centralIntervals": [
+                  {
+                    "meanWidth": 0.680556,
+                    "nominalCoverage": 0.5,
+                    "observedCoverage": 0.916667
+                  },
+                  {
+                    "meanWidth": 3.819444,
+                    "nominalCoverage": 0.8,
+                    "observedCoverage": 1.0
+                  },
+                  {
+                    "meanWidth": 7.172222,
+                    "nominalCoverage": 0.95,
+                    "observedCoverage": 1.0
+                  }
+                ],
+                "count": 72,
+                "meanCrps": 0.318166,
+                "meanDistributionSampleCount": 37.0,
+                "meanPinballLoss": 0.178472,
+                "medianMae": 0.236111,
+                "quantileCalibration": [
+                  {
+                    "absoluteGap": 0.816667,
+                    "observedAtOrBelowRate": 0.916667,
+                    "quantile": 0.1
+                  },
+                  {
+                    "absoluteGap": 0.666667,
+                    "observedAtOrBelowRate": 0.916667,
+                    "quantile": 0.25
+                  },
+                  {
+                    "absoluteGap": 0.416667,
+                    "observedAtOrBelowRate": 0.916667,
+                    "quantile": 0.5
+                  },
+                  {
+                    "absoluteGap": 0.166667,
+                    "observedAtOrBelowRate": 0.916667,
+                    "quantile": 0.75
+                  },
+                  {
+                    "absoluteGap": 0.1,
+                    "observedAtOrBelowRate": 1.0,
+                    "quantile": 0.9
+                  }
+                ]
+              },
+              "midfielder": {
+                "centralIntervals": [
+                  {
+                    "meanWidth": 1.42,
+                    "nominalCoverage": 0.5,
+                    "observedCoverage": 0.87
+                  },
+                  {
+                    "meanWidth": 3.048,
+                    "nominalCoverage": 0.8,
+                    "observedCoverage": 0.94
+                  },
+                  {
+                    "meanWidth": 6.1835,
+                    "nominalCoverage": 0.95,
+                    "observedCoverage": 0.96
+                  }
+                ],
+                "count": 200,
+                "meanCrps": 0.509233,
+                "meanDistributionSampleCount": 37.0,
+                "meanPinballLoss": 0.25966,
+                "medianMae": 0.635,
+                "quantileCalibration": [
+                  {
+                    "absoluteGap": 0.63,
+                    "observedAtOrBelowRate": 0.73,
+                    "quantile": 0.1
+                  },
+                  {
+                    "absoluteGap": 0.5,
+                    "observedAtOrBelowRate": 0.75,
+                    "quantile": 0.25
+                  },
+                  {
+                    "absoluteGap": 0.285,
+                    "observedAtOrBelowRate": 0.785,
+                    "quantile": 0.5
+                  },
+                  {
+                    "absoluteGap": 0.125,
+                    "observedAtOrBelowRate": 0.875,
+                    "quantile": 0.75
+                  },
+                  {
+                    "absoluteGap": 0.045,
+                    "observedAtOrBelowRate": 0.945,
+                    "quantile": 0.9
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "metrics": {
+            "centralIntervals": [
+              {
+                "meanWidth": 0.948214,
+                "nominalCoverage": 0.5,
+                "observedCoverage": 0.841071
+              },
+              {
+                "meanWidth": 3.306071,
+                "nominalCoverage": 0.8,
+                "observedCoverage": 0.941071
+              },
+              {
+                "meanWidth": 6.813036,
+                "nominalCoverage": 0.95,
+                "observedCoverage": 0.975
+              }
+            ],
+            "count": 560,
+            "meanCrps": 0.552313,
+            "meanDistributionSampleCount": 37.0,
+            "meanPinballLoss": 0.281175,
+            "medianMae": 0.660714,
+            "quantileCalibration": [
+              {
+                "absoluteGap": 0.567857,
+                "observedAtOrBelowRate": 0.667857,
+                "quantile": 0.1
+              },
+              {
+                "absoluteGap": 0.458929,
+                "observedAtOrBelowRate": 0.708929,
+                "quantile": 0.25
+              },
+              {
+                "absoluteGap": 0.244643,
+                "observedAtOrBelowRate": 0.744643,
+                "quantile": 0.5
+              },
+              {
+                "absoluteGap": 0.103571,
+                "observedAtOrBelowRate": 0.853571,
+                "quantile": 0.75
+              },
+              {
+                "absoluteGap": 0.053571,
+                "observedAtOrBelowRate": 0.953571,
+                "quantile": 0.9
+              }
+            ]
+          },
+          "name": "appearance-hurdle-promoted-opening-joint-distribution",
+          "slices": {
+            "position": {
+              "defender": {
+                "centralIntervals": [
+                  {
+                    "meanWidth": 1.164773,
+                    "nominalCoverage": 0.5,
+                    "observedCoverage": 0.8125
+                  },
+                  {
+                    "meanWidth": 4.525,
+                    "nominalCoverage": 0.8,
+                    "observedCoverage": 0.9375
+                  },
+                  {
+                    "meanWidth": 7.59375,
+                    "nominalCoverage": 0.95,
+                    "observedCoverage": 0.965909
+                  }
+                ],
+                "count": 176,
+                "meanCrps": 0.686931,
+                "meanDistributionSampleCount": 37.0,
+                "meanPinballLoss": 0.344761,
+                "medianMae": 0.8125,
+                "quantileCalibration": [
+                  {
+                    "absoluteGap": 0.485227,
+                    "observedAtOrBelowRate": 0.585227,
+                    "quantile": 0.1
+                  },
+                  {
+                    "absoluteGap": 0.357955,
+                    "observedAtOrBelowRate": 0.607955,
+                    "quantile": 0.25
+                  },
+                  {
+                    "absoluteGap": 0.181818,
+                    "observedAtOrBelowRate": 0.681818,
+                    "quantile": 0.5
+                  },
+                  {
+                    "absoluteGap": 0.090909,
+                    "observedAtOrBelowRate": 0.840909,
+                    "quantile": 0.75
+                  },
+                  {
+                    "absoluteGap": 0.065909,
+                    "observedAtOrBelowRate": 0.965909,
+                    "quantile": 0.9
+                  }
+                ]
+              },
+              "forward": {
+                "centralIntervals": [
+                  {
+                    "meanWidth": 0.776786,
+                    "nominalCoverage": 0.5,
+                    "observedCoverage": 0.75
+                  },
+                  {
+                    "meanWidth": 3.576786,
+                    "nominalCoverage": 0.8,
+                    "observedCoverage": 0.901786
+                  },
+                  {
+                    "meanWidth": 8.16875,
+                    "nominalCoverage": 0.95,
+                    "observedCoverage": 0.982143
+                  }
+                ],
+                "count": 112,
+                "meanCrps": 0.806858,
+                "meanDistributionSampleCount": 37.0,
+                "meanPinballLoss": 0.416804,
+                "medianMae": 1.017857,
+                "quantileCalibration": [
+                  {
+                    "absoluteGap": 0.489286,
+                    "observedAtOrBelowRate": 0.589286,
+                    "quantile": 0.1
+                  },
+                  {
+                    "absoluteGap": 0.410714,
+                    "observedAtOrBelowRate": 0.660714,
+                    "quantile": 0.25
+                  },
+                  {
+                    "absoluteGap": 0.178571,
+                    "observedAtOrBelowRate": 0.678571,
+                    "quantile": 0.5
+                  },
+                  {
+                    "absoluteGap": 0.008929,
+                    "observedAtOrBelowRate": 0.758929,
+                    "quantile": 0.75
+                  },
+                  {
+                    "absoluteGap": 0.010714,
+                    "observedAtOrBelowRate": 0.910714,
+                    "quantile": 0.9
+                  }
+                ]
+              },
+              "goalkeeper": {
+                "centralIntervals": [
+                  {
+                    "meanWidth": 0.027778,
+                    "nominalCoverage": 0.5,
+                    "observedCoverage": 0.916667
+                  },
+                  {
+                    "meanWidth": 1.547222,
+                    "nominalCoverage": 0.8,
+                    "observedCoverage": 1.0
+                  },
+                  {
+                    "meanWidth": 5.958333,
+                    "nominalCoverage": 0.95,
+                    "observedCoverage": 1.0
+                  }
+                ],
+                "count": 72,
+                "meanCrps": 0.214532,
+                "meanDistributionSampleCount": 37.0,
+                "meanPinballLoss": 0.100389,
+                "medianMae": 0.236111,
+                "quantileCalibration": [
+                  {
+                    "absoluteGap": 0.816667,
+                    "observedAtOrBelowRate": 0.916667,
+                    "quantile": 0.1
+                  },
+                  {
+                    "absoluteGap": 0.666667,
+                    "observedAtOrBelowRate": 0.916667,
+                    "quantile": 0.25
+                  },
+                  {
+                    "absoluteGap": 0.416667,
+                    "observedAtOrBelowRate": 0.916667,
+                    "quantile": 0.5
+                  },
+                  {
+                    "absoluteGap": 0.166667,
+                    "observedAtOrBelowRate": 0.916667,
+                    "quantile": 0.75
+                  },
+                  {
+                    "absoluteGap": 0.1,
+                    "observedAtOrBelowRate": 1.0,
+                    "quantile": 0.9
+                  }
+                ]
+              },
+              "midfielder": {
+                "centralIntervals": [
+                  {
+                    "meanWidth": 1.185,
+                    "nominalCoverage": 0.5,
+                    "observedCoverage": 0.89
+                  },
+                  {
+                    "meanWidth": 2.715,
+                    "nominalCoverage": 0.8,
+                    "observedCoverage": 0.945
+                  },
+                  {
+                    "meanWidth": 5.6745,
+                    "nominalCoverage": 0.95,
+                    "observedCoverage": 0.97
+                  }
+                ],
+                "count": 200,
+                "meanCrps": 0.412904,
+                "meanDistributionSampleCount": 37.0,
+                "meanPinballLoss": 0.21435,
+                "medianMae": 0.48,
+                "quantileCalibration": [
+                  {
+                    "absoluteGap": 0.595,
+                    "observedAtOrBelowRate": 0.695,
+                    "quantile": 0.1
+                  },
+                  {
+                    "absoluteGap": 0.5,
+                    "observedAtOrBelowRate": 0.75,
+                    "quantile": 0.25
+                  },
+                  {
+                    "absoluteGap": 0.275,
+                    "observedAtOrBelowRate": 0.775,
+                    "quantile": 0.5
+                  },
+                  {
+                    "absoluteGap": 0.145,
+                    "observedAtOrBelowRate": 0.895,
+                    "quantile": 0.75
+                  },
+                  {
+                    "absoluteGap": 0.05,
+                    "observedAtOrBelowRate": 0.95,
+                    "quantile": 0.9
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "scenarioCount": 37,
+      "targetCaptureId": 4,
+      "targetSeasonCode": "2023-24"
+    },
+    {
+      "affectedPlayerCount": 64,
+      "affectedPlayerGameweekCount": 512,
+      "appearanceModels": [
+        {
+          "calibrationBins": [
+            {
+              "absoluteGap": 0.343476,
+              "count": 96,
+              "lowerBoundInclusive": 0.0,
+              "meanProbability": 0.041941,
+              "observedRate": 0.385417,
+              "upperBound": 0.2,
+              "upperBoundInclusive": false
+            },
+            {
+              "absoluteGap": 0.012046,
+              "count": 142,
+              "lowerBoundInclusive": 0.2,
+              "meanProbability": 0.321905,
+              "observedRate": 0.309859,
+              "upperBound": 0.4,
+              "upperBoundInclusive": false
+            },
+            {
+              "absoluteGap": 0.045134,
+              "count": 179,
+              "lowerBoundInclusive": 0.4,
+              "meanProbability": 0.4409,
+              "observedRate": 0.486034,
+              "upperBound": 0.6,
+              "upperBoundInclusive": false
+            },
+            {
+              "absoluteGap": 0.493209,
+              "count": 31,
+              "lowerBoundInclusive": 0.6,
+              "meanProbability": 0.686757,
+              "observedRate": 0.193548,
+              "upperBound": 0.8,
+              "upperBoundInclusive": false
+            },
+            {
+              "absoluteGap": 0.333882,
+              "count": 64,
+              "lowerBoundInclusive": 0.8,
+              "meanProbability": 0.865132,
+              "observedRate": 0.53125,
+              "upperBound": 1.0,
+              "upperBoundInclusive": true
+            }
+          ],
+          "metrics": {
+            "brierScore": 0.28297,
+            "count": 512,
+            "expectedCalibrationError": 0.155119,
+            "logLoss": 0.849206,
+            "meanProbability": 0.401007,
+            "observedRate": 0.40625
+          },
+          "name": "appearance-hurdle-opening-appearance",
+          "slices": {
+            "position": {
+              "defender": {
+                "brierScore": 0.259732,
+                "count": 168,
+                "expectedCalibrationError": 0.164944,
+                "logLoss": 0.757879,
+                "meanProbability": 0.443766,
+                "observedRate": 0.404762
+              },
+              "forward": {
+                "brierScore": 0.170928,
+                "count": 72,
+                "expectedCalibrationError": 0.141447,
+                "logLoss": 0.50688,
+                "meanProbability": 0.453582,
+                "observedRate": 0.347222
+              },
+              "goalkeeper": {
+                "brierScore": 0.254521,
+                "count": 72,
+                "expectedCalibrationError": 0.241228,
+                "logLoss": 0.752363,
+                "meanProbability": 0.394006,
+                "observedRate": 0.152778
+              },
+              "midfielder": {
+                "brierScore": 0.353068,
+                "count": 200,
+                "expectedCalibrationError": 0.290263,
+                "logLoss": 1.084021,
+                "meanProbability": 0.348684,
+                "observedRate": 0.52
+              }
+            }
+          }
+        },
+        {
+          "calibrationBins": [
+            {
+              "absoluteGap": 0.087535,
+              "count": 95,
+              "lowerBoundInclusive": 0.0,
+              "meanProbability": 0.140166,
+              "observedRate": 0.052632,
+              "upperBound": 0.2,
+              "upperBoundInclusive": false
+            },
+            {
+              "absoluteGap": 0.118557,
+              "count": 194,
+              "lowerBoundInclusive": 0.2,
+              "meanProbability": 0.304124,
+              "observedRate": 0.42268,
+              "upperBound": 0.4,
+              "upperBoundInclusive": false
+            },
+            {
+              "absoluteGap": 0.036286,
+              "count": 161,
+              "lowerBoundInclusive": 0.4,
+              "meanProbability": 0.502125,
+              "observedRate": 0.465839,
+              "upperBound": 0.6,
+              "upperBoundInclusive": false
+            },
+            {
+              "absoluteGap": 0.016046,
+              "count": 41,
+              "lowerBoundInclusive": 0.6,
+              "meanProbability": 0.674583,
+              "observedRate": 0.658537,
+              "upperBound": 0.8,
+              "upperBoundInclusive": false
+            },
+            {
+              "absoluteGap": 0.066416,
+              "count": 21,
+              "lowerBoundInclusive": 0.8,
+              "meanProbability": 0.838346,
+              "observedRate": 0.904762,
+              "upperBound": 1.0,
+              "upperBoundInclusive": true
+            }
+          ],
+          "metrics": {
+            "brierScore": 0.20669,
+            "count": 512,
+            "expectedCalibrationError": 0.076583,
+            "logLoss": 0.592755,
+            "meanProbability": 0.387541,
+            "observedRate": 0.40625
+          },
+          "name": "appearance-hurdle-promoted-equal-weight-opening-appearance",
+          "slices": {
+            "position": {
+              "defender": {
+                "brierScore": 0.199129,
+                "count": 168,
+                "expectedCalibrationError": 0.104793,
+                "logLoss": 0.576401,
+                "meanProbability": 0.492951,
+                "observedRate": 0.404762
+              },
+              "forward": {
+                "brierScore": 0.17162,
+                "count": 72,
+                "expectedCalibrationError": 0.083699,
+                "logLoss": 0.52236,
+                "meanProbability": 0.384868,
+                "observedRate": 0.347222
+              },
+              "goalkeeper": {
+                "brierScore": 0.132541,
+                "count": 72,
+                "expectedCalibrationError": 0.188596,
+                "logLoss": 0.416469,
+                "meanProbability": 0.248538,
+                "observedRate": 0.152778
+              },
+              "midfielder": {
+                "brierScore": 0.252361,
+                "count": 200,
+                "expectedCalibrationError": 0.171316,
+                "logLoss": 0.695296,
+                "meanProbability": 0.35,
+                "observedRate": 0.52
+              }
+            }
+          }
+        }
+      ],
+      "distributionModels": [
+        {
+          "metrics": {
+            "centralIntervals": [
+              {
+                "meanWidth": 0.772461,
+                "nominalCoverage": 0.5,
+                "observedCoverage": 0.677734
+              },
+              {
+                "meanWidth": 3.054492,
+                "nominalCoverage": 0.8,
+                "observedCoverage": 0.878906
+              },
+              {
+                "meanWidth": 6.479736,
+                "nominalCoverage": 0.95,
+                "observedCoverage": 0.921875
+              }
+            ],
+            "count": 512,
+            "meanCrps": 0.748512,
+            "meanDistributionSampleCount": 38.0,
+            "meanPinballLoss": 0.375182,
+            "medianMae": 0.888672,
+            "quantileCalibration": [
+              {
+                "absoluteGap": 0.460547,
+                "observedAtOrBelowRate": 0.560547,
+                "quantile": 0.1
+              },
+              {
+                "absoluteGap": 0.392578,
+                "observedAtOrBelowRate": 0.642578,
+                "quantile": 0.25
+              },
+              {
+                "absoluteGap": 0.167969,
+                "observedAtOrBelowRate": 0.667969,
+                "quantile": 0.5
+              },
+              {
+                "absoluteGap": 0.015625,
+                "observedAtOrBelowRate": 0.734375,
+                "quantile": 0.75
+              },
+              {
+                "absoluteGap": 0.019141,
+                "observedAtOrBelowRate": 0.880859,
+                "quantile": 0.9
+              }
+            ]
+          },
+          "name": "appearance-hurdle-opening-joint-distribution",
+          "slices": {
+            "position": {
+              "defender": {
+                "centralIntervals": [
+                  {
+                    "meanWidth": 1.02381,
+                    "nominalCoverage": 0.5,
+                    "observedCoverage": 0.779762
+                  },
+                  {
+                    "meanWidth": 3.510714,
+                    "nominalCoverage": 0.8,
+                    "observedCoverage": 0.904762
+                  },
+                  {
+                    "meanWidth": 6.652679,
+                    "nominalCoverage": 0.95,
+                    "observedCoverage": 0.940476
+                  }
+                ],
+                "count": 168,
+                "meanCrps": 0.706351,
+                "meanDistributionSampleCount": 38.0,
+                "meanPinballLoss": 0.366524,
+                "medianMae": 0.815476,
+                "quantileCalibration": [
+                  {
+                    "absoluteGap": 0.489286,
+                    "observedAtOrBelowRate": 0.589286,
+                    "quantile": 0.1
+                  },
+                  {
+                    "absoluteGap": 0.452381,
+                    "observedAtOrBelowRate": 0.702381,
+                    "quantile": 0.25
+                  },
+                  {
+                    "absoluteGap": 0.238095,
+                    "observedAtOrBelowRate": 0.738095,
+                    "quantile": 0.5
+                  },
+                  {
+                    "absoluteGap": 0.071429,
+                    "observedAtOrBelowRate": 0.821429,
+                    "quantile": 0.75
+                  },
+                  {
+                    "absoluteGap": 0.010714,
+                    "observedAtOrBelowRate": 0.910714,
+                    "quantile": 0.9
+                  }
+                ]
+              },
+              "forward": {
+                "centralIntervals": [
+                  {
+                    "meanWidth": 0.986111,
+                    "nominalCoverage": 0.5,
+                    "observedCoverage": 0.902778
+                  },
+                  {
+                    "meanWidth": 4.018056,
+                    "nominalCoverage": 0.8,
+                    "observedCoverage": 0.972222
+                  },
+                  {
+                    "meanWidth": 7.726389,
+                    "nominalCoverage": 0.95,
+                    "observedCoverage": 1.0
+                  }
+                ],
+                "count": 72,
+                "meanCrps": 0.469923,
+                "meanDistributionSampleCount": 38.0,
+                "meanPinballLoss": 0.221056,
+                "medianMae": 0.486111,
+                "quantileCalibration": [
+                  {
+                    "absoluteGap": 0.302778,
+                    "observedAtOrBelowRate": 0.402778,
+                    "quantile": 0.1
+                  },
+                  {
+                    "absoluteGap": 0.430556,
+                    "observedAtOrBelowRate": 0.680556,
+                    "quantile": 0.25
+                  },
+                  {
+                    "absoluteGap": 0.25,
+                    "observedAtOrBelowRate": 0.75,
+                    "quantile": 0.5
+                  },
+                  {
+                    "absoluteGap": 0.152778,
+                    "observedAtOrBelowRate": 0.902778,
+                    "quantile": 0.75
+                  },
+                  {
+                    "absoluteGap": 0.072222,
+                    "observedAtOrBelowRate": 0.972222,
+                    "quantile": 0.9
+                  }
+                ]
+              },
+              "goalkeeper": {
+                "centralIntervals": [
+                  {
+                    "meanWidth": 0.739583,
+                    "nominalCoverage": 0.5,
+                    "observedCoverage": 0.722222
+                  },
+                  {
+                    "meanWidth": 3.188889,
+                    "nominalCoverage": 0.8,
+                    "observedCoverage": 0.986111
+                  },
+                  {
+                    "meanWidth": 6.688889,
+                    "nominalCoverage": 0.95,
+                    "observedCoverage": 1.0
+                  }
+                ],
+                "count": 72,
+                "meanCrps": 0.595279,
+                "meanDistributionSampleCount": 38.0,
+                "meanPinballLoss": 0.277146,
+                "medianMae": 0.722222,
+                "quantileCalibration": [
+                  {
+                    "absoluteGap": 0.747222,
+                    "observedAtOrBelowRate": 0.847222,
+                    "quantile": 0.1
+                  },
+                  {
+                    "absoluteGap": 0.597222,
+                    "observedAtOrBelowRate": 0.847222,
+                    "quantile": 0.25
+                  },
+                  {
+                    "absoluteGap": 0.361111,
+                    "observedAtOrBelowRate": 0.861111,
+                    "quantile": 0.5
+                  },
+                  {
+                    "absoluteGap": 0.111111,
+                    "observedAtOrBelowRate": 0.861111,
+                    "quantile": 0.75
+                  },
+                  {
+                    "absoluteGap": 0.086111,
+                    "observedAtOrBelowRate": 0.986111,
+                    "quantile": 0.9
+                  }
+                ]
+              },
+              "midfielder": {
+                "centralIntervals": [
+                  {
+                    "meanWidth": 0.49625,
+                    "nominalCoverage": 0.5,
+                    "observedCoverage": 0.495
+                  },
+                  {
+                    "meanWidth": 2.276,
+                    "nominalCoverage": 0.8,
+                    "observedCoverage": 0.785
+                  },
+                  {
+                    "meanWidth": 5.810375,
+                    "nominalCoverage": 0.95,
+                    "observedCoverage": 0.85
+                  }
+                ],
+                "count": 200,
+                "meanCrps": 0.939384,
+                "meanDistributionSampleCount": 38.0,
+                "meanPinballLoss": 0.473232,
+                "medianMae": 1.155,
+                "quantileCalibration": [
+                  {
+                    "absoluteGap": 0.39,
+                    "observedAtOrBelowRate": 0.49,
+                    "quantile": 0.1
+                  },
+                  {
+                    "absoluteGap": 0.255,
+                    "observedAtOrBelowRate": 0.505,
+                    "quantile": 0.25
+                  },
+                  {
+                    "absoluteGap": 0.01,
+                    "observedAtOrBelowRate": 0.51,
+                    "quantile": 0.5
+                  },
+                  {
+                    "absoluteGap": 0.195,
+                    "observedAtOrBelowRate": 0.555,
+                    "quantile": 0.75
+                  },
+                  {
+                    "absoluteGap": 0.115,
+                    "observedAtOrBelowRate": 0.785,
+                    "quantile": 0.9
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "metrics": {
+            "centralIntervals": [
+              {
+                "meanWidth": 0.732422,
+                "nominalCoverage": 0.5,
+                "observedCoverage": 0.759766
+              },
+              {
+                "meanWidth": 2.903125,
+                "nominalCoverage": 0.8,
+                "observedCoverage": 0.900391
+              },
+              {
+                "meanWidth": 6.613281,
+                "nominalCoverage": 0.95,
+                "observedCoverage": 0.974609
+              }
+            ],
+            "count": 512,
+            "meanCrps": 0.657808,
+            "meanDistributionSampleCount": 38.0,
+            "meanPinballLoss": 0.32732,
+            "medianMae": 0.782227,
+            "quantileCalibration": [
+              {
+                "absoluteGap": 0.450781,
+                "observedAtOrBelowRate": 0.550781,
+                "quantile": 0.1
+              },
+              {
+                "absoluteGap": 0.388672,
+                "observedAtOrBelowRate": 0.638672,
+                "quantile": 0.25
+              },
+              {
+                "absoluteGap": 0.171875,
+                "observedAtOrBelowRate": 0.671875,
+                "quantile": 0.5
+              },
+              {
+                "absoluteGap": 0.015625,
+                "observedAtOrBelowRate": 0.765625,
+                "quantile": 0.75
+              },
+              {
+                "absoluteGap": 0.002344,
+                "observedAtOrBelowRate": 0.902344,
+                "quantile": 0.9
+              }
+            ]
+          },
+          "name": "appearance-hurdle-promoted-opening-joint-distribution",
+          "slices": {
+            "position": {
+              "defender": {
+                "centralIntervals": [
+                  {
+                    "meanWidth": 1.160714,
+                    "nominalCoverage": 0.5,
+                    "observedCoverage": 0.857143
+                  },
+                  {
+                    "meanWidth": 3.715476,
+                    "nominalCoverage": 0.8,
+                    "observedCoverage": 0.958333
+                  },
+                  {
+                    "meanWidth": 6.99628,
+                    "nominalCoverage": 0.95,
+                    "observedCoverage": 0.982143
+                  }
+                ],
+                "count": 168,
+                "meanCrps": 0.640268,
+                "meanDistributionSampleCount": 38.0,
+                "meanPinballLoss": 0.31556,
+                "medianMae": 0.723214,
+                "quantileCalibration": [
+                  {
+                    "absoluteGap": 0.465476,
+                    "observedAtOrBelowRate": 0.565476,
+                    "quantile": 0.1
+                  },
+                  {
+                    "absoluteGap": 0.440476,
+                    "observedAtOrBelowRate": 0.690476,
+                    "quantile": 0.25
+                  },
+                  {
+                    "absoluteGap": 0.244048,
+                    "observedAtOrBelowRate": 0.744048,
+                    "quantile": 0.5
+                  },
+                  {
+                    "absoluteGap": 0.119048,
+                    "observedAtOrBelowRate": 0.869048,
+                    "quantile": 0.75
+                  },
+                  {
+                    "absoluteGap": 0.064286,
+                    "observedAtOrBelowRate": 0.964286,
+                    "quantile": 0.9
+                  }
+                ]
+              },
+              "forward": {
+                "centralIntervals": [
+                  {
+                    "meanWidth": 0.673611,
+                    "nominalCoverage": 0.5,
+                    "observedCoverage": 0.888889
+                  },
+                  {
+                    "meanWidth": 3.436111,
+                    "nominalCoverage": 0.8,
+                    "observedCoverage": 0.972222
+                  },
+                  {
+                    "meanWidth": 7.400347,
+                    "nominalCoverage": 0.95,
+                    "observedCoverage": 1.0
+                  }
+                ],
+                "count": 72,
+                "meanCrps": 0.438471,
+                "meanDistributionSampleCount": 38.0,
+                "meanPinballLoss": 0.219486,
+                "medianMae": 0.513889,
+                "quantileCalibration": [
+                  {
+                    "absoluteGap": 0.358333,
+                    "observedAtOrBelowRate": 0.458333,
+                    "quantile": 0.1
+                  },
+                  {
+                    "absoluteGap": 0.444444,
+                    "observedAtOrBelowRate": 0.694444,
+                    "quantile": 0.25
+                  },
+                  {
+                    "absoluteGap": 0.236111,
+                    "observedAtOrBelowRate": 0.736111,
+                    "quantile": 0.5
+                  },
+                  {
+                    "absoluteGap": 0.152778,
+                    "observedAtOrBelowRate": 0.902778,
+                    "quantile": 0.75
+                  },
+                  {
+                    "absoluteGap": 0.072222,
+                    "observedAtOrBelowRate": 0.972222,
+                    "quantile": 0.9
+                  }
+                ]
+              },
+              "goalkeeper": {
+                "centralIntervals": [
+                  {
+                    "meanWidth": 0.409722,
+                    "nominalCoverage": 0.5,
+                    "observedCoverage": 0.861111
+                  },
+                  {
+                    "meanWidth": 2.331944,
+                    "nominalCoverage": 0.8,
+                    "observedCoverage": 0.972222
+                  },
+                  {
+                    "meanWidth": 5.426042,
+                    "nominalCoverage": 0.95,
+                    "observedCoverage": 1.0
+                  }
+                ],
+                "count": 72,
+                "meanCrps": 0.413887,
+                "meanDistributionSampleCount": 38.0,
+                "meanPinballLoss": 0.196847,
+                "medianMae": 0.444444,
+                "quantileCalibration": [
+                  {
+                    "absoluteGap": 0.747222,
+                    "observedAtOrBelowRate": 0.847222,
+                    "quantile": 0.1
+                  },
+                  {
+                    "absoluteGap": 0.597222,
+                    "observedAtOrBelowRate": 0.847222,
+                    "quantile": 0.25
+                  },
+                  {
+                    "absoluteGap": 0.347222,
+                    "observedAtOrBelowRate": 0.847222,
+                    "quantile": 0.5
+                  },
+                  {
+                    "absoluteGap": 0.111111,
+                    "observedAtOrBelowRate": 0.861111,
+                    "quantile": 0.75
+                  },
+                  {
+                    "absoluteGap": 0.072222,
+                    "observedAtOrBelowRate": 0.972222,
+                    "quantile": 0.9
+                  }
+                ]
+              },
+              "midfielder": {
+                "centralIntervals": [
+                  {
+                    "meanWidth": 0.51,
+                    "nominalCoverage": 0.5,
+                    "observedCoverage": 0.595
+                  },
+                  {
+                    "meanWidth": 2.2345,
+                    "nominalCoverage": 0.8,
+                    "observedCoverage": 0.8
+                  },
+                  {
+                    "meanWidth": 6.435625,
+                    "nominalCoverage": 0.95,
+                    "observedCoverage": 0.95
+                  }
+                ],
+                "count": 200,
+                "meanCrps": 0.839314,
+                "meanDistributionSampleCount": 38.0,
+                "meanPinballLoss": 0.42299,
+                "medianMae": 1.05,
+                "quantileCalibration": [
+                  {
+                    "absoluteGap": 0.365,
+                    "observedAtOrBelowRate": 0.465,
+                    "quantile": 0.1
+                  },
+                  {
+                    "absoluteGap": 0.25,
+                    "observedAtOrBelowRate": 0.5,
+                    "quantile": 0.25
+                  },
+                  {
+                    "absoluteGap": 0.025,
+                    "observedAtOrBelowRate": 0.525,
+                    "quantile": 0.5
+                  },
+                  {
+                    "absoluteGap": 0.155,
+                    "observedAtOrBelowRate": 0.595,
+                    "quantile": 0.75
+                  },
+                  {
+                    "absoluteGap": 0.1,
+                    "observedAtOrBelowRate": 0.8,
+                    "quantile": 0.9
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "scenarioCount": 38,
+      "targetCaptureId": 2,
+      "targetSeasonCode": "2024-25"
+    },
+    {
+      "affectedPlayerCount": 69,
+      "affectedPlayerGameweekCount": 552,
+      "appearanceModels": [
+        {
+          "calibrationBins": [
+            {
+              "absoluteGap": 0.190209,
+              "count": 136,
+              "lowerBoundInclusive": 0.0,
+              "meanProbability": 0.096556,
+              "observedRate": 0.286765,
+              "upperBound": 0.2,
+              "upperBoundInclusive": false
+            },
+            {
+              "absoluteGap": 0.136452,
+              "count": 162,
+              "lowerBoundInclusive": 0.2,
+              "meanProbability": 0.340156,
+              "observedRate": 0.203704,
+              "upperBound": 0.4,
+              "upperBoundInclusive": false
+            },
+            {
+              "absoluteGap": 0.150665,
+              "count": 182,
+              "lowerBoundInclusive": 0.4,
+              "meanProbability": 0.430885,
+              "observedRate": 0.28022,
+              "upperBound": 0.6,
+              "upperBoundInclusive": false
+            },
+            {
+              "absoluteGap": 0.118421,
+              "count": 40,
+              "lowerBoundInclusive": 0.6,
+              "meanProbability": 0.706579,
+              "observedRate": 0.825,
+              "upperBound": 0.8,
+              "upperBoundInclusive": false
+            },
+            {
+              "absoluteGap": 0.15625,
+              "count": 32,
+              "lowerBoundInclusive": 0.8,
+              "meanProbability": 0.875,
+              "observedRate": 0.71875,
+              "upperBound": 1.0,
+              "upperBoundInclusive": true
+            }
+          ],
+          "metrics": {
+            "brierScore": 0.210309,
+            "count": 552,
+            "expectedCalibrationError": 0.154224,
+            "logLoss": 0.635874,
+            "meanProbability": 0.367611,
+            "observedRate": 0.324275
+          },
+          "name": "appearance-hurdle-opening-appearance",
+          "slices": {
+            "position": {
+              "defender": {
+                "brierScore": 0.192442,
+                "count": 168,
+                "expectedCalibrationError": 0.123904,
+                "logLoss": 0.591852,
+                "meanProbability": 0.336936,
+                "observedRate": 0.375
+              },
+              "forward": {
+                "brierScore": 0.271622,
+                "count": 72,
+                "expectedCalibrationError": 0.165936,
+                "logLoss": 0.738497,
+                "meanProbability": 0.480994,
+                "observedRate": 0.430556
+              },
+              "goalkeeper": {
+                "brierScore": 0.143363,
+                "count": 64,
+                "expectedCalibrationError": 0.324424,
+                "logLoss": 0.522779,
+                "meanProbability": 0.263569,
+                "observedRate": 0.078125
+              },
+              "midfielder": {
+                "brierScore": 0.221889,
+                "count": 248,
+                "expectedCalibrationError": 0.185166,
+                "logLoss": 0.665088,
+                "meanProbability": 0.382322,
+                "observedRate": 0.322581
+              }
+            }
+          }
+        },
+        {
+          "calibrationBins": [
+            {
+              "absoluteGap": 0.014706,
+              "count": 102,
+              "lowerBoundInclusive": 0.0,
+              "meanProbability": 0.132353,
+              "observedRate": 0.147059,
+              "upperBound": 0.2,
+              "upperBoundInclusive": false
+            },
+            {
+              "absoluteGap": 0.133627,
+              "count": 257,
+              "lowerBoundInclusive": 0.2,
+              "meanProbability": 0.281487,
+              "observedRate": 0.14786,
+              "upperBound": 0.4,
+              "upperBoundInclusive": false
+            },
+            {
+              "absoluteGap": 0.028306,
+              "count": 119,
+              "lowerBoundInclusive": 0.4,
+              "meanProbability": 0.509509,
+              "observedRate": 0.537815,
+              "upperBound": 0.6,
+              "upperBoundInclusive": false
+            },
+            {
+              "absoluteGap": 0.128509,
+              "count": 60,
+              "lowerBoundInclusive": 0.6,
+              "meanProbability": 0.671491,
+              "observedRate": 0.8,
+              "upperBound": 0.8,
+              "upperBoundInclusive": false
+            },
+            {
+              "absoluteGap": 0.165414,
+              "count": 14,
+              "lowerBoundInclusive": 0.8,
+              "meanProbability": 0.834586,
+              "observedRate": 1.0,
+              "upperBound": 1.0,
+              "upperBoundInclusive": true
+            }
+          ],
+          "metrics": {
+            "brierScore": 0.161632,
+            "count": 552,
+            "expectedCalibrationError": 0.089197,
+            "logLoss": 0.505441,
+            "meanProbability": 0.359506,
+            "observedRate": 0.324275
+          },
+          "name": "appearance-hurdle-promoted-equal-weight-opening-appearance",
+          "slices": {
+            "position": {
+              "defender": {
+                "brierScore": 0.177149,
+                "count": 168,
+                "expectedCalibrationError": 0.119518,
+                "logLoss": 0.536038,
+                "meanProbability": 0.368578,
+                "observedRate": 0.375
+              },
+              "forward": {
+                "brierScore": 0.183316,
+                "count": 72,
+                "expectedCalibrationError": 0.146564,
+                "logLoss": 0.554122,
+                "meanProbability": 0.45943,
+                "observedRate": 0.430556
+              },
+              "goalkeeper": {
+                "brierScore": 0.112535,
+                "count": 64,
+                "expectedCalibrationError": 0.110197,
+                "logLoss": 0.440253,
+                "meanProbability": 0.188322,
+                "observedRate": 0.078125
+              },
+              "midfielder": {
+                "brierScore": 0.157495,
+                "count": 248,
+                "expectedCalibrationError": 0.103247,
+                "logLoss": 0.487404,
+                "meanProbability": 0.368527,
+                "observedRate": 0.322581
+              }
+            }
+          }
+        }
+      ],
+      "distributionModels": [
+        {
+          "metrics": {
+            "centralIntervals": [
+              {
+                "meanWidth": 0.802083,
+                "nominalCoverage": 0.5,
+                "observedCoverage": 0.773551
+              },
+              {
+                "meanWidth": 2.500181,
+                "nominalCoverage": 0.8,
+                "observedCoverage": 0.876812
+              },
+              {
+                "meanWidth": 5.890444,
+                "nominalCoverage": 0.95,
+                "observedCoverage": 0.929348
+              }
+            ],
+            "count": 552,
+            "meanCrps": 0.753469,
+            "meanDistributionSampleCount": 38.0,
+            "meanPinballLoss": 0.385869,
+            "medianMae": 0.893116,
+            "quantileCalibration": [
+              {
+                "absoluteGap": 0.572101,
+                "observedAtOrBelowRate": 0.672101,
+                "quantile": 0.1
+              },
+              {
+                "absoluteGap": 0.442029,
+                "observedAtOrBelowRate": 0.692029,
+                "quantile": 0.25
+              },
+              {
+                "absoluteGap": 0.202899,
+                "observedAtOrBelowRate": 0.702899,
+                "quantile": 0.5
+              },
+              {
+                "absoluteGap": 0.028986,
+                "observedAtOrBelowRate": 0.778986,
+                "quantile": 0.75
+              },
+              {
+                "absoluteGap": 0.021377,
+                "observedAtOrBelowRate": 0.878623,
+                "quantile": 0.9
+              }
+            ]
+          },
+          "name": "appearance-hurdle-opening-joint-distribution",
+          "slices": {
+            "position": {
+              "defender": {
+                "centralIntervals": [
+                  {
+                    "meanWidth": 0.8125,
+                    "nominalCoverage": 0.5,
+                    "observedCoverage": 0.755952
+                  },
+                  {
+                    "meanWidth": 2.591667,
+                    "nominalCoverage": 0.8,
+                    "observedCoverage": 0.827381
+                  },
+                  {
+                    "meanWidth": 5.072917,
+                    "nominalCoverage": 0.95,
+                    "observedCoverage": 0.904762
+                  }
+                ],
+                "count": 168,
+                "meanCrps": 0.969591,
+                "meanDistributionSampleCount": 38.0,
+                "meanPinballLoss": 0.497101,
+                "medianMae": 1.208333,
+                "quantileCalibration": [
+                  {
+                    "absoluteGap": 0.54881,
+                    "observedAtOrBelowRate": 0.64881,
+                    "quantile": 0.1
+                  },
+                  {
+                    "absoluteGap": 0.410714,
+                    "observedAtOrBelowRate": 0.660714,
+                    "quantile": 0.25
+                  },
+                  {
+                    "absoluteGap": 0.166667,
+                    "observedAtOrBelowRate": 0.666667,
+                    "quantile": 0.5
+                  },
+                  {
+                    "absoluteGap": 0.017857,
+                    "observedAtOrBelowRate": 0.767857,
+                    "quantile": 0.75
+                  },
+                  {
+                    "absoluteGap": 0.066667,
+                    "observedAtOrBelowRate": 0.833333,
+                    "quantile": 0.9
+                  }
+                ]
+              },
+              "forward": {
+                "centralIntervals": [
+                  {
+                    "meanWidth": 0.878472,
+                    "nominalCoverage": 0.5,
+                    "observedCoverage": 0.694444
+                  },
+                  {
+                    "meanWidth": 4.638889,
+                    "nominalCoverage": 0.8,
+                    "observedCoverage": 0.958333
+                  },
+                  {
+                    "meanWidth": 7.827778,
+                    "nominalCoverage": 0.95,
+                    "observedCoverage": 0.972222
+                  }
+                ],
+                "count": 72,
+                "meanCrps": 0.826177,
+                "meanDistributionSampleCount": 38.0,
+                "meanPinballLoss": 0.408646,
+                "medianMae": 1.055556,
+                "quantileCalibration": [
+                  {
+                    "absoluteGap": 0.344444,
+                    "observedAtOrBelowRate": 0.444444,
+                    "quantile": 0.1
+                  },
+                  {
+                    "absoluteGap": 0.319444,
+                    "observedAtOrBelowRate": 0.569444,
+                    "quantile": 0.25
+                  },
+                  {
+                    "absoluteGap": 0.083333,
+                    "observedAtOrBelowRate": 0.583333,
+                    "quantile": 0.5
+                  },
+                  {
+                    "absoluteGap": 0.041667,
+                    "observedAtOrBelowRate": 0.708333,
+                    "quantile": 0.75
+                  },
+                  {
+                    "absoluteGap": 0.058333,
+                    "observedAtOrBelowRate": 0.958333,
+                    "quantile": 0.9
+                  }
+                ]
+              },
+              "goalkeeper": {
+                "centralIntervals": [
+                  {
+                    "meanWidth": 0.75,
+                    "nominalCoverage": 0.5,
+                    "observedCoverage": 0.921875
+                  },
+                  {
+                    "meanWidth": 2.01875,
+                    "nominalCoverage": 0.8,
+                    "observedCoverage": 0.921875
+                  },
+                  {
+                    "meanWidth": 5.351953,
+                    "nominalCoverage": 0.95,
+                    "observedCoverage": 0.953125
+                  }
+                ],
+                "count": 64,
+                "meanCrps": 0.26134,
+                "meanDistributionSampleCount": 38.0,
+                "meanPinballLoss": 0.156,
+                "medianMae": 0.15625,
+                "quantileCalibration": [
+                  {
+                    "absoluteGap": 0.821875,
+                    "observedAtOrBelowRate": 0.921875,
+                    "quantile": 0.1
+                  },
+                  {
+                    "absoluteGap": 0.671875,
+                    "observedAtOrBelowRate": 0.921875,
+                    "quantile": 0.25
+                  },
+                  {
+                    "absoluteGap": 0.421875,
+                    "observedAtOrBelowRate": 0.921875,
+                    "quantile": 0.5
+                  },
+                  {
+                    "absoluteGap": 0.171875,
+                    "observedAtOrBelowRate": 0.921875,
+                    "quantile": 0.75
+                  },
+                  {
+                    "absoluteGap": 0.021875,
+                    "observedAtOrBelowRate": 0.921875,
+                    "quantile": 0.9
+                  }
+                ]
+              },
+              "midfielder": {
+                "centralIntervals": [
+                  {
+                    "meanWidth": 0.78629,
+                    "nominalCoverage": 0.5,
+                    "observedCoverage": 0.770161
+                  },
+                  {
+                    "meanWidth": 1.941532,
+                    "nominalCoverage": 0.8,
+                    "observedCoverage": 0.875
+                  },
+                  {
+                    "meanWidth": 6.020766,
+                    "nominalCoverage": 0.95,
+                    "observedCoverage": 0.927419
+                  }
+                ],
+                "count": 248,
+                "meanCrps": 0.712956,
+                "meanDistributionSampleCount": 38.0,
+                "meanPinballLoss": 0.363226,
+                "medianMae": 0.822581,
+                "quantileCalibration": [
+                  {
+                    "absoluteGap": 0.589516,
+                    "observedAtOrBelowRate": 0.689516,
+                    "quantile": 0.1
+                  },
+                  {
+                    "absoluteGap": 0.439516,
+                    "observedAtOrBelowRate": 0.689516,
+                    "quantile": 0.25
+                  },
+                  {
+                    "absoluteGap": 0.205645,
+                    "observedAtOrBelowRate": 0.705645,
+                    "quantile": 0.5
+                  },
+                  {
+                    "absoluteGap": 0.020161,
+                    "observedAtOrBelowRate": 0.770161,
+                    "quantile": 0.75
+                  },
+                  {
+                    "absoluteGap": 0.025,
+                    "observedAtOrBelowRate": 0.875,
+                    "quantile": 0.9
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "metrics": {
+            "centralIntervals": [
+              {
+                "meanWidth": 0.652627,
+                "nominalCoverage": 0.5,
+                "observedCoverage": 0.788043
+              },
+              {
+                "meanWidth": 2.315399,
+                "nominalCoverage": 0.8,
+                "observedCoverage": 0.889493
+              },
+              {
+                "meanWidth": 5.877038,
+                "nominalCoverage": 0.95,
+                "observedCoverage": 0.96558
+              }
+            ],
+            "count": 552,
+            "meanCrps": 0.706528,
+            "meanDistributionSampleCount": 38.0,
+            "meanPinballLoss": 0.361149,
+            "medianMae": 0.893116,
+            "quantileCalibration": [
+              {
+                "absoluteGap": 0.541304,
+                "observedAtOrBelowRate": 0.641304,
+                "quantile": 0.1
+              },
+              {
+                "absoluteGap": 0.442029,
+                "observedAtOrBelowRate": 0.692029,
+                "quantile": 0.25
+              },
+              {
+                "absoluteGap": 0.206522,
+                "observedAtOrBelowRate": 0.706522,
+                "quantile": 0.5
+              },
+              {
+                "absoluteGap": 0.039855,
+                "observedAtOrBelowRate": 0.789855,
+                "quantile": 0.75
+              },
+              {
+                "absoluteGap": 0.008696,
+                "observedAtOrBelowRate": 0.891304,
+                "quantile": 0.9
+              }
+            ]
+          },
+          "name": "appearance-hurdle-promoted-opening-joint-distribution",
+          "slices": {
+            "position": {
+              "defender": {
+                "centralIntervals": [
+                  {
+                    "meanWidth": 0.747024,
+                    "nominalCoverage": 0.5,
+                    "observedCoverage": 0.744048
+                  },
+                  {
+                    "meanWidth": 2.370238,
+                    "nominalCoverage": 0.8,
+                    "observedCoverage": 0.839286
+                  },
+                  {
+                    "meanWidth": 5.697619,
+                    "nominalCoverage": 0.95,
+                    "observedCoverage": 0.946429
+                  }
+                ],
+                "count": 168,
+                "meanCrps": 0.936296,
+                "meanDistributionSampleCount": 38.0,
+                "meanPinballLoss": 0.479399,
+                "medianMae": 1.184524,
+                "quantileCalibration": [
+                  {
+                    "absoluteGap": 0.453571,
+                    "observedAtOrBelowRate": 0.553571,
+                    "quantile": 0.1
+                  },
+                  {
+                    "absoluteGap": 0.410714,
+                    "observedAtOrBelowRate": 0.660714,
+                    "quantile": 0.25
+                  },
+                  {
+                    "absoluteGap": 0.166667,
+                    "observedAtOrBelowRate": 0.666667,
+                    "quantile": 0.5
+                  },
+                  {
+                    "absoluteGap": 0.0,
+                    "observedAtOrBelowRate": 0.75,
+                    "quantile": 0.75
+                  },
+                  {
+                    "absoluteGap": 0.054762,
+                    "observedAtOrBelowRate": 0.845238,
+                    "quantile": 0.9
+                  }
+                ]
+              },
+              "forward": {
+                "centralIntervals": [
+                  {
+                    "meanWidth": 1.138889,
+                    "nominalCoverage": 0.5,
+                    "observedCoverage": 0.75
+                  },
+                  {
+                    "meanWidth": 4.345833,
+                    "nominalCoverage": 0.8,
+                    "observedCoverage": 0.958333
+                  },
+                  {
+                    "meanWidth": 8.252778,
+                    "nominalCoverage": 0.95,
+                    "observedCoverage": 1.0
+                  }
+                ],
+                "count": 72,
+                "meanCrps": 0.778884,
+                "meanDistributionSampleCount": 38.0,
+                "meanPinballLoss": 0.382472,
+                "medianMae": 1.0,
+                "quantileCalibration": [
+                  {
+                    "absoluteGap": 0.344444,
+                    "observedAtOrBelowRate": 0.444444,
+                    "quantile": 0.1
+                  },
+                  {
+                    "absoluteGap": 0.319444,
+                    "observedAtOrBelowRate": 0.569444,
+                    "quantile": 0.25
+                  },
+                  {
+                    "absoluteGap": 0.083333,
+                    "observedAtOrBelowRate": 0.583333,
+                    "quantile": 0.5
+                  },
+                  {
+                    "absoluteGap": 0.0,
+                    "observedAtOrBelowRate": 0.75,
+                    "quantile": 0.75
+                  },
+                  {
+                    "absoluteGap": 0.058333,
+                    "observedAtOrBelowRate": 0.958333,
+                    "quantile": 0.9
+                  }
+                ]
+              },
+              "goalkeeper": {
+                "centralIntervals": [
+                  {
+                    "meanWidth": 0.164062,
+                    "nominalCoverage": 0.5,
+                    "observedCoverage": 0.921875
+                  },
+                  {
+                    "meanWidth": 1.317188,
+                    "nominalCoverage": 0.8,
+                    "observedCoverage": 0.921875
+                  },
+                  {
+                    "meanWidth": 4.148828,
+                    "nominalCoverage": 0.95,
+                    "observedCoverage": 0.953125
+                  }
+                ],
+                "count": 64,
+                "meanCrps": 0.206101,
+                "meanDistributionSampleCount": 38.0,
+                "meanPinballLoss": 0.112672,
+                "medianMae": 0.15625,
+                "quantileCalibration": [
+                  {
+                    "absoluteGap": 0.821875,
+                    "observedAtOrBelowRate": 0.921875,
+                    "quantile": 0.1
+                  },
+                  {
+                    "absoluteGap": 0.671875,
+                    "observedAtOrBelowRate": 0.921875,
+                    "quantile": 0.25
+                  },
+                  {
+                    "absoluteGap": 0.421875,
+                    "observedAtOrBelowRate": 0.921875,
+                    "quantile": 0.5
+                  },
+                  {
+                    "absoluteGap": 0.171875,
+                    "observedAtOrBelowRate": 0.921875,
+                    "quantile": 0.75
+                  },
+                  {
+                    "absoluteGap": 0.021875,
+                    "observedAtOrBelowRate": 0.921875,
+                    "quantile": 0.9
+                  }
+                ]
+              },
+              "midfielder": {
+                "centralIntervals": [
+                  {
+                    "meanWidth": 0.573589,
+                    "nominalCoverage": 0.5,
+                    "observedCoverage": 0.794355
+                  },
+                  {
+                    "meanWidth": 1.946371,
+                    "nominalCoverage": 0.8,
+                    "observedCoverage": 0.895161
+                  },
+                  {
+                    "meanWidth": 5.754839,
+                    "nominalCoverage": 0.95,
+                    "observedCoverage": 0.971774
+                  }
+                ],
+                "count": 248,
+                "meanCrps": 0.659014,
+                "meanDistributionSampleCount": 38.0,
+                "meanPinballLoss": 0.338978,
+                "medianMae": 0.854839,
+                "quantileCalibration": [
+                  {
+                    "absoluteGap": 0.585484,
+                    "observedAtOrBelowRate": 0.685484,
+                    "quantile": 0.1
+                  },
+                  {
+                    "absoluteGap": 0.439516,
+                    "observedAtOrBelowRate": 0.689516,
+                    "quantile": 0.25
+                  },
+                  {
+                    "absoluteGap": 0.21371,
+                    "observedAtOrBelowRate": 0.71371,
+                    "quantile": 0.5
+                  },
+                  {
+                    "absoluteGap": 0.044355,
+                    "observedAtOrBelowRate": 0.794355,
+                    "quantile": 0.75
+                  },
+                  {
+                    "absoluteGap": 0.004839,
+                    "observedAtOrBelowRate": 0.895161,
+                    "quantile": 0.9
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "scenarioCount": 38,
+      "targetCaptureId": 1,
+      "targetSeasonCode": "2025-26"
+    }
+  ],
+  "fixedScreen": {
+    "affectedDistribution": {
+      "maximumAppearanceBrierDelta": 0.0,
+      "maximumAppearanceLogLossDelta": 0.0,
+      "maximumPositionCrpsRegressionFraction": 0.05,
+      "minimumCrpsImprovementFraction": 0.01,
+      "minimumTargetSeasonWins": 2,
+      "primaryMetric": "affected-promoted-player-gameweek-mean-crps"
+    },
+    "allPlayers": {
+      "maximumAppearanceBrierDelta": 0.0,
+      "maximumAppearanceLogLossDelta": 0.0,
+      "maximumCrpsDelta": 0.0
+    },
+    "jointDecisionRule": "affected-distribution-all-player-and-policy-gates-must-pass",
+    "policy": {
+      "evaluationPolicyKey": "6-expected-points",
+      "maximumWorstTargetRegressionPoints": 2.0,
+      "minimumMeanImprovementPoints": 2.0,
+      "minimumTargetWins": 2
+    }
+  },
+  "incumbentSource": {
+    "artifactVersion": "historical-appearance-hurdle-opening-scenario-reconstruction-v1",
+    "dataIdentitySha256": "589ca66b5add2d04d2380a9688db58508de1f3b179eeff057b9c427240384b2c",
+    "runIdentitySha256": "691f24f902818d54227c2c7f9b69a0436ce36a91bdd46f94b92fdda42bbbce5f"
+  },
+  "influencesAdvice": false,
+  "isPromoted": false,
+  "jointScreenPasses": false,
+  "limitations": [
+    "The historical target outcomes were already opened. This experiment can reject or retain a current challenger but cannot promote one.",
+    "Only the fixed bridged promoted-player appearance probability changes. Conditional points, donor paths, fixtures, optimiser constraints and policy are unchanged.",
+    "The primary proper-score screen is restricted to affected players so unchanged rows cannot dilute the measurement. A separate all-player non-regression gate and the complete squad policy screen protect global decision quality.",
+    "Historical opening availability captures remain absent and the FBref aggregates were captured retrospectively."
+  ],
+  "policyScreen": {
+    "bestTargetDifferencePoints": 3,
+    "challengerMeanPoints": 411.333333,
+    "gates": {
+      "meanImprovement": false,
+      "targetWins": false,
+      "worstTargetRegression": true
+    },
+    "incumbentMeanPoints": 410.333333,
+    "meanDifferencePoints": 1.0,
+    "passes": false,
+    "targetCount": 3,
+    "targetLosses": 0,
+    "targetTies": 2,
+    "targetWins": 1,
+    "worstTargetDifferencePoints": 0
+  },
+  "policyTargets": [
+    {
+      "challenger": {
+        "evaluationPolicyKey": "6-expected-points",
+        "horizonGameweeks": 6,
+        "optimizerPolicyKey": "expected-points",
+        "realisedOutcome": {
+          "totalPoints": 461,
+          "weekly": [
+            {
+              "activatedSubstituteCount": 2,
+              "captainBonusPoints": 3,
+              "gameweek": 1,
+              "points": 56,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 1,
+              "captainBonusPoints": 5,
+              "gameweek": 2,
+              "points": 59,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 3,
+              "captainBonusPoints": 12,
+              "gameweek": 3,
+              "points": 49,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 3,
+              "captainBonusPoints": 8,
+              "gameweek": 4,
+              "points": 43,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 1,
+              "captainBonusPoints": 1,
+              "gameweek": 5,
+              "points": 60,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 1,
+              "captainBonusPoints": 10,
+              "gameweek": 6,
+              "points": 80,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 2,
+              "captainBonusPoints": 2,
+              "gameweek": 7,
+              "points": 65,
+              "unreplacedStarterCount": 1
+            },
+            {
+              "activatedSubstituteCount": 1,
+              "captainBonusPoints": 2,
+              "gameweek": 8,
+              "points": 49,
+              "unreplacedStarterCount": 2
+            }
+          ]
+        },
+        "selection": {
+          "budgetTenths": 1000,
+          "gameweeks": [
+            {
+              "captainPlayerId": 141746,
+              "gameweek": 1,
+              "outfieldSubstitutePlayerIds": [
+                230046,
+                167074,
+                437468
+              ],
+              "replacementGoalkeeperPlayerId": 80201,
+              "startingPlayerIds": [
+                77794,
+                78830,
+                118748,
+                141746,
+                154561,
+                178301,
+                216646,
+                220237,
+                226597,
+                232413,
+                446008
+              ],
+              "viceCaptainPlayerId": 118748
+            },
+            {
+              "captainPlayerId": 118748,
+              "gameweek": 2,
+              "outfieldSubstitutePlayerIds": [
+                216646,
+                226597,
+                437468
+              ],
+              "replacementGoalkeeperPlayerId": 154561,
+              "startingPlayerIds": [
+                77794,
+                78830,
+                80201,
+                118748,
+                141746,
+                167074,
+                178301,
+                220237,
+                230046,
+                232413,
+                446008
+              ],
+              "viceCaptainPlayerId": 78830
+            },
+            {
+              "captainPlayerId": 141746,
+              "gameweek": 3,
+              "outfieldSubstitutePlayerIds": [
+                230046,
+                167074,
+                437468
+              ],
+              "replacementGoalkeeperPlayerId": 80201,
+              "startingPlayerIds": [
+                77794,
+                78830,
+                118748,
+                141746,
+                154561,
+                178301,
+                216646,
+                220237,
+                226597,
+                232413,
+                446008
+              ],
+              "viceCaptainPlayerId": 118748
+            },
+            {
+              "captainPlayerId": 118748,
+              "gameweek": 4,
+              "outfieldSubstitutePlayerIds": [
+                230046,
+                167074,
+                437468
+              ],
+              "replacementGoalkeeperPlayerId": 80201,
+              "startingPlayerIds": [
+                77794,
+                78830,
+                118748,
+                141746,
+                154561,
+                178301,
+                216646,
+                220237,
+                226597,
+                232413,
+                446008
+              ],
+              "viceCaptainPlayerId": 141746
+            },
+            {
+              "captainPlayerId": 141746,
+              "gameweek": 5,
+              "outfieldSubstitutePlayerIds": [
+                216646,
+                226597,
+                437468
+              ],
+              "replacementGoalkeeperPlayerId": 154561,
+              "startingPlayerIds": [
+                77794,
+                78830,
+                80201,
+                118748,
+                141746,
+                167074,
+                178301,
+                220237,
+                230046,
+                232413,
+                446008
+              ],
+              "viceCaptainPlayerId": 78830
+            },
+            {
+              "captainPlayerId": 118748,
+              "gameweek": 6,
+              "outfieldSubstitutePlayerIds": [
+                230046,
+                167074,
+                437468
+              ],
+              "replacementGoalkeeperPlayerId": 80201,
+              "startingPlayerIds": [
+                77794,
+                78830,
+                118748,
+                141746,
+                154561,
+                178301,
+                216646,
+                220237,
+                226597,
+                232413,
+                446008
+              ],
+              "viceCaptainPlayerId": 141746
+            },
+            {
+              "captainPlayerId": 141746,
+              "gameweek": 7,
+              "outfieldSubstitutePlayerIds": [
+                216646,
+                226597,
+                437468
+              ],
+              "replacementGoalkeeperPlayerId": 154561,
+              "startingPlayerIds": [
+                77794,
+                78830,
+                80201,
+                118748,
+                141746,
+                167074,
+                178301,
+                220237,
+                230046,
+                232413,
+                446008
+              ],
+              "viceCaptainPlayerId": 78830
+            },
+            {
+              "captainPlayerId": 141746,
+              "gameweek": 8,
+              "outfieldSubstitutePlayerIds": [
+                220237,
+                216646,
+                437468
+              ],
+              "replacementGoalkeeperPlayerId": 154561,
+              "startingPlayerIds": [
+                77794,
+                78830,
+                80201,
+                118748,
+                141746,
+                167074,
+                178301,
+                226597,
+                230046,
+                232413,
+                446008
+              ],
+              "viceCaptainPlayerId": 118748
+            }
+          ],
+          "playerIds": [
+            77794,
+            78830,
+            80201,
+            118748,
+            141746,
+            154561,
+            167074,
+            178301,
+            216646,
+            220237,
+            226597,
+            230046,
+            232413,
+            437468,
+            446008
+          ]
+        },
+        "solver": {
+          "binaryVariableCount": 8554,
+          "continuousVariableCount": 0,
+          "maximumNumericalMipGap": 1e-12,
+          "mipGap": 0.0,
+          "objectiveValue": 362.096216,
+          "optimizerVersion": "scipy-highs-multi-horizon-mean-cvar-v1",
+          "reportedMipGap": 0.0,
+          "scipyVersion": "1.18.0",
+          "solver": "scipy.optimize.milp-highs",
+          "status": "global-linear-mean-cvar-surrogate-optimum"
+        }
+      },
+      "comparison": {
+        "challengerOnlyPlayerIds": [],
+        "challengerTotalPoints": 461,
+        "differencePoints": 0,
+        "incumbentOnlyPlayerIds": [],
+        "incumbentTotalPoints": 461,
+        "sharedPlayerCount": 15
+      },
+      "incumbent": {
+        "evaluationPolicyKey": "6-expected-points",
+        "horizonGameweeks": 6,
+        "optimizerPolicyKey": "expected-points",
+        "realisedOutcome": {
+          "totalPoints": 461,
+          "weekly": [
+            {
+              "activatedSubstituteCount": 2,
+              "captainBonusPoints": 3,
+              "gameweek": 1,
+              "points": 56,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 1,
+              "captainBonusPoints": 5,
+              "gameweek": 2,
+              "points": 59,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 3,
+              "captainBonusPoints": 12,
+              "gameweek": 3,
+              "points": 49,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 3,
+              "captainBonusPoints": 8,
+              "gameweek": 4,
+              "points": 43,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 1,
+              "captainBonusPoints": 1,
+              "gameweek": 5,
+              "points": 60,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 1,
+              "captainBonusPoints": 10,
+              "gameweek": 6,
+              "points": 80,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 2,
+              "captainBonusPoints": 2,
+              "gameweek": 7,
+              "points": 65,
+              "unreplacedStarterCount": 1
+            },
+            {
+              "activatedSubstituteCount": 1,
+              "captainBonusPoints": 2,
+              "gameweek": 8,
+              "points": 49,
+              "unreplacedStarterCount": 2
+            }
+          ]
+        },
+        "selection": {
+          "budgetTenths": 1000,
+          "gameweeks": [
+            {
+              "captainPlayerId": 141746,
+              "gameweek": 1,
+              "outfieldSubstitutePlayerIds": [
+                230046,
+                167074,
+                437468
+              ],
+              "replacementGoalkeeperPlayerId": 80201,
+              "startingPlayerIds": [
+                77794,
+                78830,
+                118748,
+                141746,
+                154561,
+                178301,
+                216646,
+                220237,
+                226597,
+                232413,
+                446008
+              ],
+              "viceCaptainPlayerId": 118748
+            },
+            {
+              "captainPlayerId": 118748,
+              "gameweek": 2,
+              "outfieldSubstitutePlayerIds": [
+                216646,
+                226597,
+                437468
+              ],
+              "replacementGoalkeeperPlayerId": 154561,
+              "startingPlayerIds": [
+                77794,
+                78830,
+                80201,
+                118748,
+                141746,
+                167074,
+                178301,
+                220237,
+                230046,
+                232413,
+                446008
+              ],
+              "viceCaptainPlayerId": 78830
+            },
+            {
+              "captainPlayerId": 141746,
+              "gameweek": 3,
+              "outfieldSubstitutePlayerIds": [
+                230046,
+                167074,
+                437468
+              ],
+              "replacementGoalkeeperPlayerId": 80201,
+              "startingPlayerIds": [
+                77794,
+                78830,
+                118748,
+                141746,
+                154561,
+                178301,
+                216646,
+                220237,
+                226597,
+                232413,
+                446008
+              ],
+              "viceCaptainPlayerId": 118748
+            },
+            {
+              "captainPlayerId": 118748,
+              "gameweek": 4,
+              "outfieldSubstitutePlayerIds": [
+                230046,
+                167074,
+                437468
+              ],
+              "replacementGoalkeeperPlayerId": 80201,
+              "startingPlayerIds": [
+                77794,
+                78830,
+                118748,
+                141746,
+                154561,
+                178301,
+                216646,
+                220237,
+                226597,
+                232413,
+                446008
+              ],
+              "viceCaptainPlayerId": 141746
+            },
+            {
+              "captainPlayerId": 141746,
+              "gameweek": 5,
+              "outfieldSubstitutePlayerIds": [
+                216646,
+                226597,
+                437468
+              ],
+              "replacementGoalkeeperPlayerId": 154561,
+              "startingPlayerIds": [
+                77794,
+                78830,
+                80201,
+                118748,
+                141746,
+                167074,
+                178301,
+                220237,
+                230046,
+                232413,
+                446008
+              ],
+              "viceCaptainPlayerId": 78830
+            },
+            {
+              "captainPlayerId": 118748,
+              "gameweek": 6,
+              "outfieldSubstitutePlayerIds": [
+                230046,
+                167074,
+                437468
+              ],
+              "replacementGoalkeeperPlayerId": 80201,
+              "startingPlayerIds": [
+                77794,
+                78830,
+                118748,
+                141746,
+                154561,
+                178301,
+                216646,
+                220237,
+                226597,
+                232413,
+                446008
+              ],
+              "viceCaptainPlayerId": 141746
+            },
+            {
+              "captainPlayerId": 141746,
+              "gameweek": 7,
+              "outfieldSubstitutePlayerIds": [
+                216646,
+                226597,
+                437468
+              ],
+              "replacementGoalkeeperPlayerId": 154561,
+              "startingPlayerIds": [
+                77794,
+                78830,
+                80201,
+                118748,
+                141746,
+                167074,
+                178301,
+                220237,
+                230046,
+                232413,
+                446008
+              ],
+              "viceCaptainPlayerId": 78830
+            },
+            {
+              "captainPlayerId": 141746,
+              "gameweek": 8,
+              "outfieldSubstitutePlayerIds": [
+                220237,
+                216646,
+                437468
+              ],
+              "replacementGoalkeeperPlayerId": 154561,
+              "startingPlayerIds": [
+                77794,
+                78830,
+                80201,
+                118748,
+                141746,
+                167074,
+                178301,
+                226597,
+                230046,
+                232413,
+                446008
+              ],
+              "viceCaptainPlayerId": 118748
+            }
+          ],
+          "playerIds": [
+            77794,
+            78830,
+            80201,
+            118748,
+            141746,
+            154561,
+            167074,
+            178301,
+            216646,
+            220237,
+            226597,
+            230046,
+            232413,
+            437468,
+            446008
+          ]
+        },
+        "solver": {
+          "binaryVariableCount": 8554,
+          "continuousVariableCount": 0,
+          "maximumNumericalMipGap": 1e-12,
+          "mipGap": 0.0,
+          "objectiveValue": 362.096216,
+          "optimizerVersion": "scipy-highs-multi-horizon-mean-cvar-v1",
+          "reportedMipGap": 0.0,
+          "scipyVersion": "1.18.0",
+          "solver": "scipy.optimize.milp-highs",
+          "status": "global-linear-mean-cvar-surrogate-optimum"
+        }
+      },
+      "targetCaptureId": 4,
+      "targetSeasonCode": "2023-24"
+    },
+    {
+      "challenger": {
+        "evaluationPolicyKey": "6-expected-points",
+        "horizonGameweeks": 6,
+        "optimizerPolicyKey": "expected-points",
+        "realisedOutcome": {
+          "totalPoints": 395,
+          "weekly": [
+            {
+              "activatedSubstituteCount": 0,
+              "captainBonusPoints": 3,
+              "gameweek": 1,
+              "points": 63,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 0,
+              "captainBonusPoints": 17,
+              "gameweek": 2,
+              "points": 56,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 0,
+              "captainBonusPoints": 2,
+              "gameweek": 3,
+              "points": 58,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 1,
+              "captainBonusPoints": 13,
+              "gameweek": 4,
+              "points": 57,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 1,
+              "captainBonusPoints": 9,
+              "gameweek": 5,
+              "points": 52,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 1,
+              "captainBonusPoints": 2,
+              "gameweek": 6,
+              "points": 43,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 1,
+              "captainBonusPoints": 2,
+              "gameweek": 7,
+              "points": 31,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 1,
+              "captainBonusPoints": 2,
+              "gameweek": 8,
+              "points": 35,
+              "unreplacedStarterCount": 0
+            }
+          ]
+        },
+        "selection": {
+          "budgetTenths": 1000,
+          "gameweeks": [
+            {
+              "captainPlayerId": 184029,
+              "gameweek": 1,
+              "outfieldSubstitutePlayerIds": [
+                165809,
+                218218,
+                171771
+              ],
+              "replacementGoalkeeperPlayerId": 172649,
+              "startingPlayerIds": [
+                154561,
+                178301,
+                180135,
+                184029,
+                208706,
+                219847,
+                223094,
+                232413,
+                247348,
+                441164,
+                477424
+              ],
+              "viceCaptainPlayerId": 223094
+            },
+            {
+              "captainPlayerId": 223094,
+              "gameweek": 2,
+              "outfieldSubstitutePlayerIds": [
+                180135,
+                171771,
+                218218
+              ],
+              "replacementGoalkeeperPlayerId": 154561,
+              "startingPlayerIds": [
+                165809,
+                172649,
+                178301,
+                184029,
+                208706,
+                219847,
+                223094,
+                232413,
+                247348,
+                441164,
+                477424
+              ],
+              "viceCaptainPlayerId": 232413
+            },
+            {
+              "captainPlayerId": 184029,
+              "gameweek": 3,
+              "outfieldSubstitutePlayerIds": [
+                180135,
+                218218,
+                171771
+              ],
+              "replacementGoalkeeperPlayerId": 172649,
+              "startingPlayerIds": [
+                154561,
+                165809,
+                178301,
+                184029,
+                208706,
+                219847,
+                223094,
+                232413,
+                247348,
+                441164,
+                477424
+              ],
+              "viceCaptainPlayerId": 223094
+            },
+            {
+              "captainPlayerId": 223094,
+              "gameweek": 4,
+              "outfieldSubstitutePlayerIds": [
+                180135,
+                171771,
+                218218
+              ],
+              "replacementGoalkeeperPlayerId": 154561,
+              "startingPlayerIds": [
+                165809,
+                172649,
+                178301,
+                184029,
+                208706,
+                219847,
+                223094,
+                232413,
+                247348,
+                441164,
+                477424
+              ],
+              "viceCaptainPlayerId": 232413
+            },
+            {
+              "captainPlayerId": 223094,
+              "gameweek": 5,
+              "outfieldSubstitutePlayerIds": [
+                180135,
+                218218,
+                171771
+              ],
+              "replacementGoalkeeperPlayerId": 154561,
+              "startingPlayerIds": [
+                165809,
+                172649,
+                178301,
+                184029,
+                208706,
+                219847,
+                223094,
+                232413,
+                247348,
+                441164,
+                477424
+              ],
+              "viceCaptainPlayerId": 232413
+            },
+            {
+              "captainPlayerId": 184029,
+              "gameweek": 6,
+              "outfieldSubstitutePlayerIds": [
+                180135,
+                218218,
+                171771
+              ],
+              "replacementGoalkeeperPlayerId": 172649,
+              "startingPlayerIds": [
+                154561,
+                165809,
+                178301,
+                184029,
+                208706,
+                219847,
+                223094,
+                232413,
+                247348,
+                441164,
+                477424
+              ],
+              "viceCaptainPlayerId": 223094
+            },
+            {
+              "captainPlayerId": 223094,
+              "gameweek": 7,
+              "outfieldSubstitutePlayerIds": [
+                180135,
+                218218,
+                171771
+              ],
+              "replacementGoalkeeperPlayerId": 172649,
+              "startingPlayerIds": [
+                154561,
+                165809,
+                178301,
+                184029,
+                208706,
+                219847,
+                223094,
+                232413,
+                247348,
+                441164,
+                477424
+              ],
+              "viceCaptainPlayerId": 184029
+            },
+            {
+              "captainPlayerId": 223094,
+              "gameweek": 8,
+              "outfieldSubstitutePlayerIds": [
+                180135,
+                171771,
+                218218
+              ],
+              "replacementGoalkeeperPlayerId": 172649,
+              "startingPlayerIds": [
+                154561,
+                165809,
+                178301,
+                184029,
+                208706,
+                219847,
+                223094,
+                232413,
+                247348,
+                441164,
+                477424
+              ],
+              "viceCaptainPlayerId": 184029
+            }
+          ],
+          "playerIds": [
+            154561,
+            165809,
+            171771,
+            172649,
+            178301,
+            180135,
+            184029,
+            208706,
+            218218,
+            219847,
+            223094,
+            232413,
+            247348,
+            441164,
+            477424
+          ]
+        },
+        "solver": {
+          "binaryVariableCount": 8008,
+          "continuousVariableCount": 0,
+          "maximumNumericalMipGap": 1e-12,
+          "mipGap": 0.0,
+          "objectiveValue": 331.184211,
+          "optimizerVersion": "scipy-highs-multi-horizon-mean-cvar-v1",
+          "reportedMipGap": 0.0,
+          "scipyVersion": "1.18.0",
+          "solver": "scipy.optimize.milp-highs",
+          "status": "global-linear-mean-cvar-surrogate-optimum"
+        }
+      },
+      "comparison": {
+        "challengerOnlyPlayerIds": [],
+        "challengerTotalPoints": 395,
+        "differencePoints": 3,
+        "incumbentOnlyPlayerIds": [],
+        "incumbentTotalPoints": 392,
+        "sharedPlayerCount": 15
+      },
+      "incumbent": {
+        "evaluationPolicyKey": "6-expected-points",
+        "horizonGameweeks": 6,
+        "optimizerPolicyKey": "expected-points",
+        "realisedOutcome": {
+          "totalPoints": 392,
+          "weekly": [
+            {
+              "activatedSubstituteCount": 0,
+              "captainBonusPoints": 3,
+              "gameweek": 1,
+              "points": 66,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 0,
+              "captainBonusPoints": 17,
+              "gameweek": 2,
+              "points": 56,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 0,
+              "captainBonusPoints": 2,
+              "gameweek": 3,
+              "points": 52,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 1,
+              "captainBonusPoints": 13,
+              "gameweek": 4,
+              "points": 57,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 1,
+              "captainBonusPoints": 9,
+              "gameweek": 5,
+              "points": 52,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 1,
+              "captainBonusPoints": 2,
+              "gameweek": 6,
+              "points": 43,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 1,
+              "captainBonusPoints": 2,
+              "gameweek": 7,
+              "points": 31,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 1,
+              "captainBonusPoints": 2,
+              "gameweek": 8,
+              "points": 35,
+              "unreplacedStarterCount": 0
+            }
+          ]
+        },
+        "selection": {
+          "budgetTenths": 1000,
+          "gameweeks": [
+            {
+              "captainPlayerId": 184029,
+              "gameweek": 1,
+              "outfieldSubstitutePlayerIds": [
+                180135,
+                218218,
+                171771
+              ],
+              "replacementGoalkeeperPlayerId": 172649,
+              "startingPlayerIds": [
+                154561,
+                165809,
+                178301,
+                184029,
+                208706,
+                219847,
+                223094,
+                232413,
+                247348,
+                441164,
+                477424
+              ],
+              "viceCaptainPlayerId": 223094
+            },
+            {
+              "captainPlayerId": 223094,
+              "gameweek": 2,
+              "outfieldSubstitutePlayerIds": [
+                180135,
+                218218,
+                171771
+              ],
+              "replacementGoalkeeperPlayerId": 154561,
+              "startingPlayerIds": [
+                165809,
+                172649,
+                178301,
+                184029,
+                208706,
+                219847,
+                223094,
+                232413,
+                247348,
+                441164,
+                477424
+              ],
+              "viceCaptainPlayerId": 232413
+            },
+            {
+              "captainPlayerId": 184029,
+              "gameweek": 3,
+              "outfieldSubstitutePlayerIds": [
+                165809,
+                218218,
+                171771
+              ],
+              "replacementGoalkeeperPlayerId": 172649,
+              "startingPlayerIds": [
+                154561,
+                178301,
+                180135,
+                184029,
+                208706,
+                219847,
+                223094,
+                232413,
+                247348,
+                441164,
+                477424
+              ],
+              "viceCaptainPlayerId": 223094
+            },
+            {
+              "captainPlayerId": 223094,
+              "gameweek": 4,
+              "outfieldSubstitutePlayerIds": [
+                180135,
+                218218,
+                171771
+              ],
+              "replacementGoalkeeperPlayerId": 154561,
+              "startingPlayerIds": [
+                165809,
+                172649,
+                178301,
+                184029,
+                208706,
+                219847,
+                223094,
+                232413,
+                247348,
+                441164,
+                477424
+              ],
+              "viceCaptainPlayerId": 232413
+            },
+            {
+              "captainPlayerId": 223094,
+              "gameweek": 5,
+              "outfieldSubstitutePlayerIds": [
+                180135,
+                218218,
+                171771
+              ],
+              "replacementGoalkeeperPlayerId": 154561,
+              "startingPlayerIds": [
+                165809,
+                172649,
+                178301,
+                184029,
+                208706,
+                219847,
+                223094,
+                232413,
+                247348,
+                441164,
+                477424
+              ],
+              "viceCaptainPlayerId": 232413
+            },
+            {
+              "captainPlayerId": 184029,
+              "gameweek": 6,
+              "outfieldSubstitutePlayerIds": [
+                180135,
+                218218,
+                171771
+              ],
+              "replacementGoalkeeperPlayerId": 172649,
+              "startingPlayerIds": [
+                154561,
+                165809,
+                178301,
+                184029,
+                208706,
+                219847,
+                223094,
+                232413,
+                247348,
+                441164,
+                477424
+              ],
+              "viceCaptainPlayerId": 223094
+            },
+            {
+              "captainPlayerId": 223094,
+              "gameweek": 7,
+              "outfieldSubstitutePlayerIds": [
+                180135,
+                218218,
+                171771
+              ],
+              "replacementGoalkeeperPlayerId": 172649,
+              "startingPlayerIds": [
+                154561,
+                165809,
+                178301,
+                184029,
+                208706,
+                219847,
+                223094,
+                232413,
+                247348,
+                441164,
+                477424
+              ],
+              "viceCaptainPlayerId": 184029
+            },
+            {
+              "captainPlayerId": 223094,
+              "gameweek": 8,
+              "outfieldSubstitutePlayerIds": [
+                180135,
+                218218,
+                171771
+              ],
+              "replacementGoalkeeperPlayerId": 172649,
+              "startingPlayerIds": [
+                154561,
+                165809,
+                178301,
+                184029,
+                208706,
+                219847,
+                223094,
+                232413,
+                247348,
+                441164,
+                477424
+              ],
+              "viceCaptainPlayerId": 184029
+            }
+          ],
+          "playerIds": [
+            154561,
+            165809,
+            171771,
+            172649,
+            178301,
+            180135,
+            184029,
+            208706,
+            218218,
+            219847,
+            223094,
+            232413,
+            247348,
+            441164,
+            477424
+          ]
+        },
+        "solver": {
+          "binaryVariableCount": 8008,
+          "continuousVariableCount": 0,
+          "maximumNumericalMipGap": 1e-12,
+          "mipGap": 0.0,
+          "objectiveValue": 331.373684,
+          "optimizerVersion": "scipy-highs-multi-horizon-mean-cvar-v1",
+          "reportedMipGap": 0.0,
+          "scipyVersion": "1.18.0",
+          "solver": "scipy.optimize.milp-highs",
+          "status": "global-linear-mean-cvar-surrogate-optimum"
+        }
+      },
+      "targetCaptureId": 2,
+      "targetSeasonCode": "2024-25"
+    },
+    {
+      "challenger": {
+        "evaluationPolicyKey": "6-expected-points",
+        "horizonGameweeks": 6,
+        "optimizerPolicyKey": "expected-points",
+        "realisedOutcome": {
+          "totalPoints": 378,
+          "weekly": [
+            {
+              "activatedSubstituteCount": 1,
+              "captainBonusPoints": 8,
+              "gameweek": 1,
+              "points": 59,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 1,
+              "captainBonusPoints": 5,
+              "gameweek": 2,
+              "points": 37,
+              "unreplacedStarterCount": 2
+            },
+            {
+              "activatedSubstituteCount": 0,
+              "captainBonusPoints": 3,
+              "gameweek": 3,
+              "points": 52,
+              "unreplacedStarterCount": 2
+            },
+            {
+              "activatedSubstituteCount": 0,
+              "captainBonusPoints": 9,
+              "gameweek": 4,
+              "points": 47,
+              "unreplacedStarterCount": 3
+            },
+            {
+              "activatedSubstituteCount": 0,
+              "captainBonusPoints": 5,
+              "gameweek": 5,
+              "points": 41,
+              "unreplacedStarterCount": 3
+            },
+            {
+              "activatedSubstituteCount": 0,
+              "captainBonusPoints": 2,
+              "gameweek": 6,
+              "points": 40,
+              "unreplacedStarterCount": 2
+            },
+            {
+              "activatedSubstituteCount": 2,
+              "captainBonusPoints": 2,
+              "gameweek": 7,
+              "points": 54,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 2,
+              "captainBonusPoints": 2,
+              "gameweek": 8,
+              "points": 48,
+              "unreplacedStarterCount": 0
+            }
+          ]
+        },
+        "selection": {
+          "budgetTenths": 1000,
+          "gameweeks": [
+            {
+              "captainPlayerId": 118748,
+              "gameweek": 1,
+              "outfieldSubstitutePlayerIds": [
+                214590,
+                437742,
+                180804
+              ],
+              "replacementGoalkeeperPlayerId": 149065,
+              "startingPlayerIds": [
+                78916,
+                118748,
+                154561,
+                178186,
+                178301,
+                198869,
+                216646,
+                232185,
+                232413,
+                247348,
+                446008
+              ],
+              "viceCaptainPlayerId": 216646
+            },
+            {
+              "captainPlayerId": 118748,
+              "gameweek": 2,
+              "outfieldSubstitutePlayerIds": [
+                214590,
+                437742,
+                180804
+              ],
+              "replacementGoalkeeperPlayerId": 149065,
+              "startingPlayerIds": [
+                78916,
+                118748,
+                154561,
+                178186,
+                178301,
+                198869,
+                216646,
+                232185,
+                232413,
+                247348,
+                446008
+              ],
+              "viceCaptainPlayerId": 216646
+            },
+            {
+              "captainPlayerId": 118748,
+              "gameweek": 3,
+              "outfieldSubstitutePlayerIds": [
+                214590,
+                437742,
+                180804
+              ],
+              "replacementGoalkeeperPlayerId": 149065,
+              "startingPlayerIds": [
+                78916,
+                118748,
+                154561,
+                178186,
+                178301,
+                198869,
+                216646,
+                232185,
+                232413,
+                247348,
+                446008
+              ],
+              "viceCaptainPlayerId": 216646
+            },
+            {
+              "captainPlayerId": 118748,
+              "gameweek": 4,
+              "outfieldSubstitutePlayerIds": [
+                214590,
+                437742,
+                180804
+              ],
+              "replacementGoalkeeperPlayerId": 149065,
+              "startingPlayerIds": [
+                78916,
+                118748,
+                154561,
+                178186,
+                178301,
+                198869,
+                216646,
+                232185,
+                232413,
+                247348,
+                446008
+              ],
+              "viceCaptainPlayerId": 216646
+            },
+            {
+              "captainPlayerId": 118748,
+              "gameweek": 5,
+              "outfieldSubstitutePlayerIds": [
+                214590,
+                437742,
+                180804
+              ],
+              "replacementGoalkeeperPlayerId": 149065,
+              "startingPlayerIds": [
+                78916,
+                118748,
+                154561,
+                178186,
+                178301,
+                198869,
+                216646,
+                232185,
+                232413,
+                247348,
+                446008
+              ],
+              "viceCaptainPlayerId": 216646
+            },
+            {
+              "captainPlayerId": 118748,
+              "gameweek": 6,
+              "outfieldSubstitutePlayerIds": [
+                214590,
+                437742,
+                180804
+              ],
+              "replacementGoalkeeperPlayerId": 149065,
+              "startingPlayerIds": [
+                78916,
+                118748,
+                154561,
+                178186,
+                178301,
+                198869,
+                216646,
+                232185,
+                232413,
+                247348,
+                446008
+              ],
+              "viceCaptainPlayerId": 216646
+            },
+            {
+              "captainPlayerId": 118748,
+              "gameweek": 7,
+              "outfieldSubstitutePlayerIds": [
+                214590,
+                437742,
+                180804
+              ],
+              "replacementGoalkeeperPlayerId": 149065,
+              "startingPlayerIds": [
+                78916,
+                118748,
+                154561,
+                178186,
+                178301,
+                198869,
+                216646,
+                232185,
+                232413,
+                247348,
+                446008
+              ],
+              "viceCaptainPlayerId": 216646
+            },
+            {
+              "captainPlayerId": 118748,
+              "gameweek": 8,
+              "outfieldSubstitutePlayerIds": [
+                214590,
+                437742,
+                180804
+              ],
+              "replacementGoalkeeperPlayerId": 149065,
+              "startingPlayerIds": [
+                78916,
+                118748,
+                154561,
+                178186,
+                178301,
+                198869,
+                216646,
+                232185,
+                232413,
+                247348,
+                446008
+              ],
+              "viceCaptainPlayerId": 216646
+            }
+          ],
+          "playerIds": [
+            78916,
+            118748,
+            149065,
+            154561,
+            178186,
+            178301,
+            180804,
+            198869,
+            214590,
+            216646,
+            232185,
+            232413,
+            247348,
+            437742,
+            446008
+          ]
+        },
+        "solver": {
+          "binaryVariableCount": 8970,
+          "continuousVariableCount": 0,
+          "maximumNumericalMipGap": 1e-12,
+          "mipGap": 0.0,
+          "objectiveValue": 318.290526,
+          "optimizerVersion": "scipy-highs-multi-horizon-mean-cvar-v1",
+          "reportedMipGap": 0.0,
+          "scipyVersion": "1.18.0",
+          "solver": "scipy.optimize.milp-highs",
+          "status": "global-linear-mean-cvar-surrogate-optimum"
+        }
+      },
+      "comparison": {
+        "challengerOnlyPlayerIds": [],
+        "challengerTotalPoints": 378,
+        "differencePoints": 0,
+        "incumbentOnlyPlayerIds": [],
+        "incumbentTotalPoints": 378,
+        "sharedPlayerCount": 15
+      },
+      "incumbent": {
+        "evaluationPolicyKey": "6-expected-points",
+        "horizonGameweeks": 6,
+        "optimizerPolicyKey": "expected-points",
+        "realisedOutcome": {
+          "totalPoints": 378,
+          "weekly": [
+            {
+              "activatedSubstituteCount": 1,
+              "captainBonusPoints": 8,
+              "gameweek": 1,
+              "points": 59,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 1,
+              "captainBonusPoints": 5,
+              "gameweek": 2,
+              "points": 37,
+              "unreplacedStarterCount": 2
+            },
+            {
+              "activatedSubstituteCount": 0,
+              "captainBonusPoints": 3,
+              "gameweek": 3,
+              "points": 52,
+              "unreplacedStarterCount": 2
+            },
+            {
+              "activatedSubstituteCount": 0,
+              "captainBonusPoints": 9,
+              "gameweek": 4,
+              "points": 47,
+              "unreplacedStarterCount": 3
+            },
+            {
+              "activatedSubstituteCount": 0,
+              "captainBonusPoints": 5,
+              "gameweek": 5,
+              "points": 41,
+              "unreplacedStarterCount": 3
+            },
+            {
+              "activatedSubstituteCount": 0,
+              "captainBonusPoints": 2,
+              "gameweek": 6,
+              "points": 40,
+              "unreplacedStarterCount": 2
+            },
+            {
+              "activatedSubstituteCount": 2,
+              "captainBonusPoints": 2,
+              "gameweek": 7,
+              "points": 54,
+              "unreplacedStarterCount": 0
+            },
+            {
+              "activatedSubstituteCount": 2,
+              "captainBonusPoints": 2,
+              "gameweek": 8,
+              "points": 48,
+              "unreplacedStarterCount": 0
+            }
+          ]
+        },
+        "selection": {
+          "budgetTenths": 1000,
+          "gameweeks": [
+            {
+              "captainPlayerId": 118748,
+              "gameweek": 1,
+              "outfieldSubstitutePlayerIds": [
+                214590,
+                437742,
+                180804
+              ],
+              "replacementGoalkeeperPlayerId": 149065,
+              "startingPlayerIds": [
+                78916,
+                118748,
+                154561,
+                178186,
+                178301,
+                198869,
+                216646,
+                232185,
+                232413,
+                247348,
+                446008
+              ],
+              "viceCaptainPlayerId": 216646
+            },
+            {
+              "captainPlayerId": 118748,
+              "gameweek": 2,
+              "outfieldSubstitutePlayerIds": [
+                214590,
+                437742,
+                180804
+              ],
+              "replacementGoalkeeperPlayerId": 149065,
+              "startingPlayerIds": [
+                78916,
+                118748,
+                154561,
+                178186,
+                178301,
+                198869,
+                216646,
+                232185,
+                232413,
+                247348,
+                446008
+              ],
+              "viceCaptainPlayerId": 216646
+            },
+            {
+              "captainPlayerId": 118748,
+              "gameweek": 3,
+              "outfieldSubstitutePlayerIds": [
+                214590,
+                437742,
+                180804
+              ],
+              "replacementGoalkeeperPlayerId": 149065,
+              "startingPlayerIds": [
+                78916,
+                118748,
+                154561,
+                178186,
+                178301,
+                198869,
+                216646,
+                232185,
+                232413,
+                247348,
+                446008
+              ],
+              "viceCaptainPlayerId": 216646
+            },
+            {
+              "captainPlayerId": 118748,
+              "gameweek": 4,
+              "outfieldSubstitutePlayerIds": [
+                214590,
+                437742,
+                180804
+              ],
+              "replacementGoalkeeperPlayerId": 149065,
+              "startingPlayerIds": [
+                78916,
+                118748,
+                154561,
+                178186,
+                178301,
+                198869,
+                216646,
+                232185,
+                232413,
+                247348,
+                446008
+              ],
+              "viceCaptainPlayerId": 216646
+            },
+            {
+              "captainPlayerId": 118748,
+              "gameweek": 5,
+              "outfieldSubstitutePlayerIds": [
+                214590,
+                437742,
+                180804
+              ],
+              "replacementGoalkeeperPlayerId": 149065,
+              "startingPlayerIds": [
+                78916,
+                118748,
+                154561,
+                178186,
+                178301,
+                198869,
+                216646,
+                232185,
+                232413,
+                247348,
+                446008
+              ],
+              "viceCaptainPlayerId": 216646
+            },
+            {
+              "captainPlayerId": 118748,
+              "gameweek": 6,
+              "outfieldSubstitutePlayerIds": [
+                214590,
+                437742,
+                180804
+              ],
+              "replacementGoalkeeperPlayerId": 149065,
+              "startingPlayerIds": [
+                78916,
+                118748,
+                154561,
+                178186,
+                178301,
+                198869,
+                216646,
+                232185,
+                232413,
+                247348,
+                446008
+              ],
+              "viceCaptainPlayerId": 216646
+            },
+            {
+              "captainPlayerId": 118748,
+              "gameweek": 7,
+              "outfieldSubstitutePlayerIds": [
+                214590,
+                437742,
+                180804
+              ],
+              "replacementGoalkeeperPlayerId": 149065,
+              "startingPlayerIds": [
+                78916,
+                118748,
+                154561,
+                178186,
+                178301,
+                198869,
+                216646,
+                232185,
+                232413,
+                247348,
+                446008
+              ],
+              "viceCaptainPlayerId": 216646
+            },
+            {
+              "captainPlayerId": 118748,
+              "gameweek": 8,
+              "outfieldSubstitutePlayerIds": [
+                214590,
+                437742,
+                180804
+              ],
+              "replacementGoalkeeperPlayerId": 149065,
+              "startingPlayerIds": [
+                78916,
+                118748,
+                154561,
+                178186,
+                178301,
+                198869,
+                216646,
+                232185,
+                232413,
+                247348,
+                446008
+              ],
+              "viceCaptainPlayerId": 216646
+            }
+          ],
+          "playerIds": [
+            78916,
+            118748,
+            149065,
+            154561,
+            178186,
+            178301,
+            180804,
+            198869,
+            214590,
+            216646,
+            232185,
+            232413,
+            247348,
+            437742,
+            446008
+          ]
+        },
+        "solver": {
+          "binaryVariableCount": 8970,
+          "continuousVariableCount": 0,
+          "maximumNumericalMipGap": 1e-12,
+          "mipGap": 0.0,
+          "objectiveValue": 318.290526,
+          "optimizerVersion": "scipy-highs-multi-horizon-mean-cvar-v1",
+          "reportedMipGap": 0.0,
+          "scipyVersion": "1.18.0",
+          "solver": "scipy.optimize.milp-highs",
+          "status": "global-linear-mean-cvar-surrogate-optimum"
+        }
+      },
+      "targetCaptureId": 1,
+      "targetSeasonCode": "2025-26"
+    }
+  ],
+  "researchStatus": "reused-opened-targets-no-promotion",
+  "retainedAppearanceScreen": {
+    "artifactVersion": "historical-promoted-appearance-evaluation-v1",
+    "dataIdentitySha256": "ae4650b3357310975379888539958cd4157f737155428461968a17ad8cabbdc7",
+    "runIdentitySha256": "55d13005b3cd6d107dddb2e5955d48623b590b8b6c1706dedcb6c9ca3699cc39"
+  },
+  "runIdentitySha256": "9e57578c3666310e48a8c96efe196a549a849ded590ee0af2ca98a5c60081149",
+  "schemaVersion": "1.0",
+  "status": "retrospective-promoted-opening-challenger-evaluated",
+  "targetOutcomesOpened": true
+}

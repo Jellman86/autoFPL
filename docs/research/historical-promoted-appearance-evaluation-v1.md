@@ -154,11 +154,12 @@ The retained result has data identity
 and run identity
 `55d13005b3cd6d107dddb2e5955d48623b590b8b6c1706dedcb6c9ca3699cc39`.
 
-## Next slice
+## Follow-on result
 
-Reconstruct target-outcome-free joint point scenarios with the retained
-promoted-player appearance pool, leaving conditional points unchanged. Score
-proper distributions on identical promoted-player rows, globally solve the
-same six-Gameweek opening policy, and compare exact eight-Gameweek realised
-squad points. Only a joint distribution-and-policy pass can justify adding
-the translation to the current 2026/27 forecast.
+The full point-distribution and opening-policy evaluation is now complete.
+Affected-player CRPS improved by 8.94%, every target and position won, and the
+all-player distribution also improved. The complete-squad policy gained only
+one point per target on average with one win, below its fixed +2 mean and
+two-win gates. The translated appearance feature is therefore not added to the
+current 2026/27 forecast. See the
+[promoted-player opening evaluation](historical-promoted-opening-evaluation-v1.md).

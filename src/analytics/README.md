@@ -432,6 +432,27 @@ player-cluster bootstrap interval. This authorises full point-distribution and
 opening-policy evaluation, not product promotion. See the
 [promoted-player appearance evaluation](../../docs/research/historical-promoted-appearance-evaluation-v1.md).
 
+The follow-on evaluator changes only those bridged appearance probabilities,
+rebuilds joint point paths and applies the unchanged global six-Gameweek
+opening policy:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.historical_promoted_opening_evaluation \
+  --database /path/to/autofpl.db \
+  --fbref-extraction 2021-22=/path/to/2021-22-extraction.json \
+  --fbref-extraction 2022-23=/path/to/2022-23-extraction.json \
+  --fbref-extraction 2023-24=/path/to/2023-24-extraction.json \
+  --fbref-extraction 2024-25=/path/to/2024-25-extraction.json \
+  --output /path/to/historical-promoted-opening-evaluation.json
+```
+
+Affected-player CRPS improved by 8.94% and the all-player distribution was
+non-worse, but complete squads gained only one realised point per target on
+average with one win. The fixed +2 mean and two-win policy gates failed, so the
+feature does not alter the current v2 initial squad. See the
+[promoted-player opening evaluation](../../docs/research/historical-promoted-opening-evaluation-v1.md).
+
 The conditional-optimality audit distinguishes an exact solver result from a
 robust player choice:
 

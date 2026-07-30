@@ -54,6 +54,15 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **Promoted-player appearance improves distributions but not enough complete
+  squad decisions.** The retained equal-weight Championship translation now
+  propagates through target-outcome-free joint point scenarios and the
+  unchanged global six-Gameweek solver. Affected-player CRPS improved by 8.94%,
+  all targets and positions won, and aggregate all-player CRPS, appearance
+  Brier and log loss improved. Historical squad membership stayed identical;
+  realised decisions changed by 0, +3 and 0 points, missing the fixed +2 mean
+  and two-win policy gates. The feature remains non-serving and is not retuned
+  on the opened outcomes.
 - **Translated Championship participation materially improves promoted-player
   appearance forecasts.** A deterministic expanding-promotion-class evaluator
   bridges only same-club exact or unique token-subset full names, learns a
