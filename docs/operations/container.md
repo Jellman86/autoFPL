@@ -467,7 +467,8 @@ dotnet AutoFpl.Api.dll \
 dotnet AutoFpl.Api.dll \
   --capture-research-source straightred-lineup-consensus
 dotnet AutoFpl.Api.dll \
-  --capture-research-source fbref-championship-playing-time-2025-26
+  --capture-research-source \
+  fbref-championship-playing-time-<2021-22|2022-23|2023-24|2024-25|2025-26>
 ```
 
 The command uses Quark's hardened Spider MCP endpoint, defaulting to
@@ -496,6 +497,12 @@ partial and missing states describe identity coverage only; missing players
 remain unknown. Repeated identical content is idempotent. Every source remains
 `shadow-only` and cannot alter predictions or selections, while supported
 derived claims remain `quarantined`.
+
+The five FBref aggregate sources are manual completed-season captures through
+the configured Byparr origin. Historical seasons extract bounded population
+rows without current official identities; only the 2025/26 source can use the
+snapshot-bound current bridge. Capture each source key separately and inspect
+it through `--extract-fbref-playing-time <snapshot-id>`.
 
 Capture a single prior-season match-log page only after its FBref identity is
 part of the reviewed bridge:

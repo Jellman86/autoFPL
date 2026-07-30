@@ -2,17 +2,24 @@
 
 - **Source ID:** `fbref-championship-playing-time/v1`
 - **Status:** Admitted for private shadow capture
-- **Evidence season:** 2025/26 Championship
-- **Runtime source key:** `fbref-championship-playing-time-2025-26`
+- **Evidence seasons:** 2021/22–2025/26 Championship
+- **Runtime source keys:** `fbref-championship-playing-time-<season>`
 
 ## Purpose and fields
 
-The source is a bounded prior-competition coverage candidate for current
-players whose 2025/26 history is absent from the official FPL archive. The
-first capture retains FBref's Championship aggregate playing-time page. The
-deterministic v1 extractor emits source player/team IDs, squad, appearances,
-starts, minutes and each player's fixed 2025/26 summary match-log URL. It never
-returns the retained page HTML.
+The sources are bounded prior-competition coverage candidates for promoted
+players whose previous-season history is absent from the official FPL archive.
+Five fixed captures retain FBref's Championship aggregate playing-time pages
+from 2021/22 through 2025/26. The deterministic v1 extractor emits source
+player/team IDs, squad, appearances, starts, minutes and each player's
+season-correct summary match-log URL. It never returns retained page HTML.
+
+The 2021/22 population is training evidence for the 2022/23 promoted class.
+The 2022/23, 2023/24 and 2024/25 populations precede the registered 2023/24,
+2024/25 and 2025/26 opening-policy targets. The 2025/26 population remains the
+current 2026/27 evidence source. This ordering permits an expanding-season
+Championship-to-Premier-League translation to fit on strictly earlier
+promotion classes before a later target is scored.
 
 The aggregate page does not itself supply match-order temporal form. Reviewed
 match-log capture and deterministic chronology extraction now provide that
@@ -32,14 +39,14 @@ under coverage operations.
 
 ## Collection and provenance
 
-autoFPL sends only the registered canonical URL to Byparr 2.1.0 at Riker's
-private LAN origin. Byparr reaches the public page through Riker's existing
-Gluetun proxy. The client:
+autoFPL sends only one of five registered season-qualified canonical URLs to
+Byparr 2.1.0 at Riker's private LAN origin. Byparr reaches the public page
+through Riker's existing Gluetun proxy. The client:
 
 - accepts no URL from an HTTP/API caller and sends no `X-Proxy-*` override;
-- permits only the registered season URL and the observed FBref canonical
-  redirect;
-- requires a Championship playing-time content marker and HTTP 200;
+- permits only the registered season URL; only the current 2025/26 page may
+  use FBref's observed unqualified canonical redirect;
+- requires the season-correct Championship playing-time title and HTTP 200;
 - bounds the transport response at 8 MiB and retained HTML at 6 MiB; and
 - records canonical/final URLs, retrieval/availability time, current official
   identity-capture context, content hash, byte count and `byparr/<version>`.
@@ -69,11 +76,14 @@ matches described by the page. Match observations parsed later must retain
 their own kickoff times and precede every forecast target.
 
 FBref identity is not an official FPL identity. Player names are review
-evidence only. Bridge v1 freezes the 60 exact normalized full-name/current-club
-matches as explicit source player/team ID to official stable-code mappings.
-Every use revalidates the source name/team, official code/team and reviewed
-snapshot content hash. A different content hash disables the bridge and leaves
-new exact matches as proposals until review. No fuzzy matching is performed.
+evidence only. Historical populations intentionally expose every row as
+`not-in-scope` until a separate target-season bridge is reviewed. Bridge v1
+applies only to the current 2025/26 source and freezes the 60 exact normalized
+full-name/current-club matches as explicit source player/team ID to official
+stable-code mappings. Every use revalidates the source name/team, official
+code/team and reviewed snapshot content hash. A different content hash
+disables the bridge and leaves new exact matches as proposals until review. No
+fuzzy matching is performed.
 
 Snapshot 27 is the first retained production measurement. Extraction v1 found
 944 player-team rows and 894 stable FBref player IDs. The conservative audit
@@ -92,8 +102,9 @@ The operator command
 `--extract-fbref-playing-time <snapshot-id>` and read-only
 `/api/v1/research/snapshots/{snapshotId}/fbref-playing-time` route run the same
 versioned parser. Both fail closed on an unsupported source, post-deadline
-capture, malformed or duplicate IDs, invalid counts, missing target clubs or an
-unexpected population size. The response distinguishes `reviewed-v1`,
+capture, malformed or duplicate IDs, season-inconsistent match-log links,
+invalid counts or an unexpected population size. The current source also
+requires all three target clubs. The response distinguishes `reviewed-v1`,
 `exact-current-team-proposal`, `unresolved` and `not-in-scope` identity states
 and publishes the applicable bridge version without exposing raw HTML.
 

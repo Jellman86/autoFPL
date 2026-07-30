@@ -20,8 +20,9 @@ unresolved; fuzzy name matching cannot silently close a gap.
 
 The first required capture boundary reuses the proven Byparr 2.1.0 service on
 Riker through a private LAN port and its existing Gluetun egress. autoFPL's
-typed adapter admits only the registered 2025/26 Championship playing-time URL,
-its reviewed FBref canonical redirect and a required page marker. It retains:
+typed adapter admits only the five registered 2021/22–2025/26 Championship
+playing-time URLs, their season-correct page markers and the one reviewed
+current-page canonical redirect. It retains:
 
 - source, competition and season identity;
 - canonical URL, source revision, content hash and collector-code revision;
@@ -29,8 +30,10 @@ its reviewed FBref canonical redirect and a required page marker. It retains:
 - source player ID/name/team and the reviewed official-code mapping; and
 - match identity, kickoff, opponent, minutes and starting status.
 
-The aggregate page capture and deterministic v1 extractor are implemented.
-Snapshot 27 yields 944 player-team rows, 894 stable source player IDs and 60
+The aggregate population capture and deterministic v1 extractor are
+implemented. Historical populations remain identity-free inputs for
+expanding-season translation and cannot use the current bridge. Snapshot 27
+yields 944 player-team rows, 894 stable source player IDs and 60
 exact same-current-team/full-name matches among the 85 promoted-club players.
 Bridge v1 freezes those mappings against snapshot 27's content hash and
 revalidates both source and official identity on every extraction. The

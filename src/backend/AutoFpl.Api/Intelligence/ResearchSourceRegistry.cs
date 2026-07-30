@@ -103,29 +103,7 @@ public static class ResearchSourceRegistry
                 "This is a derived consensus and must not be counted as independent of its inputs.",
                 "Displayed percentages describe source agreement, not calibrated start probability.",
             ]),
-        new(
-            "fbref-championship-playing-time-2025-26",
-            "prior-competition-playing-time",
-            new Uri(
-                "https://fbref.com/en/comps/10/2025-2026/playingtime/2025-2026-Championship-Stats",
-                UriKind.Absolute),
-            "sports-reference-fbref",
-            ["identity", "appearances", "starts", "minutes"],
-            true,
-            [
-                "This aggregate establishes prior-season exposure, not match-order temporal form.",
-                "FBref identities require an explicit reviewed bridge to official FPL player codes.",
-                "The source can be corrected after publication; retrieval time is retained.",
-                "The source remains shadow-only until point-in-time coverage and predictive gain are evaluated.",
-            ],
-            ByparrClient.TransportKey,
-            [
-                new Uri(
-                    "https://fbref.com/en/comps/10/playingtime/Championship-Stats",
-                    UriKind.Absolute),
-            ],
-            ["Championship Playing Time | FBref.com"],
-            PollAutomatically: false),
+        .. FbrefPlayingTimeSources.All.Select(source => source.Definition),
         .. FbrefTeamScheduleSources.All.Select(source => source.Definition),
     ];
 
