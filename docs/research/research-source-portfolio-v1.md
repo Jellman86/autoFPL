@@ -97,6 +97,9 @@ availability claims plus dependent strAIghtred start-probability claims.
 FFScout non-starter complements are derived only when a complete eleven-player
 lineup resolves to one official team; partial or unresolved team blocks remain
 unknown. The two start sources share player/target duplicate clusters so
-consensus is never counted as an extra independent vote. Premier League injury
-extraction, source reliability and any forecast influence remain future
-slices.
+consensus is never counted as an extra independent vote. The Premier League
+page is client-rendered: its capture now waits for the injury table and rejects
+the short application shell before persistence. A Quark recapture must confirm
+the retained row format before the deterministic injury adapter is frozen.
+Premier League injury extraction, source reliability and any forecast
+influence remain future slices.

@@ -31,8 +31,12 @@
 - **Failure behavior:** unknown source keys, wrong MCP identity, redirects to a
   different resource, non-200 results, missing trust markers, oversized or
   malformed responses and missing official target identity fail closed without
-  a partial snapshot. Optional bounded background refresh isolates each source,
-  so one failure does not suppress the rest of the fixed portfolio.
+  a partial snapshot. The dynamically rendered Premier League injury source
+  waits for its injury-table body and requires at least 1,000 bytes of retained
+  text, so the small JavaScript page shell is not mistaken for evidence.
+  Required-content checks apply equally to rendered Spider and Byparr
+  transports. Optional bounded background refresh isolates each source, so one
+  failure does not suppress the rest of the fixed portfolio.
 
 This record admits a collection boundary, not a predictive feature. See the
 [source portfolio](../../research/research-source-portfolio-v1.md) for the
