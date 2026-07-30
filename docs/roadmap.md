@@ -1010,9 +1010,16 @@ populations from 2021/22 through 2025/26. The earlier four populations are the
 source side of an expanding-season promoted-player evaluation: 2021/22 trains
 the first translation, 2022/23–2024/25 precede registered historical opening
 targets, and 2025/26 remains the current cohort. Historical rows stay
-identity-free until reviewed against each target FPL roster; they cannot be
-inserted into the current hurdle model as if Championship rates were already
-Premier-League calibrated.
+identity-free until deterministically matched within each target FPL roster.
+The first fixed appearance translation now passes: an equal-weight pool of the
+retained appearance probability and a regularised Championship participation
+model improves Brier score by 23.12%, wins all three scored target seasons and
+all four positions, and keeps its player-cluster bootstrap interval wholly
+favourable. It remains retrospective and non-serving. The next active slice
+must propagate only this fixed pool through target-outcome-free point
+distributions and the unchanged globally constrained six-Gameweek policy;
+only a joint proper-score and realised-squad-utility pass may add it to the
+current 2026/27 forecast.
 Do not add another standalone governance, universal contract, infrastructure
 or AI-orchestrator project ahead of these slices.
 

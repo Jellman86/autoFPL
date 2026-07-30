@@ -1,0 +1,654 @@
+{
+  "artifactType": "historical-promoted-appearance-evaluation",
+  "artifactVersion": "historical-promoted-appearance-evaluation-v1",
+  "challengerModel": "fixed-equal-weight-incumbent-source-pool",
+  "dataIdentitySha256": "ae4650b3357310975379888539958cd4157f737155428461968a17ad8cabbdc7",
+  "decision": "retain-for-full-distribution-and-policy-evaluation",
+  "fixedBlend": {
+    "incumbentWeight": 0.5,
+    "selectedBeforeTargetScoring": true,
+    "sourceWeight": 0.5
+  },
+  "fixedScreen": {
+    "bootstrapReplicates": 5000,
+    "maximumCalibrationDelta": 0.02,
+    "maximumLogLossDelta": 0.0,
+    "maximumPositionBrierDelta": 0.02,
+    "minimumBrierImprovementFraction": 0.01,
+    "minimumTargetWins": 2,
+    "primaryMetric": "aggregate-matched-promoted-player-gameweek-brier-score",
+    "uncertaintyGate": "paired-target-season-player-cluster-bootstrap-95-percent-upper-brier-delta-at-most-zero"
+  },
+  "incumbentModel": "multi-season-appearance-histogram-classifier",
+  "influencesAdvice": false,
+  "isPromoted": false,
+  "limitations": [
+    "The FBref pages were captured retrospectively. Their final prior-season aggregates are suitable for this translation experiment, but they are not historical point-in-time snapshots.",
+    "Only players present both in a promoted club's prior-season FBref table and its target FPL Gameweek 1 roster are scored. New signings correctly receive no source feature.",
+    "The fixed identity bridge rejects fuzzy proposals and unresolved aliases. Coverage is reported by promotion class.",
+    "Passing this appearance screen would permit a separate distribution and constrained-squad policy evaluation; it would not itself promote the feature into served advice."
+  ],
+  "promotionClasses": [
+    {
+      "bridgeIdentitySha256": "d140af9350c9d685eb6e0dcfe418ce0c5cffdfe720e8cb160235e83816ea339d",
+      "bridgeMethodCounts": {
+        "exact-normalised-full-name": 53,
+        "unique-token-subset-full-name": 6
+      },
+      "bridgedPlayerCount": 59,
+      "promotedSourcePlayerCount": 106,
+      "promotedTargetPlayerCount": 83,
+      "sourceContentSha256": "643bc0ae83b2e20a1178e8fb13d79dd1c76a77ef9a26cce347302f288ee7dc4b",
+      "sourceKey": "fbref-championship-playing-time-2021-22",
+      "sourcePlayerCount": 831,
+      "sourceRowCount": 867,
+      "sourceSeasonCode": "2021-22",
+      "sourceSnapshotId": 141,
+      "targetCoverageFraction": 0.710843,
+      "targetSeasonCode": "2022-23"
+    },
+    {
+      "bridgeIdentitySha256": "4c2a5422e7a1c056c41224504ddd7531012be17c898f48867458c777738ec2fd",
+      "bridgeMethodCounts": {
+        "exact-normalised-full-name": 68,
+        "unique-token-subset-full-name": 2
+      },
+      "bridgedPlayerCount": 70,
+      "promotedSourcePlayerCount": 105,
+      "promotedTargetPlayerCount": 102,
+      "sourceContentSha256": "444f7d4cb0d5f125d816f09fa7402ebaef112c0122452b8c981ed27e745ef87f",
+      "sourceKey": "fbref-championship-playing-time-2022-23",
+      "sourcePlayerCount": 824,
+      "sourceRowCount": 853,
+      "sourceSeasonCode": "2022-23",
+      "sourceSnapshotId": 141,
+      "targetCoverageFraction": 0.686275,
+      "targetSeasonCode": "2023-24"
+    },
+    {
+      "bridgeIdentitySha256": "09901fdc8aa6cdd50d07cffdeb35848c66e6840f03418d8134e7a84a59d36d70",
+      "bridgeMethodCounts": {
+        "exact-normalised-full-name": 59,
+        "unique-token-subset-full-name": 5
+      },
+      "bridgedPlayerCount": 64,
+      "promotedSourcePlayerCount": 106,
+      "promotedTargetPlayerCount": 90,
+      "sourceContentSha256": "64e79c26060e916ad603ecacd34d35918def4c30a023d70c3c15ce493141a028",
+      "sourceKey": "fbref-championship-playing-time-2023-24",
+      "sourcePlayerCount": 859,
+      "sourceRowCount": 892,
+      "sourceSeasonCode": "2023-24",
+      "sourceSnapshotId": 142,
+      "targetCoverageFraction": 0.711111,
+      "targetSeasonCode": "2024-25"
+    },
+    {
+      "bridgeIdentitySha256": "4b629c6230643a2df5f2c6f05cbd12ffb25b9ff5737aad60a225f4a89d0a74a5",
+      "bridgeMethodCounts": {
+        "exact-normalised-full-name": 63,
+        "unique-token-subset-full-name": 6
+      },
+      "bridgedPlayerCount": 69,
+      "promotedSourcePlayerCount": 116,
+      "promotedTargetPlayerCount": 112,
+      "sourceContentSha256": "2b03d56952009c79936832e90f2cc9b2b868dc49b6bff42a9cdca26a6cd3a602",
+      "sourceKey": "fbref-championship-playing-time-2024-25",
+      "sourcePlayerCount": 919,
+      "sourceRowCount": 952,
+      "sourceSeasonCode": "2024-25",
+      "sourceSnapshotId": 143,
+      "targetCoverageFraction": 0.616071,
+      "targetSeasonCode": "2025-26"
+    }
+  ],
+  "researchStatus": "opened-retrospective-targets-no-promotion",
+  "runIdentitySha256": "55d13005b3cd6d107dddb2e5955d48623b590b8b6c1706dedcb6c9ca3699cc39",
+  "schemaVersion": "1.0",
+  "screen": {
+    "brierDelta": -0.056449,
+    "brierImprovementFraction": 0.231217,
+    "calibrationDelta": -0.018792,
+    "gates": {
+      "bootstrapUpperBoundNonPositive": true,
+      "calibrationTolerance": true,
+      "logLossNonRegression": true,
+      "minimumBrierImprovement": true,
+      "minimumTargetWins": true,
+      "positionBrierTolerance": true
+    },
+    "logLossDelta": -0.164394,
+    "models": [
+      {
+        "metrics": {
+          "appearanceRate": 0.353448,
+          "brierScore": 0.244139,
+          "calibrationError": 0.048712,
+          "logLoss": 0.72206,
+          "meanProbability": 0.40216
+        },
+        "name": "multi-season-appearance-histogram-classifier"
+      },
+      {
+        "metrics": {
+          "appearanceRate": 0.353448,
+          "brierScore": 0.18769,
+          "calibrationError": 0.02992,
+          "logLoss": 0.557666,
+          "meanProbability": 0.383368
+        },
+        "name": "fixed-equal-weight-incumbent-source-pool"
+      }
+    ],
+    "pairedPlayerClusterBootstrap": {
+      "clusterCount": 203,
+      "lower95": -0.073307,
+      "randomSeed": 20260730,
+      "replicateCount": 5000,
+      "unit": "target-season-player",
+      "upper95": -0.040243
+    },
+    "passes": true,
+    "positionBrierDeltas": {
+      "defender": -0.034902,
+      "forward": -0.036523,
+      "goalkeeper": -0.069084,
+      "midfielder": -0.07729
+    },
+    "targetSeasonWins": 3
+  },
+  "sourceFeatures": [
+    "priorCompetitionAppearanceRate",
+    "priorCompetitionStartRate",
+    "priorCompetitionMinuteShare",
+    "priorCompetitionMinutesPerAppearance",
+    "targetGameweekFraction",
+    "isGoalkeeper",
+    "isDefender",
+    "isMidfielder",
+    "isForward"
+  ],
+  "sourceModel": "regularised-prior-competition-appearance-logistic",
+  "status": "retrospective-source-challenger-evaluated",
+  "targetOutcomesOpened": true,
+  "targets": [
+    {
+      "appearanceCount": 187,
+      "challengerBrierDelta": -0.048068,
+      "challengerWins": true,
+      "evaluatedPlayerCount": 70,
+      "evaluatedPlayerGameweekCount": 560,
+      "models": [
+        {
+          "metrics": {
+            "appearanceRate": 0.333929,
+            "brierScore": 0.244449,
+            "calibrationError": 0.105921,
+            "logLoss": 0.70341,
+            "meanProbability": 0.43985
+          },
+          "name": "multi-season-appearance-histogram-classifier",
+          "positionSlices": {
+            "defender": {
+              "appearanceRate": 0.5,
+              "brierScore": 0.258635,
+              "calibrationError": 0.069038,
+              "logLoss": 0.710791,
+              "meanProbability": 0.430962
+            },
+            "forward": {
+              "appearanceRate": 0.348214,
+              "brierScore": 0.247961,
+              "calibrationError": 0.134743,
+              "logLoss": 0.689028,
+              "meanProbability": 0.482957
+            },
+            "goalkeeper": {
+              "appearanceRate": 0.111111,
+              "brierScore": 0.144218,
+              "calibrationError": 0.210528,
+              "logLoss": 0.47328,
+              "meanProbability": 0.321639
+            },
+            "midfielder": {
+              "appearanceRate": 0.26,
+              "brierScore": 0.266083,
+              "calibrationError": 0.206086,
+              "logLoss": 0.787815,
+              "meanProbability": 0.466086
+            }
+          }
+        },
+        {
+          "metrics": {
+            "appearanceRate": 0.333929,
+            "brierScore": 0.18979,
+            "calibrationError": 0.033299,
+            "logLoss": 0.545621,
+            "meanProbability": 0.367228
+          },
+          "name": "regularised-prior-competition-appearance-logistic",
+          "positionSlices": {
+            "defender": {
+              "appearanceRate": 0.5,
+              "brierScore": 0.235857,
+              "calibrationError": 0.060899,
+              "logLoss": 0.659783,
+              "meanProbability": 0.560899
+            },
+            "forward": {
+              "appearanceRate": 0.348214,
+              "brierScore": 0.240062,
+              "calibrationError": 0.004851,
+              "logLoss": 0.694223,
+              "meanProbability": 0.353065
+            },
+            "goalkeeper": {
+              "appearanceRate": 0.111111,
+              "brierScore": 0.07395,
+              "calibrationError": 0.04727,
+              "logLoss": 0.211974,
+              "meanProbability": 0.063841
+            },
+            "midfielder": {
+              "appearanceRate": 0.26,
+              "brierScore": 0.1628,
+              "calibrationError": 0.053947,
+              "logLoss": 0.482053,
+              "meanProbability": 0.313947
+            }
+          }
+        },
+        {
+          "metrics": {
+            "appearanceRate": 0.333929,
+            "brierScore": 0.196381,
+            "calibrationError": 0.06961,
+            "logLoss": 0.578657,
+            "meanProbability": 0.403539
+          },
+          "name": "fixed-equal-weight-incumbent-source-pool",
+          "positionSlices": {
+            "defender": {
+              "appearanceRate": 0.5,
+              "brierScore": 0.229971,
+              "calibrationError": 0.004069,
+              "logLoss": 0.650482,
+              "meanProbability": 0.495931
+            },
+            "forward": {
+              "appearanceRate": 0.348214,
+              "brierScore": 0.221263,
+              "calibrationError": 0.069797,
+              "logLoss": 0.633014,
+              "meanProbability": 0.418011
+            },
+            "goalkeeper": {
+              "appearanceRate": 0.111111,
+              "brierScore": 0.08981,
+              "calibrationError": 0.081629,
+              "logLoss": 0.325261,
+              "meanProbability": 0.19274
+            },
+            "midfielder": {
+              "appearanceRate": 0.26,
+              "brierScore": 0.191254,
+              "calibrationError": 0.130017,
+              "logLoss": 0.576233,
+              "meanProbability": 0.390017
+            }
+          }
+        }
+      ],
+      "sourceModelDiagnostics": {
+        "coefficientByStandardisedFeature": {
+          "isDefender": 0.30813,
+          "isForward": 0.119651,
+          "isGoalkeeper": -0.614377,
+          "isMidfielder": -0.023498,
+          "priorCompetitionAppearanceRate": 0.707151,
+          "priorCompetitionMinuteShare": 0.221619,
+          "priorCompetitionMinutesPerAppearance": 0.455701,
+          "priorCompetitionStartRate": 0.18253,
+          "targetGameweekFraction": -0.507861
+        },
+        "implementation": "sklearn.linear_model.LogisticRegression",
+        "intercept": -0.602204,
+        "penaltyInverse": 1.0,
+        "randomSeed": 20260730,
+        "trainingAppearanceRate": 0.408898,
+        "trainingPlayerCount": 59,
+        "trainingPlayerGameweekCount": 472,
+        "trainingPromotionClasses": [
+          "2021-22-to-2022-23"
+        ]
+      },
+      "sourceSeasonCode": "2022-23",
+      "targetSeasonCode": "2023-24"
+    },
+    {
+      "appearanceCount": 208,
+      "challengerBrierDelta": -0.074924,
+      "challengerWins": true,
+      "evaluatedPlayerCount": 64,
+      "evaluatedPlayerGameweekCount": 512,
+      "models": [
+        {
+          "metrics": {
+            "appearanceRate": 0.40625,
+            "brierScore": 0.281538,
+            "calibrationError": 0.005849,
+            "logLoss": 0.837182,
+            "meanProbability": 0.400401
+          },
+          "name": "multi-season-appearance-histogram-classifier",
+          "positionSlices": {
+            "defender": {
+              "appearanceRate": 0.404762,
+              "brierScore": 0.258815,
+              "calibrationError": 0.037818,
+              "logLoss": 0.756069,
+              "meanProbability": 0.44258
+            },
+            "forward": {
+              "appearanceRate": 0.347222,
+              "brierScore": 0.172497,
+              "calibrationError": 0.106704,
+              "logLoss": 0.511558,
+              "meanProbability": 0.453927
+            },
+            "goalkeeper": {
+              "appearanceRate": 0.152778,
+              "brierScore": 0.251106,
+              "calibrationError": 0.237184,
+              "logLoss": 0.737194,
+              "meanProbability": 0.389962
+            },
+            "midfielder": {
+              "appearanceRate": 0.52,
+              "brierScore": 0.350837,
+              "calibrationError": 0.170542,
+              "logLoss": 1.058537,
+              "meanProbability": 0.349458
+            }
+          }
+        },
+        {
+          "metrics": {
+            "appearanceRate": 0.40625,
+            "brierScore": 0.188145,
+            "calibrationError": 0.032315,
+            "logLoss": 0.567984,
+            "meanProbability": 0.373935
+          },
+          "name": "regularised-prior-competition-appearance-logistic",
+          "positionSlices": {
+            "defender": {
+              "appearanceRate": 0.404762,
+              "brierScore": 0.196233,
+              "calibrationError": 0.138997,
+              "logLoss": 0.568908,
+              "meanProbability": 0.543759
+            },
+            "forward": {
+              "appearanceRate": 0.347222,
+              "brierScore": 0.192424,
+              "calibrationError": 0.0309,
+              "logLoss": 0.595108,
+              "meanProbability": 0.316322
+            },
+            "goalkeeper": {
+              "appearanceRate": 0.152778,
+              "brierScore": 0.097175,
+              "calibrationError": 0.050639,
+              "logLoss": 0.321619,
+              "meanProbability": 0.102138
+            },
+            "midfielder": {
+              "appearanceRate": 0.52,
+              "brierScore": 0.21256,
+              "calibrationError": 0.17013,
+              "logLoss": 0.646135,
+              "meanProbability": 0.34987
+            }
+          }
+        },
+        {
+          "metrics": {
+            "appearanceRate": 0.40625,
+            "brierScore": 0.206614,
+            "calibrationError": 0.019082,
+            "logLoss": 0.592482,
+            "meanProbability": 0.387168
+          },
+          "name": "fixed-equal-weight-incumbent-source-pool",
+          "positionSlices": {
+            "defender": {
+              "appearanceRate": 0.404762,
+              "brierScore": 0.199373,
+              "calibrationError": 0.088408,
+              "logLoss": 0.577185,
+              "meanProbability": 0.493169
+            },
+            "forward": {
+              "appearanceRate": 0.347222,
+              "brierScore": 0.170323,
+              "calibrationError": 0.037902,
+              "logLoss": 0.519088,
+              "meanProbability": 0.385124
+            },
+            "goalkeeper": {
+              "appearanceRate": 0.152778,
+              "brierScore": 0.131271,
+              "calibrationError": 0.093273,
+              "logLoss": 0.412286,
+              "meanProbability": 0.24605
+            },
+            "midfielder": {
+              "appearanceRate": 0.52,
+              "brierScore": 0.252884,
+              "calibrationError": 0.170336,
+              "logLoss": 0.696623,
+              "meanProbability": 0.349664
+            }
+          }
+        }
+      ],
+      "sourceModelDiagnostics": {
+        "coefficientByStandardisedFeature": {
+          "isDefender": 0.252418,
+          "isForward": 0.153837,
+          "isGoalkeeper": -0.489825,
+          "isMidfielder": -0.045228,
+          "priorCompetitionAppearanceRate": 0.68607,
+          "priorCompetitionMinuteShare": 0.545018,
+          "priorCompetitionMinutesPerAppearance": 0.531697,
+          "priorCompetitionStartRate": -0.352206,
+          "targetGameweekFraction": -0.169342
+        },
+        "implementation": "sklearn.linear_model.LogisticRegression",
+        "intercept": -0.845165,
+        "penaltyInverse": 1.0,
+        "randomSeed": 20260730,
+        "trainingAppearanceRate": 0.368217,
+        "trainingPlayerCount": 129,
+        "trainingPlayerGameweekCount": 1032,
+        "trainingPromotionClasses": [
+          "2021-22-to-2022-23",
+          "2022-23-to-2023-24"
+        ]
+      },
+      "sourceSeasonCode": "2023-24",
+      "targetSeasonCode": "2024-25"
+    },
+    {
+      "appearanceCount": 179,
+      "challengerBrierDelta": -0.047813,
+      "challengerWins": true,
+      "evaluatedPlayerCount": 69,
+      "evaluatedPlayerGameweekCount": 552,
+      "models": [
+        {
+          "metrics": {
+            "appearanceRate": 0.324275,
+            "brierScore": 0.209135,
+            "calibrationError": 0.04128,
+            "logLoss": 0.634202,
+            "meanProbability": 0.365555
+          },
+          "name": "multi-season-appearance-histogram-classifier",
+          "positionSlices": {
+            "defender": {
+              "appearanceRate": 0.375,
+              "brierScore": 0.193995,
+              "calibrationError": 0.034872,
+              "logLoss": 0.597024,
+              "meanProbability": 0.340128
+            },
+            "forward": {
+              "appearanceRate": 0.430556,
+              "brierScore": 0.269234,
+              "calibrationError": 0.053831,
+              "logLoss": 0.732375,
+              "meanProbability": 0.484387
+            },
+            "goalkeeper": {
+              "appearanceRate": 0.078125,
+              "brierScore": 0.13971,
+              "calibrationError": 0.178834,
+              "logLoss": 0.512619,
+              "meanProbability": 0.256959
+            },
+            "midfielder": {
+              "appearanceRate": 0.322581,
+              "brierScore": 0.219859,
+              "calibrationError": 0.053726,
+              "logLoss": 0.662261,
+              "meanProbability": 0.376306
+            }
+          }
+        },
+        {
+          "metrics": {
+            "appearanceRate": 0.324275,
+            "brierScore": 0.156613,
+            "calibrationError": 0.028931,
+            "logLoss": 0.481902,
+            "meanProbability": 0.353206
+          },
+          "name": "regularised-prior-competition-appearance-logistic",
+          "positionSlices": {
+            "defender": {
+              "appearanceRate": 0.375,
+              "brierScore": 0.206202,
+              "calibrationError": 0.022622,
+              "logLoss": 0.612645,
+              "meanProbability": 0.397622
+            },
+            "forward": {
+              "appearanceRate": 0.430556,
+              "brierScore": 0.165552,
+              "calibrationError": 0.003194,
+              "logLoss": 0.50279,
+              "meanProbability": 0.433749
+            },
+            "goalkeeper": {
+              "appearanceRate": 0.078125,
+              "brierScore": 0.105014,
+              "calibrationError": 0.038381,
+              "logLoss": 0.365162,
+              "meanProbability": 0.116506
+            },
+            "midfielder": {
+              "appearanceRate": 0.322581,
+              "brierScore": 0.13374,
+              "calibrationError": 0.038238,
+              "logLoss": 0.417397,
+              "meanProbability": 0.360819
+            }
+          }
+        },
+        {
+          "metrics": {
+            "appearanceRate": 0.324275,
+            "brierScore": 0.161322,
+            "calibrationError": 0.035105,
+            "logLoss": 0.504078,
+            "meanProbability": 0.359381
+          },
+          "name": "fixed-equal-weight-incumbent-source-pool",
+          "positionSlices": {
+            "defender": {
+              "appearanceRate": 0.375,
+              "brierScore": 0.177099,
+              "calibrationError": 0.006125,
+              "logLoss": 0.536372,
+              "meanProbability": 0.368875
+            },
+            "forward": {
+              "appearanceRate": 0.430556,
+              "brierScore": 0.183081,
+              "calibrationError": 0.028512,
+              "logLoss": 0.553514,
+              "meanProbability": 0.459068
+            },
+            "goalkeeper": {
+              "appearanceRate": 0.078125,
+              "brierScore": 0.111208,
+              "calibrationError": 0.108607,
+              "logLoss": 0.430367,
+              "meanProbability": 0.186732
+            },
+            "midfielder": {
+              "appearanceRate": 0.322581,
+              "brierScore": 0.157249,
+              "calibrationError": 0.045982,
+              "logLoss": 0.486872,
+              "meanProbability": 0.368562
+            }
+          }
+        }
+      ],
+      "sourceModelDiagnostics": {
+        "coefficientByStandardisedFeature": {
+          "isDefender": 0.122114,
+          "isForward": 0.142122,
+          "isGoalkeeper": -0.456309,
+          "isMidfielder": 0.079229,
+          "priorCompetitionAppearanceRate": 0.475597,
+          "priorCompetitionMinuteShare": 0.727456,
+          "priorCompetitionMinutesPerAppearance": 0.315684,
+          "priorCompetitionStartRate": -0.202525,
+          "targetGameweekFraction": -0.194787
+        },
+        "implementation": "sklearn.linear_model.LogisticRegression",
+        "intercept": -0.730795,
+        "penaltyInverse": 1.0,
+        "randomSeed": 20260730,
+        "trainingAppearanceRate": 0.380829,
+        "trainingPlayerCount": 193,
+        "trainingPlayerGameweekCount": 1544,
+        "trainingPromotionClasses": [
+          "2021-22-to-2022-23",
+          "2022-23-to-2023-24",
+          "2023-24-to-2024-25"
+        ]
+      },
+      "sourceSeasonCode": "2024-25",
+      "targetSeasonCode": "2025-26"
+    }
+  ],
+  "temporalDesign": {
+    "fuzzyIdentityMatching": false,
+    "identityRule": "same-promoted-team-and-exact-or-token-subset-name-only",
+    "method": "expanding-promotion-class-origin",
+    "scoredTargetSeasonCodes": [
+      "2023-24",
+      "2024-25",
+      "2025-26"
+    ],
+    "targetOutcomeRole": "scoring-only",
+    "trainingRule": "strictly-earlier-promotion-classes-only",
+    "trainingSeed": "2021-22-to-2022-23"
+  }
+}

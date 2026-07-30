@@ -411,6 +411,27 @@ lost 31.67 realised squad points on average. The representation is rejected
 without tuning on the opened targets; v2 remains unchanged. See the
 [team-fixture-strength opening evaluation](../../docs/research/historical-team-fixture-strength-opening-evaluation-v1.md).
 
+The promoted-player appearance evaluator learns a Championship-to-Premier
+League participation translation on expanding promotion classes and pools it
+with the retained opening appearance probability:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.historical_promoted_appearance_evaluation \
+  --database /path/to/autofpl.db \
+  --fbref-extraction 2021-22=/path/to/2021-22-extraction.json \
+  --fbref-extraction 2022-23=/path/to/2022-23-extraction.json \
+  --fbref-extraction 2023-24=/path/to/2023-24-extraction.json \
+  --fbref-extraction 2024-25=/path/to/2024-25-extraction.json \
+  --output /path/to/historical-promoted-appearance-evaluation.json
+```
+
+The fixed equal-weight pool improved Brier score by 23.12%, won all three
+scored target seasons and all four positions, and retained a fully favourable
+player-cluster bootstrap interval. This authorises full point-distribution and
+opening-policy evaluation, not product promotion. See the
+[promoted-player appearance evaluation](../../docs/research/historical-promoted-appearance-evaluation-v1.md).
+
 The conditional-optimality audit distinguishes an exact solver result from a
 robust player choice:
 
