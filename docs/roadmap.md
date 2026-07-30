@@ -658,11 +658,17 @@ categorical, quarantined start claims rather than invented appearance
 probabilities, so v2 stays unchanged. The production extractor also resolves a
 unique team-scoped first-name or nickname token such as Rodri while continuing
 to reject stale team mismatches such as Tonali-at-Newcastle.
-The next accuracy gate is prospective source reliability by target and
-lead-time, followed by a registered start/substitute/zero-minutes mixture.
-Until exact outcomes exist, evidence remains a visible risk signal and cannot
-silently mutate the forecast. Continue refreshing it through the deadline;
-do not replace forecast work with further optimiser complexity.
+The prospective start-source evaluator now collapses repeated source revisions
+to the latest pre-deadline player assertion and reports source × lead-time
+confusion counts, Gameweek support, proper probability scores and
+class-balanced Jeffreys-shrunk reliability. It cannot manufacture evidence
+before exact outcomes exist: balanced reliability stays absent until both
+starter and non-starter outcomes have been observed. The next gate is to
+accumulate those frozen outcomes and run a registered no-source versus
+source-feature start/substitute/zero-minutes challenger. Until then, evidence
+remains a visible risk signal and cannot silently mutate the forecast.
+Continue refreshing it through the deadline; do not replace forecast work
+with further optimiser complexity.
 
 The SQLite persistence vertical slice is deployed and survives a managed
 container recreate. Operator-triggered fixed-origin official FPL collectors

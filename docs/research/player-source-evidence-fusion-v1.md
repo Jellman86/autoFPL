@@ -121,11 +121,13 @@ season.
    strAIghtred consensus percentages under the same player/target duplicate
    clusters as FFScout, making dependence explicit. Official-injury extraction,
    quantitative reproduction and named experts remain.
-5. **Implemented for start truth:** score pre-deadline categorical and
-   probabilistic start claims against exact official Gameweek starts by source
-   and fixed lead-time bucket. Availability is not proxied by appearance;
-   reliability shrinkage and same-fold no-source versus source-feature
-   ablations remain.
+5. **Implemented for start truth and sparse reliability:** collapse source
+   revisions to the latest pre-deadline player assertion, then score
+   categorical and probabilistic start claims against exact official Gameweek
+   starts by source and fixed lead-time bucket. The evaluator reports
+   class-specific Jeffreys beta-binomial posterior means and withholds balanced
+   reliability until both outcome classes exist. Availability is not proxied
+   by appearance; same-fold no-source versus source-feature ablations remain.
 6. Add Bayesian component updates and/or predictive-distribution stacking only
    when their registered comparison supports them.
 7. Feed the full player distributions into a correlated CPU reference
