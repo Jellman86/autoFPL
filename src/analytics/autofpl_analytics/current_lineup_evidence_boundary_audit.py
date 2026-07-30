@@ -10,6 +10,9 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 from .current_best_supported_opening_squad import (
     build_current_best_supported_opening_squad,
 )
+from .current_appearance_hurdle_opening_forecast_sensitivity import (
+    build_current_appearance_hurdle_opening_forecast_sensitivity,
+)
 from .temporal_ridge import (
     TemporalRidgeError,
     _open_connection,
@@ -20,11 +23,12 @@ from .temporal_ridge import (
 
 SCHEMA_VERSION = "1.0"
 ARTIFACT_TYPE = "current-lineup-evidence-boundary-audit"
-ARTIFACT_VERSION = "current-lineup-evidence-boundary-audit-v1"
+ARTIFACT_VERSION = "current-lineup-evidence-boundary-audit-v1.1"
 STATUS = "prospective-evidence-audit-non-serving"
 
 SOURCE_CLASS = {
     "ffscout-predicted-lineups": "specialist-predicted-lineup",
+    "premier-league-injuries": "official-availability-aggregation",
     "straightred-lineup-consensus": "dependent-lineup-consensus",
 }
 DEPENDENT_SOURCES = frozenset({"straightred-lineup-consensus"})
@@ -37,6 +41,18 @@ def build_current_lineup_evidence_boundary_audit(
 ) -> Dict[str, Any]:
     path = Path(database_path)
     incumbent = build_current_best_supported_opening_squad(path)
+    sensitivity = (
+        build_current_appearance_hurdle_opening_forecast_sensitivity(
+            path
+        )
+    )
+    _require(
+        int(sensitivity["officialCaptureId"])
+        == int(incumbent["officialCaptureId"]),
+        "lineup-evidence.sensitivity-capture",
+        "The opening-squad sensitivity must use the incumbent capture.",
+    )
+    boundary_alternatives = _boundary_alternatives(sensitivity)
     cutoff = _parse_utc(evidence_cutoff_utc, "evidenceCutoffUtc")
     deadline = _parse_utc(
         str(incumbent["deadlineUtc"]),
@@ -58,7 +74,64 @@ def build_current_lineup_evidence_boundary_audit(
         incumbent,
         claims,
         evidence_cutoff=cutoff,
+        boundary_alternatives=boundary_alternatives,
+        sensitivity_source={
+            "artifactVersion": sensitivity["artifactVersion"],
+            "dataIdentitySha256": sensitivity["dataIdentitySha256"],
+            "runIdentitySha256": sensitivity["runIdentitySha256"],
+        },
     )
+
+
+def _boundary_alternatives(
+    sensitivity: Mapping[str, Any],
+) -> List[Dict[str, Any]]:
+    by_id: Dict[int, Dict[str, Any]] = {}
+    for threshold in sensitivity["selectedPlayerThresholds"]:
+        selected_player_id = int(threshold["player"]["playerId"])
+        for candidate in threshold["boundaryAddedPlayers"]:
+            player_id = int(candidate["playerId"])
+            identity = {
+                "playerId": player_id,
+                "webName": str(candidate["webName"]),
+                "teamId": int(candidate["teamId"]),
+                "teamName": str(candidate["teamName"]),
+                "position": str(candidate["position"]),
+                "modelAppearanceProbability": None,
+            }
+            existing = by_id.get(player_id)
+            if existing is None:
+                identity["boundaryForSelectedPlayerIds"] = [
+                    selected_player_id
+                ]
+                by_id[player_id] = identity
+                continue
+            _require(
+                {
+                    key: existing[key] for key in identity
+                }
+                == identity,
+                "lineup-evidence.boundary-identity",
+                "A forecast-boundary alternative changed identity.",
+            )
+            existing["boundaryForSelectedPlayerIds"].append(
+                selected_player_id
+            )
+
+    result = list(by_id.values())
+    for player in result:
+        player["boundaryForSelectedPlayerIds"] = sorted(
+            set(player["boundaryForSelectedPlayerIds"])
+        )
+    result.sort(
+        key=lambda player: (
+            str(player["position"]),
+            str(player["teamName"]),
+            str(player["webName"]),
+            int(player["playerId"]),
+        )
+    )
+    return result
 
 
 def _load_claims(
@@ -144,6 +217,8 @@ def _build_from_documents(
     claims: Sequence[Mapping[str, Any]],
     *,
     evidence_cutoff: datetime,
+    boundary_alternatives: Sequence[Mapping[str, Any]] = (),
+    sensitivity_source: Optional[Mapping[str, Any]] = None,
 ) -> Dict[str, Any]:
     selected_players = list(incumbent["selection"]["players"])
     _require(
@@ -159,10 +234,29 @@ def _build_from_documents(
         "lineup-evidence.squad-duplicates",
         "The selected opening squad contains duplicate players.",
     )
+    boundary_players = [dict(player) for player in boundary_alternatives]
+    boundary_ids = {
+        int(player["playerId"]) for player in boundary_players
+    }
+    _require(
+        len(boundary_ids) == len(boundary_players),
+        "lineup-evidence.boundary-duplicates",
+        "The forecast boundary contains duplicate alternative players.",
+    )
+    _require(
+        selected_ids.isdisjoint(boundary_ids),
+        "lineup-evidence.boundary-selected-overlap",
+        "A forecast-boundary alternative is already selected.",
+    )
     latest = _latest_claims(
         claim
         for claim in claims
         if int(claim["playerId"]) in selected_ids
+    )
+    latest_boundary = _latest_claims(
+        claim
+        for claim in claims
+        if int(claim["playerId"]) in boundary_ids
     )
     claims_by_player: Dict[int, List[Mapping[str, Any]]] = {
         player_id: [] for player_id in selected_ids
@@ -178,6 +272,27 @@ def _build_from_documents(
         for player in selected_players
     ]
     players.sort(
+        key=lambda row: (
+            str(row["position"]),
+            str(row["teamName"]),
+            str(row["webName"]),
+            int(row["playerId"]),
+        )
+    )
+    boundary_claims_by_player: Dict[
+        int,
+        List[Mapping[str, Any]],
+    ] = {player_id: [] for player_id in boundary_ids}
+    for claim in latest_boundary:
+        boundary_claims_by_player[int(claim["playerId"])].append(claim)
+    audited_boundary_players = [
+        _player_audit(
+            player,
+            boundary_claims_by_player[int(player["playerId"])],
+        )
+        for player in boundary_players
+    ]
+    audited_boundary_players.sort(
         key=lambda row: (
             str(row["position"]),
             str(row["teamName"]),
@@ -203,6 +318,16 @@ def _build_from_documents(
     ]
     risk_players = [
         row for row in players if bool(row["selectionRiskFlag"])
+    ]
+    boundary_risk_players = [
+        row
+        for row in audited_boundary_players
+        if bool(row["selectionRiskFlag"])
+    ]
+    boundary_covered = [
+        row
+        for row in audited_boundary_players
+        if len(row["latestClaims"]) > 0
     ]
     covered = [
         row
@@ -255,6 +380,11 @@ def _build_from_documents(
             "artifactVersion": incumbent["artifactVersion"],
             "runIdentitySha256": incumbent["runIdentitySha256"],
         },
+        "forecastSensitivitySource": (
+            None
+            if sensitivity_source is None
+            else dict(sensitivity_source)
+        ),
         "coverage": {
             "selectedPlayerCount": len(players),
             "startClaimCoveredPlayerCount": len(covered),
@@ -262,6 +392,15 @@ def _build_from_documents(
             "predictedNonStarterCount": len(predicted_non_starters),
             "categoricalConflictCount": len(conflicts),
             "selectionRiskPlayerCount": len(risk_players),
+            "boundaryAlternativePlayerCount": len(
+                audited_boundary_players
+            ),
+            "boundaryAlternativeEvidenceCoveredPlayerCount": len(
+                boundary_covered
+            ),
+            "boundaryAlternativeRiskPlayerCount": len(
+                boundary_risk_players
+            ),
         },
         "selectionRiskPlayers": [
             {
@@ -279,8 +418,26 @@ def _build_from_documents(
             }
             for row in risk_players
         ],
+        "boundaryAlternativeRiskPlayers": [
+            {
+                "playerId": row["playerId"],
+                "webName": row["webName"],
+                "teamName": row["teamName"],
+                "position": row["position"],
+                "categoricalStartSignal": row[
+                    "categoricalStartSignal"
+                ],
+                "reason": row["selectionRiskReason"],
+            }
+            for row in boundary_risk_players
+        ],
         "players": players,
+        "boundaryAlternatives": audited_boundary_players,
         "sources": source_summary,
+        "boundaryAlternativeSources": _source_summary(
+            latest_boundary,
+            scope="boundary-alternative",
+        ),
         "decision": (
             "retain-v2-without-uncalibrated-lineup-mutation-and-"
             "prioritise-start-substitute-zero-mixture"
@@ -325,6 +482,11 @@ def _build_from_documents(
                 "counted as an additional independent vote."
             ),
             (
+                "A Premier League injury-page listing is retained only as "
+                "a doubtful availability flag; it does not establish an "
+                "absence probability or return date."
+            ),
+            (
                 "The evidence arrived after the official capture used by "
                 "the selected forecast. This audit binds both cutoffs and "
                 "does not rewrite the earlier artifact."
@@ -341,6 +503,9 @@ def _build_from_documents(
                 "evidenceDecisionCutoffUtc"
             ],
             "selectedSquadSource": artifact["selectedSquadSource"],
+            "forecastSensitivitySource": artifact[
+                "forecastSensitivitySource"
+            ],
             "claims": [
                 {
                     "claimId": claim["claimId"],
@@ -348,7 +513,7 @@ def _build_from_documents(
                         "claimContentSha256"
                     ],
                 }
-                for claim in latest
+                for claim in [*latest, *latest_boundary]
             ],
             "claimSelectionRule": artifact["evidenceBoundary"][
                 "claimSelectionRule"
@@ -470,14 +635,17 @@ def _player_audit(
             claim["claimId"],
         )
     )
-    return {
+    model_appearance = player.get("modelAppearanceProbability")
+    result = {
         "playerId": int(player["playerId"]),
         "webName": str(player["webName"]),
         "teamId": int(player["teamId"]),
         "teamName": str(player["teamName"]),
         "position": str(player["position"]),
-        "modelAppearanceProbability": float(
-            player["modelAppearanceProbability"]
+        "modelAppearanceProbability": (
+            None
+            if model_appearance is None
+            else float(model_appearance)
         ),
         "modelStartProbability": None,
         "categoricalStartSignal": signal,
@@ -485,11 +653,34 @@ def _player_audit(
         "selectionRiskReason": risk_reason,
         "latestClaims": rendered_claims,
     }
+    if "boundaryForSelectedPlayerIds" in player:
+        result["boundaryForSelectedPlayerIds"] = [
+            int(value)
+            for value in player["boundaryForSelectedPlayerIds"]
+        ]
+    return result
 
 
 def _source_summary(
     claims: Sequence[Mapping[str, Any]],
+    *,
+    scope: str = "selected",
 ) -> List[Dict[str, Any]]:
+    _require(
+        scope in {"selected", "boundary-alternative"},
+        "lineup-evidence.source-summary-scope",
+        "The evidence source-summary scope is unsupported.",
+    )
+    claim_count_key = (
+        "selectedPlayerClaimCount"
+        if scope == "selected"
+        else "boundaryAlternativeClaimCount"
+    )
+    player_count_key = (
+        "selectedPlayerCount"
+        if scope == "selected"
+        else "boundaryAlternativePlayerCount"
+    )
     by_source: Dict[str, List[Mapping[str, Any]]] = {}
     for claim in claims:
         by_source.setdefault(str(claim["sourceKey"]), []).append(claim)
@@ -500,8 +691,8 @@ def _source_summary(
                 "sourceKey": source_key,
                 "sourceClass": SOURCE_CLASS.get(source_key, "other"),
                 "isDependentConsensus": source_key in DEPENDENT_SOURCES,
-                "selectedPlayerClaimCount": len(rows),
-                "selectedPlayerCount": len(
+                claim_count_key: len(rows),
+                player_count_key: len(
                     {int(row["playerId"]) for row in rows}
                 ),
                 "statuses": sorted(

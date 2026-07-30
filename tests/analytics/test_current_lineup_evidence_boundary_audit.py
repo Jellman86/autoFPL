@@ -150,6 +150,91 @@ class CurrentLineupEvidenceBoundaryAuditTests(unittest.TestCase):
             artifact["decision"],
         )
 
+    def test_official_injury_flags_a_forecast_boundary_alternative(
+        self,
+    ) -> None:
+        claims = [
+            self._claim(
+                player_id,
+                player_id,
+                "ffscout-predicted-lineups",
+                "starts",
+                "2026-07-30T01:00:00Z",
+            )
+            for player_id in range(1, 16)
+        ]
+        claims.append(
+            self._availability_claim(
+                100,
+                16,
+                "2026-07-30T01:05:00Z",
+            )
+        )
+        artifact = _build_from_documents(
+            self._incumbent(),
+            claims,
+            evidence_cutoff=datetime(
+                2026,
+                7,
+                30,
+                1,
+                15,
+                tzinfo=timezone.utc,
+            ),
+            boundary_alternatives=[
+                {
+                    "playerId": 16,
+                    "webName": "Alternative",
+                    "teamId": 6,
+                    "teamName": "Team 6",
+                    "position": "midfielder",
+                    "modelAppearanceProbability": None,
+                    "boundaryForSelectedPlayerIds": [8, 9],
+                }
+            ],
+            sensitivity_source={
+                "artifactVersion": "sensitivity/v1",
+                "dataIdentitySha256": "b" * 64,
+                "runIdentitySha256": "c" * 64,
+            },
+        )
+
+        self.assertEqual(
+            1,
+            artifact["coverage"]["boundaryAlternativePlayerCount"],
+        )
+        self.assertEqual(
+            1,
+            artifact["coverage"][
+                "boundaryAlternativeEvidenceCoveredPlayerCount"
+            ],
+        )
+        self.assertEqual(
+            1,
+            artifact["coverage"]["boundaryAlternativeRiskPlayerCount"],
+        )
+        alternative = artifact["boundaryAlternatives"][0]
+        self.assertEqual(
+            [8, 9],
+            alternative["boundaryForSelectedPlayerIds"],
+        )
+        self.assertEqual(
+            "latest-availability-source-flags-risk",
+            alternative["selectionRiskReason"],
+        )
+        self.assertIsNone(
+            alternative["modelAppearanceProbability"]
+        )
+        claim = alternative["latestClaims"][0]
+        self.assertEqual(
+            "official-availability-aggregation",
+            claim["sourceClass"],
+        )
+        self.assertEqual("doubtful", claim["availabilityStatus"])
+        source = artifact["boundaryAlternativeSources"][0]
+        self.assertEqual(1, source["boundaryAlternativeClaimCount"])
+        self.assertEqual(1, source["boundaryAlternativePlayerCount"])
+
     @staticmethod
     def _incumbent() -> dict:
         return {
@@ -208,6 +293,31 @@ class CurrentLineupEvidenceBoundaryAuditTests(unittest.TestCase):
             "directness": "model-forecast",
             "sourceSpan": f"Player {player_id}: {start_status}",
             "extractionVersion": "test/v1",
+            "duplicateClusterKey": f"{player_id:064x}",
+            "claimContentSha256": f"{claim_id + 1000:064x}",
+        }
+
+    @staticmethod
+    def _availability_claim(
+        claim_id: int,
+        player_id: int,
+        available_at_utc: str,
+    ) -> dict:
+        return {
+            "claimId": claim_id,
+            "status": "quarantined",
+            "sourceKey": "premier-league-injuries",
+            "availableAtUtc": available_at_utc,
+            "contentSha256": f"{claim_id:064x}",
+            "sourceRevision": 1,
+            "playerId": player_id,
+            "claimType": "availability",
+            "availabilityStatus": "doubtful",
+            "startStatus": None,
+            "forecastProbability": None,
+            "directness": "reported",
+            "sourceSpan": "Team 6 injury list: Alternative — Knee",
+            "extractionVersion": "premier-league-injuries/v1",
             "duplicateClusterKey": f"{player_id:064x}",
             "claimContentSha256": f"{claim_id + 1000:064x}",
         }

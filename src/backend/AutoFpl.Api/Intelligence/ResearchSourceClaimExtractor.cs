@@ -1014,8 +1014,28 @@ public sealed partial class ResearchSourceClaimExtractor
                             StringComparison.Ordinal);
                 })
             .ToArray();
-        return suffixMatches.Length == 1
-            ? new(suffixMatches[0], 0.95m)
+        if (suffixMatches.Length == 1)
+        {
+            return new(suffixMatches[0], 0.95m);
+        }
+        if (suffixMatches.Length > 1
+            || candidateName.Length < 4
+            || candidateName.Contains(' '))
+        {
+            return null;
+        }
+
+        ResearchOfficialPlayerIdentity[] uniqueFirstNameTokenMatches =
+            teamPlayers
+                .Where(identity =>
+                    Normalize(identity.FirstName)
+                        .Split(
+                            ' ',
+                            StringSplitOptions.RemoveEmptyEntries)
+                        .Contains(candidateName, StringComparer.Ordinal))
+                .ToArray();
+        return uniqueFirstNameTokenMatches.Length == 1
+            ? new(uniqueFirstNameTokenMatches[0], 0.95m)
             : null;
     }
 

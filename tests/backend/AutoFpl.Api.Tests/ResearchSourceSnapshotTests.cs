@@ -1355,19 +1355,20 @@ public sealed class ResearchSourceSnapshotTests
                     ResearchSourceClaimExtractor
                         .PremierLeagueInjuryExtractionVersion,
                     claim.ExtractionVersion);
-                Assert.Equal(1m, claim.ExtractionConfidence);
                 Assert.NotNull(claim.DuplicateClusterKey);
             });
         Assert.Contains(
             claims.Claims,
             claim => claim.PlayerId == 101
                 && claim.SourceSpan
-                    == "Home injury list: Test Player — Back");
+                    == "Home injury list: Test Player — Back"
+                && claim.ExtractionConfidence == 1m);
         Assert.Contains(
             claims.Claims,
             claim => claim.PlayerId == 102
                 && claim.SourceSpan
-                    == "Home injury list: Amadou Onana — Knee");
+                    == "Home injury list: Amadou — Knee"
+                && claim.ExtractionConfidence == 0.95m);
     }
 
     [Fact]
@@ -2546,7 +2547,7 @@ public sealed class ResearchSourceSnapshotTests
                                     },
                                     new
                                     {
-                                        playerName = "Amadou Onana",
+                                        playerName = "Amadou",
                                         injury = "Knee",
                                         updateUrl =
                                             "https://home.example/update",
