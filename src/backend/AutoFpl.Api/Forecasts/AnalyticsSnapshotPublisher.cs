@@ -159,6 +159,14 @@ public sealed class AnalyticsSnapshotPublisher : BackgroundService
                     FROM selected_opening_squad_shadow_artifacts
                 ), 0) AS TEXT)
                 || ':' || CAST(COALESCE((
+                    SELECT MAX(claim_id)
+                    FROM evidence_claims
+                ), 0) AS TEXT)
+                || ':' || CAST(COALESCE((
+                    SELECT MAX(stress_artifact_id)
+                    FROM external_evidence_stress_artifacts
+                ), 0) AS TEXT)
+                || ':' || CAST(COALESCE((
                     SELECT MAX(outcome_capture_id)
                     FROM official_fpl_outcome_captures
                 ), 0) AS TEXT)

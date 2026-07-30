@@ -487,10 +487,9 @@ Set `AutoFpl__Research__ResearchSourcePollIntervalMinutes` to an integer from
 `60` through `1440` to refresh the complete fixed inventory in the background.
 The setting is absent by default, preserving operator-only collection. An
 enabled instance captures each allowlisted source once on startup and then at
-the bounded interval. FFScout and strAIghtred captures immediately run their
-existing deterministic extractors; the Premier League injury capture remains
-retained without claims until its fail-closed adapter exists. A failed source
-does not suppress the other sources in that cycle.
+the bounded interval. FFScout, strAIghtred and Premier League injury captures
+immediately run their existing fail-closed deterministic extractors. A failed
+source does not suppress the other sources in that cycle.
 
 Each successful capture is tied to the latest official capture available at
 retrieval and that capture's recorded next Gameweek/deadline. Source text is
@@ -709,7 +708,7 @@ See the [source portfolio](../research/research-source-portfolio-v1.md).
 
 ## SQLite operations
 
-The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies 35 explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
+The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies 36 explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
 
 The root filesystem stays read-only. Production must mount a private, UID
 `1654`-writable persistent directory at `/data`; the CI smoke test uses an

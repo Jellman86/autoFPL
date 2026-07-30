@@ -4,7 +4,7 @@ internal sealed record DatabaseMigration(int Version, string Name, string Sql);
 
 internal static class DatabaseMigrations
 {
-    public const int CurrentVersion = 35;
+    public const int CurrentVersion = 36;
 
     public static IReadOnlyList<DatabaseMigration> All { get; } =
     [
@@ -3108,6 +3108,72 @@ internal static class DatabaseMigrations
             BEFORE DELETE ON research_source_snapshots
             BEGIN
                 SELECT RAISE(ABORT, 'research source snapshots cannot be deleted');
+            END;
+            """),
+        new(
+            36,
+            "external-evidence-stress-artifact",
+            """
+            CREATE TABLE external_evidence_stress_artifacts (
+                stress_artifact_id INTEGER PRIMARY KEY,
+                schema_version TEXT NOT NULL CHECK (schema_version = '1.0'),
+                artifact_type TEXT NOT NULL
+                    CHECK (
+                        artifact_type = 'current-external-evidence-stress'
+                    ),
+                artifact_version TEXT NOT NULL
+                    CHECK (
+                        artifact_version =
+                            'current-external-evidence-stress-v1'
+                    ),
+                status TEXT NOT NULL
+                    CHECK (
+                        status = 'external-evidence-stress-non-serving'
+                    ),
+                official_capture_id INTEGER NOT NULL
+                    REFERENCES official_fpl_captures(capture_id)
+                    ON DELETE RESTRICT,
+                season_code TEXT NOT NULL
+                    CHECK (length(season_code) BETWEEN 4 AND 16),
+                opening_gameweek INTEGER NOT NULL
+                    CHECK (opening_gameweek BETWEEN 1 AND 38),
+                evidence_cutoff_utc TEXT NOT NULL,
+                producer_data_identity_sha256 TEXT NOT NULL
+                    UNIQUE CHECK (
+                        length(producer_data_identity_sha256) = 64
+                    ),
+                producer_run_identity_sha256 TEXT NOT NULL
+                    CHECK (length(producer_run_identity_sha256) = 64),
+                document_json TEXT NOT NULL
+                    CHECK (length(document_json) BETWEEN 2 AND 1048576),
+                content_sha256 TEXT NOT NULL
+                    UNIQUE CHECK (length(content_sha256) = 64),
+                created_at_utc TEXT NOT NULL
+            );
+
+            CREATE INDEX external_evidence_stress_latest_idx
+                ON external_evidence_stress_artifacts (
+                    official_capture_id,
+                    evidence_cutoff_utc DESC,
+                    stress_artifact_id DESC
+                );
+
+            CREATE TRIGGER external_evidence_stress_immutable
+            BEFORE UPDATE ON external_evidence_stress_artifacts
+            BEGIN
+                SELECT RAISE(
+                    ABORT,
+                    'external evidence stress artifacts are immutable'
+                );
+            END;
+
+            CREATE TRIGGER external_evidence_stress_no_delete
+            BEFORE DELETE ON external_evidence_stress_artifacts
+            BEGIN
+                SELECT RAISE(
+                    ABORT,
+                    'external evidence stress artifacts cannot be deleted'
+                );
             END;
             """),
     ];

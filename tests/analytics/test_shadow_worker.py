@@ -172,6 +172,9 @@ class ShadowWorkerTests(unittest.TestCase):
             self.assertFalse(
                 target["hasExactBestSupportedOpeningSquad"]
             )
+            self.assertFalse(
+                target["hasExactExternalEvidenceStress"]
+            )
             self.assertFalse(target["hasExactSelectionScore"])
             candidate = {
                 "officialCaptureId": 16,
@@ -265,6 +268,38 @@ class ShadowWorkerTests(unittest.TestCase):
                     );
                     """
                 )
+            stress = {
+                "officialCaptureId": 16,
+                "artifactVersion": "current-external-evidence-stress-v1",
+            }
+            with patch(
+                "autofpl_analytics.shadow_worker."
+                "build_current_external_evidence_stress",
+                return_value=stress,
+            ) as stress_builder:
+                generated = generate_once(
+                    database,
+                    root / "evidence-stress-inbox",
+                )
+            self.assertEqual("generated", generated.status)
+            self.assertTrue(
+                str(generated.outputFile).startswith(
+                    "external-evidence-stress-capture-16-claim-none"
+                )
+            )
+            stress_builder.assert_called_once_with(
+                database,
+                evidence_cutoff_utc="2026-07-29T04:38:41Z",
+            )
+
+            with sqlite3.connect(database) as connection:
+                connection.execute(
+                    """
+                    INSERT INTO external_evidence_stress_artifacts
+                        (official_capture_id, evidence_cutoff_utc)
+                    VALUES (16, '2026-07-29T04:38:41Z');
+                    """
+                )
             score = {
                 "officialCaptureId": 16,
                 "model": {"totalPointRows": [10]},
@@ -347,6 +382,15 @@ class ShadowWorkerTests(unittest.TestCase):
                     capture_id INTEGER PRIMARY KEY,
                     season_code TEXT NOT NULL,
                     next_gameweek_number INTEGER,
+                    next_deadline_utc TEXT,
+                    available_at_utc TEXT NOT NULL
+                );
+                CREATE TABLE evidence_claims (
+                    claim_id INTEGER PRIMARY KEY,
+                    source_key TEXT NOT NULL,
+                    season_code TEXT NOT NULL,
+                    gameweek INTEGER NOT NULL,
+                    status TEXT NOT NULL,
                     available_at_utc TEXT NOT NULL
                 );
                 CREATE TABLE multi_season_player_forecast_artifacts (
@@ -392,6 +436,11 @@ class ShadowWorkerTests(unittest.TestCase):
                     score_artifact_id INTEGER NOT NULL,
                     search_version TEXT NOT NULL
                 );
+                CREATE TABLE external_evidence_stress_artifacts (
+                    stress_artifact_id INTEGER PRIMARY KEY,
+                    official_capture_id INTEGER NOT NULL,
+                    evidence_cutoff_utc TEXT NOT NULL
+                );
                 """
             )
 
@@ -402,8 +451,11 @@ class ShadowWorkerTests(unittest.TestCase):
                 """
                 INSERT INTO official_fpl_captures
                     (capture_id, season_code, next_gameweek_number,
-                     available_at_utc)
-                VALUES (?, '2026-27', 1, '2026-07-29T04:38:41Z');
+                     next_deadline_utc, available_at_utc)
+                VALUES (
+                    ?, '2026-27', 1, '2026-08-21T17:30:00Z',
+                    '2026-07-29T04:38:41Z'
+                );
                 """,
                 (capture_id,),
             )

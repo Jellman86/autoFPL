@@ -159,6 +159,14 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
         Assert.Contains("Official data footing", body, StringComparison.Ordinal);
         Assert.Contains("Capture to deadline provenance", body, StringComparison.Ordinal);
         Assert.Contains("External forecast challenger", body, StringComparison.Ordinal);
+        Assert.Contains(
+            "External evidence · squad stress test",
+            body,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "A stress is not a probability",
+            body,
+            StringComparison.Ordinal);
         Assert.Contains("Refresh prediction", body, StringComparison.Ordinal);
         Assert.Contains("Selection lifecycle", body, StringComparison.Ordinal);
         Assert.Contains("id=\"selection-workflow\"", body, StringComparison.Ordinal);
@@ -201,6 +209,10 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
             StringComparison.Ordinal);
         Assert.Contains(
             "/api/v1/selections/current/role-strategies-shadow",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "/api/v1/forecasts/external-evidence-stress/current",
             script,
             StringComparison.Ordinal);
         Assert.Contains(
