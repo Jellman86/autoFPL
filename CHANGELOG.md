@@ -54,6 +54,12 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **All 60 captured promoted-player FBref histories now pass deterministic
+  match-log extraction.** FBref repeats a literal column-header row inside
+  longer player tables; parser v1 now ignores only that exact structural row
+  while continuing to reject malformed dates, reversed chronology and
+  unsupported match evidence. This removes the 20 false incompatible-pair
+  rejections without weakening source or join validation.
 - **A cutoff-safe team/opponent opening feature set has been measured and
   rejected.** A deterministic read-only evaluator builds venue-specific
   attack and defence rates from strictly prior official player-summed expected

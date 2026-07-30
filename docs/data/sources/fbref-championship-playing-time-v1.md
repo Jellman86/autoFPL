@@ -101,10 +101,12 @@ The reviewed match-log operator command captures raw chronology pages. Parser
 v1 revalidates the snapshot source against bridge v1 and emits bounded dated
 rows containing competition, round, venue, result, stable team/opponent/match
 IDs, starts, minutes, goals, assists and cards. It retains explicit matchday
-bench rows as zero minutes, ignores undated separators, and rejects duplicate
-or out-of-order matches and unsupported values. The typed document includes
-only rows for the reviewed aggregate source team; internationals and other-team
-rows remain excluded. It reports both aggregate and parsed
+bench rows as zero minutes, ignores undated separators and FBref's repeated
+in-table column headers, and rejects duplicate or out-of-order matches and
+unsupported values. Repeated headers are recognized only by the literal
+`Date` label in the date cell; other malformed dated rows still fail closed.
+The typed document includes only rows for the reviewed aggregate source team;
+internationals and other-team rows remain excluded. It reports both aggregate and parsed
 appearance/start/minute totals with an explicit `exact` or
 `source-revision-mismatch` status, because FBref may correct the independently
 retrieved pages. The CLI command
