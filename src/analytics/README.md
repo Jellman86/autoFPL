@@ -504,6 +504,23 @@ Capture #19 confirms the shown squad as the zero-gap model optimum, classifies
 five core players and identifies Roefs as the only fragile selection. See the
 [v2 optimality-audit specification](../../docs/research/current-appearance-hurdle-opening-optimality-audit-v2.md).
 
+The forecast-sensitivity audit converts that flat objective surface into
+decision thresholds:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.current_appearance_hurdle_opening_forecast_sensitivity \
+  --database /path/to/autofpl.db \
+  --output /path/to/current-opening-squad-forecast-sensitivity.json
+```
+
+It screens every unselected player with an exact forced-selection solve, then
+globally reoptimises coherent six-Gameweek forecast multipliers for all 15
+selected players and the closest challengers. Roefs/Kelleher and
+Rayan/Anderson are the closest boundaries. The command is an offline,
+non-serving diagnostic; see the
+[forecast-sensitivity specification](../../docs/research/current-opening-squad-forecast-sensitivity-v1.md).
+
 The same fixed command is packaged as the non-root
 `ghcr.io/jellman86/autofpl-analytics` companion image. Its default invocation
 polls the read-only `/analytics-snapshot/autofpl.db`, does nothing while the
