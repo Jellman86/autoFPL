@@ -35,6 +35,14 @@ forecast. A fixed autoFPL ablation of its official BPS and creative-history
 idea improved distribution CRPS by only 0.62% and lost six realised squad
 points on average, so that enrichment was rejected.
 
+The first internal market/team-strength comparator has also been resolved.
+Venue-specific attack and defence rates reconstructed from official
+player-summed expected goals regressed opening CRPS by 1.125% and selected
+squads by 31.67 realised points on average. That empirical representation is
+rejected. A genuinely external market prior or a separately registered
+hierarchical model remains a different candidate; it must be captured before
+the deadline and prove standalone temporal accuracy before fusion.
+
 ## Prior-season and current-health state
 
 External sources complement rather than replace player history. The model

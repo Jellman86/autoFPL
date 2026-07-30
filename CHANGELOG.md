@@ -54,6 +54,13 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **A cutoff-safe team/opponent opening feature set has been measured and
+  rejected.** A deterministic read-only evaluator builds venue-specific
+  attack and defence rates from strictly prior official player-summed expected
+  goals, with fixed time decay and league-prior shrinkage, while leaving the
+  appearance classifier unchanged. The challenger regressed CRPS by 1.125%,
+  lost every target-season distribution comparison and lost 31.67 realised
+  squad points on average. The served v2 prediction remains unchanged.
 - **An OpenFPL-inspired opening feature set has been measured and rejected.**
   A deterministic read-only evaluator adds strictly prior BPS, influence,
   creativity and threat summaries to the retained appearance-hurdle model,

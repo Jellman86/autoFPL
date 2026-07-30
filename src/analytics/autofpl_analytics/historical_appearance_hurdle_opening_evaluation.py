@@ -349,6 +349,7 @@ def _reconstruct_hurdle_target(
             fixtures,
         ),
         FEATURES,
+        FEATURES,
         APPEARANCE_MODEL,
         CONDITIONAL_MODEL,
     )
@@ -360,7 +361,8 @@ def _reconstruct_hurdle_target_from_samples(
     samples_by_origin: Mapping[Any, Sequence[Sample]],
     observations_by_origin: Mapping[Any, Mapping[int, Any]],
     target_sample: Callable[[int, Any], Sample],
-    continuous_features: Sequence[str],
+    appearance_features: Sequence[str],
+    conditional_features: Sequence[str],
     appearance_model: str,
     conditional_model: str,
 ) -> Dict[str, Any]:
@@ -445,12 +447,12 @@ def _reconstruct_hurdle_target_from_samples(
                 for sample in target
             ],
             appearance_model,
-            continuous_features=continuous_features,
+            continuous_features=appearance_features,
         )
         conditional, conditional_diagnostics = _predict_tree(
             conditional_training,
             target,
-            continuous_features=continuous_features,
+            continuous_features=conditional_features,
             model_name=conditional_model,
         )
         hurdle = _combine_hurdle(target, appearance, conditional)

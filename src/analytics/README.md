@@ -396,6 +396,21 @@ realised squad points on average and regressed by 31 in the worst season, so
 the enrichment is rejected and does not alter v2. See the
 [official-creative opening evaluation](../../docs/research/historical-official-creative-opening-evaluation-v1.md).
 
+The next fixed ablation attaches cutoff-safe team and opponent expected-goal
+rates to the conditional-point model while leaving appearance unchanged:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.historical_team_fixture_strength_opening_evaluation \
+  --database /path/to/autofpl.db \
+  --output /path/to/historical-team-fixture-strength-opening-evaluation.json
+```
+
+The first run regressed CRPS by 1.125%, lost all three season comparisons and
+lost 31.67 realised squad points on average. The representation is rejected
+without tuning on the opened targets; v2 remains unchanged. See the
+[team-fixture-strength opening evaluation](../../docs/research/historical-team-fixture-strength-opening-evaluation-v1.md).
+
 The conditional-optimality audit distinguishes an exact solver result from a
 robust player choice:
 
