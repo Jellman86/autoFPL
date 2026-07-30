@@ -142,6 +142,12 @@ season.
    omitted. Because the retained model predicts appearance rather than start,
    the claims remain risk flags until a start/substitute/zero-minutes mixture
    passes temporal proper-score and complete-policy evaluation.
+10. **First start-state point mixture evaluated and rejected:** coherent start
+    probabilities improve their own Brier and log loss, but separating starter
+    and substitute conditional point trees improves point MAE by only 0.0811%,
+    regresses RMSE and wins 4/8 folds. Preserve lineup evidence for the
+    participation component and move the point challenger to fixture-level
+    event reconstruction rather than retuning the opened aggregate model.
 
 ## Research basis
 

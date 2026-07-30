@@ -1,0 +1,2644 @@
+{
+  "appearanceComponent": {
+    "metrics": {
+      "brierScore": 0.084587,
+      "calibrationError10": 0.00871,
+      "count": 6252,
+      "eventRate": 0.365323,
+      "logLoss": 0.277726,
+      "meanProbability": 0.365305
+    },
+    "model": "multi-season-appearance-histogram-classifier"
+  },
+  "captures": [
+    {
+      "availableAtUtc": "2026-07-28T21:55:42.0388821+00:00",
+      "captureId": 2,
+      "gameweeksSha256": "5bbbcba6353b4c72ad273adcc8e3aa451946a826564679788f45b1cb3325b84e",
+      "playerCount": 784,
+      "playerGameweekCount": 27283,
+      "playersSha256": "75686051b265cbe7755ac71213ecaad21b26ee1cc46a8bafbba19c39ce894b05",
+      "seasonCode": "2024-25",
+      "sourceRevision": "f9ed3e8839b0f970e0d5d4a83c5628f6eaee755a",
+      "stableCodeCount": 784
+    },
+    {
+      "availableAtUtc": "2026-07-26T18:17:21.4965221+00:00",
+      "captureId": 1,
+      "gameweeksSha256": "0d09f1f1cb1b5520ec8e2f25238aa652efe2a263d8ca7cb2b6538b27bf86727d",
+      "playerCount": 841,
+      "playerGameweekCount": 29747,
+      "playersSha256": "412ce0172016f8f98f25177dc6de9f3cd2a8ec7a6135f9aa638d7fdee784d67b",
+      "seasonCode": "2025-26",
+      "sourceRevision": "f9ed3e8839b0f970e0d5d4a83c5628f6eaee755a",
+      "stableCodeCount": 841
+    }
+  ],
+  "comparison": {
+    "foldCount": 8,
+    "foldWins": 4,
+    "folds": [
+      {
+        "appearanceMetrics": {
+          "brierScore": 0.073083,
+          "calibrationError10": 0.033374,
+          "count": 664,
+          "eventRate": 0.365964,
+          "logLoss": 0.246239,
+          "meanProbability": 0.364584
+        },
+        "appearedTrainingRows": 20508,
+        "coherentStartMetrics": {
+          "brierScore": 0.065467,
+          "calibrationError10": 0.029,
+          "count": 664,
+          "eventRate": 0.26506,
+          "logLoss": 0.219406,
+          "meanProbability": 0.263626
+        },
+        "diagnostics": {
+          "multi-season-appearance-conditional-points-tree": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "implementation": "sklearn.ensemble.HistGradientBoostingRegressor",
+            "libraryVersion": "1.9.0",
+            "missingTrainingValues": {
+              "daysSinceLastGameweek": 437,
+              "ewmaAppearanceRate": 437,
+              "ewmaDefensiveContributionMean": 11770,
+              "ewmaExpectedAssistsMean": 437,
+              "ewmaExpectedGoalInvolvementsMean": 437,
+              "ewmaExpectedGoalsMean": 437,
+              "ewmaMinutesMean": 437,
+              "ewmaPlayed60Rate": 437,
+              "ewmaStartRate": 437,
+              "ewmaTotalPointsMean": 437,
+              "priorAppearanceRate": 437,
+              "priorDefensiveContributionMean": 11770,
+              "priorExpectedAssistsMean": 437,
+              "priorExpectedGoalInvolvementsMean": 437,
+              "priorExpectedGoalsConcededMean": 437,
+              "priorExpectedGoalsMean": 437,
+              "priorMinutesMean": 437,
+              "priorPlayed60Rate": 437,
+              "priorPositionChanged": 13776,
+              "priorStartRate": 437,
+              "priorTotalPointsMean": 437,
+              "rolling3AppearanceRate": 437,
+              "rolling3DefensiveContributionMean": 11770,
+              "rolling3ExpectedAssistsMean": 437,
+              "rolling3ExpectedGoalInvolvementsMean": 437,
+              "rolling3ExpectedGoalsMean": 437,
+              "rolling3MinutesMean": 437,
+              "rolling3Played60Rate": 437,
+              "rolling3StartRate": 437,
+              "rolling3TotalPointsMean": 437,
+              "rolling5AppearanceRate": 437,
+              "rolling5DefensiveContributionMean": 11770,
+              "rolling5ExpectedAssistsMean": 437,
+              "rolling5ExpectedGoalInvolvementsMean": 437,
+              "rolling5ExpectedGoalsMean": 437,
+              "rolling5MinutesMean": 437,
+              "rolling5Played60Rate": 437,
+              "rolling5StartRate": 437,
+              "rolling5TotalPointsMean": 437
+            },
+            "modelFeatureCount": 56,
+            "trainingRows": 20508
+          },
+          "multi-season-appearance-histogram-classifier": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "eventCount": 20508,
+            "implementation": "sklearn.ensemble.HistGradientBoostingClassifier",
+            "libraryVersion": "1.9.0",
+            "modelFeatureCount": 56,
+            "trainingRows": 50005
+          },
+          "multi-season-start-histogram-classifier": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "eventCount": 14878,
+            "implementation": "sklearn.ensemble.HistGradientBoostingClassifier",
+            "libraryVersion": "1.9.0",
+            "modelFeatureCount": 56,
+            "trainingRows": 50005
+          },
+          "multi-season-starter-conditional-points-tree": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "implementation": "sklearn.ensemble.HistGradientBoostingRegressor",
+            "libraryVersion": "1.9.0",
+            "missingTrainingValues": {
+              "daysSinceLastGameweek": 286,
+              "ewmaAppearanceRate": 286,
+              "ewmaDefensiveContributionMean": 8505,
+              "ewmaExpectedAssistsMean": 286,
+              "ewmaExpectedGoalInvolvementsMean": 286,
+              "ewmaExpectedGoalsMean": 286,
+              "ewmaMinutesMean": 286,
+              "ewmaPlayed60Rate": 286,
+              "ewmaStartRate": 286,
+              "ewmaTotalPointsMean": 286,
+              "priorAppearanceRate": 286,
+              "priorDefensiveContributionMean": 8505,
+              "priorExpectedAssistsMean": 286,
+              "priorExpectedGoalInvolvementsMean": 286,
+              "priorExpectedGoalsConcededMean": 286,
+              "priorExpectedGoalsMean": 286,
+              "priorMinutesMean": 286,
+              "priorPlayed60Rate": 286,
+              "priorPositionChanged": 9842,
+              "priorStartRate": 286,
+              "priorTotalPointsMean": 286,
+              "rolling3AppearanceRate": 286,
+              "rolling3DefensiveContributionMean": 8505,
+              "rolling3ExpectedAssistsMean": 286,
+              "rolling3ExpectedGoalInvolvementsMean": 286,
+              "rolling3ExpectedGoalsMean": 286,
+              "rolling3MinutesMean": 286,
+              "rolling3Played60Rate": 286,
+              "rolling3StartRate": 286,
+              "rolling3TotalPointsMean": 286,
+              "rolling5AppearanceRate": 286,
+              "rolling5DefensiveContributionMean": 8505,
+              "rolling5ExpectedAssistsMean": 286,
+              "rolling5ExpectedGoalInvolvementsMean": 286,
+              "rolling5ExpectedGoalsMean": 286,
+              "rolling5MinutesMean": 286,
+              "rolling5Played60Rate": 286,
+              "rolling5StartRate": 286,
+              "rolling5TotalPointsMean": 286
+            },
+            "modelFeatureCount": 56,
+            "trainingRows": 14878
+          },
+          "multi-season-substitute-conditional-points-tree": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "implementation": "sklearn.ensemble.HistGradientBoostingRegressor",
+            "libraryVersion": "1.9.0",
+            "missingTrainingValues": {
+              "daysSinceLastGameweek": 151,
+              "ewmaAppearanceRate": 151,
+              "ewmaDefensiveContributionMean": 3265,
+              "ewmaExpectedAssistsMean": 151,
+              "ewmaExpectedGoalInvolvementsMean": 151,
+              "ewmaExpectedGoalsMean": 151,
+              "ewmaMinutesMean": 151,
+              "ewmaPlayed60Rate": 151,
+              "ewmaStartRate": 151,
+              "ewmaTotalPointsMean": 151,
+              "priorAppearanceRate": 151,
+              "priorDefensiveContributionMean": 3265,
+              "priorExpectedAssistsMean": 151,
+              "priorExpectedGoalInvolvementsMean": 151,
+              "priorExpectedGoalsConcededMean": 151,
+              "priorExpectedGoalsMean": 151,
+              "priorMinutesMean": 151,
+              "priorPlayed60Rate": 151,
+              "priorPositionChanged": 3934,
+              "priorStartRate": 151,
+              "priorTotalPointsMean": 151,
+              "rolling3AppearanceRate": 151,
+              "rolling3DefensiveContributionMean": 3265,
+              "rolling3ExpectedAssistsMean": 151,
+              "rolling3ExpectedGoalInvolvementsMean": 151,
+              "rolling3ExpectedGoalsMean": 151,
+              "rolling3MinutesMean": 151,
+              "rolling3Played60Rate": 151,
+              "rolling3StartRate": 151,
+              "rolling3TotalPointsMean": 151,
+              "rolling5AppearanceRate": 151,
+              "rolling5DefensiveContributionMean": 3265,
+              "rolling5ExpectedAssistsMean": 151,
+              "rolling5ExpectedGoalInvolvementsMean": 151,
+              "rolling5ExpectedGoalsMean": 151,
+              "rolling5MinutesMean": 151,
+              "rolling5Played60Rate": 151,
+              "rolling5StartRate": 151,
+              "rolling5TotalPointsMean": 151
+            },
+            "modelFeatureCount": 56,
+            "trainingRows": 5630
+          }
+        },
+        "gameweek": 31,
+        "models": [
+          {
+            "metrics": {
+              "count": 664,
+              "mae": 0.898158,
+              "meanError": -0.041507,
+              "rmse": 1.816018
+            },
+            "name": "multi-season-start-state-hurdle-points",
+            "slices": {
+              "position": {
+                "defender": {
+                  "count": 213,
+                  "mae": 1.099613,
+                  "meanError": 0.034899,
+                  "rmse": 2.027089
+                },
+                "forward": {
+                  "count": 74,
+                  "mae": 1.187677,
+                  "meanError": -0.398164,
+                  "rmse": 2.454831
+                },
+                "goalkeeper": {
+                  "count": 81,
+                  "mae": 0.45641,
+                  "meanError": -0.12393,
+                  "rmse": 1.182483
+                },
+                "midfielder": {
+                  "count": 296,
+                  "mae": 0.801696,
+                  "meanError": 0.015232,
+                  "rmse": 1.597492
+                }
+              }
+            }
+          },
+          {
+            "metrics": {
+              "count": 664,
+              "mae": 0.912086,
+              "meanError": -0.025337,
+              "rmse": 1.824151
+            },
+            "name": "multi-season-appearance-hurdle-points",
+            "slices": {
+              "position": {
+                "defender": {
+                  "count": 213,
+                  "mae": 1.103205,
+                  "meanError": 0.057967,
+                  "rmse": 2.015749
+                },
+                "forward": {
+                  "count": 74,
+                  "mae": 1.19942,
+                  "meanError": -0.413773,
+                  "rmse": 2.478722
+                },
+                "goalkeeper": {
+                  "count": 81,
+                  "mae": 0.461962,
+                  "meanError": -0.086354,
+                  "rmse": 1.145997
+                },
+                "midfielder": {
+                  "count": 296,
+                  "mae": 0.8259,
+                  "meanError": 0.028523,
+                  "rmse": 1.626397
+                }
+              }
+            }
+          }
+        ],
+        "rawStartMetrics": {
+          "brierScore": 0.065445,
+          "calibrationError10": 0.02878,
+          "count": 664,
+          "eventRate": 0.26506,
+          "logLoss": 0.219362,
+          "meanProbability": 0.263652
+        },
+        "seasonCode": "2025-26",
+        "startCoherence": {
+          "adjustmentCount": 1,
+          "maximumAdjustment": 0.017441,
+          "rule": "minimum-of-start-and-appearance-probability"
+        },
+        "starterConditionalPointMetrics": {
+          "count": 176,
+          "mae": 2.407612,
+          "meanError": -0.176041,
+          "rmse": 3.05812
+        },
+        "starterTrainingRows": 14878,
+        "substituteConditionalPointMetrics": {
+          "count": 67,
+          "mae": 0.630977,
+          "meanError": 0.196398,
+          "rmse": 1.116922
+        },
+        "substituteTrainingRows": 5630,
+        "targetAppearanceCount": 243,
+        "targetPlayerCount": 664,
+        "targetStartCount": 176,
+        "trainingOriginCount": 68,
+        "trainingRows": 50005
+      },
+      {
+        "appearanceMetrics": {
+          "brierScore": 0.089138,
+          "calibrationError10": 0.024918,
+          "count": 826,
+          "eventRate": 0.366828,
+          "logLoss": 0.292974,
+          "meanProbability": 0.361949
+        },
+        "appearedTrainingRows": 20751,
+        "coherentStartMetrics": {
+          "brierScore": 0.089774,
+          "calibrationError10": 0.021072,
+          "count": 826,
+          "eventRate": 0.266344,
+          "logLoss": 0.279884,
+          "meanProbability": 0.270353
+        },
+        "diagnostics": {
+          "multi-season-appearance-conditional-points-tree": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "implementation": "sklearn.ensemble.HistGradientBoostingRegressor",
+            "libraryVersion": "1.9.0",
+            "missingTrainingValues": {
+              "daysSinceLastGameweek": 437,
+              "ewmaAppearanceRate": 437,
+              "ewmaDefensiveContributionMean": 11770,
+              "ewmaExpectedAssistsMean": 437,
+              "ewmaExpectedGoalInvolvementsMean": 437,
+              "ewmaExpectedGoalsMean": 437,
+              "ewmaMinutesMean": 437,
+              "ewmaPlayed60Rate": 437,
+              "ewmaStartRate": 437,
+              "ewmaTotalPointsMean": 437,
+              "priorAppearanceRate": 437,
+              "priorDefensiveContributionMean": 11770,
+              "priorExpectedAssistsMean": 437,
+              "priorExpectedGoalInvolvementsMean": 437,
+              "priorExpectedGoalsConcededMean": 437,
+              "priorExpectedGoalsMean": 437,
+              "priorMinutesMean": 437,
+              "priorPlayed60Rate": 437,
+              "priorPositionChanged": 13843,
+              "priorStartRate": 437,
+              "priorTotalPointsMean": 437,
+              "rolling3AppearanceRate": 437,
+              "rolling3DefensiveContributionMean": 11770,
+              "rolling3ExpectedAssistsMean": 437,
+              "rolling3ExpectedGoalInvolvementsMean": 437,
+              "rolling3ExpectedGoalsMean": 437,
+              "rolling3MinutesMean": 437,
+              "rolling3Played60Rate": 437,
+              "rolling3StartRate": 437,
+              "rolling3TotalPointsMean": 437,
+              "rolling5AppearanceRate": 437,
+              "rolling5DefensiveContributionMean": 11770,
+              "rolling5ExpectedAssistsMean": 437,
+              "rolling5ExpectedGoalInvolvementsMean": 437,
+              "rolling5ExpectedGoalsMean": 437,
+              "rolling5MinutesMean": 437,
+              "rolling5Played60Rate": 437,
+              "rolling5StartRate": 437,
+              "rolling5TotalPointsMean": 437
+            },
+            "modelFeatureCount": 56,
+            "trainingRows": 20751
+          },
+          "multi-season-appearance-histogram-classifier": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "eventCount": 20751,
+            "implementation": "sklearn.ensemble.HistGradientBoostingClassifier",
+            "libraryVersion": "1.9.0",
+            "modelFeatureCount": 56,
+            "trainingRows": 50669
+          },
+          "multi-season-start-histogram-classifier": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "eventCount": 15054,
+            "implementation": "sklearn.ensemble.HistGradientBoostingClassifier",
+            "libraryVersion": "1.9.0",
+            "modelFeatureCount": 56,
+            "trainingRows": 50669
+          },
+          "multi-season-starter-conditional-points-tree": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "implementation": "sklearn.ensemble.HistGradientBoostingRegressor",
+            "libraryVersion": "1.9.0",
+            "missingTrainingValues": {
+              "daysSinceLastGameweek": 286,
+              "ewmaAppearanceRate": 286,
+              "ewmaDefensiveContributionMean": 8505,
+              "ewmaExpectedAssistsMean": 286,
+              "ewmaExpectedGoalInvolvementsMean": 286,
+              "ewmaExpectedGoalsMean": 286,
+              "ewmaMinutesMean": 286,
+              "ewmaPlayed60Rate": 286,
+              "ewmaStartRate": 286,
+              "ewmaTotalPointsMean": 286,
+              "priorAppearanceRate": 286,
+              "priorDefensiveContributionMean": 8505,
+              "priorExpectedAssistsMean": 286,
+              "priorExpectedGoalInvolvementsMean": 286,
+              "priorExpectedGoalsConcededMean": 286,
+              "priorExpectedGoalsMean": 286,
+              "priorMinutesMean": 286,
+              "priorPlayed60Rate": 286,
+              "priorPositionChanged": 9885,
+              "priorStartRate": 286,
+              "priorTotalPointsMean": 286,
+              "rolling3AppearanceRate": 286,
+              "rolling3DefensiveContributionMean": 8505,
+              "rolling3ExpectedAssistsMean": 286,
+              "rolling3ExpectedGoalInvolvementsMean": 286,
+              "rolling3ExpectedGoalsMean": 286,
+              "rolling3MinutesMean": 286,
+              "rolling3Played60Rate": 286,
+              "rolling3StartRate": 286,
+              "rolling3TotalPointsMean": 286,
+              "rolling5AppearanceRate": 286,
+              "rolling5DefensiveContributionMean": 8505,
+              "rolling5ExpectedAssistsMean": 286,
+              "rolling5ExpectedGoalInvolvementsMean": 286,
+              "rolling5ExpectedGoalsMean": 286,
+              "rolling5MinutesMean": 286,
+              "rolling5Played60Rate": 286,
+              "rolling5StartRate": 286,
+              "rolling5TotalPointsMean": 286
+            },
+            "modelFeatureCount": 56,
+            "trainingRows": 15054
+          },
+          "multi-season-substitute-conditional-points-tree": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "implementation": "sklearn.ensemble.HistGradientBoostingRegressor",
+            "libraryVersion": "1.9.0",
+            "missingTrainingValues": {
+              "daysSinceLastGameweek": 151,
+              "ewmaAppearanceRate": 151,
+              "ewmaDefensiveContributionMean": 3265,
+              "ewmaExpectedAssistsMean": 151,
+              "ewmaExpectedGoalInvolvementsMean": 151,
+              "ewmaExpectedGoalsMean": 151,
+              "ewmaMinutesMean": 151,
+              "ewmaPlayed60Rate": 151,
+              "ewmaStartRate": 151,
+              "ewmaTotalPointsMean": 151,
+              "priorAppearanceRate": 151,
+              "priorDefensiveContributionMean": 3265,
+              "priorExpectedAssistsMean": 151,
+              "priorExpectedGoalInvolvementsMean": 151,
+              "priorExpectedGoalsConcededMean": 151,
+              "priorExpectedGoalsMean": 151,
+              "priorMinutesMean": 151,
+              "priorPlayed60Rate": 151,
+              "priorPositionChanged": 3958,
+              "priorStartRate": 151,
+              "priorTotalPointsMean": 151,
+              "rolling3AppearanceRate": 151,
+              "rolling3DefensiveContributionMean": 3265,
+              "rolling3ExpectedAssistsMean": 151,
+              "rolling3ExpectedGoalInvolvementsMean": 151,
+              "rolling3ExpectedGoalsMean": 151,
+              "rolling3MinutesMean": 151,
+              "rolling3Played60Rate": 151,
+              "rolling3StartRate": 151,
+              "rolling3TotalPointsMean": 151,
+              "rolling5AppearanceRate": 151,
+              "rolling5DefensiveContributionMean": 3265,
+              "rolling5ExpectedAssistsMean": 151,
+              "rolling5ExpectedGoalInvolvementsMean": 151,
+              "rolling5ExpectedGoalsMean": 151,
+              "rolling5MinutesMean": 151,
+              "rolling5Played60Rate": 151,
+              "rolling5StartRate": 151,
+              "rolling5TotalPointsMean": 151
+            },
+            "modelFeatureCount": 56,
+            "trainingRows": 5697
+          }
+        },
+        "gameweek": 32,
+        "models": [
+          {
+            "metrics": {
+              "count": 826,
+              "mae": 0.936138,
+              "meanError": 0.000624,
+              "rmse": 2.039261
+            },
+            "name": "multi-season-start-state-hurdle-points",
+            "slices": {
+              "position": {
+                "defender": {
+                  "count": 268,
+                  "mae": 1.11462,
+                  "meanError": 0.018819,
+                  "rmse": 2.328281
+                },
+                "forward": {
+                  "count": 92,
+                  "mae": 1.118808,
+                  "meanError": -0.193146,
+                  "rmse": 2.316485
+                },
+                "goalkeeper": {
+                  "count": 95,
+                  "mae": 0.754714,
+                  "meanError": -0.050815,
+                  "rmse": 1.824894
+                },
+                "midfielder": {
+                  "count": 371,
+                  "mae": 0.808365,
+                  "meanError": 0.048701,
+                  "rmse": 1.777469
+                }
+              }
+            }
+          },
+          {
+            "metrics": {
+              "count": 826,
+              "mae": 0.940734,
+              "meanError": 0.004652,
+              "rmse": 2.047669
+            },
+            "name": "multi-season-appearance-hurdle-points",
+            "slices": {
+              "position": {
+                "defender": {
+                  "count": 268,
+                  "mae": 1.116537,
+                  "meanError": 0.017027,
+                  "rmse": 2.333026
+                },
+                "forward": {
+                  "count": 92,
+                  "mae": 1.115249,
+                  "meanError": -0.193278,
+                  "rmse": 2.326086
+                },
+                "goalkeeper": {
+                  "count": 95,
+                  "mae": 0.763164,
+                  "meanError": -0.030541,
+                  "rmse": 1.821765
+                },
+                "midfielder": {
+                  "count": 371,
+                  "mae": 0.815932,
+                  "meanError": 0.053807,
+                  "rmse": 1.792149
+                }
+              }
+            }
+          }
+        ],
+        "rawStartMetrics": {
+          "brierScore": 0.089613,
+          "calibrationError10": 0.020948,
+          "count": 826,
+          "eventRate": 0.266344,
+          "logLoss": 0.279591,
+          "meanProbability": 0.270759
+        },
+        "seasonCode": "2025-26",
+        "startCoherence": {
+          "adjustmentCount": 7,
+          "maximumAdjustment": 0.125151,
+          "rule": "minimum-of-start-and-appearance-probability"
+        },
+        "starterConditionalPointMetrics": {
+          "count": 220,
+          "mae": 2.405704,
+          "meanError": -0.085212,
+          "rmse": 3.376443
+        },
+        "starterTrainingRows": 15054,
+        "substituteConditionalPointMetrics": {
+          "count": 83,
+          "mae": 0.479598,
+          "meanError": 0.228034,
+          "rmse": 1.238639
+        },
+        "substituteTrainingRows": 5697,
+        "targetAppearanceCount": 303,
+        "targetPlayerCount": 826,
+        "targetStartCount": 220,
+        "trainingOriginCount": 69,
+        "trainingRows": 50669
+      },
+      {
+        "appearanceMetrics": {
+          "brierScore": 0.073035,
+          "calibrationError10": 0.033729,
+          "count": 829,
+          "eventRate": 0.373945,
+          "logLoss": 0.24468,
+          "meanProbability": 0.369365
+        },
+        "appearedTrainingRows": 21054,
+        "coherentStartMetrics": {
+          "brierScore": 0.068771,
+          "calibrationError10": 0.032662,
+          "count": 829,
+          "eventRate": 0.277443,
+          "logLoss": 0.225341,
+          "meanProbability": 0.26949
+        },
+        "diagnostics": {
+          "multi-season-appearance-conditional-points-tree": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "implementation": "sklearn.ensemble.HistGradientBoostingRegressor",
+            "libraryVersion": "1.9.0",
+            "missingTrainingValues": {
+              "daysSinceLastGameweek": 437,
+              "ewmaAppearanceRate": 437,
+              "ewmaDefensiveContributionMean": 11770,
+              "ewmaExpectedAssistsMean": 437,
+              "ewmaExpectedGoalInvolvementsMean": 437,
+              "ewmaExpectedGoalsMean": 437,
+              "ewmaMinutesMean": 437,
+              "ewmaPlayed60Rate": 437,
+              "ewmaStartRate": 437,
+              "ewmaTotalPointsMean": 437,
+              "priorAppearanceRate": 437,
+              "priorDefensiveContributionMean": 11770,
+              "priorExpectedAssistsMean": 437,
+              "priorExpectedGoalInvolvementsMean": 437,
+              "priorExpectedGoalsConcededMean": 437,
+              "priorExpectedGoalsMean": 437,
+              "priorMinutesMean": 437,
+              "priorPlayed60Rate": 437,
+              "priorPositionChanged": 13923,
+              "priorStartRate": 437,
+              "priorTotalPointsMean": 437,
+              "rolling3AppearanceRate": 437,
+              "rolling3DefensiveContributionMean": 11770,
+              "rolling3ExpectedAssistsMean": 437,
+              "rolling3ExpectedGoalInvolvementsMean": 437,
+              "rolling3ExpectedGoalsMean": 437,
+              "rolling3MinutesMean": 437,
+              "rolling3Played60Rate": 437,
+              "rolling3StartRate": 437,
+              "rolling3TotalPointsMean": 437,
+              "rolling5AppearanceRate": 437,
+              "rolling5DefensiveContributionMean": 11770,
+              "rolling5ExpectedAssistsMean": 437,
+              "rolling5ExpectedGoalInvolvementsMean": 437,
+              "rolling5ExpectedGoalsMean": 437,
+              "rolling5MinutesMean": 437,
+              "rolling5Played60Rate": 437,
+              "rolling5StartRate": 437,
+              "rolling5TotalPointsMean": 437
+            },
+            "modelFeatureCount": 56,
+            "trainingRows": 21054
+          },
+          "multi-season-appearance-histogram-classifier": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "eventCount": 21054,
+            "implementation": "sklearn.ensemble.HistGradientBoostingClassifier",
+            "libraryVersion": "1.9.0",
+            "modelFeatureCount": 56,
+            "trainingRows": 51495
+          },
+          "multi-season-start-histogram-classifier": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "eventCount": 15274,
+            "implementation": "sklearn.ensemble.HistGradientBoostingClassifier",
+            "libraryVersion": "1.9.0",
+            "modelFeatureCount": 56,
+            "trainingRows": 51495
+          },
+          "multi-season-starter-conditional-points-tree": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "implementation": "sklearn.ensemble.HistGradientBoostingRegressor",
+            "libraryVersion": "1.9.0",
+            "missingTrainingValues": {
+              "daysSinceLastGameweek": 286,
+              "ewmaAppearanceRate": 286,
+              "ewmaDefensiveContributionMean": 8505,
+              "ewmaExpectedAssistsMean": 286,
+              "ewmaExpectedGoalInvolvementsMean": 286,
+              "ewmaExpectedGoalsMean": 286,
+              "ewmaMinutesMean": 286,
+              "ewmaPlayed60Rate": 286,
+              "ewmaStartRate": 286,
+              "ewmaTotalPointsMean": 286,
+              "priorAppearanceRate": 286,
+              "priorDefensiveContributionMean": 8505,
+              "priorExpectedAssistsMean": 286,
+              "priorExpectedGoalInvolvementsMean": 286,
+              "priorExpectedGoalsConcededMean": 286,
+              "priorExpectedGoalsMean": 286,
+              "priorMinutesMean": 286,
+              "priorPlayed60Rate": 286,
+              "priorPositionChanged": 9941,
+              "priorStartRate": 286,
+              "priorTotalPointsMean": 286,
+              "rolling3AppearanceRate": 286,
+              "rolling3DefensiveContributionMean": 8505,
+              "rolling3ExpectedAssistsMean": 286,
+              "rolling3ExpectedGoalInvolvementsMean": 286,
+              "rolling3ExpectedGoalsMean": 286,
+              "rolling3MinutesMean": 286,
+              "rolling3Played60Rate": 286,
+              "rolling3StartRate": 286,
+              "rolling3TotalPointsMean": 286,
+              "rolling5AppearanceRate": 286,
+              "rolling5DefensiveContributionMean": 8505,
+              "rolling5ExpectedAssistsMean": 286,
+              "rolling5ExpectedGoalInvolvementsMean": 286,
+              "rolling5ExpectedGoalsMean": 286,
+              "rolling5MinutesMean": 286,
+              "rolling5Played60Rate": 286,
+              "rolling5StartRate": 286,
+              "rolling5TotalPointsMean": 286
+            },
+            "modelFeatureCount": 56,
+            "trainingRows": 15274
+          },
+          "multi-season-substitute-conditional-points-tree": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "implementation": "sklearn.ensemble.HistGradientBoostingRegressor",
+            "libraryVersion": "1.9.0",
+            "missingTrainingValues": {
+              "daysSinceLastGameweek": 151,
+              "ewmaAppearanceRate": 151,
+              "ewmaDefensiveContributionMean": 3265,
+              "ewmaExpectedAssistsMean": 151,
+              "ewmaExpectedGoalInvolvementsMean": 151,
+              "ewmaExpectedGoalsMean": 151,
+              "ewmaMinutesMean": 151,
+              "ewmaPlayed60Rate": 151,
+              "ewmaStartRate": 151,
+              "ewmaTotalPointsMean": 151,
+              "priorAppearanceRate": 151,
+              "priorDefensiveContributionMean": 3265,
+              "priorExpectedAssistsMean": 151,
+              "priorExpectedGoalInvolvementsMean": 151,
+              "priorExpectedGoalsConcededMean": 151,
+              "priorExpectedGoalsMean": 151,
+              "priorMinutesMean": 151,
+              "priorPlayed60Rate": 151,
+              "priorPositionChanged": 3982,
+              "priorStartRate": 151,
+              "priorTotalPointsMean": 151,
+              "rolling3AppearanceRate": 151,
+              "rolling3DefensiveContributionMean": 3265,
+              "rolling3ExpectedAssistsMean": 151,
+              "rolling3ExpectedGoalInvolvementsMean": 151,
+              "rolling3ExpectedGoalsMean": 151,
+              "rolling3MinutesMean": 151,
+              "rolling3Played60Rate": 151,
+              "rolling3StartRate": 151,
+              "rolling3TotalPointsMean": 151,
+              "rolling5AppearanceRate": 151,
+              "rolling5DefensiveContributionMean": 3265,
+              "rolling5ExpectedAssistsMean": 151,
+              "rolling5ExpectedGoalInvolvementsMean": 151,
+              "rolling5ExpectedGoalsMean": 151,
+              "rolling5MinutesMean": 151,
+              "rolling5Played60Rate": 151,
+              "rolling5StartRate": 151,
+              "rolling5TotalPointsMean": 151
+            },
+            "modelFeatureCount": 56,
+            "trainingRows": 5780
+          }
+        },
+        "gameweek": 33,
+        "models": [
+          {
+            "metrics": {
+              "count": 829,
+              "mae": 1.039055,
+              "meanError": -0.098725,
+              "rmse": 2.089797
+            },
+            "name": "multi-season-appearance-hurdle-points",
+            "slices": {
+              "position": {
+                "defender": {
+                  "count": 268,
+                  "mae": 1.229248,
+                  "meanError": -0.284148,
+                  "rmse": 2.340161
+                },
+                "forward": {
+                  "count": 92,
+                  "mae": 1.133821,
+                  "meanError": -0.057913,
+                  "rmse": 2.252342
+                },
+                "goalkeeper": {
+                  "count": 96,
+                  "mae": 0.664892,
+                  "meanError": -0.055969,
+                  "rmse": 1.461266
+                },
+                "midfielder": {
+                  "count": 373,
+                  "mae": 0.975328,
+                  "meanError": 0.01343,
+                  "rmse": 1.992669
+                }
+              }
+            }
+          },
+          {
+            "metrics": {
+              "count": 829,
+              "mae": 1.045058,
+              "meanError": -0.173588,
+              "rmse": 2.144231
+            },
+            "name": "multi-season-start-state-hurdle-points",
+            "slices": {
+              "position": {
+                "defender": {
+                  "count": 268,
+                  "mae": 1.249117,
+                  "meanError": -0.371372,
+                  "rmse": 2.445656
+                },
+                "forward": {
+                  "count": 92,
+                  "mae": 1.15459,
+                  "meanError": -0.149273,
+                  "rmse": 2.245668
+                },
+                "goalkeeper": {
+                  "count": 96,
+                  "mae": 0.663152,
+                  "meanError": -0.096237,
+                  "rmse": 1.478858
+                },
+                "midfielder": {
+                  "count": 373,
+                  "mae": 0.969717,
+                  "meanError": -0.057386,
+                  "rmse": 2.028372
+                }
+              }
+            }
+          }
+        ],
+        "rawStartMetrics": {
+          "brierScore": 0.06874,
+          "calibrationError10": 0.033753,
+          "count": 829,
+          "eventRate": 0.277443,
+          "logLoss": 0.225284,
+          "meanProbability": 0.269889
+        },
+        "seasonCode": "2025-26",
+        "startCoherence": {
+          "adjustmentCount": 5,
+          "maximumAdjustment": 0.084301,
+          "rule": "minimum-of-start-and-appearance-probability"
+        },
+        "starterConditionalPointMetrics": {
+          "count": 230,
+          "mae": 2.673558,
+          "meanError": -0.311315,
+          "rmse": 3.580874
+        },
+        "starterTrainingRows": 15274,
+        "substituteConditionalPointMetrics": {
+          "count": 80,
+          "mae": 0.951137,
+          "meanError": -0.330656,
+          "rmse": 1.672586
+        },
+        "substituteTrainingRows": 5780,
+        "targetAppearanceCount": 310,
+        "targetPlayerCount": 829,
+        "targetStartCount": 230,
+        "trainingOriginCount": 70,
+        "trainingRows": 51495
+      },
+      {
+        "appearanceMetrics": {
+          "brierScore": 0.075296,
+          "calibrationError10": 0.028206,
+          "count": 582,
+          "eventRate": 0.352234,
+          "logLoss": 0.246091,
+          "meanProbability": 0.36308
+        },
+        "appearedTrainingRows": 21364,
+        "coherentStartMetrics": {
+          "brierScore": 0.070353,
+          "calibrationError10": 0.037252,
+          "count": 582,
+          "eventRate": 0.264605,
+          "logLoss": 0.222407,
+          "meanProbability": 0.264332
+        },
+        "diagnostics": {
+          "multi-season-appearance-conditional-points-tree": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "implementation": "sklearn.ensemble.HistGradientBoostingRegressor",
+            "libraryVersion": "1.9.0",
+            "missingTrainingValues": {
+              "daysSinceLastGameweek": 437,
+              "ewmaAppearanceRate": 437,
+              "ewmaDefensiveContributionMean": 11770,
+              "ewmaExpectedAssistsMean": 437,
+              "ewmaExpectedGoalInvolvementsMean": 437,
+              "ewmaExpectedGoalsMean": 437,
+              "ewmaMinutesMean": 437,
+              "ewmaPlayed60Rate": 437,
+              "ewmaStartRate": 437,
+              "ewmaTotalPointsMean": 437,
+              "priorAppearanceRate": 437,
+              "priorDefensiveContributionMean": 11770,
+              "priorExpectedAssistsMean": 437,
+              "priorExpectedGoalInvolvementsMean": 437,
+              "priorExpectedGoalsConcededMean": 437,
+              "priorExpectedGoalsMean": 437,
+              "priorMinutesMean": 437,
+              "priorPlayed60Rate": 437,
+              "priorPositionChanged": 14009,
+              "priorStartRate": 437,
+              "priorTotalPointsMean": 437,
+              "rolling3AppearanceRate": 437,
+              "rolling3DefensiveContributionMean": 11770,
+              "rolling3ExpectedAssistsMean": 437,
+              "rolling3ExpectedGoalInvolvementsMean": 437,
+              "rolling3ExpectedGoalsMean": 437,
+              "rolling3MinutesMean": 437,
+              "rolling3Played60Rate": 437,
+              "rolling3StartRate": 437,
+              "rolling3TotalPointsMean": 437,
+              "rolling5AppearanceRate": 437,
+              "rolling5DefensiveContributionMean": 11770,
+              "rolling5ExpectedAssistsMean": 437,
+              "rolling5ExpectedGoalInvolvementsMean": 437,
+              "rolling5ExpectedGoalsMean": 437,
+              "rolling5MinutesMean": 437,
+              "rolling5Played60Rate": 437,
+              "rolling5StartRate": 437,
+              "rolling5TotalPointsMean": 437
+            },
+            "modelFeatureCount": 56,
+            "trainingRows": 21364
+          },
+          "multi-season-appearance-histogram-classifier": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "eventCount": 21364,
+            "implementation": "sklearn.ensemble.HistGradientBoostingClassifier",
+            "libraryVersion": "1.9.0",
+            "modelFeatureCount": 56,
+            "trainingRows": 52324
+          },
+          "multi-season-start-histogram-classifier": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "eventCount": 15504,
+            "implementation": "sklearn.ensemble.HistGradientBoostingClassifier",
+            "libraryVersion": "1.9.0",
+            "modelFeatureCount": 56,
+            "trainingRows": 52324
+          },
+          "multi-season-starter-conditional-points-tree": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "implementation": "sklearn.ensemble.HistGradientBoostingRegressor",
+            "libraryVersion": "1.9.0",
+            "missingTrainingValues": {
+              "daysSinceLastGameweek": 286,
+              "ewmaAppearanceRate": 286,
+              "ewmaDefensiveContributionMean": 8505,
+              "ewmaExpectedAssistsMean": 286,
+              "ewmaExpectedGoalInvolvementsMean": 286,
+              "ewmaExpectedGoalsMean": 286,
+              "ewmaMinutesMean": 286,
+              "ewmaPlayed60Rate": 286,
+              "ewmaStartRate": 286,
+              "ewmaTotalPointsMean": 286,
+              "priorAppearanceRate": 286,
+              "priorDefensiveContributionMean": 8505,
+              "priorExpectedAssistsMean": 286,
+              "priorExpectedGoalInvolvementsMean": 286,
+              "priorExpectedGoalsConcededMean": 286,
+              "priorExpectedGoalsMean": 286,
+              "priorMinutesMean": 286,
+              "priorPlayed60Rate": 286,
+              "priorPositionChanged": 9998,
+              "priorStartRate": 286,
+              "priorTotalPointsMean": 286,
+              "rolling3AppearanceRate": 286,
+              "rolling3DefensiveContributionMean": 8505,
+              "rolling3ExpectedAssistsMean": 286,
+              "rolling3ExpectedGoalInvolvementsMean": 286,
+              "rolling3ExpectedGoalsMean": 286,
+              "rolling3MinutesMean": 286,
+              "rolling3Played60Rate": 286,
+              "rolling3StartRate": 286,
+              "rolling3TotalPointsMean": 286,
+              "rolling5AppearanceRate": 286,
+              "rolling5DefensiveContributionMean": 8505,
+              "rolling5ExpectedAssistsMean": 286,
+              "rolling5ExpectedGoalInvolvementsMean": 286,
+              "rolling5ExpectedGoalsMean": 286,
+              "rolling5MinutesMean": 286,
+              "rolling5Played60Rate": 286,
+              "rolling5StartRate": 286,
+              "rolling5TotalPointsMean": 286
+            },
+            "modelFeatureCount": 56,
+            "trainingRows": 15504
+          },
+          "multi-season-substitute-conditional-points-tree": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "implementation": "sklearn.ensemble.HistGradientBoostingRegressor",
+            "libraryVersion": "1.9.0",
+            "missingTrainingValues": {
+              "daysSinceLastGameweek": 151,
+              "ewmaAppearanceRate": 151,
+              "ewmaDefensiveContributionMean": 3265,
+              "ewmaExpectedAssistsMean": 151,
+              "ewmaExpectedGoalInvolvementsMean": 151,
+              "ewmaExpectedGoalsMean": 151,
+              "ewmaMinutesMean": 151,
+              "ewmaPlayed60Rate": 151,
+              "ewmaStartRate": 151,
+              "ewmaTotalPointsMean": 151,
+              "priorAppearanceRate": 151,
+              "priorDefensiveContributionMean": 3265,
+              "priorExpectedAssistsMean": 151,
+              "priorExpectedGoalInvolvementsMean": 151,
+              "priorExpectedGoalsConcededMean": 151,
+              "priorExpectedGoalsMean": 151,
+              "priorMinutesMean": 151,
+              "priorPlayed60Rate": 151,
+              "priorPositionChanged": 4011,
+              "priorStartRate": 151,
+              "priorTotalPointsMean": 151,
+              "rolling3AppearanceRate": 151,
+              "rolling3DefensiveContributionMean": 3265,
+              "rolling3ExpectedAssistsMean": 151,
+              "rolling3ExpectedGoalInvolvementsMean": 151,
+              "rolling3ExpectedGoalsMean": 151,
+              "rolling3MinutesMean": 151,
+              "rolling3Played60Rate": 151,
+              "rolling3StartRate": 151,
+              "rolling3TotalPointsMean": 151,
+              "rolling5AppearanceRate": 151,
+              "rolling5DefensiveContributionMean": 3265,
+              "rolling5ExpectedAssistsMean": 151,
+              "rolling5ExpectedGoalInvolvementsMean": 151,
+              "rolling5ExpectedGoalsMean": 151,
+              "rolling5MinutesMean": 151,
+              "rolling5Played60Rate": 151,
+              "rolling5StartRate": 151,
+              "rolling5TotalPointsMean": 151
+            },
+            "modelFeatureCount": 56,
+            "trainingRows": 5860
+          }
+        },
+        "gameweek": 34,
+        "models": [
+          {
+            "metrics": {
+              "count": 582,
+              "mae": 0.924288,
+              "meanError": 0.014223,
+              "rmse": 1.805612
+            },
+            "name": "multi-season-appearance-hurdle-points",
+            "slices": {
+              "position": {
+                "defender": {
+                  "count": 191,
+                  "mae": 0.977828,
+                  "meanError": -0.001653,
+                  "rmse": 1.77892
+                },
+                "forward": {
+                  "count": 68,
+                  "mae": 1.11451,
+                  "meanError": -0.114203,
+                  "rmse": 2.16252
+                },
+                "goalkeeper": {
+                  "count": 66,
+                  "mae": 0.667647,
+                  "meanError": -0.049602,
+                  "rmse": 1.453387
+                },
+                "midfielder": {
+                  "count": 257,
+                  "mae": 0.900075,
+                  "meanError": 0.076393,
+                  "rmse": 1.803164
+                }
+              }
+            }
+          },
+          {
+            "metrics": {
+              "count": 582,
+              "mae": 0.92966,
+              "meanError": 0.034751,
+              "rmse": 1.802744
+            },
+            "name": "multi-season-start-state-hurdle-points",
+            "slices": {
+              "position": {
+                "defender": {
+                  "count": 191,
+                  "mae": 0.981376,
+                  "meanError": 0.015214,
+                  "rmse": 1.779832
+                },
+                "forward": {
+                  "count": 68,
+                  "mae": 1.115623,
+                  "meanError": -0.093864,
+                  "rmse": 2.140862
+                },
+                "goalkeeper": {
+                  "count": 66,
+                  "mae": 0.662907,
+                  "meanError": -0.058488,
+                  "rmse": 1.439154
+                },
+                "midfielder": {
+                  "count": 257,
+                  "mae": 0.910526,
+                  "meanError": 0.107245,
+                  "rmse": 1.805766
+                }
+              }
+            }
+          }
+        ],
+        "rawStartMetrics": {
+          "brierScore": 0.070237,
+          "calibrationError10": 0.036485,
+          "count": 582,
+          "eventRate": 0.264605,
+          "logLoss": 0.222152,
+          "meanProbability": 0.26475
+        },
+        "seasonCode": "2025-26",
+        "startCoherence": {
+          "adjustmentCount": 3,
+          "maximumAdjustment": 0.103543,
+          "rule": "minimum-of-start-and-appearance-probability"
+        },
+        "starterConditionalPointMetrics": {
+          "count": 154,
+          "mae": 2.411421,
+          "meanError": 0.06138,
+          "rmse": 3.046246
+        },
+        "starterTrainingRows": 15504,
+        "substituteConditionalPointMetrics": {
+          "count": 51,
+          "mae": 0.861147,
+          "meanError": 0.177195,
+          "rmse": 1.427259
+        },
+        "substituteTrainingRows": 5860,
+        "targetAppearanceCount": 205,
+        "targetPlayerCount": 582,
+        "targetStartCount": 154,
+        "trainingOriginCount": 71,
+        "trainingRows": 52324
+      },
+      {
+        "appearanceMetrics": {
+          "brierScore": 0.094706,
+          "calibrationError10": 0.033433,
+          "count": 832,
+          "eventRate": 0.366587,
+          "logLoss": 0.302837,
+          "meanProbability": 0.367588
+        },
+        "appearedTrainingRows": 21569,
+        "coherentStartMetrics": {
+          "brierScore": 0.088239,
+          "calibrationError10": 0.033376,
+          "count": 832,
+          "eventRate": 0.264423,
+          "logLoss": 0.27759,
+          "meanProbability": 0.272354
+        },
+        "diagnostics": {
+          "multi-season-appearance-conditional-points-tree": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "implementation": "sklearn.ensemble.HistGradientBoostingRegressor",
+            "libraryVersion": "1.9.0",
+            "missingTrainingValues": {
+              "daysSinceLastGameweek": 437,
+              "ewmaAppearanceRate": 437,
+              "ewmaDefensiveContributionMean": 11770,
+              "ewmaExpectedAssistsMean": 437,
+              "ewmaExpectedGoalInvolvementsMean": 437,
+              "ewmaExpectedGoalsMean": 437,
+              "ewmaMinutesMean": 437,
+              "ewmaPlayed60Rate": 437,
+              "ewmaStartRate": 437,
+              "ewmaTotalPointsMean": 437,
+              "priorAppearanceRate": 437,
+              "priorDefensiveContributionMean": 11770,
+              "priorExpectedAssistsMean": 437,
+              "priorExpectedGoalInvolvementsMean": 437,
+              "priorExpectedGoalsConcededMean": 437,
+              "priorExpectedGoalsMean": 437,
+              "priorMinutesMean": 437,
+              "priorPlayed60Rate": 437,
+              "priorPositionChanged": 14052,
+              "priorStartRate": 437,
+              "priorTotalPointsMean": 437,
+              "rolling3AppearanceRate": 437,
+              "rolling3DefensiveContributionMean": 11770,
+              "rolling3ExpectedAssistsMean": 437,
+              "rolling3ExpectedGoalInvolvementsMean": 437,
+              "rolling3ExpectedGoalsMean": 437,
+              "rolling3MinutesMean": 437,
+              "rolling3Played60Rate": 437,
+              "rolling3StartRate": 437,
+              "rolling3TotalPointsMean": 437,
+              "rolling5AppearanceRate": 437,
+              "rolling5DefensiveContributionMean": 11770,
+              "rolling5ExpectedAssistsMean": 437,
+              "rolling5ExpectedGoalInvolvementsMean": 437,
+              "rolling5ExpectedGoalsMean": 437,
+              "rolling5MinutesMean": 437,
+              "rolling5Played60Rate": 437,
+              "rolling5StartRate": 437,
+              "rolling5TotalPointsMean": 437
+            },
+            "modelFeatureCount": 56,
+            "trainingRows": 21569
+          },
+          "multi-season-appearance-histogram-classifier": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "eventCount": 21569,
+            "implementation": "sklearn.ensemble.HistGradientBoostingClassifier",
+            "libraryVersion": "1.9.0",
+            "modelFeatureCount": 56,
+            "trainingRows": 52906
+          },
+          "multi-season-start-histogram-classifier": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "eventCount": 15658,
+            "implementation": "sklearn.ensemble.HistGradientBoostingClassifier",
+            "libraryVersion": "1.9.0",
+            "modelFeatureCount": 56,
+            "trainingRows": 52906
+          },
+          "multi-season-starter-conditional-points-tree": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "implementation": "sklearn.ensemble.HistGradientBoostingRegressor",
+            "libraryVersion": "1.9.0",
+            "missingTrainingValues": {
+              "daysSinceLastGameweek": 286,
+              "ewmaAppearanceRate": 286,
+              "ewmaDefensiveContributionMean": 8505,
+              "ewmaExpectedAssistsMean": 286,
+              "ewmaExpectedGoalInvolvementsMean": 286,
+              "ewmaExpectedGoalsMean": 286,
+              "ewmaMinutesMean": 286,
+              "ewmaPlayed60Rate": 286,
+              "ewmaStartRate": 286,
+              "ewmaTotalPointsMean": 286,
+              "priorAppearanceRate": 286,
+              "priorDefensiveContributionMean": 8505,
+              "priorExpectedAssistsMean": 286,
+              "priorExpectedGoalInvolvementsMean": 286,
+              "priorExpectedGoalsConcededMean": 286,
+              "priorExpectedGoalsMean": 286,
+              "priorMinutesMean": 286,
+              "priorPlayed60Rate": 286,
+              "priorPositionChanged": 10026,
+              "priorStartRate": 286,
+              "priorTotalPointsMean": 286,
+              "rolling3AppearanceRate": 286,
+              "rolling3DefensiveContributionMean": 8505,
+              "rolling3ExpectedAssistsMean": 286,
+              "rolling3ExpectedGoalInvolvementsMean": 286,
+              "rolling3ExpectedGoalsMean": 286,
+              "rolling3MinutesMean": 286,
+              "rolling3Played60Rate": 286,
+              "rolling3StartRate": 286,
+              "rolling3TotalPointsMean": 286,
+              "rolling5AppearanceRate": 286,
+              "rolling5DefensiveContributionMean": 8505,
+              "rolling5ExpectedAssistsMean": 286,
+              "rolling5ExpectedGoalInvolvementsMean": 286,
+              "rolling5ExpectedGoalsMean": 286,
+              "rolling5MinutesMean": 286,
+              "rolling5Played60Rate": 286,
+              "rolling5StartRate": 286,
+              "rolling5TotalPointsMean": 286
+            },
+            "modelFeatureCount": 56,
+            "trainingRows": 15658
+          },
+          "multi-season-substitute-conditional-points-tree": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "implementation": "sklearn.ensemble.HistGradientBoostingRegressor",
+            "libraryVersion": "1.9.0",
+            "missingTrainingValues": {
+              "daysSinceLastGameweek": 151,
+              "ewmaAppearanceRate": 151,
+              "ewmaDefensiveContributionMean": 3265,
+              "ewmaExpectedAssistsMean": 151,
+              "ewmaExpectedGoalInvolvementsMean": 151,
+              "ewmaExpectedGoalsMean": 151,
+              "ewmaMinutesMean": 151,
+              "ewmaPlayed60Rate": 151,
+              "ewmaStartRate": 151,
+              "ewmaTotalPointsMean": 151,
+              "priorAppearanceRate": 151,
+              "priorDefensiveContributionMean": 3265,
+              "priorExpectedAssistsMean": 151,
+              "priorExpectedGoalInvolvementsMean": 151,
+              "priorExpectedGoalsConcededMean": 151,
+              "priorExpectedGoalsMean": 151,
+              "priorMinutesMean": 151,
+              "priorPlayed60Rate": 151,
+              "priorPositionChanged": 4026,
+              "priorStartRate": 151,
+              "priorTotalPointsMean": 151,
+              "rolling3AppearanceRate": 151,
+              "rolling3DefensiveContributionMean": 3265,
+              "rolling3ExpectedAssistsMean": 151,
+              "rolling3ExpectedGoalInvolvementsMean": 151,
+              "rolling3ExpectedGoalsMean": 151,
+              "rolling3MinutesMean": 151,
+              "rolling3Played60Rate": 151,
+              "rolling3StartRate": 151,
+              "rolling3TotalPointsMean": 151,
+              "rolling5AppearanceRate": 151,
+              "rolling5DefensiveContributionMean": 3265,
+              "rolling5ExpectedAssistsMean": 151,
+              "rolling5ExpectedGoalInvolvementsMean": 151,
+              "rolling5ExpectedGoalsMean": 151,
+              "rolling5MinutesMean": 151,
+              "rolling5Played60Rate": 151,
+              "rolling5StartRate": 151,
+              "rolling5TotalPointsMean": 151
+            },
+            "modelFeatureCount": 56,
+            "trainingRows": 5911
+          }
+        },
+        "gameweek": 35,
+        "models": [
+          {
+            "metrics": {
+              "count": 832,
+              "mae": 0.93624,
+              "meanError": 0.071465,
+              "rmse": 1.860621
+            },
+            "name": "multi-season-appearance-hurdle-points",
+            "slices": {
+              "position": {
+                "defender": {
+                  "count": 269,
+                  "mae": 0.959782,
+                  "meanError": 0.204858,
+                  "rmse": 1.736529
+                },
+                "forward": {
+                  "count": 93,
+                  "mae": 1.279263,
+                  "meanError": -0.312934,
+                  "rmse": 2.711025
+                },
+                "goalkeeper": {
+                  "count": 97,
+                  "mae": 0.452159,
+                  "meanError": 0.058384,
+                  "rmse": 1.008754
+                },
+                "midfielder": {
+                  "count": 373,
+                  "mae": 0.959623,
+                  "meanError": 0.074509,
+                  "rmse": 1.857459
+                }
+              }
+            }
+          },
+          {
+            "metrics": {
+              "count": 832,
+              "mae": 0.937117,
+              "meanError": 0.069996,
+              "rmse": 1.866951
+            },
+            "name": "multi-season-start-state-hurdle-points",
+            "slices": {
+              "position": {
+                "defender": {
+                  "count": 269,
+                  "mae": 0.964587,
+                  "meanError": 0.200906,
+                  "rmse": 1.746646
+                },
+                "forward": {
+                  "count": 93,
+                  "mae": 1.28432,
+                  "meanError": -0.308412,
+                  "rmse": 2.726643
+                },
+                "goalkeeper": {
+                  "count": 97,
+                  "mae": 0.446506,
+                  "meanError": 0.043736,
+                  "rmse": 1.023333
+                },
+                "midfielder": {
+                  "count": 373,
+                  "mae": 0.958323,
+                  "meanError": 0.076765,
+                  "rmse": 1.857012
+                }
+              }
+            }
+          }
+        ],
+        "rawStartMetrics": {
+          "brierScore": 0.088104,
+          "calibrationError10": 0.033607,
+          "count": 832,
+          "eventRate": 0.264423,
+          "logLoss": 0.277309,
+          "meanProbability": 0.272585
+        },
+        "seasonCode": "2025-26",
+        "startCoherence": {
+          "adjustmentCount": 4,
+          "maximumAdjustment": 0.142974,
+          "rule": "minimum-of-start-and-appearance-probability"
+        },
+        "starterConditionalPointMetrics": {
+          "count": 220,
+          "mae": 2.391639,
+          "meanError": 0.179027,
+          "rmse": 3.053898
+        },
+        "starterTrainingRows": 15658,
+        "substituteConditionalPointMetrics": {
+          "count": 85,
+          "mae": 0.660829,
+          "meanError": 0.016844,
+          "rmse": 1.404349
+        },
+        "substituteTrainingRows": 5911,
+        "targetAppearanceCount": 305,
+        "targetPlayerCount": 832,
+        "targetStartCount": 220,
+        "trainingOriginCount": 72,
+        "trainingRows": 52906
+      },
+      {
+        "appearanceMetrics": {
+          "brierScore": 0.089065,
+          "calibrationError10": 0.029083,
+          "count": 838,
+          "eventRate": 0.357995,
+          "logLoss": 0.287642,
+          "meanProbability": 0.368301
+        },
+        "appearedTrainingRows": 21874,
+        "coherentStartMetrics": {
+          "brierScore": 0.083013,
+          "calibrationError10": 0.024235,
+          "count": 838,
+          "eventRate": 0.274463,
+          "logLoss": 0.265121,
+          "meanProbability": 0.269606
+        },
+        "diagnostics": {
+          "multi-season-appearance-conditional-points-tree": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "implementation": "sklearn.ensemble.HistGradientBoostingRegressor",
+            "libraryVersion": "1.9.0",
+            "missingTrainingValues": {
+              "daysSinceLastGameweek": 437,
+              "ewmaAppearanceRate": 437,
+              "ewmaDefensiveContributionMean": 11770,
+              "ewmaExpectedAssistsMean": 437,
+              "ewmaExpectedGoalInvolvementsMean": 437,
+              "ewmaExpectedGoalsMean": 437,
+              "ewmaMinutesMean": 437,
+              "ewmaPlayed60Rate": 437,
+              "ewmaStartRate": 437,
+              "ewmaTotalPointsMean": 437,
+              "priorAppearanceRate": 437,
+              "priorDefensiveContributionMean": 11770,
+              "priorExpectedAssistsMean": 437,
+              "priorExpectedGoalInvolvementsMean": 437,
+              "priorExpectedGoalsConcededMean": 437,
+              "priorExpectedGoalsMean": 437,
+              "priorMinutesMean": 437,
+              "priorPlayed60Rate": 437,
+              "priorPositionChanged": 14131,
+              "priorStartRate": 437,
+              "priorTotalPointsMean": 437,
+              "rolling3AppearanceRate": 437,
+              "rolling3DefensiveContributionMean": 11770,
+              "rolling3ExpectedAssistsMean": 437,
+              "rolling3ExpectedGoalInvolvementsMean": 437,
+              "rolling3ExpectedGoalsMean": 437,
+              "rolling3MinutesMean": 437,
+              "rolling3Played60Rate": 437,
+              "rolling3StartRate": 437,
+              "rolling3TotalPointsMean": 437,
+              "rolling5AppearanceRate": 437,
+              "rolling5DefensiveContributionMean": 11770,
+              "rolling5ExpectedAssistsMean": 437,
+              "rolling5ExpectedGoalInvolvementsMean": 437,
+              "rolling5ExpectedGoalsMean": 437,
+              "rolling5MinutesMean": 437,
+              "rolling5Played60Rate": 437,
+              "rolling5StartRate": 437,
+              "rolling5TotalPointsMean": 437
+            },
+            "modelFeatureCount": 56,
+            "trainingRows": 21874
+          },
+          "multi-season-appearance-histogram-classifier": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "eventCount": 21874,
+            "implementation": "sklearn.ensemble.HistGradientBoostingClassifier",
+            "libraryVersion": "1.9.0",
+            "modelFeatureCount": 56,
+            "trainingRows": 53738
+          },
+          "multi-season-start-histogram-classifier": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "eventCount": 15878,
+            "implementation": "sklearn.ensemble.HistGradientBoostingClassifier",
+            "libraryVersion": "1.9.0",
+            "modelFeatureCount": 56,
+            "trainingRows": 53738
+          },
+          "multi-season-starter-conditional-points-tree": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "implementation": "sklearn.ensemble.HistGradientBoostingRegressor",
+            "libraryVersion": "1.9.0",
+            "missingTrainingValues": {
+              "daysSinceLastGameweek": 286,
+              "ewmaAppearanceRate": 286,
+              "ewmaDefensiveContributionMean": 8505,
+              "ewmaExpectedAssistsMean": 286,
+              "ewmaExpectedGoalInvolvementsMean": 286,
+              "ewmaExpectedGoalsMean": 286,
+              "ewmaMinutesMean": 286,
+              "ewmaPlayed60Rate": 286,
+              "ewmaStartRate": 286,
+              "ewmaTotalPointsMean": 286,
+              "priorAppearanceRate": 286,
+              "priorDefensiveContributionMean": 8505,
+              "priorExpectedAssistsMean": 286,
+              "priorExpectedGoalInvolvementsMean": 286,
+              "priorExpectedGoalsConcededMean": 286,
+              "priorExpectedGoalsMean": 286,
+              "priorMinutesMean": 286,
+              "priorPlayed60Rate": 286,
+              "priorPositionChanged": 10083,
+              "priorStartRate": 286,
+              "priorTotalPointsMean": 286,
+              "rolling3AppearanceRate": 286,
+              "rolling3DefensiveContributionMean": 8505,
+              "rolling3ExpectedAssistsMean": 286,
+              "rolling3ExpectedGoalInvolvementsMean": 286,
+              "rolling3ExpectedGoalsMean": 286,
+              "rolling3MinutesMean": 286,
+              "rolling3Played60Rate": 286,
+              "rolling3StartRate": 286,
+              "rolling3TotalPointsMean": 286,
+              "rolling5AppearanceRate": 286,
+              "rolling5DefensiveContributionMean": 8505,
+              "rolling5ExpectedAssistsMean": 286,
+              "rolling5ExpectedGoalInvolvementsMean": 286,
+              "rolling5ExpectedGoalsMean": 286,
+              "rolling5MinutesMean": 286,
+              "rolling5Played60Rate": 286,
+              "rolling5StartRate": 286,
+              "rolling5TotalPointsMean": 286
+            },
+            "modelFeatureCount": 56,
+            "trainingRows": 15878
+          },
+          "multi-season-substitute-conditional-points-tree": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "implementation": "sklearn.ensemble.HistGradientBoostingRegressor",
+            "libraryVersion": "1.9.0",
+            "missingTrainingValues": {
+              "daysSinceLastGameweek": 151,
+              "ewmaAppearanceRate": 151,
+              "ewmaDefensiveContributionMean": 3265,
+              "ewmaExpectedAssistsMean": 151,
+              "ewmaExpectedGoalInvolvementsMean": 151,
+              "ewmaExpectedGoalsMean": 151,
+              "ewmaMinutesMean": 151,
+              "ewmaPlayed60Rate": 151,
+              "ewmaStartRate": 151,
+              "ewmaTotalPointsMean": 151,
+              "priorAppearanceRate": 151,
+              "priorDefensiveContributionMean": 3265,
+              "priorExpectedAssistsMean": 151,
+              "priorExpectedGoalInvolvementsMean": 151,
+              "priorExpectedGoalsConcededMean": 151,
+              "priorExpectedGoalsMean": 151,
+              "priorMinutesMean": 151,
+              "priorPlayed60Rate": 151,
+              "priorPositionChanged": 4048,
+              "priorStartRate": 151,
+              "priorTotalPointsMean": 151,
+              "rolling3AppearanceRate": 151,
+              "rolling3DefensiveContributionMean": 3265,
+              "rolling3ExpectedAssistsMean": 151,
+              "rolling3ExpectedGoalInvolvementsMean": 151,
+              "rolling3ExpectedGoalsMean": 151,
+              "rolling3MinutesMean": 151,
+              "rolling3Played60Rate": 151,
+              "rolling3StartRate": 151,
+              "rolling3TotalPointsMean": 151,
+              "rolling5AppearanceRate": 151,
+              "rolling5DefensiveContributionMean": 3265,
+              "rolling5ExpectedAssistsMean": 151,
+              "rolling5ExpectedGoalInvolvementsMean": 151,
+              "rolling5ExpectedGoalsMean": 151,
+              "rolling5MinutesMean": 151,
+              "rolling5Played60Rate": 151,
+              "rolling5StartRate": 151,
+              "rolling5TotalPointsMean": 151
+            },
+            "modelFeatureCount": 56,
+            "trainingRows": 5996
+          }
+        },
+        "gameweek": 36,
+        "models": [
+          {
+            "metrics": {
+              "count": 838,
+              "mae": 0.963303,
+              "meanError": 0.014525,
+              "rmse": 1.9246
+            },
+            "name": "multi-season-start-state-hurdle-points",
+            "slices": {
+              "position": {
+                "defender": {
+                  "count": 270,
+                  "mae": 1.166,
+                  "meanError": -0.097386,
+                  "rmse": 2.347555
+                },
+                "forward": {
+                  "count": 93,
+                  "mae": 0.828702,
+                  "meanError": 0.367764,
+                  "rmse": 1.35649
+                },
+                "goalkeeper": {
+                  "count": 97,
+                  "mae": 0.562998,
+                  "meanError": -0.199575,
+                  "rmse": 1.412501
+                },
+                "midfielder": {
+                  "count": 378,
+                  "mae": 0.954359,
+                  "meanError": 0.062495,
+                  "rmse": 1.819496
+                }
+              }
+            }
+          },
+          {
+            "metrics": {
+              "count": 838,
+              "mae": 0.972344,
+              "meanError": 0.023537,
+              "rmse": 1.928029
+            },
+            "name": "multi-season-appearance-hurdle-points",
+            "slices": {
+              "position": {
+                "defender": {
+                  "count": 270,
+                  "mae": 1.177065,
+                  "meanError": -0.077669,
+                  "rmse": 2.345687
+                },
+                "forward": {
+                  "count": 93,
+                  "mae": 0.84883,
+                  "meanError": 0.375445,
+                  "rmse": 1.393445
+                },
+                "goalkeeper": {
+                  "count": 97,
+                  "mae": 0.577127,
+                  "meanError": -0.178724,
+                  "rmse": 1.412309
+                },
+                "midfielder": {
+                  "count": 378,
+                  "mae": 0.957922,
+                  "meanError": 0.06115,
+                  "rmse": 1.822428
+                }
+              }
+            }
+          }
+        ],
+        "rawStartMetrics": {
+          "brierScore": 0.08339,
+          "calibrationError10": 0.026536,
+          "count": 838,
+          "eventRate": 0.274463,
+          "logLoss": 0.266081,
+          "meanProbability": 0.270093
+        },
+        "seasonCode": "2025-26",
+        "startCoherence": {
+          "adjustmentCount": 5,
+          "maximumAdjustment": 0.146214,
+          "rule": "minimum-of-start-and-appearance-probability"
+        },
+        "starterConditionalPointMetrics": {
+          "count": 230,
+          "mae": 2.413647,
+          "meanError": 0.079586,
+          "rmse": 3.09806
+        },
+        "starterTrainingRows": 15878,
+        "substituteConditionalPointMetrics": {
+          "count": 70,
+          "mae": 0.557042,
+          "meanError": 0.161471,
+          "rmse": 1.005766
+        },
+        "substituteTrainingRows": 5996,
+        "targetAppearanceCount": 300,
+        "targetPlayerCount": 838,
+        "targetStartCount": 230,
+        "trainingOriginCount": 73,
+        "trainingRows": 53738
+      },
+      {
+        "appearanceMetrics": {
+          "brierScore": 0.073011,
+          "calibrationError10": 0.033509,
+          "count": 840,
+          "eventRate": 0.364286,
+          "logLoss": 0.240242,
+          "meanProbability": 0.364367
+        },
+        "appearedTrainingRows": 22174,
+        "coherentStartMetrics": {
+          "brierScore": 0.071106,
+          "calibrationError10": 0.031726,
+          "count": 840,
+          "eventRate": 0.261905,
+          "logLoss": 0.221909,
+          "meanProbability": 0.270291
+        },
+        "diagnostics": {
+          "multi-season-appearance-conditional-points-tree": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "implementation": "sklearn.ensemble.HistGradientBoostingRegressor",
+            "libraryVersion": "1.9.0",
+            "missingTrainingValues": {
+              "daysSinceLastGameweek": 437,
+              "ewmaAppearanceRate": 437,
+              "ewmaDefensiveContributionMean": 11770,
+              "ewmaExpectedAssistsMean": 437,
+              "ewmaExpectedGoalInvolvementsMean": 437,
+              "ewmaExpectedGoalsMean": 437,
+              "ewmaMinutesMean": 437,
+              "ewmaPlayed60Rate": 437,
+              "ewmaStartRate": 437,
+              "ewmaTotalPointsMean": 437,
+              "priorAppearanceRate": 437,
+              "priorDefensiveContributionMean": 11770,
+              "priorExpectedAssistsMean": 437,
+              "priorExpectedGoalInvolvementsMean": 437,
+              "priorExpectedGoalsConcededMean": 437,
+              "priorExpectedGoalsMean": 437,
+              "priorMinutesMean": 437,
+              "priorPlayed60Rate": 437,
+              "priorPositionChanged": 14208,
+              "priorStartRate": 437,
+              "priorTotalPointsMean": 437,
+              "rolling3AppearanceRate": 437,
+              "rolling3DefensiveContributionMean": 11770,
+              "rolling3ExpectedAssistsMean": 437,
+              "rolling3ExpectedGoalInvolvementsMean": 437,
+              "rolling3ExpectedGoalsMean": 437,
+              "rolling3MinutesMean": 437,
+              "rolling3Played60Rate": 437,
+              "rolling3StartRate": 437,
+              "rolling3TotalPointsMean": 437,
+              "rolling5AppearanceRate": 437,
+              "rolling5DefensiveContributionMean": 11770,
+              "rolling5ExpectedAssistsMean": 437,
+              "rolling5ExpectedGoalInvolvementsMean": 437,
+              "rolling5ExpectedGoalsMean": 437,
+              "rolling5MinutesMean": 437,
+              "rolling5Played60Rate": 437,
+              "rolling5StartRate": 437,
+              "rolling5TotalPointsMean": 437
+            },
+            "modelFeatureCount": 56,
+            "trainingRows": 22174
+          },
+          "multi-season-appearance-histogram-classifier": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "eventCount": 22174,
+            "implementation": "sklearn.ensemble.HistGradientBoostingClassifier",
+            "libraryVersion": "1.9.0",
+            "modelFeatureCount": 56,
+            "trainingRows": 54576
+          },
+          "multi-season-start-histogram-classifier": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "eventCount": 16108,
+            "implementation": "sklearn.ensemble.HistGradientBoostingClassifier",
+            "libraryVersion": "1.9.0",
+            "modelFeatureCount": 56,
+            "trainingRows": 54576
+          },
+          "multi-season-starter-conditional-points-tree": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "implementation": "sklearn.ensemble.HistGradientBoostingRegressor",
+            "libraryVersion": "1.9.0",
+            "missingTrainingValues": {
+              "daysSinceLastGameweek": 286,
+              "ewmaAppearanceRate": 286,
+              "ewmaDefensiveContributionMean": 8505,
+              "ewmaExpectedAssistsMean": 286,
+              "ewmaExpectedGoalInvolvementsMean": 286,
+              "ewmaExpectedGoalsMean": 286,
+              "ewmaMinutesMean": 286,
+              "ewmaPlayed60Rate": 286,
+              "ewmaStartRate": 286,
+              "ewmaTotalPointsMean": 286,
+              "priorAppearanceRate": 286,
+              "priorDefensiveContributionMean": 8505,
+              "priorExpectedAssistsMean": 286,
+              "priorExpectedGoalInvolvementsMean": 286,
+              "priorExpectedGoalsConcededMean": 286,
+              "priorExpectedGoalsMean": 286,
+              "priorMinutesMean": 286,
+              "priorPlayed60Rate": 286,
+              "priorPositionChanged": 10136,
+              "priorStartRate": 286,
+              "priorTotalPointsMean": 286,
+              "rolling3AppearanceRate": 286,
+              "rolling3DefensiveContributionMean": 8505,
+              "rolling3ExpectedAssistsMean": 286,
+              "rolling3ExpectedGoalInvolvementsMean": 286,
+              "rolling3ExpectedGoalsMean": 286,
+              "rolling3MinutesMean": 286,
+              "rolling3Played60Rate": 286,
+              "rolling3StartRate": 286,
+              "rolling3TotalPointsMean": 286,
+              "rolling5AppearanceRate": 286,
+              "rolling5DefensiveContributionMean": 8505,
+              "rolling5ExpectedAssistsMean": 286,
+              "rolling5ExpectedGoalInvolvementsMean": 286,
+              "rolling5ExpectedGoalsMean": 286,
+              "rolling5MinutesMean": 286,
+              "rolling5Played60Rate": 286,
+              "rolling5StartRate": 286,
+              "rolling5TotalPointsMean": 286
+            },
+            "modelFeatureCount": 56,
+            "trainingRows": 16108
+          },
+          "multi-season-substitute-conditional-points-tree": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "implementation": "sklearn.ensemble.HistGradientBoostingRegressor",
+            "libraryVersion": "1.9.0",
+            "missingTrainingValues": {
+              "daysSinceLastGameweek": 151,
+              "ewmaAppearanceRate": 151,
+              "ewmaDefensiveContributionMean": 3265,
+              "ewmaExpectedAssistsMean": 151,
+              "ewmaExpectedGoalInvolvementsMean": 151,
+              "ewmaExpectedGoalsMean": 151,
+              "ewmaMinutesMean": 151,
+              "ewmaPlayed60Rate": 151,
+              "ewmaStartRate": 151,
+              "ewmaTotalPointsMean": 151,
+              "priorAppearanceRate": 151,
+              "priorDefensiveContributionMean": 3265,
+              "priorExpectedAssistsMean": 151,
+              "priorExpectedGoalInvolvementsMean": 151,
+              "priorExpectedGoalsConcededMean": 151,
+              "priorExpectedGoalsMean": 151,
+              "priorMinutesMean": 151,
+              "priorPlayed60Rate": 151,
+              "priorPositionChanged": 4072,
+              "priorStartRate": 151,
+              "priorTotalPointsMean": 151,
+              "rolling3AppearanceRate": 151,
+              "rolling3DefensiveContributionMean": 3265,
+              "rolling3ExpectedAssistsMean": 151,
+              "rolling3ExpectedGoalInvolvementsMean": 151,
+              "rolling3ExpectedGoalsMean": 151,
+              "rolling3MinutesMean": 151,
+              "rolling3Played60Rate": 151,
+              "rolling3StartRate": 151,
+              "rolling3TotalPointsMean": 151,
+              "rolling5AppearanceRate": 151,
+              "rolling5DefensiveContributionMean": 3265,
+              "rolling5ExpectedAssistsMean": 151,
+              "rolling5ExpectedGoalInvolvementsMean": 151,
+              "rolling5ExpectedGoalsMean": 151,
+              "rolling5MinutesMean": 151,
+              "rolling5Played60Rate": 151,
+              "rolling5StartRate": 151,
+              "rolling5TotalPointsMean": 151
+            },
+            "modelFeatureCount": 56,
+            "trainingRows": 6066
+          }
+        },
+        "gameweek": 37,
+        "models": [
+          {
+            "metrics": {
+              "count": 840,
+              "mae": 0.88689,
+              "meanError": 0.061091,
+              "rmse": 1.785473
+            },
+            "name": "multi-season-start-state-hurdle-points",
+            "slices": {
+              "position": {
+                "defender": {
+                  "count": 270,
+                  "mae": 0.969745,
+                  "meanError": 0.233136,
+                  "rmse": 1.729704
+                },
+                "forward": {
+                  "count": 94,
+                  "mae": 1.230138,
+                  "meanError": -0.211791,
+                  "rmse": 2.377974
+                },
+                "goalkeeper": {
+                  "count": 97,
+                  "mae": 0.464398,
+                  "meanError": 0.102423,
+                  "rmse": 1.128744
+                },
+                "midfielder": {
+                  "count": 379,
+                  "mae": 0.850861,
+                  "meanError": -0.004372,
+                  "rmse": 1.790409
+                }
+              }
+            }
+          },
+          {
+            "metrics": {
+              "count": 840,
+              "mae": 0.887017,
+              "meanError": 0.05309,
+              "rmse": 1.790411
+            },
+            "name": "multi-season-appearance-hurdle-points",
+            "slices": {
+              "position": {
+                "defender": {
+                  "count": 270,
+                  "mae": 0.964299,
+                  "meanError": 0.214183,
+                  "rmse": 1.725649
+                },
+                "forward": {
+                  "count": 94,
+                  "mae": 1.24736,
+                  "meanError": -0.225014,
+                  "rmse": 2.41759
+                },
+                "goalkeeper": {
+                  "count": 97,
+                  "mae": 0.477684,
+                  "meanError": 0.113039,
+                  "rmse": 1.142437
+                },
+                "midfielder": {
+                  "count": 379,
+                  "mae": 0.847352,
+                  "meanError": -0.00804,
+                  "rmse": 1.788745
+                }
+              }
+            }
+          }
+        ],
+        "rawStartMetrics": {
+          "brierScore": 0.072005,
+          "calibrationError10": 0.030638,
+          "count": 840,
+          "eventRate": 0.261905,
+          "logLoss": 0.224067,
+          "meanProbability": 0.271758
+        },
+        "seasonCode": "2025-26",
+        "startCoherence": {
+          "adjustmentCount": 14,
+          "maximumAdjustment": 0.267951,
+          "rule": "minimum-of-start-and-appearance-probability"
+        },
+        "starterConditionalPointMetrics": {
+          "count": 220,
+          "mae": 2.35373,
+          "meanError": 0.157413,
+          "rmse": 3.04388
+        },
+        "starterTrainingRows": 16108,
+        "substituteConditionalPointMetrics": {
+          "count": 86,
+          "mae": 0.63103,
+          "meanError": 0.069789,
+          "rmse": 1.050831
+        },
+        "substituteTrainingRows": 6066,
+        "targetAppearanceCount": 306,
+        "targetPlayerCount": 840,
+        "targetStartCount": 220,
+        "trainingOriginCount": 74,
+        "trainingRows": 54576
+      },
+      {
+        "appearanceMetrics": {
+          "brierScore": 0.104106,
+          "calibrationError10": 0.048329,
+          "count": 841,
+          "eventRate": 0.370987,
+          "logLoss": 0.34479,
+          "meanProbability": 0.362398
+        },
+        "appearedTrainingRows": 22480,
+        "coherentStartMetrics": {
+          "brierScore": 0.1077,
+          "calibrationError10": 0.053267,
+          "count": 841,
+          "eventRate": 0.261593,
+          "logLoss": 0.340848,
+          "meanProbability": 0.266634
+        },
+        "diagnostics": {
+          "multi-season-appearance-conditional-points-tree": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "implementation": "sklearn.ensemble.HistGradientBoostingRegressor",
+            "libraryVersion": "1.9.0",
+            "missingTrainingValues": {
+              "daysSinceLastGameweek": 437,
+              "ewmaAppearanceRate": 437,
+              "ewmaDefensiveContributionMean": 11771,
+              "ewmaExpectedAssistsMean": 437,
+              "ewmaExpectedGoalInvolvementsMean": 437,
+              "ewmaExpectedGoalsMean": 437,
+              "ewmaMinutesMean": 437,
+              "ewmaPlayed60Rate": 437,
+              "ewmaStartRate": 437,
+              "ewmaTotalPointsMean": 437,
+              "priorAppearanceRate": 437,
+              "priorDefensiveContributionMean": 11771,
+              "priorExpectedAssistsMean": 437,
+              "priorExpectedGoalInvolvementsMean": 437,
+              "priorExpectedGoalsConcededMean": 437,
+              "priorExpectedGoalsMean": 437,
+              "priorMinutesMean": 437,
+              "priorPlayed60Rate": 437,
+              "priorPositionChanged": 14289,
+              "priorStartRate": 437,
+              "priorTotalPointsMean": 437,
+              "rolling3AppearanceRate": 437,
+              "rolling3DefensiveContributionMean": 11771,
+              "rolling3ExpectedAssistsMean": 437,
+              "rolling3ExpectedGoalInvolvementsMean": 437,
+              "rolling3ExpectedGoalsMean": 437,
+              "rolling3MinutesMean": 437,
+              "rolling3Played60Rate": 437,
+              "rolling3StartRate": 437,
+              "rolling3TotalPointsMean": 437,
+              "rolling5AppearanceRate": 437,
+              "rolling5DefensiveContributionMean": 11771,
+              "rolling5ExpectedAssistsMean": 437,
+              "rolling5ExpectedGoalInvolvementsMean": 437,
+              "rolling5ExpectedGoalsMean": 437,
+              "rolling5MinutesMean": 437,
+              "rolling5Played60Rate": 437,
+              "rolling5StartRate": 437,
+              "rolling5TotalPointsMean": 437
+            },
+            "modelFeatureCount": 56,
+            "trainingRows": 22480
+          },
+          "multi-season-appearance-histogram-classifier": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "eventCount": 22480,
+            "implementation": "sklearn.ensemble.HistGradientBoostingClassifier",
+            "libraryVersion": "1.9.0",
+            "modelFeatureCount": 56,
+            "trainingRows": 55416
+          },
+          "multi-season-start-histogram-classifier": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "eventCount": 16328,
+            "implementation": "sklearn.ensemble.HistGradientBoostingClassifier",
+            "libraryVersion": "1.9.0",
+            "modelFeatureCount": 56,
+            "trainingRows": 55416
+          },
+          "multi-season-starter-conditional-points-tree": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "implementation": "sklearn.ensemble.HistGradientBoostingRegressor",
+            "libraryVersion": "1.9.0",
+            "missingTrainingValues": {
+              "daysSinceLastGameweek": 286,
+              "ewmaAppearanceRate": 286,
+              "ewmaDefensiveContributionMean": 8505,
+              "ewmaExpectedAssistsMean": 286,
+              "ewmaExpectedGoalInvolvementsMean": 286,
+              "ewmaExpectedGoalsMean": 286,
+              "ewmaMinutesMean": 286,
+              "ewmaPlayed60Rate": 286,
+              "ewmaStartRate": 286,
+              "ewmaTotalPointsMean": 286,
+              "priorAppearanceRate": 286,
+              "priorDefensiveContributionMean": 8505,
+              "priorExpectedAssistsMean": 286,
+              "priorExpectedGoalInvolvementsMean": 286,
+              "priorExpectedGoalsConcededMean": 286,
+              "priorExpectedGoalsMean": 286,
+              "priorMinutesMean": 286,
+              "priorPlayed60Rate": 286,
+              "priorPositionChanged": 10184,
+              "priorStartRate": 286,
+              "priorTotalPointsMean": 286,
+              "rolling3AppearanceRate": 286,
+              "rolling3DefensiveContributionMean": 8505,
+              "rolling3ExpectedAssistsMean": 286,
+              "rolling3ExpectedGoalInvolvementsMean": 286,
+              "rolling3ExpectedGoalsMean": 286,
+              "rolling3MinutesMean": 286,
+              "rolling3Played60Rate": 286,
+              "rolling3StartRate": 286,
+              "rolling3TotalPointsMean": 286,
+              "rolling5AppearanceRate": 286,
+              "rolling5DefensiveContributionMean": 8505,
+              "rolling5ExpectedAssistsMean": 286,
+              "rolling5ExpectedGoalInvolvementsMean": 286,
+              "rolling5ExpectedGoalsMean": 286,
+              "rolling5MinutesMean": 286,
+              "rolling5Played60Rate": 286,
+              "rolling5StartRate": 286,
+              "rolling5TotalPointsMean": 286
+            },
+            "modelFeatureCount": 56,
+            "trainingRows": 16328
+          },
+          "multi-season-substitute-conditional-points-tree": {
+            "candidateFeatureCount": 56,
+            "completedIterations": 100,
+            "droppedUnsplitableFeatures": [],
+            "implementation": "sklearn.ensemble.HistGradientBoostingRegressor",
+            "libraryVersion": "1.9.0",
+            "missingTrainingValues": {
+              "daysSinceLastGameweek": 151,
+              "ewmaAppearanceRate": 151,
+              "ewmaDefensiveContributionMean": 3266,
+              "ewmaExpectedAssistsMean": 151,
+              "ewmaExpectedGoalInvolvementsMean": 151,
+              "ewmaExpectedGoalsMean": 151,
+              "ewmaMinutesMean": 151,
+              "ewmaPlayed60Rate": 151,
+              "ewmaStartRate": 151,
+              "ewmaTotalPointsMean": 151,
+              "priorAppearanceRate": 151,
+              "priorDefensiveContributionMean": 3266,
+              "priorExpectedAssistsMean": 151,
+              "priorExpectedGoalInvolvementsMean": 151,
+              "priorExpectedGoalsConcededMean": 151,
+              "priorExpectedGoalsMean": 151,
+              "priorMinutesMean": 151,
+              "priorPlayed60Rate": 151,
+              "priorPositionChanged": 4105,
+              "priorStartRate": 151,
+              "priorTotalPointsMean": 151,
+              "rolling3AppearanceRate": 151,
+              "rolling3DefensiveContributionMean": 3266,
+              "rolling3ExpectedAssistsMean": 151,
+              "rolling3ExpectedGoalInvolvementsMean": 151,
+              "rolling3ExpectedGoalsMean": 151,
+              "rolling3MinutesMean": 151,
+              "rolling3Played60Rate": 151,
+              "rolling3StartRate": 151,
+              "rolling3TotalPointsMean": 151,
+              "rolling5AppearanceRate": 151,
+              "rolling5DefensiveContributionMean": 3266,
+              "rolling5ExpectedAssistsMean": 151,
+              "rolling5ExpectedGoalInvolvementsMean": 151,
+              "rolling5ExpectedGoalsMean": 151,
+              "rolling5MinutesMean": 151,
+              "rolling5Played60Rate": 151,
+              "rolling5StartRate": 151,
+              "rolling5TotalPointsMean": 151
+            },
+            "modelFeatureCount": 56,
+            "trainingRows": 6152
+          }
+        },
+        "gameweek": 38,
+        "models": [
+          {
+            "metrics": {
+              "count": 841,
+              "mae": 0.942818,
+              "meanError": 0.047067,
+              "rmse": 1.814585
+            },
+            "name": "multi-season-appearance-hurdle-points",
+            "slices": {
+              "position": {
+                "defender": {
+                  "count": 270,
+                  "mae": 1.048055,
+                  "meanError": -0.0063,
+                  "rmse": 2.074708
+                },
+                "forward": {
+                  "count": 95,
+                  "mae": 1.044374,
+                  "meanError": 0.088865,
+                  "rmse": 1.920767
+                },
+                "goalkeeper": {
+                  "count": 97,
+                  "mae": 0.548453,
+                  "meanError": -0.033492,
+                  "rmse": 1.141475
+                },
+                "midfielder": {
+                  "count": 379,
+                  "mae": 0.943323,
+                  "meanError": 0.095227,
+                  "rmse": 1.726793
+                }
+              }
+            }
+          },
+          {
+            "metrics": {
+              "count": 841,
+              "mae": 0.951263,
+              "meanError": 0.055091,
+              "rmse": 1.830429
+            },
+            "name": "multi-season-start-state-hurdle-points",
+            "slices": {
+              "position": {
+                "defender": {
+                  "count": 270,
+                  "mae": 1.060963,
+                  "meanError": 0.013273,
+                  "rmse": 2.083934
+                },
+                "forward": {
+                  "count": 95,
+                  "mae": 1.041,
+                  "meanError": 0.07751,
+                  "rmse": 1.952168
+                },
+                "goalkeeper": {
+                  "count": 97,
+                  "mae": 0.542573,
+                  "meanError": -0.037273,
+                  "rmse": 1.146173
+                },
+                "midfielder": {
+                  "count": 379,
+                  "mae": 0.955218,
+                  "meanError": 0.102901,
+                  "rmse": 1.746253
+                }
+              }
+            }
+          }
+        ],
+        "rawStartMetrics": {
+          "brierScore": 0.10768,
+          "calibrationError10": 0.053268,
+          "count": 841,
+          "eventRate": 0.261593,
+          "logLoss": 0.340798,
+          "meanProbability": 0.266668
+        },
+        "seasonCode": "2025-26",
+        "startCoherence": {
+          "adjustmentCount": 3,
+          "maximumAdjustment": 0.013704,
+          "rule": "minimum-of-start-and-appearance-probability"
+        },
+        "starterConditionalPointMetrics": {
+          "count": 220,
+          "mae": 2.238055,
+          "meanError": 0.071309,
+          "rmse": 2.885154
+        },
+        "starterTrainingRows": 16328,
+        "substituteConditionalPointMetrics": {
+          "count": 92,
+          "mae": 0.520543,
+          "meanError": 0.088212,
+          "rmse": 0.977428
+        },
+        "substituteTrainingRows": 6152,
+        "targetAppearanceCount": 312,
+        "targetPlayerCount": 841,
+        "targetStartCount": 220,
+        "trainingOriginCount": 75,
+        "trainingRows": 55416
+      }
+    ],
+    "maeImprovementFraction": 0.000811,
+    "positionSlices": [
+      {
+        "challengerMae": 1.078617,
+        "incumbentMae": 1.074662,
+        "maeRegressionFraction": 0.00368,
+        "position": "defender"
+      },
+      {
+        "challengerMae": 1.11832,
+        "incumbentMae": 1.121025,
+        "maeRegressionFraction": -0.002413,
+        "position": "forward"
+      },
+      {
+        "challengerMae": 0.567052,
+        "incumbentMae": 0.574642,
+        "maeRegressionFraction": -0.013208,
+        "position": "goalkeeper"
+      },
+      {
+        "challengerMae": 0.903643,
+        "incumbentMae": 0.905557,
+        "maeRegressionFraction": -0.002114,
+        "position": "midfielder"
+      }
+    ],
+    "rmseDelta": 0.007519
+  },
+  "conditionalPointComponents": {
+    "starter": {
+      "evaluationCohort": "target-players-with-starts-greater-than-zero",
+      "metrics": {
+        "count": 1670,
+        "mae": 2.413631,
+        "meanError": -0.002317,
+        "rmse": 3.158611
+      },
+      "model": "multi-season-starter-conditional-points-tree"
+    },
+    "substitute": {
+      "evaluationCohort": "target-players-with-minutes-greater-than-zero-and-starts-equal-zero",
+      "metrics": {
+        "count": 614,
+        "mae": 0.650511,
+        "meanError": 0.067625,
+        "rmse": 1.250357
+      },
+      "model": "multi-season-substitute-conditional-points-tree"
+    }
+  },
+  "dataIdentitySha256": "1f090566ec308b0225e27401652a8cbcfe6b3712c4d3004abc80e2c5afa5abd9",
+  "decision": "do-not-retain-start-state-hurdle",
+  "evaluationStartGameweek": 31,
+  "evaluatorVersion": "historical-start-state-hurdle-points-evaluation-v1",
+  "factorization": "start-probability-times-starter-conditional-points-plus-appearance-minus-start-probability-times-substitute-conditional-points",
+  "gates": {
+    "aggregateMaeImprovement": false,
+    "aggregateRmseNonRegression": false,
+    "coherentStartBrierNonRegression": true,
+    "coherentStartLogLossNonRegression": true,
+    "positionMaeStability": true,
+    "strictMajorityFoldWins": false
+  },
+  "incumbentSource": {
+    "dataIdentitySha256": "1ef395d722844b1833fb059d606606e0bf1f1d42732377474d671f1a3f17b16e",
+    "evaluatorVersion": "historical-appearance-hurdle-points-evaluation-v1",
+    "runIdentitySha256": "852b3728150cba9ad3bdb46ba24d66e9ac77262b2cf4dc9aae38f0df5cdc7e71"
+  },
+  "influencesAdvice": false,
+  "isPromoted": false,
+  "limitations": [
+    "The 2025/26 target folds were opened by earlier experiments. This screen can reject or retain a prospective shadow but cannot promote it.",
+    "The archive has no historical decision-time specialist predicted-lineup or injury state.",
+    "A player with at least one start in a double Gameweek is classified in the starter state for the aggregated row.",
+    "A retained point mean still requires full distribution and opening-squad policy evaluation before serving."
+  ],
+  "models": [
+    {
+      "metrics": {
+        "count": 6252,
+        "mae": 0.945133,
+        "meanError": 0.002772,
+        "rmse": 1.910812
+      },
+      "name": "multi-season-start-state-hurdle-points",
+      "slices": {
+        "position": {
+          "defender": {
+            "count": 2019,
+            "mae": 1.078617,
+            "meanError": 0.00502,
+            "rmse": 2.090693
+          },
+          "forward": {
+            "count": 701,
+            "mae": 1.11832,
+            "meanError": -0.106098,
+            "rmse": 2.225316
+          },
+          "goalkeeper": {
+            "count": 726,
+            "mae": 0.567052,
+            "meanError": -0.050636,
+            "rmse": 1.349628
+          },
+          "midfielder": {
+            "count": 2806,
+            "mae": 0.903643,
+            "meanError": 0.042171,
+            "rmse": 1.81155
+          }
+        }
+      }
+    },
+    {
+      "metrics": {
+        "count": 6252,
+        "mae": 0.9459,
+        "meanError": 0.012287,
+        "rmse": 1.903293
+      },
+      "name": "multi-season-appearance-hurdle-points",
+      "slices": {
+        "position": {
+          "defender": {
+            "count": 2019,
+            "mae": 1.074662,
+            "meanError": 0.015209,
+            "rmse": 2.070966
+          },
+          "forward": {
+            "count": 701,
+            "mae": 1.121025,
+            "meanError": -0.097561,
+            "rmse": 2.234841
+          },
+          "goalkeeper": {
+            "count": 726,
+            "mae": 0.574642,
+            "meanError": -0.030991,
+            "rmse": 1.343919
+          },
+          "midfielder": {
+            "count": 2806,
+            "mae": 0.905557,
+            "meanError": 0.048823,
+            "rmse": 1.808385
+          }
+        }
+      }
+    }
+  ],
+  "researchStatus": "reused-holdout-screen-not-promoted",
+  "retentionRule": {
+    "coherentStartProperScoreNonRegression": true,
+    "maximumPositionMaeRegressionFraction": 0.05,
+    "maximumRmseDelta": 0.0,
+    "minimumMaeImprovementFraction": 0.01,
+    "strictMajorityFoldWins": true
+  },
+  "runIdentitySha256": "d584042ae896cfe6e6fc10afc0b07b70127e2d9e55683619ccaf2935d2e97b65",
+  "schemaVersion": "1.0",
+  "seasonCodes": [
+    "2024-25",
+    "2025-26"
+  ],
+  "startComponent": {
+    "adjustmentCount": 42,
+    "brierDelta": -0.000113,
+    "coherenceRule": "minimum-of-start-and-appearance-probability",
+    "coherentMetrics": {
+      "brierScore": 0.081392,
+      "calibrationError10": 0.007365,
+      "count": 6252,
+      "eventRate": 0.267115,
+      "logLoss": 0.259005,
+      "meanProbability": 0.268621
+    },
+    "logLossDelta": -0.0003,
+    "maximumAdjustment": 0.267951,
+    "rawMetrics": {
+      "brierScore": 0.081505,
+      "calibrationError10": 0.008006,
+      "count": 6252,
+      "eventRate": 0.267115,
+      "logLoss": 0.259305,
+      "meanProbability": 0.269067
+    },
+    "rawModel": "multi-season-start-histogram-classifier"
+  },
+  "status": "complete",
+  "target": "historical-player-gameweek-total-points",
+  "targetSeasonCode": "2025-26"
+}
