@@ -54,6 +54,13 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **The current v2 squad is insensitive to aggregate promoted-player playing
+  time.** A non-serving diagnostic applies the frozen Championship appearance
+  pool to 60 reviewed Coventry, Hull and Ipswich players, rebuilds joint paths
+  and repeats the global six-Gameweek solve. Appearance estimates move
+  materially, but no affected player belongs to v2 or enters the challenger:
+  all 15 players and every scenario score remain identical. The served squad
+  stays unchanged, and this source leaves the active initial-squad path.
 - **Promoted-player appearance improves distributions but not enough complete
   squad decisions.** The retained equal-weight Championship translation now
   propagates through target-outcome-free joint point scenarios and the

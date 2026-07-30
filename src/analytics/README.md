@@ -453,6 +453,26 @@ average with one win. The fixed +2 mean and two-win policy gates failed, so the
 feature does not alter the current v2 initial squad. See the
 [promoted-player opening evaluation](../../docs/research/historical-promoted-opening-evaluation-v1.md).
 
+The non-serving current sensitivity applies that frozen translation to the 60
+reviewed Coventry, Hull and Ipswich players and repeats the global solve:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.current_promoted_opening_sensitivity \
+  --database /path/to/autofpl.db \
+  --fbref-extraction 2021-22=/path/to/2021-22-extraction.json \
+  --fbref-extraction 2022-23=/path/to/2022-23-extraction.json \
+  --fbref-extraction 2023-24=/path/to/2023-24-extraction.json \
+  --fbref-extraction 2024-25=/path/to/2024-25-extraction.json \
+  --current-fbref-extraction /path/to/reviewed-2025-26-extraction.json \
+  --output /path/to/current-promoted-opening-sensitivity.json
+```
+
+No affected player belongs to v2 or enters the sensitivity optimum. The squad
+and every retained path score remain identical, so the served prediction stays
+unchanged. See the
+[current promoted-player sensitivity](../../docs/research/current-promoted-opening-sensitivity-v1.md).
+
 The conditional-optimality audit distinguishes an exact solver result from a
 robust player choice:
 
