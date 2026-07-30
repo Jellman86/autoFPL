@@ -20,6 +20,12 @@ from autofpl_analytics.current_appearance_hurdle_opening_optimality_audit import
     ARTIFACT_VERSION as HURDLE_AUDIT_ARTIFACT_VERSION,
     _build_from_scenario as _build_hurdle_audit,
 )
+from autofpl_analytics.current_appearance_hurdle_opening_forecast_sensitivity import (  # noqa: E402
+    ARTIFACT_TYPE as FORECAST_SENSITIVITY_ARTIFACT_TYPE,
+    ARTIFACT_VERSION as FORECAST_SENSITIVITY_ARTIFACT_VERSION,
+    PERTURBATION_METHOD,
+    _build_from_scenario as _build_forecast_sensitivity,
+)
 from autofpl_analytics.current_appearance_hurdle_player_forecast import (  # noqa: E402
     HISTORICAL_EVALUATION_DATA_IDENTITY,
     HISTORICAL_EVALUATION_RUN_IDENTITY,
@@ -206,6 +212,89 @@ class CurrentOpeningSquadOptimalityAuditTests(unittest.TestCase):
             "hurdle-opening-audit.scenario",
             caught.exception.code,
         )
+
+    def test_forecast_sensitivity_is_global_deterministic_and_read_only(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            database = Path(temporary) / "autofpl.db"
+            scenario = self._database_and_scenario(database)
+            scenario["variant"] = {
+                "variantKey": "appearance-hurdle-points",
+                "pointModelKey": (
+                    "multi-season-appearance-hurdle-points"
+                ),
+                "historicalEvaluation": {
+                    "evaluatorVersion": (
+                        "historical-appearance-hurdle-points-"
+                        "evaluation-v1"
+                    ),
+                    "dataIdentitySha256": (
+                        HISTORICAL_EVALUATION_DATA_IDENTITY
+                    ),
+                    "runIdentitySha256": (
+                        HISTORICAL_EVALUATION_RUN_IDENTITY
+                    ),
+                    "decision": (
+                        "retain-appearance-hurdle-prospective-shadow"
+                    ),
+                },
+            }
+            before = hashlib.sha256(database.read_bytes()).hexdigest()
+            first = _build_forecast_sensitivity(
+                database,
+                scenario,
+                threshold_iterations=3,
+                shortlist_per_position=1,
+            )
+            second = _build_forecast_sensitivity(
+                database,
+                scenario,
+                threshold_iterations=3,
+                shortlist_per_position=1,
+            )
+            after = hashlib.sha256(database.read_bytes()).hexdigest()
+
+        self.assertEqual(first, second)
+        self.assertEqual(before, after)
+        self.assertEqual(
+            FORECAST_SENSITIVITY_ARTIFACT_TYPE,
+            first["artifactType"],
+        )
+        self.assertEqual(
+            FORECAST_SENSITIVITY_ARTIFACT_VERSION,
+            first["artifactVersion"],
+        )
+        self.assertEqual(
+            PERTURBATION_METHOD,
+            first["perturbation"]["method"],
+        )
+        self.assertEqual(15, len(first["selectedPlayerThresholds"]))
+        self.assertEqual(
+            7,
+            first["challengerScreen"]["screenedUnselectedPlayerCount"],
+        )
+        self.assertGreaterEqual(
+            first["challengerScreen"]["shortlistedPlayerCount"],
+            4,
+        )
+        incumbent_ids = set(
+            first["incumbent"]["selection"]["playerIds"]
+        )
+        for row in first["selectedPlayerThresholds"]:
+            self.assertIn(row["player"]["playerId"], incumbent_ids)
+            if not row["survivesZeroPointForecast"]:
+                self.assertNotIn(
+                    row["player"]["playerId"],
+                    row["boundarySelectionPlayerIds"],
+                )
+        for row in first["challengerScreen"]["shortlistedThresholds"]:
+            self.assertNotIn(row["player"]["playerId"], incumbent_ids)
+            if not row["doesNotEnterByMaximumMultiplier"]:
+                self.assertIn(
+                    row["player"]["playerId"],
+                    row["boundarySelectionPlayerIds"],
+                )
 
     @staticmethod
     def _database_and_scenario(database: Path) -> dict:

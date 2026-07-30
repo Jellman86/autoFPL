@@ -1079,8 +1079,17 @@ the preregistered rule does not search passing runners-up after its leader
 fails. Preserve the six-Gameweek expected-points policy without post-hoc rule
 changes. The active current-squad slice is exact optimality and robustness
 around the selected six-week squad under near-boundary exclusions, availability
-evidence and bounded input perturbations. Lineup sources remain participation
-evidence, not an arbitrary points adjustment.
+evidence and bounded input perturbations. That bounded perturbation audit is
+now complete. It exhaustively force-screens all 545 unselected players and
+globally re-solves the closest forecast boundaries. Roefs/Kelleher is an
+effective tie at a 0.73/0.74% decrease/uplift; Rayan/Anderson is next at
+1.28/1.30%. Enzo, Szoboszlai, Van Hecke and Thiago also leave after at most a
+5% coherent forecast reduction, while Watkins and Bruno tolerate 22.99% and
+16.49%. Preserve the exact squad, but prioritize fresh lineup, health, role and
+qualified external-forecast evidence for those near-boundary players. The next
+accuracy slice should turn that priority into cutoff-safe player-specific
+participation evidence and re-run the frozen distribution/policy gates; lineup
+sources remain participation evidence, not an arbitrary points adjustment.
 Do not add another standalone governance, universal contract, infrastructure
 or AI-orchestrator project ahead of these slices.
 
