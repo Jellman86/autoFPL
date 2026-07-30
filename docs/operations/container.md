@@ -651,20 +651,21 @@ dotnet AutoFpl.Api.dll \
   --extract-research-source-claims <snapshot-id>
 ```
 
-The deterministic operator v3 reads only the private compressed snapshot. The
-lineup adapter resolves predicted-XI players through the official Premier
-League photo code embedded in each retained card, with a lower-confidence
-unique team-scoped name fallback for stale photo identities. A team block
-produces `does-not-start` complement claims for its other registered players
-only when exactly eleven distinct starters resolve to one official team;
-partial or unresolved lineups remain unknown. Availability v1 separately
-parses only `Out` and percentage-bearing `Doubts`, maps known source team labels
-to the exact official team, normalizes diacritics and requires one unique
-official name match. It retains a supplied doubt percentage as the claim
-probability, excludes the distinct `Banned` section, and reports unmatched or
-ambiguous identities without writing claims for them. Repeating the command is
-idempotent. Imported claims remain `quarantined`; extraction confidence records
-parser and identity certainty, not football truth.
+The deterministic extractors read only the private compressed snapshot. The
+FFScout lineup adapter resolves predicted-XI players through the official
+Premier League photo code embedded in each retained card, with a
+lower-confidence unique team-scoped name fallback for stale photo identities.
+A team block produces `does-not-start` complement claims for its other
+registered players only when exactly eleven distinct starters resolve to one
+official team; partial or unresolved lineups remain unknown. FFScout
+availability v1 separately parses only `Out` and percentage-bearing `Doubts`,
+maps known source team labels to the exact official team, normalizes diacritics
+and requires one unique official name match. It retains a supplied doubt
+percentage as the claim probability, excludes the distinct `Banned` section,
+and reports unmatched or ambiguous identities without writing claims for them.
+Repeating the command is idempotent. Imported claims remain `quarantined`;
+extraction confidence records parser and identity certainty, not football
+truth.
 
 strAIghtred consensus v1 accepts one bounded fixture block containing one to
 eleven player/percentage pairs. It retains the displayed upstream-source count
@@ -672,7 +673,12 @@ in the supporting span, requires a unique team-scoped official name and writes
 the supplied percentage as a quarantined start probability. Its duplicate
 cluster is the same `start × season × Gameweek × player` identity used by
 FFScout, preventing dependent agreement from masquerading as an independent
-vote. Premier League injury snapshots still have no extractor and fail closed.
+vote. Premier League injury v1 requires the fixed 20-club rendered schema and
+resolves each player only within the named official team. A listed injury
+creates a `doubtful` availability claim without inventing a probability,
+return date or unavailable status. Unmatched and ambiguous names remain
+explicitly unresolved, and the adapter shares the same
+`availability × season × Gameweek × player` duplicate cluster as FFScout.
 
 After a completed, data-checked Gameweek outcome has been imported, score
 pre-deadline start claims without writing the database:
@@ -697,7 +703,7 @@ See the [source portfolio](../research/research-source-portfolio-v1.md).
 
 ## SQLite operations
 
-The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies 29 explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
+The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies 35 explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
 
 The root filesystem stays read-only. Production must mount a private, UID
 `1654`-writable persistent directory at `/data`; the CI smoke test uses an

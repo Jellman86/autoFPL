@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 using AutoFpl.Contracts.Intelligence;
@@ -19,20 +20,27 @@ public sealed partial class ResearchSourceClaimExtractor
         "ffscout-availability/v1";
     public const string StraightredExtractionVersion =
         "straightred-consensus/v1";
+    public const string PremierLeagueInjuryExtractionVersion =
+        "premier-league-injuries/v1";
     public const string FfScoutSourceKey = "ffscout-predicted-lineups";
     public const string StraightredSourceKey =
         "straightred-lineup-consensus";
+    public const string PremierLeagueInjurySourceKey =
+        "premier-league-injuries";
 
     private static readonly IReadOnlyDictionary<string, string> TeamAliases =
         new Dictionary<string, string>(StringComparer.Ordinal)
         {
             ["brighton and hove albion"] = "brighton",
+            ["afc bournemouth"] = "bournemouth",
             ["leeds united"] = "leeds",
             ["manchester city"] = "man city",
             ["manchester united"] = "man utd",
             ["newcastle united"] = "newcastle",
             ["nottingham forest"] = "nott m forest",
             ["tottenham hotspur"] = "spurs",
+            ["west ham united"] = "west ham",
+            ["wolverhampton wanderers"] = "wolves",
         };
 
     private readonly ResearchSourceSnapshotStore _snapshotStore;
@@ -66,6 +74,14 @@ public sealed partial class ResearchSourceClaimExtractor
         {
             throw new ResearchSourceSnapshotException(
                 "Only shadow-only research snapshots can produce quarantined claims.");
+        }
+        if (StringComparer.Ordinal.Equals(
+                snapshot.SourceKey,
+                PremierLeagueInjurySourceKey))
+        {
+            return await ExtractPremierLeagueInjuriesAsync(
+                retained,
+                cancellationToken);
         }
         if (StringComparer.Ordinal.Equals(
                 snapshot.SourceKey,
@@ -364,6 +380,209 @@ public sealed partial class ResearchSourceClaimExtractor
             0,
             claims.Count,
             []);
+    }
+
+    private async Task<ResearchSourceClaimExtractionDocument>
+        ExtractPremierLeagueInjuriesAsync(
+            ResearchSourceSnapshotContent retained,
+            CancellationToken cancellationToken)
+    {
+        ResearchSourceSnapshotDocument snapshot = retained.Snapshot;
+        IReadOnlyList<PremierLeagueInjuryCandidate> candidates =
+            ExtractPremierLeagueInjuryCandidates(retained.Content);
+        IReadOnlyList<ResearchOfficialPlayerIdentity> identities =
+            await _snapshotStore.GetPlayerIdentitiesAsync(
+                snapshot.IdentityCaptureId,
+                cancellationToken);
+
+        int unresolvedAvailabilityCount = 0;
+        var claims = new List<EvidenceClaimDocument>();
+        foreach (PremierLeagueInjuryCandidate candidate in candidates)
+        {
+            AvailabilityIdentityMatch? match = ResolveTeamScopedIdentity(
+                candidate.TeamName,
+                candidate.PlayerName,
+                identities);
+            if (match is null)
+            {
+                unresolvedAvailabilityCount++;
+                continue;
+            }
+
+            claims.Add(
+                await _claimStore.ImportForIdentityCaptureAsync(
+                    new EvidenceClaimImportRequest(
+                        "1.0",
+                        snapshot.SourceKey,
+                        snapshot.CanonicalUrl,
+                        "Premier League",
+                        null,
+                        snapshot.RetrievedAtUtc,
+                        snapshot.AvailableAtUtc,
+                        snapshot.ContentSha256,
+                        snapshot.SourceRevision,
+                        snapshot.SeasonCode,
+                        snapshot.Gameweek,
+                        match.Identity.PlayerId,
+                        "availability",
+                        "doubtful",
+                        null,
+                        null,
+                        null,
+                        null,
+                        "reported",
+                        candidate.SourceSpan,
+                        "deterministic",
+                        PremierLeagueInjuryExtractionVersion,
+                        match.ExtractionConfidence,
+                        ComputeDuplicateClusterKey(
+                            snapshot,
+                            "availability",
+                            match.Identity.PlayerCode)),
+                    snapshot.IdentityCaptureId,
+                    cancellationToken));
+        }
+
+        return new(
+            "1.0",
+            snapshot.SnapshotId,
+            snapshot.SourceKey,
+            PremierLeagueInjuryExtractionVersion,
+            candidates.Count,
+            0,
+            0,
+            candidates.Count,
+            claims.Count,
+            unresolvedAvailabilityCount,
+            claims.Count,
+            []);
+    }
+
+    internal static IReadOnlyList<PremierLeagueInjuryCandidate>
+        ExtractPremierLeagueInjuryCandidates(string content)
+    {
+        ArgumentNullException.ThrowIfNull(content);
+        JsonDocumentOptions options = new()
+        {
+            AllowTrailingCommas = false,
+            CommentHandling = JsonCommentHandling.Disallow,
+            MaxDepth = 16,
+            AllowDuplicateProperties = false,
+        };
+
+        JsonDocument document;
+        try
+        {
+            document = JsonDocument.Parse(content, options);
+        }
+        catch (JsonException exception)
+        {
+            throw new ResearchSourceSnapshotException(
+                "The Premier League injury payload was not valid JSON.",
+                exception);
+        }
+
+        using (document)
+        {
+            JsonElement root = document.RootElement;
+            if (root.ValueKind != JsonValueKind.Object
+                || !ReadExactString(
+                    root,
+                    "schemaVersion",
+                    "premier-league-injury-dom/v1")
+                || !ReadExactString(
+                    root,
+                    "sourceUrl",
+                    "https://www.premierleague.com/en/latest-player-injuries")
+                || !TryReadBoundedString(
+                    root,
+                    "pageTitle",
+                    1,
+                    200,
+                    out _)
+                || !TryReadBoundedString(
+                    root,
+                    "renderedWidgetSha256",
+                    64,
+                    64,
+                    out string renderedHash)
+                || !renderedHash.All(character =>
+                    character is >= '0' and <= '9'
+                        or >= 'a' and <= 'f')
+                || !root.TryGetProperty("clubs", out JsonElement clubs)
+                || clubs.ValueKind != JsonValueKind.Array
+                || clubs.GetArrayLength() != 20)
+            {
+                throw new ResearchSourceSnapshotException(
+                    "The Premier League injury payload had an unsupported shape.");
+            }
+
+            var candidates = new List<PremierLeagueInjuryCandidate>();
+            var teamNames = new HashSet<string>(StringComparer.Ordinal);
+            foreach (JsonElement club in clubs.EnumerateArray())
+            {
+                if (club.ValueKind != JsonValueKind.Object
+                    || !TryReadBoundedString(
+                        club,
+                        "teamName",
+                        1,
+                        100,
+                        out string teamName)
+                    || !teamNames.Add(Normalize(teamName))
+                    || !club.TryGetProperty("rows", out JsonElement rows)
+                    || rows.ValueKind != JsonValueKind.Array)
+                {
+                    throw new ResearchSourceSnapshotException(
+                        "A Premier League injury club had an unsupported shape.");
+                }
+
+                var playerNames = new HashSet<string>(StringComparer.Ordinal);
+                foreach (JsonElement row in rows.EnumerateArray())
+                {
+                    if (row.ValueKind != JsonValueKind.Object
+                        || !TryReadBoundedString(
+                            row,
+                            "playerName",
+                            1,
+                            120,
+                            out string playerName)
+                        || !playerNames.Add(Normalize(playerName))
+                        || !TryReadBoundedString(
+                            row,
+                            "injury",
+                            1,
+                            160,
+                            out string injury)
+                        || !HasOptionalSafeUpdateUri(row))
+                    {
+                        throw new ResearchSourceSnapshotException(
+                            "A Premier League injury row had an unsupported shape.");
+                    }
+
+                    string sourceSpan =
+                        $"{teamName} injury list: {playerName} — {injury}";
+                    if (sourceSpan.Length > 500)
+                    {
+                        throw new ResearchSourceSnapshotException(
+                            "A Premier League injury source span exceeded the evidence limit.");
+                    }
+                    candidates.Add(
+                        new(
+                            teamName,
+                            playerName,
+                            injury,
+                            sourceSpan));
+                }
+            }
+
+            if (candidates.Count is < 1 or > 200)
+            {
+                throw new ResearchSourceSnapshotException(
+                    "The Premier League injury payload contained an unsupported candidate count.");
+            }
+
+            return candidates;
+        }
     }
 
     internal static IReadOnlyList<LineupCandidate> ExtractFfScoutLineupCandidates(
@@ -800,6 +1019,64 @@ public sealed partial class ResearchSourceClaimExtractor
             : null;
     }
 
+    private static bool ReadExactString(
+        JsonElement element,
+        string propertyName,
+        string expected) =>
+        element.TryGetProperty(propertyName, out JsonElement property)
+        && property.ValueKind == JsonValueKind.String
+        && StringComparer.Ordinal.Equals(property.GetString(), expected);
+
+    private static bool TryReadBoundedString(
+        JsonElement element,
+        string propertyName,
+        int minimumLength,
+        int maximumLength,
+        out string value)
+    {
+        value = string.Empty;
+        if (!element.TryGetProperty(propertyName, out JsonElement property)
+            || property.ValueKind != JsonValueKind.String)
+        {
+            return false;
+        }
+
+        value = property.GetString() ?? string.Empty;
+        return value.Length >= minimumLength
+            && value.Length <= maximumLength
+            && !value.Any(char.IsControl);
+    }
+
+    private static bool HasOptionalSafeUpdateUri(JsonElement row)
+    {
+        if (!row.TryGetProperty("updateUrl", out JsonElement updateUrl))
+        {
+            return false;
+        }
+        if (updateUrl.ValueKind == JsonValueKind.Null)
+        {
+            return true;
+        }
+        if (updateUrl.ValueKind != JsonValueKind.String
+            || !TryReadBoundedString(
+                row,
+                "updateUrl",
+                1,
+                2048,
+                out string value)
+            || !Uri.TryCreate(value, UriKind.Absolute, out Uri? uri))
+        {
+            return false;
+        }
+
+        return StringComparer.OrdinalIgnoreCase.Equals(
+                uri.Scheme,
+                Uri.UriSchemeHttps)
+            && !string.IsNullOrWhiteSpace(uri.Host)
+            && string.IsNullOrEmpty(uri.UserInfo)
+            && string.IsNullOrEmpty(uri.Fragment);
+    }
+
     private static string TrimToLetters(string value)
     {
         int first = 0;
@@ -935,6 +1212,12 @@ public sealed partial class ResearchSourceClaimExtractor
         int SourceCount,
         string PlayerName,
         decimal ForecastProbability,
+        string SourceSpan);
+
+    internal sealed record PremierLeagueInjuryCandidate(
+        string TeamName,
+        string PlayerName,
+        string Injury,
         string SourceSpan);
 
     private sealed record AvailabilityIdentityMatch(

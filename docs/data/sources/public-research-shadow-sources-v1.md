@@ -25,10 +25,12 @@
   third-party text is not returned by the API or committed to Git; missing
   coverage remains unknown rather than a negative prediction.
 - **Quality status:** unknown. Source classes and dependence groups are
-  explicit. FFScout start/availability and strAIghtred consensus extraction
-  produce only identity-checked `quarantined` claims; snapshots remain
-  `shadow-only` and no derived value can influence a forecast until outcome
-  scoring and same-fold ablation are complete.
+  explicit. FFScout start/availability, strAIghtred consensus and official
+  Premier League injury extraction produce only identity-checked
+  `quarantined` claims; an injury listing maps only to `doubtful` without an
+  inferred probability. Snapshots remain `shadow-only` and no derived value can
+  influence a forecast until outcome scoring and same-fold ablation are
+  complete.
 - **Failure behavior:** unknown source keys, wrong MCP identity, redirects to a
   different resource, non-200 results, missing trust markers, oversized or
   malformed responses and missing official target identity fail closed without

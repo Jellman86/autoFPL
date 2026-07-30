@@ -1096,8 +1096,10 @@ injury page now reuses the already deployed isolated Playwright MCP. The fixed
 collector requires all 20 club sections and structurally valid player rows,
 retains compact club/player/injury/optional-update-link evidence plus the
 rendered widget hash, and rejects the application shell or partial content. The
-next slice freezes a typed `doubtful` claim extractor over that validated
-payload.
+typed extractor now resolves within the official team and creates only
+quarantined `doubtful` claims without inventing probabilities. The next slice
+audits those resolved and unresolved rows against the selected and
+near-boundary opening-squad players before any forecast-effect evaluation.
 Do not add another standalone governance, universal contract, infrastructure
 or AI-orchestrator project ahead of these slices.
 
