@@ -1052,11 +1052,16 @@ distribution and initial-squad policy screens. The unchanged time-decayed
 Dixon–Coles model now passes a broader three-target replication: over 247
 matches it improves joint-score NLL by 3.24%, clean-sheet Brier by 6.36%,
 wins 17/24 clean-sheet folds and does not regress a target season. Retain that
-shared scoreline state for the next player-level clean-sheet/goals-conceded
-ablation, not direct advice. Conditional player goal/assist allocation follows
-only after that component passes complete point-distribution and squad-policy
-screens; lineup sources remain participation evidence, not an arbitrary points
-adjustment.
+shared scoreline state only where the player-level evidence supports it. The
+first clean-sheet factorization improves player clean-sheet Brier by 2.70%,
+log loss, calibration and 14/24 folds, but its reconstructed point mean improves
+MAE by only 0.0975%, wins 12/24 point folds and loses MAE to the league-rate
+variant. Reject the mean replacement and preserve v2. The active challenger is
+therefore a mean-preserving point distribution that injects one correlated
+Dixon–Coles clean-sheet event per team fixture, then must improve CRPS and the
+full 3/6/8-Gameweek squad policy. Conditional player goal/assist allocation
+follows that screen; lineup sources remain participation evidence, not an
+arbitrary points adjustment.
 Do not add another standalone governance, universal contract, infrastructure
 or AI-orchestrator project ahead of these slices.
 

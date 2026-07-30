@@ -1,0 +1,665 @@
+{
+  "artifactType": "historical-player-clean-sheet-component-evaluation",
+  "captures": [
+    {
+      "captureId": 3,
+      "gameweeksSha256": "b78a6d0456141f9033c32fc4122931baae780ac4a4938683451b1fce7a4fdd15",
+      "playersSha256": "a874c12817bbf4d454e60a5765629742b528d4ad0c2f39f56e4fc89640605f7f",
+      "seasonCode": "2022-23",
+      "sourceRevision": "f9ed3e8839b0f970e0d5d4a83c5628f6eaee755a"
+    },
+    {
+      "captureId": 4,
+      "gameweeksSha256": "e9c09c8856f1c86b4f920f46ddd5033af83409439dfda53be925df2a3e7c8a9e",
+      "playersSha256": "43d8cf5efb3d901f2499558c40b392b7f0ee22afe28030f36266ad29024c63d9",
+      "seasonCode": "2023-24",
+      "sourceRevision": "f9ed3e8839b0f970e0d5d4a83c5628f6eaee755a"
+    },
+    {
+      "captureId": 2,
+      "gameweeksSha256": "5bbbcba6353b4c72ad273adcc8e3aa451946a826564679788f45b1cb3325b84e",
+      "playersSha256": "75686051b265cbe7755ac71213ecaad21b26ee1cc46a8bafbba19c39ce894b05",
+      "seasonCode": "2024-25",
+      "sourceRevision": "f9ed3e8839b0f970e0d5d4a83c5628f6eaee755a"
+    },
+    {
+      "captureId": 1,
+      "gameweeksSha256": "0d09f1f1cb1b5520ec8e2f25238aa652efe2a263d8ca7cb2b6538b27bf86727d",
+      "playersSha256": "412ce0172016f8f98f25177dc6de9f3cd2a8ec7a6135f9aa638d7fdee784d67b",
+      "seasonCode": "2025-26",
+      "sourceRevision": "f9ed3e8839b0f970e0d5d4a83c5628f6eaee755a"
+    }
+  ],
+  "cleanSheetDistributionDecision": "retain-clean-sheet-probability-for-distribution-screen",
+  "cleanSheetDistributionGates": {
+    "calibrationNonRegression": true,
+    "logLossNonRegression": true,
+    "minimumBrierImprovement": true,
+    "strictMajorityFoldWins": true
+  },
+  "cleanSheetProbabilityComponent": {
+    "brierImprovementFraction": 0.027005,
+    "dixonColesMetrics": {
+      "brierScore": 0.052352,
+      "calibrationError10": 0.003419,
+      "count": 15788,
+      "eventRate": 0.065493,
+      "logLoss": 0.174722,
+      "meanProbability": 0.06837
+    },
+    "foldCount": 24,
+    "foldWins": 14,
+    "leagueMetrics": {
+      "brierScore": 0.053805,
+      "calibrationError10": 0.004781,
+      "count": 15788,
+      "eventRate": 0.065493,
+      "logLoss": 0.18039,
+      "meanProbability": 0.060712
+    }
+  },
+  "cohort": "single-fixture-player-gameweeks-with-zero-minute-players-retained",
+  "comparison": {
+    "foldCount": 24,
+    "maeImprovementFraction": 0.000975,
+    "pointFoldWins": 12,
+    "positionSlices": [
+      {
+        "challengerMae": 0.98447,
+        "incumbentMae": 0.977327,
+        "maeRegressionFraction": 0.007309,
+        "position": "defender"
+      },
+      {
+        "challengerMae": 0.980361,
+        "incumbentMae": 0.979961,
+        "maeRegressionFraction": 0.000408,
+        "position": "forward"
+      },
+      {
+        "challengerMae": 0.588027,
+        "incumbentMae": 0.584045,
+        "maeRegressionFraction": 0.006818,
+        "position": "goalkeeper"
+      },
+      {
+        "challengerMae": 0.866791,
+        "incumbentMae": 0.875194,
+        "maeRegressionFraction": -0.009601,
+        "position": "midfielder"
+      }
+    ],
+    "rmseDelta": -0.008191
+  },
+  "dataIdentitySha256": "81fe251e33e7abf91bc7772be8a501f478f4dc20bd50def90ae5e724ced0ca5a",
+  "decision": "retain-clean-sheet-probability-for-distribution-only",
+  "evaluationStartGameweek": 31,
+  "evaluationTargetSeasonCodes": [
+    "2023-24",
+    "2024-25",
+    "2025-26"
+  ],
+  "evaluatorVersion": "historical-player-clean-sheet-component-evaluation-v1",
+  "factorization": "appearance-times-non-clean-sheet-conditional-points-plus-coherent-played-60-times-team-clean-sheet-probability-times-position-clean-sheet-points",
+  "influencesAdvice": false,
+  "isPromoted": false,
+  "limitations": [
+    "The screen isolates clean-sheet points only. Goals-conceded deductions, attacking events, saves, cards, bonus and defensive contributions remain inside the residual model.",
+    "Double-fixture player-Gameweeks are excluded because one Gameweek-level 60-minute probability cannot identify the fixture in which the threshold was reached.",
+    "A retained probability component still requires a complete point-distribution and opening-squad policy evaluation. It must not replace the incumbent point mean when that gate fails."
+  ],
+  "models": [
+    {
+      "metrics": {
+        "count": 17931,
+        "mae": 0.888789,
+        "meanError": 0.001086,
+        "rmse": 1.835569
+      },
+      "name": "multi-season-appearance-hurdle-points",
+      "slices": {
+        "position": {
+          "defender": {
+            "count": 5887,
+            "mae": 0.977327,
+            "meanError": 0.00096,
+            "rmse": 1.906382
+          },
+          "forward": {
+            "count": 2143,
+            "mae": 0.979961,
+            "meanError": -0.030495,
+            "rmse": 2.050446
+          },
+          "goalkeeper": {
+            "count": 1999,
+            "mae": 0.584045,
+            "meanError": -0.031799,
+            "rmse": 1.403385
+          },
+          "midfielder": {
+            "count": 7902,
+            "mae": 0.875194,
+            "meanError": 0.018063,
+            "rmse": 1.816471
+          }
+        }
+      }
+    },
+    {
+      "metrics": {
+        "count": 17931,
+        "mae": 0.886663,
+        "meanError": -0.007655,
+        "rmse": 1.835218
+      },
+      "name": "appearance-residual-plus-league-clean-sheet-component",
+      "slices": {
+        "position": {
+          "defender": {
+            "count": 5887,
+            "mae": 0.98381,
+            "meanError": 0.009481,
+            "rmse": 1.910302
+          },
+          "forward": {
+            "count": 2143,
+            "mae": 0.980361,
+            "meanError": -0.033769,
+            "rmse": 2.046593
+          },
+          "goalkeeper": {
+            "count": 1999,
+            "mae": 0.583217,
+            "meanError": -0.02314,
+            "rmse": 1.401044
+          },
+          "midfielder": {
+            "count": 7902,
+            "mae": 0.865641,
+            "meanError": -0.009421,
+            "rmse": 1.814233
+          }
+        }
+      }
+    },
+    {
+      "metrics": {
+        "count": 17931,
+        "mae": 0.887922,
+        "meanError": 0.008315,
+        "rmse": 1.827378
+      },
+      "name": "appearance-residual-plus-dixon-coles-clean-sheet-component",
+      "slices": {
+        "position": {
+          "defender": {
+            "count": 5887,
+            "mae": 0.98447,
+            "meanError": 0.03916,
+            "rmse": 1.890255
+          },
+          "forward": {
+            "count": 2143,
+            "mae": 0.980361,
+            "meanError": -0.033769,
+            "rmse": 2.046593
+          },
+          "goalkeeper": {
+            "count": 1999,
+            "mae": 0.588027,
+            "meanError": -0.000192,
+            "rmse": 1.401211
+          },
+          "midfielder": {
+            "count": 7902,
+            "mae": 0.866791,
+            "meanError": -0.0011,
+            "rmse": 1.811885
+          }
+        }
+      }
+    }
+  ],
+  "pointMeanDecision": "do-not-retain-clean-sheet-point-mean",
+  "pointMeanGates": {
+    "aggregateMaeImprovement": false,
+    "aggregateRmseNonRegression": true,
+    "dixonColesNonWorseThanLeagueComponent": false,
+    "positionMaeStability": true,
+    "strictMajorityPointFoldWins": false
+  },
+  "registeredSeasonCodes": [
+    "2022-23",
+    "2023-24",
+    "2024-25",
+    "2025-26"
+  ],
+  "researchStatus": "retrospective-component-screen-not-promoted",
+  "retentionRule": {
+    "cleanSheetDistribution": {
+      "maximumCalibrationErrorDelta": 0.0,
+      "maximumLogLossDelta": 0.0,
+      "minimumBrierImprovementFraction": 0.01,
+      "strictMajorityFoldWins": true
+    },
+    "pointMean": {
+      "dixonColesNonWorseThanLeagueComponent": true,
+      "maximumPositionMaeRegressionFraction": 0.05,
+      "maximumRmseDelta": 0.0,
+      "minimumMaeImprovementFraction": 0.01,
+      "strictMajorityPointFoldWins": true
+    }
+  },
+  "runIdentitySha256": "fba247502980ae3bba7880af3d30d215bae4082a545c4835f9a0f0c190143212",
+  "schemaVersion": "1.0",
+  "scorelineReplicationIdentity": {
+    "dataIdentitySha256": "f6aecac9568d720248fe5e1078be1f0396f970dad3de82a7cc269b79dc90b25e",
+    "runIdentitySha256": "2c10b68b1b0732a268002109c5bf7e4e5b266bc4df46ea16cf42b617bcdf6599"
+  },
+  "status": "complete",
+  "targetEvaluations": [
+    {
+      "dixonColesCleanSheetProbabilityMetrics": {
+        "brierScore": 0.048715,
+        "calibrationError10": 0.007201,
+        "count": 5333,
+        "eventRate": 0.060566,
+        "logLoss": 0.161722,
+        "meanProbability": 0.063351
+      },
+      "foldCount": 8,
+      "leagueCleanSheetProbabilityMetrics": {
+        "brierScore": 0.050146,
+        "calibrationError10": 0.005946,
+        "count": 5333,
+        "eventRate": 0.060566,
+        "logLoss": 0.168016,
+        "meanProbability": 0.05462
+      },
+      "models": [
+        {
+          "metrics": {
+            "count": 6144,
+            "mae": 0.848605,
+            "meanError": -0.011624,
+            "rmse": 1.852473
+          },
+          "name": "multi-season-appearance-hurdle-points",
+          "slices": {
+            "position": {
+              "defender": {
+                "count": 1976,
+                "mae": 0.929384,
+                "meanError": 0.011663,
+                "rmse": 1.856615
+              },
+              "forward": {
+                "count": 811,
+                "mae": 0.880673,
+                "meanError": -0.05146,
+                "rmse": 2.014761
+              },
+              "goalkeeper": {
+                "count": 697,
+                "mae": 0.529588,
+                "meanError": -0.023132,
+                "rmse": 1.294423
+              },
+              "midfielder": {
+                "count": 2660,
+                "mae": 0.862413,
+                "meanError": -0.013762,
+                "rmse": 1.920691
+              }
+            }
+          }
+        },
+        {
+          "metrics": {
+            "count": 6144,
+            "mae": 0.850456,
+            "meanError": -0.011925,
+            "rmse": 1.854151
+          },
+          "name": "appearance-residual-plus-league-clean-sheet-component",
+          "slices": {
+            "position": {
+              "defender": {
+                "count": 1976,
+                "mae": 0.936205,
+                "meanError": 0.017207,
+                "rmse": 1.861614
+              },
+              "forward": {
+                "count": 811,
+                "mae": 0.889211,
+                "meanError": -0.044478,
+                "rmse": 2.014286
+              },
+              "goalkeeper": {
+                "count": 697,
+                "mae": 0.530834,
+                "meanError": -0.009125,
+                "rmse": 1.294865
+              },
+              "midfielder": {
+                "count": 2660,
+                "mae": 0.858691,
+                "meanError": -0.024375,
+                "rmse": 1.920909
+              }
+            }
+          }
+        },
+        {
+          "metrics": {
+            "count": 6144,
+            "mae": 0.851195,
+            "meanError": 0.006602,
+            "rmse": 1.843417
+          },
+          "name": "appearance-residual-plus-dixon-coles-clean-sheet-component",
+          "slices": {
+            "position": {
+              "defender": {
+                "count": 1976,
+                "mae": 0.935754,
+                "meanError": 0.053594,
+                "rmse": 1.834362
+              },
+              "forward": {
+                "count": 811,
+                "mae": 0.889211,
+                "meanError": -0.044478,
+                "rmse": 2.014286
+              },
+              "goalkeeper": {
+                "count": 697,
+                "mae": 0.537119,
+                "meanError": 0.016412,
+                "rmse": 1.296312
+              },
+              "midfielder": {
+                "count": 2660,
+                "mae": 0.859086,
+                "meanError": -0.015302,
+                "rmse": 1.916262
+              }
+            }
+          }
+        }
+      ],
+      "targetPlayerCount": 6144,
+      "targetSeasonCode": "2023-24"
+    },
+    {
+      "dixonColesCleanSheetProbabilityMetrics": {
+        "brierScore": 0.058568,
+        "calibrationError10": 0.008793,
+        "count": 5201,
+        "eventRate": 0.074601,
+        "logLoss": 0.194681,
+        "meanProbability": 0.071668
+      },
+      "foldCount": 8,
+      "leagueCleanSheetProbabilityMetrics": {
+        "brierScore": 0.060801,
+        "calibrationError10": 0.011735,
+        "count": 5201,
+        "eventRate": 0.074601,
+        "logLoss": 0.202026,
+        "meanProbability": 0.062867
+      },
+      "models": [
+        {
+          "metrics": {
+            "count": 5865,
+            "mae": 0.905537,
+            "meanError": 0.009737,
+            "rmse": 1.796957
+          },
+          "name": "multi-season-appearance-hurdle-points",
+          "slices": {
+            "position": {
+              "defender": {
+                "count": 1996,
+                "mae": 0.975621,
+                "meanError": -0.007585,
+                "rmse": 1.852928
+              },
+              "forward": {
+                "count": 664,
+                "mae": 0.958409,
+                "meanError": 0.056519,
+                "rmse": 1.887602
+              },
+              "goalkeeper": {
+                "count": 613,
+                "mae": 0.666252,
+                "meanError": -0.045301,
+                "rmse": 1.593831
+              },
+              "midfielder": {
+                "count": 2592,
+                "mae": 0.894613,
+                "meanError": 0.024109,
+                "rmse": 1.774563
+              }
+            }
+          }
+        },
+        {
+          "metrics": {
+            "count": 5865,
+            "mae": 0.900766,
+            "meanError": -0.00814,
+            "rmse": 1.797349
+          },
+          "name": "appearance-residual-plus-league-clean-sheet-component",
+          "slices": {
+            "position": {
+              "defender": {
+                "count": 1996,
+                "mae": 0.981116,
+                "meanError": -0.007772,
+                "rmse": 1.858741
+              },
+              "forward": {
+                "count": 664,
+                "mae": 0.951748,
+                "meanError": 0.043042,
+                "rmse": 1.878859
+              },
+              "goalkeeper": {
+                "count": 613,
+                "mae": 0.661723,
+                "meanError": -0.048193,
+                "rmse": 1.593772
+              },
+              "midfielder": {
+                "count": 2592,
+                "mae": 0.882363,
+                "meanError": -0.012062,
+                "rmse": 1.773169
+              }
+            }
+          }
+        },
+        {
+          "metrics": {
+            "count": 5865,
+            "mae": 0.901839,
+            "meanError": 0.009293,
+            "rmse": 1.788112
+          },
+          "name": "appearance-residual-plus-dixon-coles-clean-sheet-component",
+          "slices": {
+            "position": {
+              "defender": {
+                "count": 1996,
+                "mae": 0.979482,
+                "meanError": 0.021274,
+                "rmse": 1.832078
+              },
+              "forward": {
+                "count": 664,
+                "mae": 0.951748,
+                "meanError": 0.043042,
+                "rmse": 1.878859
+              },
+              "goalkeeper": {
+                "count": 613,
+                "mae": 0.669431,
+                "meanError": -0.019963,
+                "rmse": 1.599718
+              },
+              "midfielder": {
+                "count": 2592,
+                "mae": 0.884227,
+                "meanError": -0.001661,
+                "rmse": 1.772138
+              }
+            }
+          }
+        }
+      ],
+      "targetPlayerCount": 5865,
+      "targetSeasonCode": "2024-25"
+    },
+    {
+      "dixonColesCleanSheetProbabilityMetrics": {
+        "brierScore": 0.049889,
+        "calibrationError10": 0.010261,
+        "count": 5254,
+        "eventRate": 0.061477,
+        "logLoss": 0.16816,
+        "meanProbability": 0.070198
+      },
+      "foldCount": 8,
+      "leagueCleanSheetProbabilityMetrics": {
+        "brierScore": 0.050593,
+        "calibrationError10": 0.006848,
+        "count": 5254,
+        "eventRate": 0.061477,
+        "logLoss": 0.171534,
+        "meanProbability": 0.064763
+      },
+      "models": [
+        {
+          "metrics": {
+            "count": 5922,
+            "mae": 0.913892,
+            "meanError": 0.005703,
+            "rmse": 1.855677
+          },
+          "name": "multi-season-appearance-hurdle-points",
+          "slices": {
+            "position": {
+              "defender": {
+                "count": 1915,
+                "mae": 1.028576,
+                "meanError": -0.001178,
+                "rmse": 2.009224
+              },
+              "forward": {
+                "count": 668,
+                "mae": 1.121927,
+                "meanError": -0.091536,
+                "rmse": 2.240066
+              },
+              "goalkeeper": {
+                "count": 689,
+                "mae": 0.565996,
+                "meanError": -0.028554,
+                "rmse": 1.326279
+              },
+              "midfielder": {
+                "count": 2650,
+                "mae": 0.86903,
+                "meanError": 0.044094,
+                "rmse": 1.748088
+              }
+            }
+          }
+        },
+        {
+          "metrics": {
+            "count": 5922,
+            "mae": 0.91026,
+            "meanError": -0.002744,
+            "rmse": 1.85251
+          },
+          "name": "appearance-residual-plus-league-clean-sheet-component",
+          "slices": {
+            "position": {
+              "defender": {
+                "count": 1915,
+                "mae": 1.035739,
+                "meanError": 0.01949,
+                "rmse": 2.010299
+              },
+              "forward": {
+                "count": 668,
+                "mae": 1.119464,
+                "meanError": -0.09712,
+                "rmse": 2.236585
+              },
+              "goalkeeper": {
+                "count": 689,
+                "mae": 0.566361,
+                "meanError": -0.015029,
+                "rmse": 1.318704
+              },
+              "midfielder": {
+                "count": 2650,
+                "mae": 0.856261,
+                "meanError": 0.008173,
+                "rmse": 1.742291
+              }
+            }
+          }
+        },
+        {
+          "metrics": {
+            "count": 5922,
+            "mae": 0.912244,
+            "meanError": 0.009122,
+            "rmse": 1.849007
+          },
+          "name": "appearance-residual-plus-dixon-coles-clean-sheet-component",
+          "slices": {
+            "position": {
+              "defender": {
+                "count": 1915,
+                "mae": 1.039937,
+                "meanError": 0.042908,
+                "rmse": 2.003395
+              },
+              "forward": {
+                "count": 668,
+                "mae": 1.119464,
+                "meanError": -0.09712,
+                "rmse": 2.236585
+              },
+              "goalkeeper": {
+                "count": 689,
+                "mae": 0.567101,
+                "meanError": 0.000602,
+                "rmse": 1.311352
+              },
+              "midfielder": {
+                "count": 2650,
+                "mae": 0.85747,
+                "meanError": 0.013704,
+                "rmse": 1.741166
+              }
+            }
+          }
+        }
+      ],
+      "targetPlayerCount": 5922,
+      "targetSeasonCode": "2025-26"
+    }
+  ]
+}
