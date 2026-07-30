@@ -672,7 +672,11 @@ public sealed class FplFormForecastImporterTests
                 Assert.Contains("page.request.get", code, StringComparison.Ordinal);
                 Assert.Contains("response.dispose", code, StringComparison.Ordinal);
                 Assert.Contains("visitPlayers", code, StringComparison.Ordinal);
-                Assert.Contains("hashChunkSize", code, StringComparison.Ordinal);
+                Assert.Contains("crypto.subtle.digest", code, StringComparison.Ordinal);
+                Assert.DoesNotContain(
+                    "import(\"node:crypto\")",
+                    code,
+                    StringComparison.Ordinal);
                 Assert.Contains("prediction.season", code, StringComparison.Ordinal);
                 Assert.Contains("kickoffIdentity", code, StringComparison.Ordinal);
                 string extracted = Encoding.UTF8.GetString(evidence);

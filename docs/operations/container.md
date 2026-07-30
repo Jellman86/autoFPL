@@ -471,15 +471,17 @@ dotnet AutoFpl.Api.dll \
   fbref-championship-playing-time-<2021-22|2022-23|2023-24|2024-25|2025-26>
 ```
 
-The command uses Quark's hardened Spider MCP endpoint, defaulting to
-`http://spider-mcp:8080/mcp`. Set
-`AutoFpl__Research__SpiderMcpUrl` only when the internal endpoint differs. The
-application must share only the dedicated Spider MCP Docker network required
-to reach that private service; Spider retains its separate Chromium and
-research-egress trust domains. The Premier League injury source enables
-rendering, waits for `.injury-news__table-body` and rejects retained content
-smaller than 1,000 bytes. This deliberately fails closed when the browser
-returns only the site's application shell.
+Static sources use Quark's hardened Spider MCP endpoint, defaulting to
+`http://spider-mcp:8080/mcp`; set
+`AutoFpl__Research__SpiderMcpUrl` only when that internal endpoint differs.
+The Premier League injury source reuses the existing isolated Playwright MCP
+endpoint documented above. Its fixed operation requires 20 rendered club
+sections and one through 200 valid player rows, accepts a missing update link
+only when the official row itself displays no linked details, and validates
+every supplied link as HTTPS. It then retains a bounded canonical payload and
+a hash of the exact rendered widget. This deliberately fails closed on the
+site's application shell or partial render. The application shares only the
+existing private collector networks and deploys no additional browser.
 
 Set `AutoFpl__Research__ResearchSourcePollIntervalMinutes` to an integer from
 `60` through `1440` to refresh the complete fixed inventory in the background.

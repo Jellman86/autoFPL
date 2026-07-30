@@ -8,8 +8,9 @@
   Premier League injury page, Fantasy Football Scout predicted-lineup page and
   strAIghtred lineup-consensus page.
 - **Transport:** Quark's pinned hardened Spider MCP
-  `de35b3a9dd740542070fa2ee0e70bc804dde07ee`; static extraction by default and
-  dedicated Spider rendering only where the registry requires it.
+  `de35b3a9dd740542070fa2ee0e70bc804dde07ee` for static pages and the existing
+  isolated Playwright MCP `v0.0.78` for the client-rendered Premier League
+  injury page. The application deploys no browser or scraper of its own.
 - **Authentication:** none; public pages only.
 - **Timing:** retrieval and availability are the completed capture time.
   Provider publication/update time is not inferred at capture. Later extraction
@@ -31,12 +32,15 @@
 - **Failure behavior:** unknown source keys, wrong MCP identity, redirects to a
   different resource, non-200 results, missing trust markers, oversized or
   malformed responses and missing official target identity fail closed without
-  a partial snapshot. The dynamically rendered Premier League injury source
-  waits for its injury-table body and requires at least 1,000 bytes of retained
-  text, so the small JavaScript page shell is not mistaken for evidence.
-  Required-content checks apply equally to rendered Spider and Byparr
-  transports. Optional bounded background refresh isolates each source, so one
-  failure does not suppress the rest of the fixed portfolio.
+  a partial snapshot. The Premier League collector requires exactly 20
+  rendered club sections, one through 200 structurally valid player rows,
+  safe HTTPS club-update links where the official row supplies one, and at
+  least 1,000 bytes of compact evidence. It retains club, player, injury label,
+  the optional update URL and a SHA-256 of the exact rendered widget, so the
+  small JavaScript page shell is not mistaken for evidence. Required-content
+  checks also apply to Spider and Byparr transports. Optional bounded
+  background refresh isolates each source, so one failure does not suppress
+  the rest of the fixed portfolio.
 
 This record admits a collection boundary, not a predictive feature. See the
 [source portfolio](../../research/research-source-portfolio-v1.md) for the

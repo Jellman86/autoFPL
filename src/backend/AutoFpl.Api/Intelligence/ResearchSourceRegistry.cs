@@ -82,7 +82,12 @@ public static class ResearchSourceRegistry
                 "The page aggregates club reporting and may lag a direct manager statement.",
                 "An injury listing does not by itself quantify start or minutes probability.",
             ],
-            WaitForSelector: ".injury-news__table-body",
+            TransportKey: PremierLeagueInjuryPlaywrightCollector.TransportKey,
+            RequiredContentMarkers:
+            [
+                "\"schemaVersion\":\"premier-league-injury-dom/v1\"",
+                "\"sourceUrl\":\"https://www.premierleague.com/en/latest-player-injuries\"",
+            ],
             MinimumContentBytes: 1000),
         new(
             "ffscout-predicted-lineups",

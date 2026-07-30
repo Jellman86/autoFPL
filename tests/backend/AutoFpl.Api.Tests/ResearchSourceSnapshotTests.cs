@@ -93,54 +93,75 @@ public sealed class ResearchSourceSnapshotTests
     }
 
     [Fact]
-    public async Task Rendered_injury_capture_waits_for_rows_and_rejects_the_page_shell()
+    public async Task Rendered_injury_capture_uses_playwright_and_rejects_incomplete_clubs()
     {
         using var files = new TemporaryDatabaseFiles();
         DatabaseOptions options = await CreateDatabaseAsync(files.DatabasePath);
-        string renderedContent =
-            "Premier League Latest Injury News\n"
-            + "Player | Injury | Latest\n"
-            + string.Join(
-                '\n',
-                Enumerable.Repeat(
-                    "William Saliba | Back | Details",
-                    40));
-        var handler = new SpiderMcpHandler(
-            renderedContent,
-            acceptRegisteredSources: true);
-        using var httpClient = new HttpClient(handler)
+        var handler = new PlaywrightInjuryMcpHandler(
+            CreatePremierLeagueInjuryEvidence(
+                emptyFirstClub: true,
+                missingUpdateUrl: true));
+        using var playwrightHttpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("http://playwright-mcp:8931/mcp"),
+        };
+        using var spiderHttpClient = new HttpClient(
+            new SpiderMcpHandler("unused"))
         {
             BaseAddress = new Uri("http://spider-mcp:8080/mcp"),
         };
         var importer = new ResearchSourceSnapshotImporter(
-            new SpiderMcpClient(httpClient),
+            new SpiderMcpClient(spiderHttpClient),
             new ResearchSourceSnapshotStore(
                 options,
-                new FixedTimeProvider(RetrievalTime)));
+                new FixedTimeProvider(RetrievalTime)),
+            new PremierLeagueInjuryPlaywrightCollector(
+                new PlaywrightMcpFplFormCollector(playwrightHttpClient)));
 
         ResearchSourceSnapshotDocument snapshot = await importer.ImportAsync(
             "premier-league-injuries",
             TestContext.Current.CancellationToken);
 
-        Assert.True(handler.LastHeadless);
+        Assert.Equal("playwright-mcp", snapshot.TransportKey);
         Assert.Equal(
-            ".injury-news__table-body",
-            handler.LastWaitForSelector);
+            PremierLeagueInjuryPlaywrightCollector.TransportVersion,
+            snapshot.TransportVersion);
         Assert.True(snapshot.ContentBytes >= 1000);
+        Assert.Contains(
+            ".injury-news__article",
+            handler.CollectionCode,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "articles.length === 20",
+            handler.CollectionCode,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "renderedWidgetSha256",
+            handler.CollectionCode,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "crypto.subtle.digest",
+            handler.CollectionCode,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "import(\"node:crypto\")",
+            handler.CollectionCode,
+            StringComparison.Ordinal);
 
-        var incompleteHandler = new SpiderMcpHandler(
-            "Premier League Latest Injury News shell",
-            acceptRegisteredSources: true);
+        var incompleteHandler = new PlaywrightInjuryMcpHandler(
+            CreatePremierLeagueInjuryEvidence(clubCount: 19));
         using var incompleteClient = new HttpClient(incompleteHandler)
         {
-            BaseAddress = new Uri("http://spider-mcp:8080/mcp"),
+            BaseAddress = new Uri("http://playwright-mcp:8931/mcp"),
         };
         await Assert.ThrowsAsync<ResearchSourceSnapshotException>(
             async () => await new ResearchSourceSnapshotImporter(
-                    new SpiderMcpClient(incompleteClient),
+                    new SpiderMcpClient(spiderHttpClient),
                     new ResearchSourceSnapshotStore(
                         options,
-                        new FixedTimeProvider(RetrievalTime.AddMinutes(1))))
+                        new FixedTimeProvider(RetrievalTime.AddMinutes(1))),
+                    new PremierLeagueInjuryPlaywrightCollector(
+                        new PlaywrightMcpFplFormCollector(incompleteClient)))
                 .ImportAsync(
                     "premier-league-injuries",
                     TestContext.Current.CancellationToken));
@@ -1670,17 +1691,16 @@ public sealed class ResearchSourceSnapshotTests
                     3-5-2
                     ### Recently Updated
                     """,
-                ["https://www.premierleague.com/en/latest-player-injuries"] =
-                    "Premier League Latest Injury News\nPlayer | Injury | Latest\n"
-                    + string.Join(
-                        '\n',
-                        Enumerable.Repeat(
-                            "William Saliba | Back | See the latest update",
-                            40)),
             });
         using var httpClient = new HttpClient(handler)
         {
             BaseAddress = new Uri("http://spider-mcp:8080/mcp"),
+        };
+        var playwrightHandler = new PlaywrightInjuryMcpHandler(
+            CreatePremierLeagueInjuryEvidence());
+        using var playwrightHttpClient = new HttpClient(playwrightHandler)
+        {
+            BaseAddress = new Uri("http://playwright-mcp:8931/mcp"),
         };
         var claimStore = new EvidenceClaimStore(
             options,
@@ -1698,7 +1718,10 @@ public sealed class ResearchSourceSnapshotTests
         var poller = new ResearchSourcePoller(
             new ResearchSourceSnapshotImporter(
                 new SpiderMcpClient(httpClient),
-                snapshotStore),
+                snapshotStore,
+                new PremierLeagueInjuryPlaywrightCollector(
+                    new PlaywrightMcpFplFormCollector(
+                        playwrightHttpClient))),
             new ResearchSourceClaimExtractor(snapshotStore, claimStore),
             pollingOptions,
             new FixedTimeProvider(RetrievalTime));
@@ -1723,8 +1746,9 @@ public sealed class ResearchSourceSnapshotTests
             claims.Claims,
             claim => claim.SourceKey
                 == ResearchSourceClaimExtractor.StraightredSourceKey);
-        Assert.Equal(3, handler.ScrapeCalls);
-        Assert.Equal(3, handler.DeleteCalls);
+        Assert.Equal(2, handler.ScrapeCalls);
+        Assert.Equal(2, handler.DeleteCalls);
+        Assert.NotNull(playwrightHandler.CollectionCode);
     }
 
     [Fact]
@@ -2360,6 +2384,167 @@ public sealed class ResearchSourceSnapshotTests
         return duplicateCommentedTable
             ? $"<html><body><!--{value}-->{value}</body></html>"
             : $"<html><body>{value}</body></html>";
+    }
+
+    private static string CreatePremierLeagueInjuryEvidence(
+        int clubCount = 20,
+        bool emptyFirstClub = false,
+        bool missingUpdateUrl = false) =>
+        JsonSerializer.Serialize(
+            new
+            {
+                schemaVersion = "premier-league-injury-dom/v1",
+                sourceUrl =
+                    "https://www.premierleague.com/en/latest-player-injuries",
+                pageTitle =
+                    "Premier League Latest Injury News - Club by Club Updates",
+                renderedWidgetSha256 = new string('a', 64),
+                clubs = Enumerable.Range(1, clubCount)
+                    .Select(
+                        club => new
+                        {
+                            teamName = $"Club {club:D2}",
+                            rows = Enumerable.Range(
+                                    1,
+                                    emptyFirstClub && club == 1 ? 0 : 2)
+                                .Select(
+                                    player => new
+                                    {
+                                        playerName =
+                                            $"Player {club:D2}-{player:D2}",
+                                        injury =
+                                            player == 1 ? "Back" : "Knee",
+                                        updateUrl =
+                                            missingUpdateUrl
+                                                && club == 2
+                                                && player == 1
+                                                ? null
+                                                : $"https://club{club:D2}.example/"
+                                                    + $"news/player-{player:D2}",
+                                    })
+                                .ToArray(),
+                        })
+                    .ToArray(),
+            });
+
+    private sealed class PlaywrightInjuryMcpHandler(
+        string evidence) : HttpMessageHandler
+    {
+        public string? CollectionCode { get; private set; }
+
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            if (request.Method == HttpMethod.Delete)
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK);
+            }
+
+            string body =
+                await request.Content!.ReadAsStringAsync(cancellationToken);
+            using JsonDocument document = JsonDocument.Parse(body);
+            string method =
+                document.RootElement.GetProperty("method").GetString()!;
+            if (StringComparer.Ordinal.Equals(method, "initialize"))
+            {
+                return Response(
+                    1,
+                    new
+                    {
+                        protocolVersion = "2025-03-26",
+                        capabilities = new { tools = new { } },
+                        serverInfo = new
+                        {
+                            name = "Playwright",
+                            version = "test",
+                        },
+                    },
+                    includeSession: true);
+            }
+
+            if (StringComparer.Ordinal.Equals(
+                    method,
+                    "notifications/initialized"))
+            {
+                return new HttpResponseMessage(HttpStatusCode.Accepted);
+            }
+
+            JsonElement parameters =
+                document.RootElement.GetProperty("params");
+            string tool = parameters.GetProperty("name").GetString()!;
+            if (StringComparer.Ordinal.Equals(
+                    tool,
+                    "browser_run_code_unsafe"))
+            {
+                CollectionCode = parameters
+                    .GetProperty("arguments")
+                    .GetProperty("code")
+                    .GetString();
+                string literal = JsonSerializer.Serialize(
+                    $"AUTOFPL_PL_INJURY_V1:{evidence}");
+                return Response(
+                    2,
+                    new
+                    {
+                        content = new[]
+                        {
+                            new
+                            {
+                                type = "text",
+                                text =
+                                    "### Result\n"
+                                    + literal
+                                    + "\n### Ran Playwright code\n```js\nprobe\n```",
+                            },
+                        },
+                    });
+            }
+
+            Assert.Equal("browser_close", tool);
+            return Response(
+                3,
+                new
+                {
+                    content = new[]
+                    {
+                        new
+                        {
+                            type = "text",
+                            text = "closed",
+                        },
+                    },
+                });
+        }
+
+        private static HttpResponseMessage Response(
+            int id,
+            object result,
+            bool includeSession = false)
+        {
+            string envelope = JsonSerializer.Serialize(
+                new
+                {
+                    result,
+                    jsonrpc = "2.0",
+                    id,
+                });
+            var response = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(
+                    envelope,
+                    Encoding.UTF8,
+                    "application/json"),
+            };
+            if (includeSession)
+            {
+                response.Headers.TryAddWithoutValidation(
+                    "Mcp-Session-Id",
+                    "test-session");
+            }
+
+            return response;
+        }
     }
 
     private sealed class FixedTimeProvider(DateTimeOffset value) : TimeProvider

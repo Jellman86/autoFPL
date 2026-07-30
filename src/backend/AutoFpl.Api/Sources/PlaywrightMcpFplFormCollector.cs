@@ -215,23 +215,24 @@ public sealed class PlaywrightMcpFplFormCollector
             (left, right) =>
               left.sourcePlayerId - right.sourcePlayerId
               || left.fixtureId - right.fixtureId);
-          const { createHash } = await import("node:crypto");
-          const hash = createHash("sha256");
-          const hashChunkSize = 1024 * 1024;
-          for (let offset = 0;
-            offset < encodedPlayers.length;
-            offset += hashChunkSize) {
-            hash.update(
-              encodedPlayers.slice(offset, offset + hashChunkSize),
-              "utf8");
-          }
+          const providerPayloadSha256 = await page.evaluate(
+            async encoded => {
+              const digest = await crypto.subtle.digest(
+                "SHA-256",
+                new TextEncoder().encode(encoded));
+              return Array.from(
+                new Uint8Array(digest),
+                byte => byte.toString(16).padStart(2, "0"))
+                .join("");
+            },
+            encodedPlayers);
 
           return prefix + JSON.stringify({
             schemaVersion: "fpl-form-stream-extract/v2",
             sourceUrl,
             season,
             gameweek,
-            providerPayloadSha256: hash.digest("hex"),
+            providerPayloadSha256,
             predictions
           });
         }
@@ -253,18 +254,12 @@ public sealed class PlaywrightMcpFplFormCollector
     public async Task<byte[]> CaptureAsync(
         CancellationToken cancellationToken = default)
     {
-        string? sessionId = null;
         try
         {
-            sessionId = await InitializeAsync(cancellationToken);
-            await SendInitializedAsync(sessionId, cancellationToken);
-            string evaluated = await CallToolAsync(
-                sessionId,
-                requestId: 2,
-                "browser_run_code_unsafe",
-                new { code = CollectionCode },
+            return await CaptureFixedPageAsync(
+                CollectionCode,
+                EvaluationPrefix,
                 cancellationToken);
-            return ParseEvaluation(evaluated);
         }
         catch (FplFormForecastPayloadException)
         {
@@ -283,6 +278,28 @@ public sealed class PlaywrightMcpFplFormCollector
             throw new FplFormForecastPayloadException(
                 "Playwright MCP could not collect the FPL Form forecast.",
                 exception);
+        }
+    }
+
+    internal async Task<byte[]> CaptureFixedPageAsync(
+        string collectionCode,
+        string evaluationPrefix,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(collectionCode);
+        ArgumentException.ThrowIfNullOrWhiteSpace(evaluationPrefix);
+        string? sessionId = null;
+        try
+        {
+            sessionId = await InitializeAsync(cancellationToken);
+            await SendInitializedAsync(sessionId, cancellationToken);
+            string evaluated = await CallToolAsync(
+                sessionId,
+                requestId: 2,
+                "browser_run_code_unsafe",
+                new { code = collectionCode },
+                cancellationToken);
+            return ParseEvaluation(evaluated, evaluationPrefix);
         }
         finally
         {
@@ -592,7 +609,9 @@ public sealed class PlaywrightMcpFplFormCollector
         return result;
     }
 
-    private static byte[] ParseEvaluation(string output)
+    private static byte[] ParseEvaluation(
+        string output,
+        string evaluationPrefix)
     {
         int resultMarker = output.IndexOf("### Result", StringComparison.Ordinal);
         int codeMarker = output.IndexOf(
@@ -607,12 +626,12 @@ public sealed class PlaywrightMcpFplFormCollector
             (resultMarker + "### Result".Length)..codeMarker].Trim();
         string? value = JsonSerializer.Deserialize<string>(literal);
         if (value is null
-            || !value.StartsWith(EvaluationPrefix, StringComparison.Ordinal))
+            || !value.StartsWith(evaluationPrefix, StringComparison.Ordinal))
         {
             throw Invalid("Playwright MCP returned an unsupported extraction payload.");
         }
 
-        return Encoding.UTF8.GetBytes(value[EvaluationPrefix.Length..]);
+        return Encoding.UTF8.GetBytes(value[evaluationPrefix.Length..]);
     }
 
     private static async Task<byte[]> ReadBoundedAsync(

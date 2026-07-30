@@ -4,7 +4,7 @@ internal sealed record DatabaseMigration(int Version, string Name, string Sql);
 
 internal static class DatabaseMigrations
 {
-    public const int CurrentVersion = 34;
+    public const int CurrentVersion = 35;
 
     public static IReadOnlyList<DatabaseMigration> All { get; } =
     [
@@ -2947,6 +2947,147 @@ internal static class DatabaseMigrations
 
             DROP TABLE research_source_snapshots;
             ALTER TABLE research_source_snapshots_v34
+                RENAME TO research_source_snapshots;
+
+            CREATE INDEX research_source_snapshots_target_idx
+                ON research_source_snapshots (
+                    season_code,
+                    gameweek,
+                    available_at_utc,
+                    source_key
+                );
+
+            CREATE TRIGGER research_source_snapshots_immutable
+            BEFORE UPDATE ON research_source_snapshots
+            BEGIN
+                SELECT RAISE(ABORT, 'research source snapshots are immutable');
+            END;
+
+            CREATE TRIGGER research_source_snapshots_no_delete
+            BEFORE DELETE ON research_source_snapshots
+            BEGIN
+                SELECT RAISE(ABORT, 'research source snapshots cannot be deleted');
+            END;
+            """),
+        new(
+            35,
+            "playwright-research-source-transport",
+            """
+            PRAGMA defer_foreign_keys = ON;
+
+            CREATE TABLE research_source_snapshots_v35 (
+                snapshot_id INTEGER PRIMARY KEY,
+                schema_version TEXT NOT NULL CHECK (schema_version = '1.0'),
+                status TEXT NOT NULL CHECK (status = 'shadow-only'),
+                source_key TEXT NOT NULL
+                    CHECK (
+                        source_key IN (
+                            'premier-league-injuries',
+                            'ffscout-predicted-lineups',
+                            'straightred-lineup-consensus',
+                            'fbref-championship-playing-time-2021-22',
+                            'fbref-championship-playing-time-2022-23',
+                            'fbref-championship-playing-time-2023-24',
+                            'fbref-championship-playing-time-2024-25',
+                            'fbref-championship-playing-time-2025-26',
+                            'fbref-team-schedule-f7e3dfe9-2025-26',
+                            'fbref-team-schedule-bd8769d1-2025-26',
+                            'fbref-team-schedule-b74092de-2025-26'
+                        )
+                        OR (
+                            length(source_key) = 39
+                            AND source_key GLOB
+                                'fbref-player-match-log-[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]-2025-26'
+                        )
+                    ),
+                source_class TEXT NOT NULL
+                    CHECK (length(source_class) BETWEEN 4 AND 100),
+                canonical_url TEXT NOT NULL
+                    CHECK (length(canonical_url) BETWEEN 8 AND 2048),
+                final_url TEXT NOT NULL
+                    CHECK (length(final_url) BETWEEN 8 AND 2048),
+                dependence_group TEXT NOT NULL
+                    CHECK (length(dependence_group) BETWEEN 4 AND 100),
+                transport_key TEXT NOT NULL
+                    CHECK (
+                        transport_key IN (
+                            'spider-mcp',
+                            'byparr',
+                            'playwright-mcp'
+                        )
+                    ),
+                transport_version TEXT NOT NULL
+                    CHECK (length(transport_version) BETWEEN 4 AND 100),
+                season_code TEXT NOT NULL
+                    CHECK (length(season_code) BETWEEN 4 AND 16),
+                gameweek INTEGER NOT NULL CHECK (gameweek BETWEEN 1 AND 38),
+                deadline_utc TEXT NOT NULL,
+                identity_capture_id INTEGER NOT NULL
+                    REFERENCES official_fpl_captures(capture_id)
+                    ON DELETE RESTRICT,
+                retrieved_at_utc TEXT NOT NULL,
+                available_at_utc TEXT NOT NULL,
+                source_revision INTEGER NOT NULL CHECK (source_revision > 0),
+                content_sha256 TEXT NOT NULL
+                    CHECK (length(content_sha256) = 64),
+                content_bytes INTEGER NOT NULL
+                    CHECK (content_bytes BETWEEN 1 AND 6291456),
+                content_brotli BLOB NOT NULL
+                    CHECK (length(content_brotli) BETWEEN 1 AND 8388608),
+                created_at_utc TEXT NOT NULL,
+                UNIQUE (source_key, source_revision),
+                UNIQUE (source_key, identity_capture_id, content_sha256)
+            );
+
+            INSERT INTO research_source_snapshots_v35 (
+                snapshot_id,
+                schema_version,
+                status,
+                source_key,
+                source_class,
+                canonical_url,
+                final_url,
+                dependence_group,
+                transport_key,
+                transport_version,
+                season_code,
+                gameweek,
+                deadline_utc,
+                identity_capture_id,
+                retrieved_at_utc,
+                available_at_utc,
+                source_revision,
+                content_sha256,
+                content_bytes,
+                content_brotli,
+                created_at_utc
+            )
+            SELECT
+                snapshot_id,
+                schema_version,
+                status,
+                source_key,
+                source_class,
+                canonical_url,
+                final_url,
+                dependence_group,
+                transport_key,
+                transport_version,
+                season_code,
+                gameweek,
+                deadline_utc,
+                identity_capture_id,
+                retrieved_at_utc,
+                available_at_utc,
+                source_revision,
+                content_sha256,
+                content_bytes,
+                content_brotli,
+                created_at_utc
+            FROM research_source_snapshots;
+
+            DROP TABLE research_source_snapshots;
+            ALTER TABLE research_source_snapshots_v35
                 RENAME TO research_source_snapshots;
 
             CREATE INDEX research_source_snapshots_target_idx

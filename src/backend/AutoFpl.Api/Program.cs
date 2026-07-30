@@ -707,6 +707,7 @@ builder.Services
             UseProxy = false,
         });
 builder.Services.AddTransient<FplFormForecastImporter>();
+builder.Services.AddTransient<PremierLeagueInjuryPlaywrightCollector>();
 builder.Services.AddTransient<ResearchSourceSnapshotImporter>();
 builder.Services.AddTransient<ResearchSourceClaimExtractor>();
 builder.Services.AddTransient<FbrefPlayingTimeExtractor>();

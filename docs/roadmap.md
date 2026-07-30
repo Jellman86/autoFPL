@@ -1090,11 +1090,14 @@ qualified external-forecast evidence for those near-boundary players. The next
 accuracy slice should turn that priority into cutoff-safe player-specific
 participation evidence and re-run the frozen distribution/policy gates; lineup
 sources remain participation evidence, not an arbitrary points adjustment.
-The first transport defect in that slice is now closed: the official Premier
-League injury page must finish rendering its injury-table body and retain at
-least 1,000 bytes, while Spider captures now enforce the same registry content
-checks as other transports. The next Quark capture must validate the real row
-format before a typed `doubtful` injury claim extractor is frozen.
+The first transport defect in that slice is now closed. Spider's wait path
+returns an empty synthetic 525 result on Quark, so the official Premier League
+injury page now reuses the already deployed isolated Playwright MCP. The fixed
+collector requires all 20 club sections and structurally valid player rows,
+retains compact club/player/injury/optional-update-link evidence plus the
+rendered widget hash, and rejects the application shell or partial content. The
+next slice freezes a typed `doubtful` claim extractor over that validated
+payload.
 Do not add another standalone governance, universal contract, infrastructure
 or AI-orchestrator project ahead of these slices.
 
