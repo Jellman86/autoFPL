@@ -648,6 +648,21 @@ or registered hierarchical component model and prove standalone temporal
 accuracy before the same opening-distribution and complete-policy screen.
 Current cutoff-safe availability extraction can proceed independently because
 it changes a different forecast component.
+That extraction is now live for the official Premier League injury pages and
+the first selected-plus-boundary audit is retained. It covers all 15 selected
+players and all five direct alternatives from the exact global sensitivity
+solve. None appears on the official injury list. FFScout omits selected Van
+Hecke and Enzo, plus alternatives Darlow and Anderson, from its complete
+predicted XIs; Kelleher, Milenković and João Pedro are included. These remain
+categorical, quarantined start claims rather than invented appearance
+probabilities, so v2 stays unchanged. The production extractor also resolves a
+unique team-scoped first-name or nickname token such as Rodri while continuing
+to reject stale team mismatches such as Tonali-at-Newcastle.
+The next accuracy gate is prospective source reliability by target and
+lead-time, followed by a registered start/substitute/zero-minutes mixture.
+Until exact outcomes exist, evidence remains a visible risk signal and cannot
+silently mutate the forecast. Continue refreshing it through the deadline;
+do not replace forecast work with further optimiser complexity.
 
 The SQLite persistence vertical slice is deployed and survives a managed
 container recreate. Operator-triggered fixed-origin official FPL collectors
