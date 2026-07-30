@@ -1057,11 +1057,17 @@ first clean-sheet factorization improves player clean-sheet Brier by 2.70%,
 log loss, calibration and 14/24 folds, but its reconstructed point mean improves
 MAE by only 0.0975%, wins 12/24 point folds and loses MAE to the league-rate
 variant. Reject the mean replacement and preserve v2. The active challenger is
-therefore a mean-preserving point distribution that injects one correlated
-Dixon–Coles clean-sheet event per team fixture, then must improve CRPS and the
-full 3/6/8-Gameweek squad policy. Conditional player goal/assist allocation
-follows that screen; lineup sources remain participation evidence, not an
-arbitrary points adjustment.
+therefore tested as a mean-preserving point distribution that injects shared
+Dixon–Coles scorelines and fixture-level 60-minute clean-sheet awards. It
+preserves every incumbent player-Gameweek column mean exactly, including the
+registered blank and double Gameweeks, but worsens aggregate opening CRPS by
+0.20%, wins only one of three targets and regresses goalkeeper CRPS by 0.98%.
+Reject it without running a policy screen and preserve the retained hurdle
+paths. The active component slice is now conditional player goal/assist
+allocation from shared team scoring state, passed through the exact scorer and
+the unchanged opening-distribution and full 3/6/8-Gameweek policy gates.
+Lineup sources remain participation evidence, not an arbitrary points
+adjustment.
 Do not add another standalone governance, universal contract, infrastructure
 or AI-orchestrator project ahead of these slices.
 
