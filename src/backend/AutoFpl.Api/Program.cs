@@ -486,7 +486,8 @@ builder.Services
     .WithHttpTransport(options => options.Stateless = true)
     .WithTools<PlayerDossierMcpTools>()
     .WithTools<CurrentPredictionMcpTools>()
-    .WithTools<CurrentStrategyMcpTools>();
+    .WithTools<CurrentStrategyMcpTools>()
+    .WithTools<CurrentEvidenceReviewMcpTools>();
 builder.Services.AddSingleton(serviceProvider =>
     DatabaseOptions.FromConfiguration(
         serviceProvider.GetRequiredService<IConfiguration>()));
@@ -592,6 +593,10 @@ builder.Services.AddSingleton(serviceProvider =>
     new EvidenceClaimStore(
         serviceProvider.GetRequiredService<DatabaseOptions>(),
         serviceProvider.GetRequiredService<TimeProvider>()));
+builder.Services.AddSingleton(serviceProvider =>
+    new CurrentEvidenceReviewContextStore(
+        serviceProvider.GetRequiredService<ExternalEvidenceStressStore>(),
+        serviceProvider.GetRequiredService<EvidenceClaimStore>()));
 builder.Services.AddSingleton(serviceProvider =>
     new EvidenceClaimEvaluationStore(
         serviceProvider.GetRequiredService<DatabaseOptions>()));
@@ -2013,6 +2018,29 @@ app.MapGet(
     .WithTags("Evidence")
     .Produces<EvidenceClaimSetDocument>()
     .ProducesValidationProblem();
+app.MapGet(
+    "/api/v1/evidence/review-context/current",
+    async (
+        CurrentEvidenceReviewContextStore store,
+        CancellationToken cancellationToken) =>
+    {
+        EvidenceReviewContextDocument? context =
+            await store.GetCurrentAsync(cancellationToken);
+        return context is null
+            ? Results.NotFound()
+            : Results.Ok(context);
+    })
+    .WithName("GetCurrentEvidenceReviewContext")
+    .WithSummary(
+        "Read the bounded semantic-review context for decision-relevant claims.")
+    .WithDescription(
+        "The context contains only claim evidence referenced by current "
+        + "decision-relevant stress scenarios and the latest competing assertions "
+        + "for those players. It is untrusted review input, assigns no probability "
+        + "or source weight and cannot influence the forecast.")
+    .WithTags("Evidence")
+    .Produces<EvidenceReviewContextDocument>()
+    .Produces(StatusCodes.Status404NotFound);
 app.MapGet(
     "/api/v1/research/sources",
     async (
