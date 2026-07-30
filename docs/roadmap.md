@@ -1028,6 +1028,15 @@ global solve returns the same 15 players and identical path scores. Aggregate
 promoted-player playing time therefore leaves the active initial-squad path;
 work advances to higher-decision-impact temporal, availability and registered
 robust-horizon challengers that can affect selected or near-boundary players.
+The first selected-squad lineup boundary audit is now complete as well. The
+latest exact-capture FFScout revision covers all 15 v2 players, predicts 13 to
+start and omits Enzo and Van Hecke. Those claims arrived 87.57 seconds after
+the frozen official forecast capture and remain quarantined. They are genuine
+pre-deadline risk evidence, but a predicted-XI omission is not a zero-appearance
+probability. The next active forecast challenger therefore decomposes start,
+substitute appearance and zero minutes, scores source reliability by lead time,
+and must pass the unchanged proper-score and full 3/6/8-Gameweek policy screens
+before changing the served squad.
 Do not add another standalone governance, universal contract, infrastructure
 or AI-orchestrator project ahead of these slices.
 

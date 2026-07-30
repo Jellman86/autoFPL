@@ -1,0 +1,540 @@
+{
+  "artifactType": "current-lineup-evidence-boundary-audit",
+  "artifactVersion": "current-lineup-evidence-boundary-audit-v1",
+  "coverage": {
+    "categoricalConflictCount": 0,
+    "predictedNonStarterCount": 2,
+    "predictedStarterCount": 13,
+    "selectedPlayerCount": 15,
+    "selectionRiskPlayerCount": 2,
+    "startClaimCoveredPlayerCount": 15
+  },
+  "dataIdentitySha256": "194607cd911db5418cea590adca4ec10c83aa8ee72d0ead08ee0cceb9038a498",
+  "deadlineUtc": "2026-08-21T17:30:00.0000000Z",
+  "decision": "retain-v2-without-uncalibrated-lineup-mutation-and-prioritise-start-substitute-zero-mixture",
+  "evidenceBoundary": {
+    "claimSelectionRule": "latest-by-player-source-target-at-or-before-explicit-evidence-cutoff-and-exact-official-capture",
+    "latestEvidenceSecondsAfterForecastCutoff": 87.568372,
+    "latestSelectedClaimAvailableAtUtc": "2026-07-29T22:40:09.899252Z"
+  },
+  "evidenceDecisionCutoffUtc": "2026-07-30T01:15:25.301306Z",
+  "forecastDecisionCutoffUtc": "2026-07-29T22:38:42.330880Z",
+  "influencesAdvice": false,
+  "isPromoted": false,
+  "limitations": [
+    "Every external claim remains quarantined and has no learned reliability weight for this season and lead time.",
+    "A predicted-XI omission forecasts a start, not an appearance; it cannot be substituted directly for the incumbent appearance probability.",
+    "strAIghtred is a dependent consensus source and is never counted as an additional independent vote.",
+    "The evidence arrived after the official capture used by the selected forecast. This audit binds both cutoffs and does not rewrite the earlier artifact."
+  ],
+  "nextRegisteredChallenger": {
+    "requirements": [
+      "Score source start probabilities against exact decision-time starts by lead-time bucket.",
+      "Estimate substitute-appearance probability separately from start probability.",
+      "Estimate points and minutes conditional on starting and appearing as a substitute.",
+      "Propagate the complete mixture through the unchanged 3/6/8-Gameweek scenario and globally constrained policy screen."
+    ],
+    "target": "fixture-level-start-substitute-appearance-zero-minutes-mixture"
+  },
+  "officialCaptureId": 19,
+  "openingGameweek": 1,
+  "players": [
+    {
+      "categoricalStartSignal": "predicted-starter",
+      "latestClaims": [
+        {
+          "availabilityStatus": null,
+          "availableAtUtc": "2026-07-29T22:40:09.899252Z",
+          "claimContentSha256": "62f1e4c7df22b83663b9607d840a239954510cd28613f1f605ae604e172029aa",
+          "claimId": 7654,
+          "claimType": "start",
+          "forecastProbability": null,
+          "hasDuplicateCluster": true,
+          "isDependentConsensus": false,
+          "sourceClass": "specialist-predicted-lineup",
+          "sourceKey": "ffscout-predicted-lineups",
+          "sourceRevision": 16,
+          "sourceSpan": "Bournemouth predicted XI: Truffert",
+          "startStatus": "starts",
+          "status": "quarantined"
+        }
+      ],
+      "modelAppearanceProbability": 0.947368,
+      "modelStartProbability": null,
+      "playerId": 61,
+      "position": "defender",
+      "selectionRiskFlag": false,
+      "selectionRiskReason": null,
+      "teamId": 3,
+      "teamName": "Bournemouth",
+      "webName": "Truffert"
+    },
+    {
+      "categoricalStartSignal": "predicted-starter",
+      "latestClaims": [
+        {
+          "availabilityStatus": null,
+          "availableAtUtc": "2026-07-29T22:40:09.899252Z",
+          "claimContentSha256": "997fb09dee303a18064fa8c94ace706844aa9e91ccf27d8bd2e108439fbb7c24",
+          "claimId": 7707,
+          "claimType": "start",
+          "forecastProbability": null,
+          "hasDuplicateCluster": true,
+          "isDependentConsensus": false,
+          "sourceClass": "specialist-predicted-lineup",
+          "sourceKey": "ffscout-predicted-lineups",
+          "sourceRevision": 16,
+          "sourceSpan": "Everton predicted XI: Tarkowski",
+          "startStatus": "starts",
+          "status": "quarantined"
+        }
+      ],
+      "modelAppearanceProbability": 0.921053,
+      "modelStartProbability": null,
+      "playerId": 229,
+      "position": "defender",
+      "selectionRiskFlag": false,
+      "selectionRiskReason": null,
+      "teamId": 9,
+      "teamName": "Everton",
+      "webName": "Tarkowski"
+    },
+    {
+      "categoricalStartSignal": "predicted-starter",
+      "latestClaims": [
+        {
+          "availabilityStatus": null,
+          "availableAtUtc": "2026-07-29T22:40:09.899252Z",
+          "claimContentSha256": "fdcd06456175b8557347854c16ba579e8353a1d5eecbaa68d0678a5848c0c735",
+          "claimId": 7740,
+          "claimType": "start",
+          "forecastProbability": null,
+          "hasDuplicateCluster": true,
+          "isDependentConsensus": false,
+          "sourceClass": "specialist-predicted-lineup",
+          "sourceKey": "ffscout-predicted-lineups",
+          "sourceRevision": 16,
+          "sourceSpan": "Liverpool predicted XI: van Dijk",
+          "startStatus": "starts",
+          "status": "quarantined"
+        }
+      ],
+      "modelAppearanceProbability": 0.947368,
+      "modelStartProbability": null,
+      "playerId": 356,
+      "position": "defender",
+      "selectionRiskFlag": false,
+      "selectionRiskReason": null,
+      "teamId": 14,
+      "teamName": "Liverpool",
+      "webName": "Virgil"
+    },
+    {
+      "categoricalStartSignal": "predicted-non-starter",
+      "latestClaims": [
+        {
+          "availabilityStatus": null,
+          "availableAtUtc": "2026-07-29T22:40:09.899252Z",
+          "claimContentSha256": "44ced3426fed8fda24ecddd90bdacfee3e840491b7c2c23661394c5d6039cb19",
+          "claimId": 8068,
+          "claimType": "start",
+          "forecastProbability": null,
+          "hasDuplicateCluster": true,
+          "isDependentConsensus": false,
+          "sourceClass": "specialist-predicted-lineup",
+          "sourceKey": "ffscout-predicted-lineups",
+          "sourceRevision": 16,
+          "sourceSpan": "Tottenham Hotspur complete predicted XI omits: Van Hecke",
+          "startStatus": "does-not-start",
+          "status": "quarantined"
+        }
+      ],
+      "modelAppearanceProbability": 0.921053,
+      "modelStartProbability": null,
+      "playerId": 112,
+      "position": "defender",
+      "selectionRiskFlag": true,
+      "selectionRiskReason": "latest-lineup-source-omits-selected-player",
+      "teamId": 19,
+      "teamName": "Spurs",
+      "webName": "Van Hecke"
+    },
+    {
+      "categoricalStartSignal": "predicted-starter",
+      "latestClaims": [
+        {
+          "availabilityStatus": null,
+          "availableAtUtc": "2026-07-29T22:40:09.899252Z",
+          "claimContentSha256": "fe50421314bb15b48250a66f8f303fd2114ec486618e5202832fdecf0ab15cbc",
+          "claimId": 7793,
+          "claimType": "start",
+          "forecastProbability": null,
+          "hasDuplicateCluster": true,
+          "isDependentConsensus": false,
+          "sourceClass": "specialist-predicted-lineup",
+          "sourceKey": "ffscout-predicted-lineups",
+          "sourceRevision": 16,
+          "sourceSpan": "Sunderland predicted XI: Mukiele",
+          "startStatus": "starts",
+          "status": "quarantined"
+        }
+      ],
+      "modelAppearanceProbability": 0.921053,
+      "modelStartProbability": null,
+      "playerId": 533,
+      "position": "defender",
+      "selectionRiskFlag": false,
+      "selectionRiskReason": null,
+      "teamId": 20,
+      "teamName": "Sunderland",
+      "webName": "Mukiele"
+    },
+    {
+      "categoricalStartSignal": "predicted-starter",
+      "latestClaims": [
+        {
+          "availabilityStatus": null,
+          "availableAtUtc": "2026-07-29T22:40:09.899252Z",
+          "claimContentSha256": "844c8a3b331e659308a9ded09c6dbbefcd3231de120a18672cbccf97e647e820",
+          "claimId": 7649,
+          "claimType": "start",
+          "forecastProbability": null,
+          "hasDuplicateCluster": true,
+          "isDependentConsensus": false,
+          "sourceClass": "specialist-predicted-lineup",
+          "sourceKey": "ffscout-predicted-lineups",
+          "sourceRevision": 16,
+          "sourceSpan": "Aston Villa predicted XI: Watkins",
+          "startStatus": "starts",
+          "status": "quarantined"
+        }
+      ],
+      "modelAppearanceProbability": 0.921053,
+      "modelStartProbability": null,
+      "playerId": 55,
+      "position": "forward",
+      "selectionRiskFlag": false,
+      "selectionRiskReason": null,
+      "teamId": 2,
+      "teamName": "Aston Villa",
+      "webName": "Watkins"
+    },
+    {
+      "categoricalStartSignal": "predicted-starter",
+      "latestClaims": [
+        {
+          "availabilityStatus": null,
+          "availableAtUtc": "2026-07-29T22:40:09.899252Z",
+          "claimContentSha256": "0eadf0d0450cae72b489b4fe3b77a205ad62e7517be86fdc983d6791057fa534",
+          "claimId": 7671,
+          "claimType": "start",
+          "forecastProbability": null,
+          "hasDuplicateCluster": true,
+          "isDependentConsensus": false,
+          "sourceClass": "specialist-predicted-lineup",
+          "sourceKey": "ffscout-predicted-lineups",
+          "sourceRevision": 16,
+          "sourceSpan": "Brentford predicted XI: Thiago",
+          "startStatus": "starts",
+          "status": "quarantined"
+        }
+      ],
+      "modelAppearanceProbability": 0.921053,
+      "modelStartProbability": null,
+      "playerId": 106,
+      "position": "forward",
+      "selectionRiskFlag": false,
+      "selectionRiskReason": null,
+      "teamId": 4,
+      "teamName": "Brentford",
+      "webName": "Thiago"
+    },
+    {
+      "categoricalStartSignal": "predicted-starter",
+      "latestClaims": [
+        {
+          "availabilityStatus": null,
+          "availableAtUtc": "2026-07-29T22:40:09.899252Z",
+          "claimContentSha256": "e5ab7d7d0300974706c9e3b7effde4461fe1b0d88351797213fd33b275681ed7",
+          "claimId": 7735,
+          "claimType": "start",
+          "forecastProbability": null,
+          "hasDuplicateCluster": true,
+          "isDependentConsensus": false,
+          "sourceClass": "specialist-predicted-lineup",
+          "sourceKey": "ffscout-predicted-lineups",
+          "sourceRevision": 16,
+          "sourceSpan": "Leeds United predicted XI: Calvert-Lewin",
+          "startStatus": "starts",
+          "status": "quarantined"
+        }
+      ],
+      "modelAppearanceProbability": 0.921053,
+      "modelStartProbability": null,
+      "playerId": 346,
+      "position": "forward",
+      "selectionRiskFlag": false,
+      "selectionRiskReason": null,
+      "teamId": 13,
+      "teamName": "Leeds",
+      "webName": "Calvert-Lewin"
+    },
+    {
+      "categoricalStartSignal": "predicted-starter",
+      "latestClaims": [
+        {
+          "availabilityStatus": null,
+          "availableAtUtc": "2026-07-29T22:40:09.899252Z",
+          "claimContentSha256": "3a038bd18f0f2763a23686ab660fa4d404773be5f42938b32c99262176eb09a2",
+          "claimId": 7715,
+          "claimType": "start",
+          "forecastProbability": null,
+          "hasDuplicateCluster": true,
+          "isDependentConsensus": false,
+          "sourceClass": "specialist-predicted-lineup",
+          "sourceKey": "ffscout-predicted-lineups",
+          "sourceRevision": 16,
+          "sourceSpan": "Fulham predicted XI: Leno",
+          "startStatus": "starts",
+          "status": "quarantined"
+        }
+      ],
+      "modelAppearanceProbability": 0.947368,
+      "modelStartProbability": null,
+      "playerId": 250,
+      "position": "goalkeeper",
+      "selectionRiskFlag": false,
+      "selectionRiskReason": null,
+      "teamId": 10,
+      "teamName": "Fulham",
+      "webName": "Leno"
+    },
+    {
+      "categoricalStartSignal": "predicted-starter",
+      "latestClaims": [
+        {
+          "availabilityStatus": null,
+          "availableAtUtc": "2026-07-29T22:40:09.899252Z",
+          "claimContentSha256": "8031066389eea2880b2d9ec58cb10d1d79d7ac6add4207fa2eb5fb5ce1f2de60",
+          "claimId": 7792,
+          "claimType": "start",
+          "forecastProbability": null,
+          "hasDuplicateCluster": true,
+          "isDependentConsensus": false,
+          "sourceClass": "specialist-predicted-lineup",
+          "sourceKey": "ffscout-predicted-lineups",
+          "sourceRevision": 16,
+          "sourceSpan": "Sunderland predicted XI: Roefs",
+          "startStatus": "starts",
+          "status": "quarantined"
+        }
+      ],
+      "modelAppearanceProbability": 0.921053,
+      "modelStartProbability": null,
+      "playerId": 529,
+      "position": "goalkeeper",
+      "selectionRiskFlag": false,
+      "selectionRiskReason": null,
+      "teamId": 20,
+      "teamName": "Sunderland",
+      "webName": "Roefs"
+    },
+    {
+      "categoricalStartSignal": "predicted-starter",
+      "latestClaims": [
+        {
+          "availabilityStatus": null,
+          "availableAtUtc": "2026-07-29T22:40:09.899252Z",
+          "claimContentSha256": "f85c5cd3f562573d9e2243bab813ef3f05bb74133a6f8d7eeec594c3388589bd",
+          "claimId": 7659,
+          "claimType": "start",
+          "forecastProbability": null,
+          "hasDuplicateCluster": true,
+          "isDependentConsensus": false,
+          "sourceClass": "specialist-predicted-lineup",
+          "sourceKey": "ffscout-predicted-lineups",
+          "sourceRevision": 16,
+          "sourceSpan": "Bournemouth predicted XI: Rayan",
+          "startStatus": "starts",
+          "status": "quarantined"
+        }
+      ],
+      "modelAppearanceProbability": 0.921053,
+      "modelStartProbability": null,
+      "playerId": 67,
+      "position": "midfielder",
+      "selectionRiskFlag": false,
+      "selectionRiskReason": null,
+      "teamId": 3,
+      "teamName": "Bournemouth",
+      "webName": "Rayan"
+    },
+    {
+      "categoricalStartSignal": "predicted-non-starter",
+      "latestClaims": [
+        {
+          "availabilityStatus": null,
+          "availableAtUtc": "2026-07-29T22:40:09.899252Z",
+          "claimContentSha256": "cbb8ce3c8d0fc6ff857282c819b0466c300a30a3790ff5ebd9e80d39afecdb3f",
+          "claimId": 7908,
+          "claimType": "start",
+          "forecastProbability": null,
+          "hasDuplicateCluster": true,
+          "isDependentConsensus": false,
+          "sourceClass": "specialist-predicted-lineup",
+          "sourceKey": "ffscout-predicted-lineups",
+          "sourceRevision": 16,
+          "sourceSpan": "Chelsea complete predicted XI omits: Enzo",
+          "startStatus": "does-not-start",
+          "status": "quarantined"
+        }
+      ],
+      "modelAppearanceProbability": 0.921053,
+      "modelStartProbability": null,
+      "playerId": 155,
+      "position": "midfielder",
+      "selectionRiskFlag": true,
+      "selectionRiskReason": "latest-lineup-source-omits-selected-player",
+      "teamId": 6,
+      "teamName": "Chelsea",
+      "webName": "Enzo"
+    },
+    {
+      "categoricalStartSignal": "predicted-starter",
+      "latestClaims": [
+        {
+          "availabilityStatus": null,
+          "availableAtUtc": "2026-07-29T22:40:09.899252Z",
+          "claimContentSha256": "1d4211fa2186541fd6682f44456656dc31a804b8a635a5386172d19a0bc1c3e0",
+          "claimId": 7744,
+          "claimType": "start",
+          "forecastProbability": null,
+          "hasDuplicateCluster": true,
+          "isDependentConsensus": false,
+          "sourceClass": "specialist-predicted-lineup",
+          "sourceKey": "ffscout-predicted-lineups",
+          "sourceRevision": 16,
+          "sourceSpan": "Liverpool predicted XI: Szoboszlai",
+          "startStatus": "starts",
+          "status": "quarantined"
+        }
+      ],
+      "modelAppearanceProbability": 0.921053,
+      "modelStartProbability": null,
+      "playerId": 368,
+      "position": "midfielder",
+      "selectionRiskFlag": false,
+      "selectionRiskReason": null,
+      "teamId": 14,
+      "teamName": "Liverpool",
+      "webName": "Szoboszlai"
+    },
+    {
+      "categoricalStartSignal": "predicted-starter",
+      "latestClaims": [
+        {
+          "availabilityStatus": null,
+          "availableAtUtc": "2026-07-29T22:40:09.899252Z",
+          "claimContentSha256": "8fc306b53259e68cfecfee05aa0418615f5354e952afa46d3959a95700c50b8f",
+          "claimId": 7767,
+          "claimType": "start",
+          "forecastProbability": null,
+          "hasDuplicateCluster": true,
+          "isDependentConsensus": false,
+          "sourceClass": "specialist-predicted-lineup",
+          "sourceKey": "ffscout-predicted-lineups",
+          "sourceRevision": 16,
+          "sourceSpan": "Manchester United predicted XI: Bruno Fernandes",
+          "startStatus": "starts",
+          "status": "quarantined"
+        }
+      ],
+      "modelAppearanceProbability": 0.947368,
+      "modelStartProbability": null,
+      "playerId": 426,
+      "position": "midfielder",
+      "selectionRiskFlag": false,
+      "selectionRiskReason": null,
+      "teamId": 16,
+      "teamName": "Man Utd",
+      "webName": "B.Fernandes"
+    },
+    {
+      "categoricalStartSignal": "predicted-starter",
+      "latestClaims": [
+        {
+          "availabilityStatus": null,
+          "availableAtUtc": "2026-07-29T22:40:09.899252Z",
+          "claimContentSha256": "00f4c164fbd11ac6a6d9a8c5180326e13980a1d62adcc14d77b449d6cfe4b836",
+          "claimId": 7800,
+          "claimType": "start",
+          "forecastProbability": null,
+          "hasDuplicateCluster": true,
+          "isDependentConsensus": false,
+          "sourceClass": "specialist-predicted-lineup",
+          "sourceKey": "ffscout-predicted-lineups",
+          "sourceRevision": 16,
+          "sourceSpan": "Sunderland predicted XI: Le F\u00e9e",
+          "startStatus": "starts",
+          "status": "quarantined"
+        }
+      ],
+      "modelAppearanceProbability": 0.921053,
+      "modelStartProbability": null,
+      "playerId": 542,
+      "position": "midfielder",
+      "selectionRiskFlag": false,
+      "selectionRiskReason": null,
+      "teamId": 20,
+      "teamName": "Sunderland",
+      "webName": "E.Le F\u00e9e"
+    }
+  ],
+  "runIdentitySha256": "daa8770f5adc05a2ce63139ef5e5c41a2dc824358913f3c2098a4cb4355a4d1a",
+  "schemaVersion": "1.0",
+  "seasonCode": "2026-27",
+  "selectedSquadSource": {
+    "artifactVersion": "current-selected-opening-squad-shadow-v2",
+    "runIdentitySha256": "d7a96beed704b1fd41ae2cff5ce721af707f8f0de7d48966d66a171333a9c650"
+  },
+  "selectionRiskPlayers": [
+    {
+      "categoricalStartSignal": "predicted-non-starter",
+      "modelAppearanceProbability": 0.921053,
+      "playerId": 112,
+      "position": "defender",
+      "reason": "latest-lineup-source-omits-selected-player",
+      "teamName": "Spurs",
+      "webName": "Van Hecke"
+    },
+    {
+      "categoricalStartSignal": "predicted-non-starter",
+      "modelAppearanceProbability": 0.921053,
+      "playerId": 155,
+      "position": "midfielder",
+      "reason": "latest-lineup-source-omits-selected-player",
+      "teamName": "Chelsea",
+      "webName": "Enzo"
+    }
+  ],
+  "sources": [
+    {
+      "contentSha256s": [
+        "bfe4fa033c621370871ffbc3e4ab2608b49a1144e0d6047b98d904a2a73197c5"
+      ],
+      "isDependentConsensus": false,
+      "latestAvailableAtUtc": "2026-07-29T22:40:09.899252Z",
+      "selectedPlayerClaimCount": 15,
+      "selectedPlayerCount": 15,
+      "sourceClass": "specialist-predicted-lineup",
+      "sourceKey": "ffscout-predicted-lineups",
+      "sourceRevisions": [
+        16
+      ],
+      "statuses": [
+        "quarantined"
+      ]
+    }
+  ],
+  "status": "prospective-evidence-audit-non-serving"
+}
