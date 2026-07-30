@@ -11,12 +11,15 @@ namespace AutoFpl.Api.Intelligence;
 
 public sealed class EvidenceClaimEvaluationStore
 {
-    public const string EvaluatorVersion = "evidence-start-claim-evaluation-v1";
+    public const string EvaluatorVersion = "evidence-start-claim-evaluation-v2";
     public const string ResearchStatus =
         "quarantined-source-evaluation-not-promoted";
+    public const string ReliabilityMethod =
+        "jeffreys-beta-binomial-class-balanced-v1";
 
     private const double LogLossEpsilon = 1e-15;
     private const double NaturalLogOfTwo = 0.6931471805599453;
+    private const double JeffreysPriorShape = 0.5d;
 
     private static readonly JsonSerializerOptions JsonOptions =
         new(JsonSerializerDefaults.Web);
@@ -74,6 +77,7 @@ public sealed class EvidenceClaimEvaluationStore
                 connection,
                 outcome,
                 cancellationToken);
+            rows = LatestSourceAssertions(rows);
             if (rows.Count == 0)
             {
                 exclusions.Add(
@@ -96,7 +100,7 @@ public sealed class EvidenceClaimEvaluationStore
             }
 
             List<EvaluationSample> samples = rows
-                .Select(CreateSample)
+                .Select(row => CreateSample(row, outcome))
                 .Where(sample => sample is not null)
                 .Cast<EvaluationSample>()
                 .ToList();
@@ -161,6 +165,7 @@ public sealed class EvidenceClaimEvaluationStore
             {
                 evaluatorVersion = EvaluatorVersion,
                 researchStatus = ResearchStatus,
+                reliabilityMethod = ReliabilityMethod,
                 dataIdentitySha256 = dataIdentity,
                 status,
                 reason,
@@ -169,9 +174,10 @@ public sealed class EvidenceClaimEvaluationStore
                 exclusions,
             });
         return new(
-            "1.0",
+            "1.1",
             EvaluatorVersion,
             ResearchStatus,
+            ReliabilityMethod,
             status,
             reason,
             seasonCode,
@@ -185,7 +191,25 @@ public sealed class EvidenceClaimEvaluationStore
             exclusions);
     }
 
-    private static EvaluationSample? CreateSample(ClaimOutcomeRow row)
+    private static IReadOnlyList<ClaimOutcomeRow> LatestSourceAssertions(
+        IEnumerable<ClaimOutcomeRow> rows) =>
+        rows
+            .GroupBy(
+                row => new SourceAssertionKey(
+                    row.SourceKey,
+                    row.PlayerCode))
+            .Select(
+                group => group
+                    .OrderByDescending(row => row.AvailableAtUtc)
+                    .ThenByDescending(row => row.ClaimId)
+                    .First())
+            .OrderBy(row => row.AvailableAtUtc)
+            .ThenBy(row => row.ClaimId)
+            .ToList();
+
+    private static EvaluationSample? CreateSample(
+        ClaimOutcomeRow row,
+        OutcomeHeader outcome)
     {
         bool actual = row.Starts!.Value > 0;
         bool? predicted = row.ForecastProbability is not null
@@ -199,6 +223,8 @@ public sealed class EvidenceClaimEvaluationStore
         return predicted is null
             ? null
             : new(
+                outcome.SeasonCode,
+                outcome.Gameweek,
                 row.SourceKey,
                 "start",
                 LeadTimeBucket(row.DeadlineUtc - row.AvailableAtUtc),
@@ -231,6 +257,28 @@ public sealed class EvidenceClaimEvaluationStore
         List<EvaluationSample> probabilistic = samples
             .Where(sample => sample.Probability is not null)
             .ToList();
+        int truePositive = samples.Count(
+            sample => sample.Predicted && sample.Actual);
+        int trueNegative = samples.Count(
+            sample => !sample.Predicted && !sample.Actual);
+        int falsePositive = samples.Count(
+            sample => sample.Predicted && !sample.Actual);
+        int falseNegative = samples.Count(
+            sample => !sample.Predicted && sample.Actual);
+        int positiveOutcomeCount = truePositive + falseNegative;
+        int negativeOutcomeCount = trueNegative + falsePositive;
+        double? shrunkSensitivity = ShrunkClassAccuracy(
+            truePositive,
+            positiveOutcomeCount);
+        double? shrunkSpecificity = ShrunkClassAccuracy(
+            trueNegative,
+            negativeOutcomeCount);
+        double? shrunkBalancedAccuracy =
+            shrunkSensitivity is null || shrunkSpecificity is null
+                ? null
+                : Round(
+                    (shrunkSensitivity.Value + shrunkSpecificity.Value)
+                    / 2d);
         double? brier = probabilistic.Count == 0
             ? null
             : Round(
@@ -258,15 +306,35 @@ public sealed class EvidenceClaimEvaluationStore
             group.Key.ClaimType,
             group.Key.LeadTimeBucket,
             samples.Count,
-            samples.Count(sample => sample.Actual),
-            samples.Count(sample => sample.Predicted == sample.Actual),
+            samples
+                .Select(sample => (sample.SeasonCode, sample.Gameweek))
+                .Distinct()
+                .Count(),
+            positiveOutcomeCount,
+            truePositive + trueNegative,
             Round(
-                samples.Count(sample => sample.Predicted == sample.Actual)
+                (truePositive + trueNegative)
                     / (double)samples.Count),
+            truePositive,
+            trueNegative,
+            falsePositive,
+            falseNegative,
+            shrunkSensitivity,
+            shrunkSpecificity,
+            shrunkBalancedAccuracy,
             probabilistic.Count,
             brier,
             logLoss);
     }
+
+    private static double? ShrunkClassAccuracy(
+        int correctCount,
+        int outcomeCount) =>
+        outcomeCount == 0
+            ? null
+            : Round(
+                (correctCount + JeffreysPriorShape)
+                / (outcomeCount + (2d * JeffreysPriorShape)));
 
     private static string LeadTimeBucket(TimeSpan leadTime) =>
         leadTime.TotalHours switch
@@ -470,6 +538,8 @@ public sealed class EvidenceClaimEvaluationStore
         int? Starts);
 
     private sealed record EvaluationSample(
+        string SeasonCode,
+        int Gameweek,
         string SourceKey,
         string ClaimType,
         string LeadTimeBucket,
@@ -481,4 +551,8 @@ public sealed class EvidenceClaimEvaluationStore
         string SourceKey,
         string ClaimType,
         string LeadTimeBucket);
+
+    private sealed record SourceAssertionKey(
+        string SourceKey,
+        int PlayerCode);
 }

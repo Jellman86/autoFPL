@@ -33,10 +33,14 @@ public sealed class EvidenceClaimEvaluationStoreTests
             JsonSerializer.Serialize(repeated));
         Assert.Equal("complete", first.Status);
         Assert.Null(first.Reason);
+        Assert.Equal("1.1", first.SchemaVersion);
         Assert.Equal(EvidenceClaimEvaluationStore.EvaluatorVersion, first.EvaluatorVersion);
         Assert.Equal(
             EvidenceClaimEvaluationStore.ResearchStatus,
             first.ResearchStatus);
+        Assert.Equal(
+            EvidenceClaimEvaluationStore.ReliabilityMethod,
+            first.ReliabilityMethod);
         Assert.Equal(1, first.CandidateOutcomeCount);
         Assert.Equal(1, first.EvaluatedGameweekCount);
         Assert.Equal(3, first.EvaluatedClaimCount);
@@ -53,8 +57,16 @@ public sealed class EvidenceClaimEvaluationStoreTests
             slice => slice.SourceKey == "ffscout-predicted-lineups");
         Assert.Equal("0-6h", categorical.LeadTimeBucket);
         Assert.Equal(1, categorical.SampleCount);
+        Assert.Equal(1, categorical.GameweekCount);
         Assert.Equal(1, categorical.CorrectCount);
         Assert.Equal(1, categorical.Accuracy);
+        Assert.Equal(1, categorical.TruePositiveCount);
+        Assert.Equal(0, categorical.TrueNegativeCount);
+        Assert.Equal(0, categorical.FalsePositiveCount);
+        Assert.Equal(0, categorical.FalseNegativeCount);
+        Assert.Equal(0.75, categorical.ShrunkSensitivity);
+        Assert.Null(categorical.ShrunkSpecificity);
+        Assert.Null(categorical.ShrunkBalancedAccuracy);
         Assert.Equal(0, categorical.ProbabilisticSampleCount);
         Assert.Null(categorical.BrierScore);
         Assert.Null(categorical.LogLoss);
@@ -64,12 +76,55 @@ public sealed class EvidenceClaimEvaluationStoreTests
             slice => slice.SourceKey == "straightred-lineup-consensus");
         Assert.Equal("24-72h", probabilistic.LeadTimeBucket);
         Assert.Equal(2, probabilistic.SampleCount);
+        Assert.Equal(1, probabilistic.GameweekCount);
         Assert.Equal(1, probabilistic.PositiveOutcomeCount);
         Assert.Equal(2, probabilistic.CorrectCount);
         Assert.Equal(1, probabilistic.Accuracy);
+        Assert.Equal(1, probabilistic.TruePositiveCount);
+        Assert.Equal(1, probabilistic.TrueNegativeCount);
+        Assert.Equal(0, probabilistic.FalsePositiveCount);
+        Assert.Equal(0, probabilistic.FalseNegativeCount);
+        Assert.Equal(0.75, probabilistic.ShrunkSensitivity);
+        Assert.Equal(0.75, probabilistic.ShrunkSpecificity);
+        Assert.Equal(0.75, probabilistic.ShrunkBalancedAccuracy);
         Assert.Equal(2, probabilistic.ProbabilisticSampleCount);
         Assert.Equal(0.0625, probabilistic.BrierScore);
         Assert.Equal(0.287682, probabilistic.LogLoss);
+    }
+
+    [Fact]
+    public async Task Latest_predeadline_source_assertion_replaces_older_revision()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = await CreateDatabaseAsync(files.DatabasePath);
+        await ImportClaimsAsync(options);
+        await new EvidenceClaimStore(options, TimeProvider.System).ImportAsync(
+            CreateStartRequest(
+                "ffscout-predicted-lineups",
+                1,
+                new DateTimeOffset(2026, 8, 21, 17, 0, 0, TimeSpan.Zero),
+                null,
+                "FFScout revised player one",
+                startStatus: "does-not-start",
+                sourceRevision: 2),
+            TestContext.Current.CancellationToken);
+
+        EvidenceClaimEvaluationDocument report =
+            await new EvidenceClaimEvaluationStore(options).EvaluateAsync(
+                "2026-27",
+                TestContext.Current.CancellationToken);
+
+        Assert.Equal(3, report.EvaluatedClaimCount);
+        EvidenceClaimEvaluationSliceDocument revised = Assert.Single(
+            report.Slices,
+            slice => slice.SourceKey == "ffscout-predicted-lineups");
+        Assert.Equal(1, revised.SampleCount);
+        Assert.Equal(0, revised.CorrectCount);
+        Assert.Equal(0, revised.TruePositiveCount);
+        Assert.Equal(1, revised.FalseNegativeCount);
+        Assert.Equal(0.25, revised.ShrunkSensitivity);
+        Assert.Null(revised.ShrunkSpecificity);
+        Assert.Null(revised.ShrunkBalancedAccuracy);
     }
 
     [Fact]
@@ -184,7 +239,9 @@ public sealed class EvidenceClaimEvaluationStoreTests
         int playerId,
         DateTimeOffset availableAt,
         decimal? probability,
-        string sourceSpan) =>
+        string sourceSpan,
+        string startStatus = "starts",
+        int sourceRevision = 1) =>
         new(
             "1.0",
             sourceKey,
@@ -194,15 +251,17 @@ public sealed class EvidenceClaimEvaluationStoreTests
             availableAt,
             availableAt,
             new string(
-                sourceKey == "straightred-lineup-consensus" ? 'e' : 'f',
+                sourceRevision == 1
+                    ? sourceKey == "straightred-lineup-consensus" ? 'e' : 'f'
+                    : 'd',
                 64),
-            1,
+            sourceRevision,
             "2026-27",
             1,
             playerId,
             "start",
             null,
-            "starts",
+            startStatus,
             probability,
             null,
             null,

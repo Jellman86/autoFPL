@@ -689,11 +689,17 @@ dotnet AutoFpl.Api.dll --evaluate-evidence-claims [season-code]
 
 The evaluator joins claim and outcome players through stable official codes and
 uses the official per-player Gameweek `starts` count as the start-event truth.
-It reports categorical accuracy and, only where the source supplied an explicit
-probability, Brier score and natural-log loss in fixed `0-6h`, `6-24h`,
-`24-72h` and `72h+` lead-time buckets. The latest corrected official outcome is
-used; log loss applies a fixed `1e-15` numerical clamp to exact zero/one
-probabilities, and incomplete identity excludes the whole Gameweek fold.
+For each source and player it scores only the latest assertion available before
+the deadline, so repeated source revisions cannot inflate the sample. It
+reports categorical accuracy, a confusion matrix and Gameweek count in fixed
+`0-6h`, `6-24h`, `24-72h` and `72h+` lead-time buckets. Sensitivity and
+specificity use separate Jeffreys beta-binomial posterior means, shrinking
+sparse perfect or failed records towards uncertainty; balanced reliability is
+reported only after both outcome classes have been observed. Where the source
+supplied an explicit probability, the same slice also reports Brier score and
+natural-log loss. The latest corrected official outcome is used; log loss
+applies a fixed `1e-15` numerical clamp to exact zero/one probabilities, and
+incomplete identity excludes the whole Gameweek fold.
 Availability claims are deliberately not scored against minutes or appearance
 because those are not equivalent to availability. The command exits `2` with
 `insufficient-data` until one scorable pair exists, and no result promotes a
