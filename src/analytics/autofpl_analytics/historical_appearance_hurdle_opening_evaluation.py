@@ -365,6 +365,12 @@ def _reconstruct_hurdle_target_from_samples(
     conditional_features: Sequence[str],
     appearance_model: str,
     conditional_model: str,
+    appearance_transform: Optional[
+        Callable[
+            [int, Sequence[Any], Sequence[Prediction]],
+            Sequence[Prediction],
+        ]
+    ] = None,
 ) -> Dict[str, Any]:
     ordered_origins = sorted(samples_by_origin)
     _require(
@@ -449,6 +455,42 @@ def _reconstruct_hurdle_target_from_samples(
             appearance_model,
             continuous_features=appearance_features,
         )
+        if appearance_transform is not None:
+            transformed = list(
+                appearance_transform(
+                    gameweek,
+                    ordered_players,
+                    appearance,
+                )
+            )
+            _require(
+                len(transformed) == len(appearance)
+                and all(
+                    (
+                        updated.season_code,
+                        updated.gameweek,
+                        updated.player_id,
+                        updated.position,
+                        updated.actual,
+                    )
+                    == (
+                        original.season_code,
+                        original.gameweek,
+                        original.player_id,
+                        original.position,
+                        original.actual,
+                    )
+                    and 0.0 <= updated.predicted <= 1.0
+                    for original, updated in zip(
+                        appearance,
+                        transformed,
+                        strict=True,
+                    )
+                ),
+                "hurdle-opening.appearance-transform",
+                "The appearance transform changed row identity or bounds.",
+            )
+            appearance = transformed
         conditional, conditional_diagnostics = _predict_tree(
             conditional_training,
             target,

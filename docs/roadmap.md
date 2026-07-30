@@ -1015,11 +1015,15 @@ The first fixed appearance translation now passes: an equal-weight pool of the
 retained appearance probability and a regularised Championship participation
 model improves Brier score by 23.12%, wins all three scored target seasons and
 all four positions, and keeps its player-cluster bootstrap interval wholly
-favourable. It remains retrospective and non-serving. The next active slice
-must propagate only this fixed pool through target-outcome-free point
-distributions and the unchanged globally constrained six-Gameweek policy;
-only a joint proper-score and realised-squad-utility pass may add it to the
-current 2026/27 forecast.
+favourable. Its full follow-on propagation improved affected-player CRPS by
+8.94% and did not regress the all-player distribution, but the unchanged
+globally constrained six-Gameweek policy gained only one realised point per
+target on average with one win. That misses the fixed +2 mean and two-win
+decision gates. The feature remains retrospective and non-serving; neither its
+blend nor its gate may be retuned on these opened outcomes. Preserve it for
+current sensitivity and genuinely prospective 2026/27 scoring while the active
+initial-squad work advances to higher-decision-impact temporal, availability
+and registered robust-horizon challengers.
 Do not add another standalone governance, universal contract, infrastructure
 or AI-orchestrator project ahead of these slices.
 
