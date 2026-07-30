@@ -54,6 +54,16 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **Translated Championship participation materially improves promoted-player
+  appearance forecasts.** A deterministic expanding-promotion-class evaluator
+  bridges only same-club exact or unique token-subset full names, learns a
+  regularised appearance translation on strictly earlier classes and pools it
+  at a pre-fixed equal weight with the retained opening classifier. Across 203
+  players and 1,624 Gameweek rows, Brier score improved by 23.12%, all three
+  target seasons and all four positions won, log loss improved and the paired
+  player-cluster 95% interval remained wholly favourable. The result authorises
+  full distribution and globally constrained squad-policy evaluation; it does
+  not yet alter the served forecast.
 - **Promoted-player history now has a leakage-safe historical source
   boundary.** Five fixed FBref Championship playing-time populations cover
   2021/22 through 2025/26 through the existing Byparr transport. Historical
