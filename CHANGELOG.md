@@ -119,6 +119,14 @@ All notable implemented changes to autoFPL are recorded here. The format follows
   the same eight prospective outcome Gameweeks. The private worker handoff,
   immutable SQLite store, strict API import and decision-room comparison remain
   non-serving until preregistered results demonstrate added accuracy.
+- **The decision room now presents current AI evidence reviews as a cited,
+  non-serving case file.** The evidence ledger shows each reviewed player,
+  verdict, time horizon, rationale, exact claim references, named sources,
+  assumptions, uncertainties, coverage and a bounded provider receipt. Empty,
+  refused, partial and unavailable states remain explicit, and a reviewed
+  player can be opened directly in the full evidence dossier. The interface
+  repeatedly states that this review cannot change the forecast or model
+  squad.
 - **Decision-relevant evidence can now receive one bounded semantic review per
   exact context from an owner-configured model provider.** The disabled-by-
   default OpenAI-compatible adapter supports fixed OpenAI, OpenRouter or

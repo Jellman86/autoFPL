@@ -935,7 +935,15 @@ read-only, non-destructive and closed-world; the prediction and strategy tools
 return only public model artifacts and none exposes owner selection data. A
 validated repo-owned development plugin package now points ChatGPT and Codex
 at the production MCP endpoint. Public submission materials, OAuth,
-user-specific tools and host prompt tests remain.
+user-specific tools and host prompt tests remain. An owner-configured,
+disabled-by-default OpenAI-compatible adapter can now produce one bounded
+semantic review for an exact current evidence context. Strict application
+validation rejects invented identifiers and stores provider failure, refusal
+and malformed output as explicit non-serving artifacts. The decision room
+presents the current artifact as a cited evidence ledger with verdicts,
+rationale, claim/source references, assumptions, uncertainties and an audit
+receipt; missing and failed states are equally visible. Neither the adapter nor
+the ledger can change a forecast, squad or user selection.
 
 - Expose typed read-only tools for snapshots, player forecasts, candidate
   comparison, evidence and data freshness.
@@ -956,6 +964,27 @@ user-specific tools and host prompt tests remain.
   explanations available without AI.
 - Turn an AI-suggested change into a visible, unapproved draft that is
   independently validated before comparison.
+
+#### Active handoff — 2026-08-01
+
+The semantic-evidence work is deliberately stacked so each trust boundary can
+be reviewed independently:
+
+1. PR #231 establishes the exact, closed-world review context;
+2. PR #232 persists and serves validated immutable review artifacts;
+3. PR #233 adds bounded provider generation and failure receipts; and
+4. branch `feature/evidence-review-decision-room` presents the current artifact
+   in the decision room without making it a forecast input.
+
+The next safe slice is owner adjudication of retained review results: store an
+immutable human label against the exact artifact and result identity, expose
+agreement/disagreement and abstention scoring, and keep those labels outside
+forecast features. That work must not create an unauthenticated mutation route;
+until owner identity exists, entry remains an explicit private operator action.
+Only after enough prospectively frozen reviews and labels have accumulated
+should outcome scoring test whether any semantic signal improves calibration or
+decision utility out of time. No AI-derived feature advances into the serving
+model without the same fixed promotion gates as numerical challengers.
 
 **Exit:** ChatGPT, Hermes and the standalone provider path receive equivalent
 evidence; integrations can be configured, tested and revoked without exposing

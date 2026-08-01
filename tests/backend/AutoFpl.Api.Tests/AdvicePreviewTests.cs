@@ -215,6 +215,18 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
             "A stress is not a probability",
             body,
             StringComparison.Ordinal);
+        Assert.Contains(
+            "AI evidence desk · advisory only",
+            body,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "id=\"evidence-review\"",
+            body,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "This is a cited reading of public claims, not a forecast input",
+            body,
+            StringComparison.Ordinal);
         Assert.Contains("Refresh prediction", body, StringComparison.Ordinal);
         Assert.Contains("Selection lifecycle", body, StringComparison.Ordinal);
         Assert.Contains("id=\"selection-workflow\"", body, StringComparison.Ordinal);
@@ -296,6 +308,18 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
             StringComparison.Ordinal);
         Assert.Contains(
             "Real accuracy can only be judged after the Gameweeks are played.",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "/api/v1/evidence/review/current",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "Open player evidence",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "never used as a forecast input",
             script,
             StringComparison.Ordinal);
         Assert.Contains(

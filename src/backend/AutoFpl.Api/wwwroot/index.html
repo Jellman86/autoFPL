@@ -692,6 +692,47 @@
       </div>
     </section>
       </div>
+
+    <section
+      class="semantic-review"
+      id="evidence-review"
+      data-state="loading"
+      aria-labelledby="semantic-review-title"
+      aria-live="polite">
+      <header class="semantic-review-heading">
+        <div>
+          <p class="eyebrow">AI evidence desk · advisory only</p>
+          <div class="source-title-row">
+            <h2 id="semantic-review-title">Reviewing the claims behind the stress.</h2>
+            <span class="source-state" id="semantic-review-state">Loading</span>
+          </div>
+          <p id="semantic-review-summary">
+            Checking whether the latest claim review matches this exact evidence cutoff.
+          </p>
+        </div>
+        <dl class="semantic-review-meta">
+          <div>
+            <dt>Reviewed</dt>
+            <dd id="semantic-review-time">—</dd>
+          </div>
+          <div>
+            <dt>Reviewer</dt>
+            <dd id="semantic-review-provider">—</dd>
+          </div>
+          <div>
+            <dt>Coverage</dt>
+            <dd id="semantic-review-coverage">—</dd>
+          </div>
+        </dl>
+      </header>
+      <div class="semantic-review-ledger" id="semantic-review-ledger">
+        <p class="semantic-review-empty">Waiting for a context-bound review.</p>
+      </div>
+      <p class="semantic-review-boundary">
+        This is a cited reading of public claims, not a forecast input. It can
+        explain uncertainty and disagreement; it cannot change the model squad.
+      </p>
+    </section>
     </details>
 
     <div class="workspace" id="model-squad">

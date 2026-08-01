@@ -23,7 +23,7 @@ Routes:
 | `GET` | `/api/v1/data/historical-fpl/identity-coverage/{fromSeasonCode}/{toSeasonCode}` | Revalidates two pinned archives and audits exact stable-code overlap without a name fallback |
 | `GET` | `/api/v1/evidence/claims/{seasonCode}/{gameweek}?decisionCutoffUtc=...` | Returns immutable quarantined typed claims available by the requested cutoff; claims do not influence forecasts |
 | `GET` | `/api/v1/evidence/review-context/current` | Returns the bounded, content-addressed context for semantic review of claims that can change the current squad under an explicit stress |
-| `GET` | `/api/v1/evidence/semantic-review/current` | Returns the immutable provider or operator review only when it matches the exact current context; reviews never influence forecasts |
+| `GET` | `/api/v1/evidence/review/current` | Returns the immutable provider or operator review only when it matches the exact current context; reviews never influence forecasts |
 | `POST` | `/mcp` | Stateless Streamable HTTP MCP endpoint; advertises anonymous read-only public prediction, player-dossier, strategy-comparison and evidence-review tools |
 | `GET` | `/openapi/v1.json` | Returns the generated OpenAPI 3.1 HTTP contract |
 | `GET` | `/healthz` | Liveness response: `{"status":"healthy"}` |
