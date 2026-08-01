@@ -973,8 +973,8 @@ be reviewed independently:
 1. PR #231 establishes the exact, closed-world review context;
 2. PR #232 persists and serves validated immutable review artifacts;
 3. PR #233 adds bounded provider generation and failure receipts; and
-4. branch `feature/evidence-review-decision-room` presents the current artifact
-   in the decision room without making it a forecast input.
+4. PR #234 (`feature/evidence-review-decision-room`) presents the current
+   artifact in the decision room without making it a forecast input.
 
 The next safe slice is owner adjudication of retained review results: store an
 immutable human label against the exact artifact and result identity, expose
