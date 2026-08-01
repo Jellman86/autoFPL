@@ -380,6 +380,22 @@ if (requestedSelectedOpeningSquadImport
         "Usage: --import-selected-opening-squad-shadow <json-file>");
     return 2;
 }
+bool requestedPublicProjectionOpeningSquadImport =
+    args.Length > 0
+    && StringComparer.Ordinal.Equals(
+        args[0],
+        "--import-public-projection-opening-squad-shadow");
+bool runPublicProjectionOpeningSquadImport =
+    requestedPublicProjectionOpeningSquadImport
+    && args.Length == 2
+    && !string.IsNullOrWhiteSpace(args[1]);
+if (requestedPublicProjectionOpeningSquadImport
+    && !runPublicProjectionOpeningSquadImport)
+{
+    await Console.Error.WriteLineAsync(
+        "Usage: --import-public-projection-opening-squad-shadow <json-file>");
+    return 2;
+}
 bool requestedSelectionRoleStrategyImport =
     args.Length > 0
     && StringComparer.Ordinal.Equals(
@@ -421,6 +437,7 @@ bool runNonWebCommand =
     || runJointScenarioImport
     || runInitialSquadQualityImport
     || runSelectedOpeningSquadImport
+    || runPublicProjectionOpeningSquadImport
     || runSelectionScenarioScoreImport
     || runSelectionRoleStrategyImport;
 
@@ -511,6 +528,11 @@ builder.Services.AddSingleton(serviceProvider =>
         serviceProvider.GetRequiredService<DatabaseOptions>(),
         serviceProvider.GetRequiredService<TimeProvider>()));
 builder.Services.AddSingleton<SelectedOpeningSquadShadowImporter>();
+builder.Services.AddSingleton(serviceProvider =>
+    new PublicProjectionOpeningSquadStore(
+        serviceProvider.GetRequiredService<DatabaseOptions>(),
+        serviceProvider.GetRequiredService<TimeProvider>()));
+builder.Services.AddSingleton<PublicProjectionOpeningSquadImporter>();
 builder.Services.AddSingleton(serviceProvider =>
     new ExternalEvidenceStressStore(
         serviceProvider.GetRequiredService<DatabaseOptions>(),
@@ -746,6 +768,8 @@ if (shadowForecastInboxOptions.Enabled)
     builder.Services.AddHostedService<JointScenarioInboxPoller>();
     builder.Services.AddHostedService<InitialSquadQualityInboxPoller>();
     builder.Services.AddHostedService<SelectedOpeningSquadInboxPoller>();
+    builder.Services.AddHostedService<
+        PublicProjectionOpeningSquadInboxPoller>();
     builder.Services.AddHostedService<ExternalEvidenceStressInboxPoller>();
     builder.Services.AddHostedService<SelectionScenarioScoreInboxPoller>();
     builder.Services.AddHostedService<SelectionRoleStrategyInboxPoller>();
@@ -1042,6 +1066,28 @@ if (runSelectedOpeningSquadImport)
     catch (Exception exception)
         when (exception is SelectedOpeningSquadValidationException
             or FileNotFoundException
+            or InvalidDataException
+            or JsonException)
+    {
+        await Console.Error.WriteLineAsync(exception.Message);
+        return 2;
+    }
+}
+
+if (runPublicProjectionOpeningSquadImport)
+{
+    try
+    {
+        JsonElement candidate =
+            await app.Services
+                .GetRequiredService<
+                    PublicProjectionOpeningSquadImporter>()
+                .ImportFileAsync(args[1]);
+        await Console.Out.WriteLineAsync(candidate.GetRawText());
+        return 0;
+    }
+    catch (Exception exception)
+        when (exception is FileNotFoundException
             or InvalidDataException
             or JsonException)
     {
@@ -1561,6 +1607,29 @@ app.MapGet(
         + "unscored.")
     .WithTags("Forecasts")
     .Produces<SelectedOpeningSquadShadowDocument>()
+    .Produces(StatusCodes.Status404NotFound);
+app.MapGet(
+    "/api/v1/forecasts/public-projection-opening-squad-shadow/current",
+    async (
+        PublicProjectionOpeningSquadStore store,
+        CancellationToken cancellationToken) =>
+    {
+        JsonElement? candidate =
+            await store.GetCurrentAsync(cancellationToken);
+        return candidate is null
+            ? Results.NotFound()
+            : Results.Ok(candidate.Value);
+    })
+    .WithName("GetCurrentPublicProjectionOpeningSquadShadow")
+    .WithSummary(
+        "Read the current external public-projection squad challenger.")
+    .WithDescription(
+        "Returns a cutoff-bound, non-serving challenger that overlays the "
+        + "published Gameweek 1 point means on the retained six-Gameweek "
+        + "policy. It remains quarantined until prospective outcomes can "
+        + "establish whether the external source improves accuracy.")
+    .WithTags("Forecasts")
+    .Produces<JsonElement>()
     .Produces(StatusCodes.Status404NotFound);
 app.MapGet(
     "/api/v1/forecasts/external-evidence-stress/current",

@@ -1785,6 +1785,10 @@ public sealed class ResearchSourceSnapshotTests
                     3-5-2
                     ### Recently Updated
                     """,
+                ["https://fpl.solioanalytics.com/api/data/latest.json"] =
+                    """
+                    {"gameweek":1,"deadlineIso":"2026-08-21T17:30:00.000Z","generatedAt":"2026-07-26T09:00:00.000Z","source":"https://fpl.solioanalytics.com/api/data/latest","topProjected":[{"name":"Test Player","team":"HOM","position":"MID","price":50,"prPoints":4.5}],"bestAttackingFixtures":[],"bestCleanSheets":[]}
+                    """ + new string(' ', 1000),
             });
         using var httpClient = new HttpClient(handler)
         {
@@ -1825,7 +1829,7 @@ public sealed class ResearchSourceSnapshotTests
         ResearchSourceInventoryDocument inventory =
             await snapshotStore.GetInventoryAsync(
                 TestContext.Current.CancellationToken);
-        Assert.Equal(3, inventory.LatestSnapshots.Count);
+        Assert.Equal(4, inventory.LatestSnapshots.Count);
         Assert.Single(inventory.LatestStartCoverage);
         EvidenceClaimSetDocument claims = await claimStore.GetForGameweekAsync(
             "2026-27",
@@ -1840,8 +1844,8 @@ public sealed class ResearchSourceSnapshotTests
             claims.Claims,
             claim => claim.SourceKey
                 == ResearchSourceClaimExtractor.StraightredSourceKey);
-        Assert.Equal(2, handler.ScrapeCalls);
-        Assert.Equal(2, handler.DeleteCalls);
+        Assert.Equal(3, handler.ScrapeCalls);
+        Assert.Equal(3, handler.DeleteCalls);
         Assert.NotNull(playwrightHandler.CollectionCode);
     }
 
@@ -1880,7 +1884,7 @@ public sealed class ResearchSourceSnapshotTests
                 TestContext.Current.CancellationToken);
 
         Assert.NotNull(inventory);
-        Assert.Equal(11, inventory.Sources.Count);
+        Assert.Equal(12, inventory.Sources.Count);
         Assert.Contains(
             inventory.Sources,
             item => item.SourceClass == "official-availability-aggregation");
@@ -1890,6 +1894,10 @@ public sealed class ResearchSourceSnapshotTests
         Assert.Contains(
             inventory.Sources,
             item => item.SourceClass == "derived-predicted-lineup-consensus");
+        Assert.Contains(
+            inventory.Sources,
+            item => item.SourceClass
+                == "public-quantitative-market-projection");
         Assert.Equal(
             5,
             inventory.Sources.Count(

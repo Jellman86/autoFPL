@@ -54,6 +54,14 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **An independent public points model now challenges the validated opening
+  squad without silently changing advice.** A cutoff-bound Solio snapshot is
+  hash-verified and joined to exact official player identities before its
+  published Gameweek 1 means enter the unchanged zero-gap six-Gameweek squad
+  optimiser. Both the v2 incumbent and challenger freeze legal roles across
+  the same eight prospective outcome Gameweeks. The private worker handoff,
+  immutable SQLite store, strict API import and decision-room comparison remain
+  non-serving until preregistered results demonstrate added accuracy.
 - **Clean-sheet probability improves, but its replacement point mean is
   rejected.** A three-target player-level factorization combines the retained
   appearance and 60-minute models with shared team clean-sheet rates. The

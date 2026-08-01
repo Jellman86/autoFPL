@@ -8,6 +8,7 @@ let selectionScenarioScore = null;
 let playerForecast = null;
 let selectedOpeningSquad = null;
 let externalEvidenceStress = null;
+let publicProjectionChallenger = null;
 let displayedPlayers = [];
 let selectionEditDraft = null;
 let editingRevisionId = null;
@@ -1071,6 +1072,122 @@ async function loadExternalEvidenceStress() {
       "Unavailable",
       "Evidence stress test could not be loaded.",
       "The core prediction is unchanged; external claims are not being used as hidden model inputs.",
+    );
+    console.error(error);
+  }
+}
+
+function setPublicProjectionState(state, label, title, summary) {
+  const panel = document.querySelector("#public-projection-challenger");
+  panel.dataset.state = state;
+  document.querySelector("#public-projection-state").textContent = label;
+  document.querySelector("#public-projection-title").textContent = title;
+  document.querySelector("#public-projection-summary").textContent = summary;
+}
+
+function renderPublicProjectionChallenger(artifact) {
+  publicProjectionChallenger = artifact;
+  const result = document.querySelector("#public-projection-result");
+  result.replaceChildren();
+  const removed = artifact.selectionChange.removedPlayers;
+  const added = artifact.selectionChange.addedPlayers;
+  setPublicProjectionState(
+    "ready",
+    "Ready",
+    removed.length
+      ? "The public points model proposes a different squad."
+      : "The public points model agrees with the selected squad.",
+    `${artifact.source.matchedPlayerCount} of ${artifact.source.publishedPlayerCount} published players matched the official capture; ${artifact.selectionChange.overlapPlayerCount} of 15 squad places agree.`,
+  );
+
+  const swap = document.createElement("div");
+  swap.className = "evidence-stress-swap";
+  const label = document.createElement("span");
+  label.className = "evidence-stress-label";
+  label.textContent = removed.length
+    ? "Prospective challenger changes"
+    : "No squad changes";
+  swap.append(label);
+  if (removed.length) {
+    const flow = document.createElement("div");
+    flow.className = "evidence-stress-player-flow";
+    removed.forEach((player) => flow.append(evidenceStressPlayer(player, "out")));
+    const arrow = document.createElement("span");
+    arrow.className = "evidence-stress-arrow";
+    arrow.setAttribute("aria-hidden", "true");
+    arrow.textContent = "→";
+    flow.append(arrow);
+    added.forEach((player) => flow.append(evidenceStressPlayer(player, "in")));
+    swap.append(flow);
+  }
+  const explanation = document.createElement("p");
+  explanation.textContent =
+    "Only published Gameweek 1 means change; later weeks and unpublished players retain the autoFPL model.";
+  swap.append(explanation);
+
+  const scores = document.createElement("dl");
+  scores.className = "evidence-stress-scores";
+  const incumbentCoverage =
+    artifact.selectionChange.incumbentPublishedProjectionCount;
+  const challengerCoverage =
+    artifact.selectionChange.challengerPublishedProjectionCount;
+  [
+    ["Selected squad coverage", incumbentCoverage, "of 15 players published"],
+    ["Challenger coverage", challengerCoverage, "of 15 players published"],
+  ].forEach(([termText, value, noteText]) => {
+    const row = document.createElement("div");
+    const term = document.createElement("dt");
+    term.textContent = termText;
+    const valueNode = document.createElement("dd");
+    valueNode.textContent = `${value}/15`;
+    const note = document.createElement("small");
+    note.textContent = noteText;
+    row.append(term, valueNode, note);
+    scores.append(row);
+  });
+
+  const audit = document.createElement("div");
+  audit.className = "evidence-stress-audit";
+  const source = document.createElement("span");
+  source.textContent = "Solio public projections · independent model family";
+  const generated = document.createElement("span");
+  generated.textContent =
+    `Source generated ${formatCompactInstant(artifact.source.generatedAtUtc)}`;
+  const cutoff = document.createElement("span");
+  cutoff.textContent =
+    `Retained ${formatCompactInstant(artifact.evidenceDecisionCutoffUtc)}`;
+  audit.append(source, generated, cutoff);
+  result.append(swap, scores, audit);
+}
+
+async function loadPublicProjectionChallenger() {
+  publicProjectionChallenger = null;
+  try {
+    const response = await fetch(
+      "/api/v1/forecasts/public-projection-opening-squad-shadow/current",
+      { headers: { Accept: "application/json" } },
+    );
+    if (response.status === 404) {
+      setPublicProjectionState(
+        "waiting",
+        "Queued",
+        "Public projection challenger is being prepared.",
+        "The validated v2 opening squad remains available while a cutoff-eligible source snapshot is captured and solved.",
+      );
+      return;
+    }
+    if (!response.ok) {
+      throw new Error(
+        `Public projection request failed with ${response.status}`,
+      );
+    }
+    renderPublicProjectionChallenger(await response.json());
+  } catch (error) {
+    setPublicProjectionState(
+      "error",
+      "Unavailable",
+      "Public projection challenger could not be loaded.",
+      "The validated v2 recommendation is unchanged and no external value is being used as a hidden input.",
     );
     console.error(error);
   }
@@ -2237,6 +2354,7 @@ async function loadAdvice() {
       loadPlayerForecast(),
       loadSelectedOpeningSquad(),
       loadExternalEvidenceStress(),
+      loadPublicProjectionChallenger(),
     ]);
     applySelectedOpeningSquad();
     await loadSelectionState();

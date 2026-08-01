@@ -224,7 +224,7 @@ class ShadowWorkerTests(unittest.TestCase):
                 )
             )
             with sqlite3.connect(database) as connection:
-                connection.execute(
+                connection.executescript(
                     """
                     INSERT INTO selected_opening_squad_shadow_artifacts
                         (official_capture_id, evaluation_policy_key,
@@ -257,7 +257,7 @@ class ShadowWorkerTests(unittest.TestCase):
                 )
             )
             with sqlite3.connect(database) as connection:
-                connection.execute(
+                connection.executescript(
                     """
                     INSERT INTO selected_opening_squad_shadow_artifacts
                         (official_capture_id, evaluation_policy_key,
@@ -266,6 +266,41 @@ class ShadowWorkerTests(unittest.TestCase):
                         16, '6-expected-points',
                         '1ef395d722844b1833fb059d606606e0bf1f1d42732377474d671f1a3f17b16e'
                     );
+                    INSERT INTO research_source_snapshots
+                        (source_key, identity_capture_id, available_at_utc)
+                    VALUES (
+                        'solio-public-projections', 16,
+                        '2026-07-29T05:00:00Z'
+                    );
+                    """
+                )
+            public_projection = {
+                "officialCaptureId": 16,
+                "artifactVersion": (
+                    "current-public-projection-opening-squad-shadow-v1"
+                ),
+            }
+            with patch(
+                "autofpl_analytics.shadow_worker."
+                "build_current_public_projection_opening_squad",
+                return_value=public_projection,
+            ):
+                generated = generate_once(
+                    database,
+                    root / "public-projection-inbox",
+                )
+            self.assertEqual("generated", generated.status)
+            self.assertTrue(
+                str(generated.outputFile).startswith(
+                    "public-projection-opening-squad-capture-16"
+                )
+            )
+            with sqlite3.connect(database) as connection:
+                connection.execute(
+                    """
+                    INSERT INTO public_projection_opening_squad_artifacts
+                        (official_capture_id, source_snapshot_id)
+                    VALUES (16, 1);
                     """
                 )
             stress = {
@@ -440,6 +475,17 @@ class ShadowWorkerTests(unittest.TestCase):
                     stress_artifact_id INTEGER PRIMARY KEY,
                     official_capture_id INTEGER NOT NULL,
                     evidence_cutoff_utc TEXT NOT NULL
+                );
+                CREATE TABLE research_source_snapshots (
+                    snapshot_id INTEGER PRIMARY KEY,
+                    source_key TEXT NOT NULL,
+                    identity_capture_id INTEGER NOT NULL,
+                    available_at_utc TEXT NOT NULL
+                );
+                CREATE TABLE public_projection_opening_squad_artifacts (
+                    artifact_id INTEGER PRIMARY KEY,
+                    official_capture_id INTEGER NOT NULL,
+                    source_snapshot_id INTEGER NOT NULL
                 );
                 """
             )
