@@ -76,6 +76,21 @@ if (requestedEvidenceClaimImport && !runEvidenceClaimImport)
         "Usage: --import-evidence-claim <json-file>");
     return 2;
 }
+bool requestedEvidenceSemanticReviewImport =
+    args.Length > 0
+    && StringComparer.Ordinal.Equals(
+        args[0],
+        "--import-evidence-semantic-review");
+bool runEvidenceSemanticReviewImport =
+    requestedEvidenceSemanticReviewImport
+    && args.Length == 2
+    && !string.IsNullOrWhiteSpace(args[1]);
+if (requestedEvidenceSemanticReviewImport && !runEvidenceSemanticReviewImport)
+{
+    await Console.Error.WriteLineAsync(
+        "Usage: --import-evidence-semantic-review <json-file>");
+    return 2;
+}
 bool requestedResearchSourceCapture =
     args.Length > 0
     && StringComparer.Ordinal.Equals(args[0], "--capture-research-source");
@@ -436,6 +451,7 @@ bool runNonWebCommand =
     || runHistoricalFplSeasonImport
     || runFplFormForecastImport
     || runEvidenceClaimImport
+    || runEvidenceSemanticReviewImport
     || runResearchSourceCapture
     || runResearchSourceClaimExtraction
     || runFbrefPlayingTimeExtraction
@@ -488,7 +504,8 @@ builder.Services
     .WithTools<PlayerDossierMcpTools>()
     .WithTools<CurrentPredictionMcpTools>()
     .WithTools<CurrentStrategyMcpTools>()
-    .WithTools<CurrentEvidenceReviewMcpTools>();
+    .WithTools<CurrentEvidenceReviewMcpTools>()
+    .WithTools<CurrentEvidenceSemanticReviewMcpTools>();
 builder.Services.AddSingleton(serviceProvider =>
     DatabaseOptions.FromConfiguration(
         serviceProvider.GetRequiredService<IConfiguration>()));
@@ -595,6 +612,11 @@ builder.Services.AddSingleton(serviceProvider =>
         serviceProvider.GetRequiredService<DatabaseOptions>(),
         serviceProvider.GetRequiredService<TimeProvider>()));
 builder.Services.AddSingleton(serviceProvider =>
+    new EvidenceSemanticReviewStore(
+        serviceProvider.GetRequiredService<DatabaseOptions>(),
+        serviceProvider.GetRequiredService<CurrentEvidenceReviewContextStore>(),
+        serviceProvider.GetRequiredService<TimeProvider>()));
+builder.Services.AddSingleton(serviceProvider =>
     new CurrentEvidenceReviewContextStore(
         serviceProvider.GetRequiredService<ExternalEvidenceStressStore>(),
         serviceProvider.GetRequiredService<EvidenceClaimStore>()));
@@ -602,6 +624,7 @@ builder.Services.AddSingleton(serviceProvider =>
     new EvidenceClaimEvaluationStore(
         serviceProvider.GetRequiredService<DatabaseOptions>()));
 builder.Services.AddSingleton<EvidenceClaimImporter>();
+builder.Services.AddSingleton<EvidenceSemanticReviewImporter>();
 builder.Services.AddSingleton(serviceProvider =>
     new ResearchSourceSnapshotStore(
         serviceProvider.GetRequiredService<DatabaseOptions>(),
@@ -943,6 +966,31 @@ if (runEvidenceClaimImport)
     }
     catch (Exception exception)
         when (exception is EvidenceClaimValidationException
+            or FileNotFoundException
+            or InvalidDataException
+            or JsonException)
+    {
+        await Console.Error.WriteLineAsync(exception.Message);
+        return 2;
+    }
+}
+
+if (runEvidenceSemanticReviewImport)
+{
+    try
+    {
+        EvidenceSemanticReviewDocument review =
+            await app.Services
+                .GetRequiredService<EvidenceSemanticReviewImporter>()
+                .ImportFileAsync(args[1]);
+        await Console.Out.WriteLineAsync(
+            JsonSerializer.Serialize(
+                review,
+                new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+        return 0;
+    }
+    catch (Exception exception)
+        when (exception is EvidenceSemanticReviewValidationException
             or FileNotFoundException
             or InvalidDataException
             or JsonException)
@@ -2041,6 +2089,25 @@ app.MapGet(
         + "or source weight and cannot influence the forecast.")
     .WithTags("Evidence")
     .Produces<EvidenceReviewContextDocument>()
+    .Produces(StatusCodes.Status404NotFound);
+app.MapGet(
+    "/api/v1/evidence/review/current",
+    async (
+        EvidenceSemanticReviewStore store,
+        CancellationToken cancellationToken) =>
+    {
+        EvidenceSemanticReviewDocument? review =
+            await store.GetCurrentAsync(cancellationToken);
+        return review is null ? Results.NotFound() : Results.Ok(review);
+    })
+    .WithName("GetCurrentEvidenceSemanticReview")
+    .WithSummary("Read the current immutable semantic-review artifact.")
+    .WithDescription(
+        "The review summarises evidence interpretation and explicit rationale for "
+        + "decision-relevant players. It is not a forecast, does not assign "
+        + "probabilities, and cannot mutate the user-facing recommendations.")
+    .WithTags("Evidence")
+    .Produces<EvidenceSemanticReviewDocument>()
     .Produces(StatusCodes.Status404NotFound);
 app.MapGet(
     "/api/v1/research/sources",
