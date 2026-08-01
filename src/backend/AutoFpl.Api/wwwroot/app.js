@@ -805,7 +805,7 @@ function retainedScenarioMean(side, gameweekCount) {
 }
 
 function formatScorecardPoints(value) {
-  return Number.isFinite(value) ? `${value.toFixed(1)} pts` : "—";
+  return Number.isFinite(value) ? `${value.toFixed(2)} pts` : "—";
 }
 
 function renderSquadScorecard() {
@@ -839,8 +839,8 @@ function renderSquadScorecard() {
   const gw1Leader = gw1Delta > 0 ? "Solio-assisted" : "autoFPL";
   const sixLeader = sixDelta > 0 ? "Solio-assisted" : "autoFPL";
   document.querySelector("#squad-scorecard-verdict").textContent =
-    `${gw1Leader} leads by ${Math.abs(gw1Delta).toFixed(1)} points in Gameweek 1; `
-    + `${sixLeader} leads by ${Math.abs(sixDelta).toFixed(1)} across the six-Gameweek planning horizon. `
+    `${gw1Leader} leads by ${Math.abs(gw1Delta).toFixed(2)} points in Gameweek 1; `
+    + `${sixLeader} leads by ${Math.abs(sixDelta).toFixed(2)} across the six-Gameweek planning horizon. `
     + "Real accuracy can only be judged after the Gameweeks are played.";
   scorecard.hidden = false;
 }
