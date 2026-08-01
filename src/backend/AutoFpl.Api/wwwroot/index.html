@@ -134,7 +134,7 @@
           <dd id="model-label">—</dd>
         </div>
         <div>
-          <dt>Projected</dt>
+          <dt id="team-points-label">Projected</dt>
           <dd><strong id="team-points">—</strong> pts</dd>
         </div>
       </dl>
@@ -184,6 +184,52 @@
           <span class="squad-choice-check" aria-hidden="true">✓</span>
         </button>
       </div>
+
+      <section
+        class="squad-scorecard"
+        id="squad-scorecard"
+        aria-labelledby="squad-scorecard-title"
+        hidden>
+        <header>
+          <div>
+            <span class="squad-choice-label">Same scoring basis</span>
+            <h3 id="squad-scorecard-title">A fair points comparison</h3>
+          </div>
+          <p>
+            Both squads are scored by the same autoFPL scenarios. Compare across
+            each row; these are forecasts, not realised results.
+          </p>
+        </header>
+        <div class="squad-scorecard-table-wrap">
+          <table>
+            <caption class="visually-hidden">
+              autoFPL and Solio-assisted squads scored on the same autoFPL scenarios
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Planning horizon</th>
+                <th scope="col">autoFPL squad</th>
+                <th scope="col">Solio-assisted squad</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Gameweek 1</th>
+                <td id="scorecard-autofpl-gw1">—</td>
+                <td id="scorecard-solio-gw1">—</td>
+              </tr>
+              <tr>
+                <th scope="row">First 6 Gameweeks</th>
+                <td id="scorecard-autofpl-six">—</td>
+                <td id="scorecard-solio-six">—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="squad-scorecard-verdict" id="squad-scorecard-verdict">
+          Waiting for a current challenger.
+        </p>
+      </section>
 
       <div class="squad-choice-outcome" aria-live="polite">
         <div>

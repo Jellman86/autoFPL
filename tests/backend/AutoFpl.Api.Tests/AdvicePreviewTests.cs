@@ -239,6 +239,18 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
             script,
             StringComparison.Ordinal);
         Assert.Contains(
+            "Both squads are scored by the same autoFPL scenarios",
+            body,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "retainedScenarioMean(\"challenger\", 1)",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "Real accuracy can only be judged after the Gameweeks are played.",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
             "Preview only; your saved selection is unchanged.",
             script,
             StringComparison.Ordinal);
