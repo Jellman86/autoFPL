@@ -6,6 +6,13 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Changed
 
+- **The decision room now leads with a plain-language squad choice.** The
+  best-supported autoFPL v2 prediction remains selected by default, while a
+  complete cutoff-safe Solio-assisted challenger can be previewed on the same
+  pitch and deliberately copied to a new reviewable draft revision. Source
+  diagnostics and model disagreements now sit behind a collapsed “Why this
+  squad?” disclosure, and the UI states clearly where Solio coverage ends and
+  autoFPL inputs continue.
 - **Initial-squad prediction quality is now the critical development path.**
   A new read-only shadow generator joins the full current scenario player pool
   to exact official prices and uses a zero-gap MILP to select a legal squad,

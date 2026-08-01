@@ -306,6 +306,256 @@ h3 {
   box-shadow: 7px 7px 0 var(--paper-deep);
 }
 
+.squad-choice {
+  margin-bottom: 1rem;
+  padding: clamp(1rem, 2.5vw, 1.75rem);
+  border: 1px solid var(--ink-950);
+  border-radius: 0.55rem;
+  background: var(--white);
+  box-shadow: 7px 7px 0 var(--paper-deep);
+}
+
+.squad-choice-heading {
+  display: flex;
+  gap: 1.5rem;
+  align-items: start;
+  justify-content: space-between;
+}
+
+.squad-choice-heading h2 {
+  margin-bottom: 0.5rem;
+  font-size: clamp(1.55rem, 2.5vw, 2.45rem);
+}
+
+.squad-choice-heading p:last-child {
+  max-width: 67ch;
+  margin-bottom: 0;
+  color: var(--ink-700);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.squad-choice-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin-top: 1.25rem;
+}
+
+.squad-choice-card {
+  display: grid;
+  min-height: 6.4rem;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.9rem;
+  align-items: center;
+  padding: 0.9rem 1rem;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  border-radius: 0.45rem;
+  text-align: left;
+  background: var(--paper);
+}
+
+.squad-choice-card:hover:not(:disabled) {
+  border-color: var(--ink-700);
+  background: var(--white);
+}
+
+.squad-choice-card[aria-pressed="true"] {
+  border-color: var(--ink-950);
+  background: var(--white);
+  box-shadow: inset 5px 0 0 var(--lime);
+}
+
+.squad-choice-card:disabled {
+  cursor: not-allowed;
+  opacity: 0.52;
+}
+
+.squad-choice-marker {
+  display: grid;
+  width: 2.8rem;
+  height: 3.5rem;
+  place-items: center;
+  border: 1px solid var(--ink-950);
+  border-radius: 0.25rem 0.25rem 0.65rem 0.65rem;
+  color: var(--white);
+  background: var(--ink-900);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.squad-choice-card[aria-pressed="true"] .squad-choice-marker {
+  color: var(--ink-950);
+  background: var(--lime);
+}
+
+.squad-choice-card > span:nth-child(2) {
+  display: grid;
+  gap: 0.18rem;
+}
+
+.squad-choice-card small,
+.squad-choice-label {
+  color: var(--ink-500);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.61rem;
+  font-weight: 900;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.squad-choice-card strong {
+  font-family: "Arial Narrow", "Aptos Display", "Segoe UI", sans-serif;
+  font-size: 1.25rem;
+}
+
+.squad-choice-card > span:nth-child(2) > span {
+  color: var(--ink-700);
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+.squad-choice-check {
+  display: grid;
+  width: 1.65rem;
+  height: 1.65rem;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: transparent;
+}
+
+.squad-choice-card[aria-pressed="true"] .squad-choice-check {
+  border-color: var(--pitch);
+  color: var(--white);
+  background: var(--pitch);
+}
+
+.squad-choice-outcome {
+  display: grid;
+  grid-template-columns: minmax(18rem, 1.15fr) minmax(18rem, 0.75fr) auto;
+  gap: 1.25rem;
+  align-items: center;
+  margin-top: 0.8rem;
+  padding: 1rem;
+  border-radius: 0.4rem;
+  color: var(--white);
+  background: var(--ink-900);
+}
+
+.squad-choice-outcome strong {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 1.2rem;
+}
+
+.squad-choice-outcome p {
+  max-width: 64ch;
+  margin: 0.35rem 0 0;
+  color: #b9c8ca;
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.squad-choice-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+  margin: 0;
+}
+
+.squad-choice-facts div {
+  padding-left: 0.75rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.squad-choice-facts dt {
+  color: #91aaae;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+}
+
+.squad-choice-facts dd {
+  margin: 0.25rem 0 0;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.squad-choice-action {
+  display: grid;
+  justify-items: stretch;
+  gap: 0.35rem;
+}
+
+.squad-choice-action small {
+  color: #b9c8ca;
+  font-size: 0.61rem;
+  text-align: center;
+}
+
+.advanced-evidence {
+  margin: 0 0 1rem;
+  border: 1px solid var(--ink-950);
+  border-radius: 0.55rem;
+  background: var(--white);
+}
+
+.advanced-evidence > summary {
+  display: flex;
+  min-height: 5rem;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem clamp(1rem, 2.5vw, 1.5rem);
+  cursor: pointer;
+  list-style: none;
+}
+
+.advanced-evidence > summary::-webkit-details-marker {
+  display: none;
+}
+
+.advanced-evidence > summary > span:first-child {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.advanced-evidence > summary strong {
+  font-family: "Arial Narrow", "Aptos Display", "Segoe UI", sans-serif;
+  font-size: 1.35rem;
+}
+
+.advanced-evidence > summary small {
+  color: var(--ink-700);
+  font-size: 0.72rem;
+}
+
+.advanced-evidence-toggle {
+  flex: none;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--ink-950);
+  border-radius: 0.35rem;
+  font-size: 0;
+  font-weight: 900;
+}
+
+.advanced-evidence-toggle::after {
+  content: "Show evidence";
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.64rem;
+}
+
+.advanced-evidence[open] .advanced-evidence-toggle::after {
+  content: "Hide evidence";
+}
+
+.advanced-evidence-content {
+  padding: 0 0.75rem 0.75rem;
+}
+
 .selection-title-row {
   display: flex;
   gap: 0.75rem;
@@ -2563,6 +2813,14 @@ footer {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .squad-choice-outcome {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .squad-choice-action {
+    grid-column: 1 / -1;
+  }
+
   .decision-header {
     padding-top: 3.2rem;
   }
@@ -2680,6 +2938,29 @@ footer {
 }
 
 @media (max-width: 760px) {
+  .squad-choice-heading {
+    flex-direction: column;
+  }
+
+  .squad-choice-options,
+  .squad-choice-outcome {
+    grid-template-columns: 1fr;
+  }
+
+  .squad-choice-action {
+    grid-column: auto;
+  }
+
+  .advanced-evidence > summary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .advanced-evidence-toggle {
+    width: 100%;
+    text-align: center;
+  }
+
   .selection-workflow {
     grid-template-columns: 1fr;
   }

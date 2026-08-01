@@ -140,6 +140,82 @@
       </dl>
     </section>
 
+    <section class="squad-choice" id="squad-choice" aria-labelledby="squad-choice-title">
+      <header class="squad-choice-heading">
+        <div>
+          <p class="eyebrow">Choose the prediction to inspect</p>
+          <h2 id="squad-choice-title">Which squad do you want to see?</h2>
+          <p>
+            autoFPL is the recommendation. The Solio-assisted squad is an
+            experimental comparison and never replaces your choice silently.
+          </p>
+        </div>
+        <span class="selection-state" id="squad-choice-state">Loading</span>
+      </header>
+
+      <div class="squad-choice-options" role="group" aria-label="Squad prediction">
+        <button
+          class="squad-choice-card"
+          id="choose-autofpl-squad"
+          data-squad-choice="autofpl"
+          type="button"
+          aria-pressed="true">
+          <span class="squad-choice-marker" aria-hidden="true">A</span>
+          <span>
+            <small>Recommended</small>
+            <strong>autoFPL v2</strong>
+            <span>Best-supported six-Gameweek opening squad</span>
+          </span>
+          <span class="squad-choice-check" aria-hidden="true">✓</span>
+        </button>
+        <button
+          class="squad-choice-card"
+          id="choose-solio-squad"
+          data-squad-choice="solio"
+          type="button"
+          aria-pressed="false"
+          disabled>
+          <span class="squad-choice-marker" aria-hidden="true">S</span>
+          <span>
+            <small>Experimental</small>
+            <strong>Solio-assisted</strong>
+            <span id="solio-choice-description">Checking for a current challenger</span>
+          </span>
+          <span class="squad-choice-check" aria-hidden="true">✓</span>
+        </button>
+      </div>
+
+      <div class="squad-choice-outcome" aria-live="polite">
+        <div>
+          <span class="squad-choice-label">Currently showing</span>
+          <strong id="squad-choice-name">autoFPL v2</strong>
+          <p id="squad-choice-explanation">
+            The recommended squad uses autoFPL across the complete planning horizon.
+          </p>
+        </div>
+        <dl class="squad-choice-facts">
+          <div>
+            <dt>Agreement</dt>
+            <dd id="squad-choice-agreement">Checking</dd>
+          </div>
+          <div>
+            <dt>External coverage</dt>
+            <dd id="squad-choice-coverage">Checking</dd>
+          </div>
+        </dl>
+        <div class="squad-choice-action">
+          <button
+            class="selection-primary"
+            id="copy-visible-squad"
+            type="button"
+            disabled>
+            Use this squad as my draft
+          </button>
+          <small id="copy-visible-squad-note">Nothing is sent to FPL.</small>
+        </div>
+      </div>
+    </section>
+
     <div id="my-squad" class="section-anchor" aria-hidden="true"></div>
     <section
       class="selection-workflow"
@@ -379,6 +455,16 @@
       </div>
     </section>
 
+    <details class="advanced-evidence" id="advanced-evidence">
+      <summary>
+        <span>
+          <span class="eyebrow">Optional detail</span>
+          <strong>Why this squad?</strong>
+          <small>Open the data sources, freshness checks and model disagreements.</small>
+        </span>
+        <span class="advanced-evidence-toggle" aria-hidden="true"></span>
+      </summary>
+      <div class="advanced-evidence-content">
     <div id="data-sources" class="section-anchor" aria-hidden="true"></div>
     <section
       class="source-tape"
@@ -559,6 +645,8 @@
         <p class="evidence-stress-empty">Waiting for the cutoff-bound public projection solve.</p>
       </div>
     </section>
+      </div>
+    </details>
 
     <div class="workspace" id="model-squad">
       <section class="formation-shell" aria-labelledby="formation-title">
@@ -758,6 +846,16 @@
       </section>
     </div>
 
+    <details class="advanced-evidence secondary-tools" id="secondary-tools">
+      <summary>
+        <span>
+          <span class="eyebrow">Optional planning</span>
+          <strong>Captain and bench alternatives</strong>
+          <small>Compare roles and deeper scenario views after choosing the squad.</small>
+        </span>
+        <span class="advanced-evidence-toggle" aria-hidden="true"></span>
+      </summary>
+      <div class="advanced-evidence-content">
     <section
       class="strategy-board"
       id="strategies"
@@ -807,6 +905,8 @@
         <small>Conversation is deliberately unavailable until it can cite real forecast evidence.</small>
       </form>
     </section>
+      </div>
+    </details>
   </main>
 
       <footer>

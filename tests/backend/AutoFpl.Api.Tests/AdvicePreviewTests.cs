@@ -172,6 +172,21 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
         Assert.Contains("id=\"selection-workflow\"", body, StringComparison.Ordinal);
         Assert.Contains("id=\"my-squad\"", body, StringComparison.Ordinal);
         Assert.Contains("Use prediction as draft", body, StringComparison.Ordinal);
+        Assert.Contains(
+            "Which squad do you want to see?",
+            body,
+            StringComparison.Ordinal);
+        Assert.Contains("autoFPL v2", body, StringComparison.Ordinal);
+        Assert.Contains("Solio-assisted", body, StringComparison.Ordinal);
+        Assert.Contains(
+            "id=\"copy-visible-squad\"",
+            body,
+            StringComparison.Ordinal);
+        Assert.Contains("Why this squad?", body, StringComparison.Ordinal);
+        Assert.Contains(
+            "id=\"advanced-evidence\"",
+            body,
+            StringComparison.Ordinal);
         Assert.Contains("Build your Gameweek squad", body, StringComparison.Ordinal);
         Assert.Contains("Exact-snapshot player pool", body, StringComparison.Ordinal);
         Assert.Contains("Squad check", body, StringComparison.Ordinal);
@@ -213,6 +228,14 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
             StringComparison.Ordinal);
         Assert.Contains(
             "/api/v1/forecasts/external-evidence-stress/current",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "publicProjectionChallenger.challenger.selection.gameweeks",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "Solio values alter published Gameweek 1 means only",
             script,
             StringComparison.Ordinal);
         Assert.Contains(
