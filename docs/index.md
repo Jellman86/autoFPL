@@ -53,6 +53,7 @@ still require owner authentication.
 - [Official FPL read-only API v1](data/sources/official-fpl-api-v1.md) — fixed-origin player, Gameweek, team, fixture and outcome capture semantics.
 - [FPL Form public forecast v1](data/sources/fpl-form-public-forecast-v1.md) — fixed-origin conditional predicted-points capture and evaluation boundary.
 - [Public research shadow sources v1](data/sources/public-research-shadow-sources-v1.md) — fixed-registry Spider capture, timing, retention and fail-closed boundary for diverse public evidence.
+- [Solio public projections v1](data/sources/solio-public-projections-v1.md) — cutoff-bound public Gameweek projection subset retained as an exact-identity, non-serving quantitative challenger.
 - [FBref Championship playing time v1](data/sources/fbref-championship-playing-time-v1.md) — fixed-URL 2021/22–2025/26 Byparr populations plus stable-match-ID schedule boundaries for current promoted-player history.
 
 ## Research and evidence
@@ -93,6 +94,7 @@ still require owner authentication.
 - [Current appearance-hurdle opening optimality audit v2](research/current-appearance-hurdle-opening-optimality-audit-v2.md) — exact global optimality, distinct-squad regret and paired-path player stability for the best-supported v2 opener.
 - [Current opening-squad forecast sensitivity v1](research/current-opening-squad-forecast-sensitivity-v1.md) — exhaustive forced-selection screen and globally reoptimised forecast-change thresholds for the selected v2 squad and its closest challengers.
 - [Current selected opening-squad shadow v1](research/current-selected-opening-squad-shadow-v1.md) — exact historical-policy binding with all eight preseason role decisions frozen for prospective scoring.
+- [Current public-projection opening squad v1](research/current-public-projection-opening-squad-v1.md) — zero-gap Solio Gameweek 1 mean overlay, complete legal challenger and like-for-like eight-week prospective scoring boundary.
 - [Selected opening-squad prospective outcome evaluation v1](research/selected-opening-squad-prospective-outcome-evaluation-v1.md) — preregistered incremental Gameweek 1–8 exact-FPL comparison with frozen same-capture benchmarks and a non-automatic promotion-evidence gate.
 - [Joint player-Gameweek scenario shadow v1](research/joint-player-gameweek-scenario-shadow-v1.md) — expanding-origin CRPS screen, whole-Gameweek residual rows and the exact 2026/27 GW1 prospective shadow matrix.
 - [Current selection scenario score shadow v1](research/current-selection-scenario-score-shadow-v1.md) — exact model and user revision scoring on identical joint rows through the strict product handoff.

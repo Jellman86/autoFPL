@@ -114,6 +114,27 @@ public static class ResearchSourceRegistry
                 "This is a derived consensus and must not be counted as independent of its inputs.",
                 "Displayed percentages describe source agreement, not calibrated start probability.",
             ]),
+        new(
+            "solio-public-projections",
+            "public-quantitative-market-projection",
+            new Uri(
+                "https://fpl.solioanalytics.com/api/data/latest.json",
+                UriKind.Absolute),
+            "solio-sports-market-model",
+            ["points", "team-goals", "clean-sheet"],
+            false,
+            [
+                "The public endpoint exposes only ranked subsets rather than a complete player forecast table.",
+                "Its model and upstream sports-market inputs are externally maintained and must be scored prospectively before numerical influence is learned.",
+                "A current expected-points value is a quarantined challenger and cannot silently replace autoFPL's serving model.",
+            ],
+            RequiredContentMarkers:
+            [
+                "\"topProjected\"",
+                "\"generatedAt\"",
+                "\"deadlineIso\"",
+            ],
+            MinimumContentBytes: 1000),
         .. FbrefPlayingTimeSources.All.Select(source => source.Definition),
         .. FbrefTeamScheduleSources.All.Select(source => source.Definition),
     ];

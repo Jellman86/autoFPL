@@ -273,6 +273,28 @@ Insertion changes the analytics snapshot source identity. This preserves the
 exact pre-outcome artifact in the standalone read-only snapshot used by the
 prospective scorer.
 
+## Public-projection opening-squad challenger
+
+When a cutoff-eligible `solio-public-projections` snapshot exists for the exact
+official capture, the worker generates
+`public-projection-opening-squad-capture-<official-capture-id>.json` after the
+best-supported v2 squad. The application validates source bytes and lineage,
+exact player identities, both legal squads, all eight frozen weekly role sets
+and the zero-gap six-Gameweek optimizer before immutable insertion.
+
+The operator equivalent is:
+
+```text
+dotnet AutoFpl.Api.dll \
+  --import-public-projection-opening-squad-shadow <json-file>
+```
+
+The current exact challenger is available from
+`GET /api/v1/forecasts/public-projection-opening-squad-shadow/current`. A `404`
+means no eligible source revision has completed the handoff for the latest
+official capture. The route is read-only and the artifact remains unpromoted,
+non-serving and unable to change advice or a user selection.
+
 ## Official FPL capture
 
 Run the bounded fixed-origin import as an operator command:
@@ -708,7 +730,7 @@ See the [source portfolio](../research/research-source-portfolio-v1.md).
 
 ## SQLite operations
 
-The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies 36 explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
+The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies 38 explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
 
 The root filesystem stays read-only. Production must mount a private, UID
 `1654`-writable persistent directory at `/data`; the CI smoke test uses an

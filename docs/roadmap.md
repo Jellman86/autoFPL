@@ -628,6 +628,15 @@ exact hurdle distributions as the best current scenario input. Their central
 80% interval still covers 87.67% and the 37/38-row donor support is coarse, so
 describe the ranges as empirical scenarios rather than perfectly calibrated
 confidence intervals.
+The latest public Solio points endpoint is now admitted as an independent
+prospective challenger rather than an assumed improvement. Its bounded
+collector freezes exact predeadline JSON lineage, and the live identity audit
+matched all 30 published players. Each source revision overlays only published
+Gameweek 1 means, globally re-solves the retained six-week policy and persists
+an immutable non-serving comparison. The API and decision room expose squad
+agreement, coverage and changes while leaving v2 as the recommendation. Since
+the endpoint retains no historical folds, only frozen 2026/27 outcomes can
+justify later blending or replacement.
 The OpenFPL-inspired official creative-history challenger has also been
 screened without weakening those gates. Adding prior BPS, influence,
 creativity and threat improved CRPS by 0.62% and won all three season

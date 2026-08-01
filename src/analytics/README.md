@@ -347,6 +347,23 @@ all eight role decisions frozen and is the current decision-room prediction.
 It remains explicitly prospectively unscored and unpromoted. See the
 [best-supported v2 specification](../../docs/research/current-best-supported-opening-squad-v2.md).
 
+An independent public Gameweek 1 points feed is also captured as a strictly
+prospective, non-serving challenger:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.current_public_projection_opening_squad \
+  --database /path/to/autofpl.db \
+  --output /path/to/current-public-projection-opening-squad.json
+```
+
+It requires exact cutoff-safe source lineage and player identity, overlays only
+published Gameweek 1 means on the unchanged six-week policy and leaves later
+weeks plus unpublished players on autoFPL. The worker imports every eligible
+revision for visible comparison, but it cannot influence advice before
+prospective outcome scoring. See the
+[public-projection challenger specification](../../docs/research/current-public-projection-opening-squad-v1.md).
+
 The model-level opening-policy screen reconstructs the direct and hurdle
 distributions on identical historical opening targets, globally solves the
 same registered six-Gameweek policy and compares exact eight-Gameweek realised

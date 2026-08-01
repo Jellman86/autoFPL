@@ -28,6 +28,9 @@ from .current_best_supported_opening_squad import (
 from .current_external_evidence_stress import (
     build_current_external_evidence_stress,
 )
+from .current_public_projection_opening_squad import (
+    build_current_public_projection_opening_squad,
+)
 from .current_scenario_selection_score import (
     build_current_scenario_selection_score,
 )
@@ -79,6 +82,7 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
                 capture_id,
                 season_code,
                 next_gameweek_number,
+                next_deadline_utc,
                 available_at_utc,
                 EXISTS (
                     SELECT 1
@@ -265,6 +269,27 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
             if evidence is None
             else str(evidence["available_at_utc"])
         ) if row is not None else None
+        available_tables = {
+            str(value[0])
+            for value in connection.execute(
+                "SELECT name FROM sqlite_master WHERE type = 'table';"
+            ).fetchall()
+        }
+        source_snapshot_columns = (
+            {
+                str(value[1])
+                for value in connection.execute(
+                    "PRAGMA table_info(research_source_snapshots);"
+                ).fetchall()
+            }
+            if "research_source_snapshots" in available_tables
+            else set()
+        )
+        source_status_clause = (
+            "AND status = 'shadow-only'"
+            if "status" in source_snapshot_columns
+            else ""
+        )
         has_exact_external_evidence_stress = (
             False
             if row is None
@@ -279,6 +304,59 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
                 );
                 """,
                 (int(row["capture_id"]), evidence_cutoff),
+            ).fetchone()[0]
+            == 1
+        )
+        has_eligible_public_projection_source = (
+            False
+            if row is None
+            or "research_source_snapshots" not in available_tables
+            else connection.execute(
+                f"""
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM research_source_snapshots
+                    WHERE source_key = 'solio-public-projections'
+                      {source_status_clause}
+                      AND identity_capture_id = ?
+                      AND julianday(available_at_utc) <= julianday(?)
+                );
+                """,
+                (int(row["capture_id"]), str(row["next_deadline_utc"])),
+            ).fetchone()[0]
+            == 1
+        )
+        has_exact_public_projection_squad = (
+            False
+            if row is None
+            or not has_eligible_public_projection_source
+            or "public_projection_opening_squad_artifacts"
+            not in available_tables
+            else connection.execute(
+                f"""
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM public_projection_opening_squad_artifacts AS artifact
+                    WHERE artifact.official_capture_id = ?
+                      AND artifact.source_snapshot_id = (
+                          SELECT snapshot_id
+                          FROM research_source_snapshots
+                          WHERE source_key = 'solio-public-projections'
+                            {source_status_clause}
+                            AND identity_capture_id = ?
+                            AND julianday(available_at_utc)
+                                <= julianday(?)
+                          ORDER BY julianday(available_at_utc) DESC,
+                                   snapshot_id DESC
+                          LIMIT 1
+                      )
+                );
+                """,
+                (
+                    int(row["capture_id"]),
+                    int(row["capture_id"]),
+                    str(row["next_deadline_utc"]),
+                ),
             ).fetchone()[0]
             == 1
         )
@@ -313,6 +391,12 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
                 "hasExactExternalEvidenceStress": bool(
                     has_exact_external_evidence_stress
                 ),
+                "hasEligiblePublicProjectionSource": bool(
+                    has_eligible_public_projection_source
+                ),
+                "hasExactPublicProjectionSquad": bool(
+                    has_exact_public_projection_squad
+                ),
                 "selectionRevisionId": (
                     None
                     if row["selection_revision_id"] is None
@@ -338,6 +422,8 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
                 "latestEvidenceClaimId": None,
                 "latestEvidenceCutoffUtc": None,
                 "hasExactExternalEvidenceStress": False,
+                "hasEligiblePublicProjectionSource": False,
+                "hasExactPublicProjectionSquad": False,
                 "selectionRevisionId": None,
                 "hasExactSelectionScore": False,
                 "hasExactSelectionStrategies": False,
@@ -367,6 +453,10 @@ def generate_once(
         and target["hasExactInitialSquadQuality"]
         and target["hasExactSelectedOpeningSquad"]
         and target["hasExactBestSupportedOpeningSquad"]
+        and (
+            not target["hasEligiblePublicProjectionSource"]
+            or target["hasExactPublicProjectionSquad"]
+        )
         and target["hasExactExternalEvidenceStress"]
         and target["hasExactSelectionScore"]
         and target["hasExactSelectionStrategies"]
@@ -407,6 +497,17 @@ def generate_once(
             "-hurdle-v2"
         )
         build = build_current_best_supported_opening_squad
+    elif (
+        target["hasExactPointShadow"]
+        and target["hasExactScenarioShadow"]
+        and target["hasExactInitialSquadQuality"]
+        and target["hasExactSelectedOpeningSquad"]
+        and target["hasExactBestSupportedOpeningSquad"]
+        and target["hasEligiblePublicProjectionSource"]
+        and not target["hasExactPublicProjectionSquad"]
+    ):
+        stem = f"public-projection-opening-squad-capture-{capture_id}"
+        build = build_current_public_projection_opening_squad
     elif (
         target["hasExactPointShadow"]
         and target["hasExactScenarioShadow"]

@@ -908,6 +908,10 @@ h3 {
   margin-top: 0.7rem;
 }
 
+#public-projection-challenger .evidence-stress-player-flow {
+  flex-wrap: wrap;
+}
+
 .evidence-stress-player {
   display: grid;
   min-width: 9rem;
