@@ -18,6 +18,7 @@ let lastSelectedCard = null;
 let dossierRequest = 0;
 let activeSquadView = "model";
 let previewedStrategyId = "model";
+let activePredictionChoice = "autofpl";
 
 function formatDeadline(value) {
   return new Intl.DateTimeFormat(undefined, {
@@ -741,6 +742,13 @@ function openingGameweekSelection() {
   ) ?? null;
 }
 
+function challengerGameweekSelection() {
+  if (!publicProjectionChallenger) return null;
+  return publicProjectionChallenger.challenger.selection.gameweeks.find(
+    (row) => row.gameweek === publicProjectionChallenger.openingGameweek,
+  ) ?? null;
+}
+
 function modelSquadPlayers() {
   const selection = openingGameweekSelection();
   if (!selection || !playerForecast) return advice.selection.players;
@@ -763,6 +771,132 @@ function modelSquadPlayers() {
     };
   });
   return players.length === 15 ? players : advice.selection.players;
+}
+
+function solioAssistedSquadPlayers() {
+  const selection = challengerGameweekSelection();
+  if (!selection || !playerForecast) return [];
+  const publicPoints = new Map(
+    publicProjectionChallenger.projections.map((projection) => [
+      projection.playerId,
+      projection.projectedPoints,
+    ]),
+  );
+  return playersForSelection(selection).map((player) => ({
+    ...player,
+    expectedPoints: publicPoints.get(player.playerId) ?? player.expectedPoints,
+  }));
+}
+
+function visibleSquadExpectedPoints(players) {
+  const starters = players.filter((player) => player.lineupPlace === "starting");
+  const captain = starters.find((player) => player.captaincy === "captain");
+  return starters.reduce((total, player) => total + player.expectedPoints, 0)
+    + (captain?.expectedPoints ?? 0);
+}
+
+function canCopyVisibleSquad() {
+  return Boolean(advice?.forecastArtifactId)
+    && new Date(advice.deadlineUtc).getTime() > Date.now()
+    && !["frozen", "expired"].includes(selectionRevision?.status);
+}
+
+function visiblePredictionSelection() {
+  return activePredictionChoice === "solio"
+    ? challengerGameweekSelection()
+    : openingGameweekSelection() ?? adviceGameweekSelection();
+}
+
+function selectionsMatch(left, right) {
+  return Boolean(left && right)
+    && left.captainPlayerId === right.captainPlayerId
+    && left.viceCaptainPlayerId === right.viceCaptainPlayerId
+    && left.replacementGoalkeeperPlayerId
+      === right.replacementGoalkeeperPlayerId
+    && left.startingPlayerIds.join(",") === right.startingPlayerIds.join(",")
+    && left.outfieldSubstitutePlayerIds.join(",")
+      === right.outfieldSubstitutePlayerIds.join(",");
+}
+
+function syncSquadChoiceControls() {
+  const autoButton = document.querySelector("#choose-autofpl-squad");
+  const solioButton = document.querySelector("#choose-solio-squad");
+  const copyButton = document.querySelector("#copy-visible-squad");
+  const hasChallenger = solioAssistedSquadPlayers().length === 15;
+  const alreadySaved = selectionsMatch(
+    visiblePredictionSelection(),
+    selectionRevision?.selection,
+  );
+  autoButton.setAttribute(
+    "aria-pressed",
+    String(activePredictionChoice === "autofpl"),
+  );
+  solioButton.disabled = !hasChallenger;
+  solioButton.setAttribute(
+    "aria-pressed",
+    String(activePredictionChoice === "solio"),
+  );
+  copyButton.disabled = !canCopyVisibleSquad()
+    || (activePredictionChoice === "solio" && !hasChallenger)
+    || alreadySaved;
+  copyButton.textContent = alreadySaved
+    ? "Already your saved draft"
+    : selectionRevision
+      ? "Replace my draft with this squad"
+      : "Use this squad as my draft";
+}
+
+function renderSquadChoice(choice) {
+  const challengerPlayers = solioAssistedSquadPlayers();
+  const canShowChallenger = challengerPlayers.length === 15;
+  activePredictionChoice = choice === "solio" && canShowChallenger
+    ? "solio"
+    : "autofpl";
+  const state = document.querySelector("#squad-choice-state");
+  const name = document.querySelector("#squad-choice-name");
+  const explanation = document.querySelector("#squad-choice-explanation");
+  const agreement = document.querySelector("#squad-choice-agreement");
+  const coverage = document.querySelector("#squad-choice-coverage");
+  const note = document.querySelector("#copy-visible-squad-note");
+
+  if (activePredictionChoice === "solio") {
+    renderSquadPlayers(challengerPlayers);
+    document.querySelector("#formation-kicker").textContent =
+      "Experimental comparison";
+    document.querySelector("#formation-title").textContent =
+      "Solio-assisted Starting XI";
+    document.querySelector("#selection-objective").textContent =
+      "Solio values alter published Gameweek 1 means only. autoFPL supplies unpublished players, Gameweeks 2–8 and the complete squad rules.";
+    document.querySelector("#recommendation-summary").textContent =
+      "You are previewing the experimental Solio-assisted challenger. It is not the recommended squad and has not changed your saved draft.";
+    document.querySelector("#team-points").textContent =
+      visibleSquadExpectedPoints(challengerPlayers).toFixed(1);
+    state.textContent = "Experimental";
+    name.textContent = "Solio-assisted";
+    explanation.textContent =
+      "A complete legal squad using Solio’s published GW1 values where available and autoFPL everywhere else.";
+    note.textContent = "Creates a reviewable autoFPL draft. Nothing is sent to FPL.";
+  } else {
+    if (selectedOpeningSquad && playerForecast) applySelectedOpeningSquad();
+    else renderSquadPlayers(advice.selection.players);
+    document.querySelector("#formation-title").textContent = "Starting XI";
+    state.textContent = "Recommended";
+    name.textContent = "autoFPL v2";
+    explanation.textContent =
+      "The best-supported squad uses autoFPL consistently across the complete planning horizon.";
+    note.textContent = "Creates a reviewable draft. Nothing is sent to FPL.";
+  }
+
+  if (publicProjectionChallenger) {
+    agreement.textContent =
+      `${publicProjectionChallenger.selectionChange.overlapPlayerCount}/15 players`;
+    coverage.textContent =
+      `${publicProjectionChallenger.source.matchedPlayerCount}/${publicProjectionChallenger.source.publishedPlayerCount} matched`;
+  } else {
+    agreement.textContent = "No challenger yet";
+    coverage.textContent = "Unavailable";
+  }
+  syncSquadChoiceControls();
 }
 
 function renderSquadPlayers(players, isOwnerSelection = false) {
@@ -1158,6 +1292,9 @@ function renderPublicProjectionChallenger(artifact) {
     `Retained ${formatCompactInstant(artifact.evidenceDecisionCutoffUtc)}`;
   audit.append(source, generated, cutoff);
   result.append(swap, scores, audit);
+  document.querySelector("#solio-choice-description").textContent =
+    `${artifact.selectionChange.overlapPlayerCount}/15 players agree with autoFPL`;
+  renderSquadChoice(activePredictionChoice);
 }
 
 async function loadPublicProjectionChallenger() {
@@ -1174,6 +1311,9 @@ async function loadPublicProjectionChallenger() {
         "Public projection challenger is being prepared.",
         "The validated v2 opening squad remains available while a cutoff-eligible source snapshot is captured and solved.",
       );
+      document.querySelector("#solio-choice-description").textContent =
+        "No current cutoff-safe challenger";
+      syncSquadChoiceControls();
       return;
     }
     if (!response.ok) {
@@ -1190,6 +1330,106 @@ async function loadPublicProjectionChallenger() {
       "The validated v2 recommendation is unchanged and no external value is being used as a hidden input.",
     );
     console.error(error);
+    document.querySelector("#solio-choice-description").textContent =
+      "Challenger unavailable";
+    syncSquadChoiceControls();
+  }
+}
+
+function adviceGameweekSelection() {
+  if (!advice) return null;
+  const starters = advice.selection.players.filter(
+    (player) => player.lineupPlace === "starting",
+  );
+  const bench = advice.selection.players
+    .filter((player) => player.lineupPlace === "bench")
+    .sort((left, right) => left.benchOrder - right.benchOrder);
+  return {
+    startingPlayerIds: starters.map((player) => player.playerId),
+    captainPlayerId: starters.find(
+      (player) => player.captaincy === "captain",
+    ).playerId,
+    viceCaptainPlayerId: starters.find(
+      (player) => player.captaincy === "vice-captain",
+    )?.playerId ?? starters.find(
+      (player) => player.captaincy !== "captain",
+    ).playerId,
+    replacementGoalkeeperPlayerId: bench.find(
+      (player) => player.position === "goalkeeper",
+    ).playerId,
+    outfieldSubstitutePlayerIds: bench
+      .filter((player) => player.position !== "goalkeeper")
+      .map((player) => player.playerId),
+  };
+}
+
+async function copyVisibleSquadToDraft() {
+  const button = document.querySelector("#copy-visible-squad");
+  const note = document.querySelector("#copy-visible-squad-note");
+  const selection = visiblePredictionSelection();
+  if (!selection || !canCopyVisibleSquad()) return;
+  const label = activePredictionChoice === "solio"
+    ? "Solio-assisted squad"
+    : "autoFPL v2 squad";
+  button.disabled = true;
+  button.textContent = "Saving draft…";
+  note.textContent = `Creating an explicit draft from the ${label}.`;
+  try {
+    let baseRevision = selectionRevision;
+    if (
+      !baseRevision
+      || baseRevision.forecastArtifactId !== advice.forecastArtifactId
+    ) {
+      const draftResponse = await fetch("/api/v1/selections/drafts", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          forecastArtifactId: advice.forecastArtifactId,
+        }),
+      });
+      if (!draftResponse.ok) {
+        throw new Error(`Draft request failed with ${draftResponse.status}`);
+      }
+      baseRevision = await draftResponse.json();
+    }
+    const revisionResponse = await fetch(
+      `/api/v1/selections/${baseRevision.selectionRevisionId}/revisions`,
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(cloneSelection(selection)),
+      },
+    );
+    if (!revisionResponse.ok) {
+      const problem = await revisionResponse.json().catch(() => null);
+      throw new Error(
+        problem?.code
+          ?? `revision request failed with ${revisionResponse.status}`,
+      );
+    }
+    const revision = await revisionResponse.json();
+    renderSelectionState(
+      revision,
+      `${label} copied to a new draft. Review it before locking.`,
+    );
+    await loadSelectionComparison(revision);
+    selectionEditDraft = cloneSelection(revision.selection);
+    showSquadBuilder();
+    document.querySelector("#builder-feedback").textContent =
+      `${label} is now your editable draft. Nothing was sent to FPL.`;
+    await loadSelectionStrategies();
+  } catch (error) {
+    note.textContent =
+      `${label} was not copied. Your saved selection is unchanged.`;
+    console.error(error);
+  } finally {
+    syncSquadChoiceControls();
   }
 }
 
@@ -1632,10 +1872,9 @@ function renderSelectionState(revision, feedback = "") {
   if (!revision) {
     if (
       advice
-      && document.querySelector("#formation-kicker").textContent
-        !== "Recommended selection"
+      && activeSquadView === "owner"
     ) {
-      renderSquadPlayers(advice.selection.players);
+      renderSquadChoice(activePredictionChoice);
     }
     const hasForecast = Boolean(advice?.forecastArtifactId);
     const deadlinePassed = advice
@@ -1662,6 +1901,7 @@ function renderSelectionState(revision, feedback = "") {
     setSelectionRail("");
     setSelectionFeedback(feedback);
     syncBuilderState();
+    syncSquadChoiceControls();
     return;
   }
 
@@ -1697,6 +1937,7 @@ function renderSelectionState(revision, feedback = "") {
   }
   setSelectionFeedback(feedback, revision.status);
   syncBuilderState();
+  syncSquadChoiceControls();
   loadSelectionComparison(revision);
 }
 
@@ -2356,12 +2597,13 @@ async function loadAdvice() {
       loadExternalEvidenceStress(),
       loadPublicProjectionChallenger(),
     ]);
-    applySelectedOpeningSquad();
+    renderSquadChoice(activePredictionChoice);
     await loadSelectionState();
     await loadSelectionStrategies();
     if (window.location.hash === "#my-squad") {
       showSquadBuilder({ updateHistory: false });
     } else if (window.location.hash === "#strategies") {
+      document.querySelector("#secondary-tools").open = true;
       setActiveNavigation("strategies");
       setBreadcrumb("Strategies");
       document.querySelector("#strategies").scrollIntoView({
@@ -2369,6 +2611,8 @@ async function loadAdvice() {
       });
     } else if (window.location.hash === "#model-squad") {
       showModelSquad({ updateHistory: false });
+    } else if (window.location.hash === "#data-sources") {
+      document.querySelector("#advanced-evidence").open = true;
     }
   } catch (error) {
     document.querySelector("#evidence-status").textContent = "Evidence unavailable";
@@ -2800,6 +3044,7 @@ window.addEventListener("popstate", () => {
   } else if (document.body.classList.contains("player-page")) {
     closeDossier({ updateHistory: false, restoreScroll: false });
   } else if (window.location.hash === "#strategies") {
+    document.querySelector("#secondary-tools").open = true;
     document.body.classList.remove("builder-page-active");
     document.querySelector("#squad-builder-page").hidden = true;
     setActiveNavigation("strategies");
@@ -2830,6 +3075,16 @@ document.querySelectorAll("[data-nav-section]").forEach((link) => {
     } else if (section === "my-squad") {
       event.preventDefault();
       showSquadBuilder();
+    } else if (section === "data-sources") {
+      document.querySelector("#advanced-evidence").open = true;
+      document.body.classList.remove("builder-page-active");
+      document.querySelector("#squad-builder-page").hidden = true;
+      setBreadcrumb(link.textContent.trim());
+    } else if (section === "strategies") {
+      document.querySelector("#secondary-tools").open = true;
+      document.body.classList.remove("builder-page-active");
+      document.querySelector("#squad-builder-page").hidden = true;
+      setBreadcrumb(link.textContent.trim());
     } else {
       document.body.classList.remove("builder-page-active");
       document.querySelector("#squad-builder-page").hidden = true;
@@ -2839,6 +3094,18 @@ document.querySelectorAll("[data-nav-section]").forEach((link) => {
 });
 document.querySelector("#ai-form").addEventListener("submit", (event) => event.preventDefault());
 document.querySelector("#refresh-prediction").addEventListener("click", loadAdvice);
+document.querySelector("#choose-autofpl-squad").addEventListener(
+  "click",
+  () => renderSquadChoice("autofpl"),
+);
+document.querySelector("#choose-solio-squad").addEventListener(
+  "click",
+  () => renderSquadChoice("solio"),
+);
+document.querySelector("#copy-visible-squad").addEventListener(
+  "click",
+  copyVisibleSquadToDraft,
+);
 document.querySelector("#create-selection-draft").addEventListener(
   "click",
   createSelectionDraft,
