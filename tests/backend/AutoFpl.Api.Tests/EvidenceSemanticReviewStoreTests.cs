@@ -18,6 +18,103 @@ namespace AutoFpl.Api.Tests;
 public sealed class EvidenceSemanticReviewStoreTests
 {
     [Fact]
+    public async Task Generator_calls_provider_once_per_context_and_persists_receipt()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = await CreateDatabaseAsync(files.DatabasePath);
+        var stressStore = new ExternalEvidenceStressStore(options, TimeProvider.System);
+        var claimStore = new EvidenceClaimStore(options, TimeProvider.System);
+        EvidenceClaimDocument claim = await claimStore.ImportAsync(
+            CreateEvidenceClaimRequest(),
+            TestContext.Current.CancellationToken);
+        await stressStore.ImportAsync(
+            RebindStressClaimsAndScenarios(
+                ExternalEvidenceStressStoreTests.CreateRequest(),
+                claim),
+            TestContext.Current.CancellationToken);
+        var contextStore = new CurrentEvidenceReviewContextStore(stressStore, claimStore);
+        EvidenceReviewContextDocument context = await contextStore.GetCurrentAsync(
+            TestContext.Current.CancellationToken)
+            ?? throw new InvalidOperationException("Expected a current context.");
+        var store = new EvidenceSemanticReviewStore(options, contextStore, TimeProvider.System);
+        DateTimeOffset now = context.DecisionCutoffUtc.AddMinutes(1);
+        var provider = new SuccessfulProvider(context, now);
+        EvidenceSemanticReviewProviderOptions providerOptions =
+            EvidenceSemanticReviewProviderOptions.CreateForTests(
+                "openrouter",
+                new Uri("https://openrouter.ai/api/v1/chat/completions"),
+                "test/model");
+        var generator = new EvidenceSemanticReviewGenerator(
+            providerOptions,
+            contextStore,
+            store,
+            provider,
+            new FixedTimeProvider(now));
+
+        EvidenceSemanticReviewGenerationResult first =
+            await generator.GenerateCurrentAsync(TestContext.Current.CancellationToken);
+        EvidenceSemanticReviewGenerationResult second =
+            await generator.GenerateCurrentAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal("generated", first.Status);
+        Assert.Equal("current", second.Status);
+        Assert.Equal(1, provider.CallCount);
+        Assert.Equal(
+            OpenAiCompatibleEvidenceSemanticReviewProvider.AdapterName,
+            first.Review?.ProviderAdapter);
+        Assert.Equal("test-route-v1", first.Review?.ProviderRoutingPolicyVersion);
+        Assert.Equal(new string('a', 64), first.Review?.ProviderResponseSha256);
+        Assert.False(first.Review?.InfluencesForecast);
+    }
+
+    [Fact]
+    public async Task Generator_records_invalid_provider_output_as_unavailable()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = await CreateDatabaseAsync(files.DatabasePath);
+        var stressStore = new ExternalEvidenceStressStore(options, TimeProvider.System);
+        var claimStore = new EvidenceClaimStore(options, TimeProvider.System);
+        EvidenceClaimDocument claim = await claimStore.ImportAsync(
+            CreateEvidenceClaimRequest(),
+            TestContext.Current.CancellationToken);
+        await stressStore.ImportAsync(
+            RebindStressClaimsAndScenarios(
+                ExternalEvidenceStressStoreTests.CreateRequest(),
+                claim),
+            TestContext.Current.CancellationToken);
+        var contextStore = new CurrentEvidenceReviewContextStore(stressStore, claimStore);
+        EvidenceReviewContextDocument context = await contextStore.GetCurrentAsync(
+            TestContext.Current.CancellationToken)
+            ?? throw new InvalidOperationException("Expected a current context.");
+        var store = new EvidenceSemanticReviewStore(options, contextStore, TimeProvider.System);
+        DateTimeOffset now = context.DecisionCutoffUtc.AddMinutes(1);
+        var provider = new UnknownPlayerProvider(now);
+        EvidenceSemanticReviewProviderOptions providerOptions =
+            EvidenceSemanticReviewProviderOptions.CreateForTests(
+                "openai",
+                new Uri("https://api.openai.com/v1/chat/completions"),
+                "test-model");
+        var generator = new EvidenceSemanticReviewGenerator(
+            providerOptions,
+            contextStore,
+            store,
+            provider,
+            new FixedTimeProvider(now));
+
+        EvidenceSemanticReviewGenerationResult result =
+            await generator.GenerateCurrentAsync(TestContext.Current.CancellationToken);
+        EvidenceSemanticReviewGenerationResult repeated =
+            await generator.GenerateCurrentAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal("unavailable", result.Status);
+        Assert.Equal("current", repeated.Status);
+        Assert.Equal(EvidenceSemanticReviewStore.StatusUnavailable, result.Review?.Status);
+        Assert.Equal("provider-invalid-provider-output", result.Review?.Reason);
+        Assert.Empty(result.Review?.Results ?? []);
+        Assert.Equal(1, provider.CallCount);
+    }
+
+    [Fact]
     public async Task Context_missing_results_in_validation_error()
     {
         using var files = new TemporaryDatabaseFiles();
@@ -554,6 +651,94 @@ public sealed class EvidenceSemanticReviewStoreTests
             <= 12 => "midfielder",
             _ => "forward",
         };
+
+    private sealed class SuccessfulProvider(
+        EvidenceReviewContextDocument context,
+        DateTimeOffset now) : IEvidenceSemanticReviewProvider
+    {
+        public int CallCount { get; private set; }
+
+        public Task<EvidenceSemanticReviewProviderResponse> ReviewAsync(
+            EvidenceReviewContextDocument ignored,
+            CancellationToken cancellationToken = default)
+        {
+            CallCount++;
+            EvidenceSemanticReviewProviderResult[] results =
+            [
+                .. context.Targets.Select(target => new EvidenceSemanticReviewProviderResult(
+                    target.Player.PlayerId,
+                    "supports-adverse-interpretation",
+                    "high",
+                    "next 2 gameweeks",
+                    target.ScenarioKeys,
+                    target.ReferencedClaimIds,
+                    [],
+                    [],
+                    target.SourceKeys,
+                    [],
+                    ["Temporary availability concern."],
+                    ["Longer-term role remains uncertain."],
+                    "Supplied public evidence only.",
+                    "The cited direct claim supports the adverse scenario.",
+                    false)),
+            ];
+            return Task.FromResult(new EvidenceSemanticReviewProviderResponse(
+                EvidenceSemanticReviewStore.StatusComplete,
+                null,
+                results,
+                "test/model",
+                now,
+                now.AddSeconds(1),
+                1_000,
+                "completed",
+                new string('a', 64)));
+        }
+    }
+
+    private sealed class UnknownPlayerProvider(DateTimeOffset now)
+        : IEvidenceSemanticReviewProvider
+    {
+        public int CallCount { get; private set; }
+
+        public Task<EvidenceSemanticReviewProviderResponse> ReviewAsync(
+            EvidenceReviewContextDocument context,
+            CancellationToken cancellationToken = default)
+        {
+            CallCount++;
+            return Task.FromResult(new EvidenceSemanticReviewProviderResponse(
+                EvidenceSemanticReviewStore.StatusComplete,
+                null,
+                [
+                    new(
+                        int.MaxValue,
+                        "supports-adverse-interpretation",
+                        "high",
+                        "next gameweek",
+                        [],
+                        [],
+                        [],
+                        [],
+                        [],
+                        [],
+                        [],
+                        [],
+                        "Supplied evidence only.",
+                        "Unknown player should be rejected.",
+                        false),
+                ],
+                "test-model",
+                now,
+                now.AddSeconds(1),
+                1_000,
+                "completed",
+                new string('b', 64)));
+        }
+    }
+
+    private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
+    }
 
     private sealed class TemporaryDatabaseFiles : IDisposable
     {

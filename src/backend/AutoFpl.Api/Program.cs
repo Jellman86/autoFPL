@@ -625,6 +625,38 @@ builder.Services.AddSingleton(serviceProvider =>
         serviceProvider.GetRequiredService<DatabaseOptions>()));
 builder.Services.AddSingleton<EvidenceClaimImporter>();
 builder.Services.AddSingleton<EvidenceSemanticReviewImporter>();
+EvidenceSemanticReviewProviderOptions evidenceSemanticReviewProviderOptions =
+    EvidenceSemanticReviewProviderOptions.FromConfiguration(builder.Configuration);
+builder.Services.AddSingleton(evidenceSemanticReviewProviderOptions);
+if (evidenceSemanticReviewProviderOptions.Enabled)
+{
+    builder.Services
+        .AddHttpClient<
+            IEvidenceSemanticReviewProvider,
+            OpenAiCompatibleEvidenceSemanticReviewProvider>(
+            client =>
+            {
+                client.Timeout = Timeout.InfiniteTimeSpan;
+                client.DefaultRequestHeaders.UserAgent.ParseAdd(
+                    "autoFPL-private-research/0.1");
+            })
+        .ConfigurePrimaryHttpMessageHandler(
+            () => new SocketsHttpHandler
+            {
+                AllowAutoRedirect = false,
+                AutomaticDecompression = DecompressionMethods.None,
+                ConnectTimeout = TimeSpan.FromSeconds(5),
+                MaxConnectionsPerServer = 1,
+                PooledConnectionLifetime = TimeSpan.FromMinutes(10),
+            });
+}
+builder.Services.AddSingleton(serviceProvider =>
+    new EvidenceSemanticReviewGenerator(
+        serviceProvider.GetRequiredService<EvidenceSemanticReviewProviderOptions>(),
+        serviceProvider.GetRequiredService<CurrentEvidenceReviewContextStore>(),
+        serviceProvider.GetRequiredService<EvidenceSemanticReviewStore>(),
+        serviceProvider.GetService<IEvidenceSemanticReviewProvider>(),
+        serviceProvider.GetRequiredService<TimeProvider>()));
 builder.Services.AddSingleton(serviceProvider =>
     new ResearchSourceSnapshotStore(
         serviceProvider.GetRequiredService<DatabaseOptions>(),
@@ -809,6 +841,10 @@ if (officialFplPollingOptions.Enabled)
 if (researchSourcePollingOptions.Enabled)
 {
     builder.Services.AddHostedService<ResearchSourcePoller>();
+}
+if (evidenceSemanticReviewProviderOptions.Enabled)
+{
+    builder.Services.AddHostedService<EvidenceSemanticReviewPoller>();
 }
 if (fbrefMatchLogPollingOptions.Enabled)
 {

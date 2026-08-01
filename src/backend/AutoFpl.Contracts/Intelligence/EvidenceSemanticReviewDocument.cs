@@ -36,7 +36,17 @@ public sealed record EvidenceSemanticReviewDocument(
         IReadOnlyList<EvidenceSemanticReviewResultDocument> Results,
     [property: JsonPropertyName("artifactId")] long? EvidenceSemanticReviewArtifactId,
     [property: JsonPropertyName("artifactContentSha256")]
-        string? EvidenceSemanticReviewArtifactContentSha256);
+        string? EvidenceSemanticReviewArtifactContentSha256,
+    [property: JsonPropertyName("providerAdapter")]
+        string? ProviderAdapter = null,
+    [property: JsonPropertyName("providerRoutingPolicyVersion")]
+        string? ProviderRoutingPolicyVersion = null,
+    [property: JsonPropertyName("providerOutcome")]
+        string? ProviderOutcome = null,
+    [property: JsonPropertyName("providerLatencyMilliseconds")]
+        long? ProviderLatencyMilliseconds = null,
+    [property: JsonPropertyName("providerResponseSha256")]
+        string? ProviderResponseSha256 = null);
 
 public sealed record EvidenceSemanticReviewCoverageDocument(
     [property: JsonPropertyName("contextTargetCount")]

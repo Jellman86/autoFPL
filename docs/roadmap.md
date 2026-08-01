@@ -1170,15 +1170,18 @@ near-boundary opening-squad players: 49 of 53 rows resolve at capture 41, four
 stale or out-of-population identities remain explicit, and no resolved row
 touches either scope. Continue collection through the deadline; a future
 forecast effect still requires resolved prospective outcomes.
-The first focused AI boundary for this work is now implemented without creating
-a general orchestrator project. The API and MCP expose only decision-relevant
-stress claims plus latest competing assertions, exact claim IDs, source spans,
-duplicate clusters, time cutoffs and conditional optimiser effects. The review
-policy requires citations, time-scope analysis, contradiction/dependence
-detection and abstention; it prohibits probabilities, source weights and
-forecast mutation. The next slice persists strict-schema reviews from an
-optional owner-configured provider and scores their semantic labels separately
-from later outcome-based numerical calibration.
+The focused AI boundary is now complete through automated review generation
+without creating a general orchestrator project. The API and MCP expose only
+decision-relevant stress claims plus latest competing assertions, exact claim
+IDs, source spans, duplicate clusters, time cutoffs and conditional optimiser
+effects. An optional owner-configured OpenAI-compatible adapter now reviews
+each exact changed context once under a strict context-derived schema and
+persists an immutable, non-serving receipt; refusal and failure are explicit.
+The policy requires citations, time-scope analysis, contradiction/dependence
+detection and abstention, and prohibits probabilities, source weights and
+forecast mutation. The next slice presents these reviews in the decision room,
+adds human adjudication labels, then scores semantic agreement and later
+outcome value before any learned numerical influence is considered.
 Do not add another standalone governance, universal contract, infrastructure
 or AI-orchestrator project ahead of these slices.
 
@@ -1188,8 +1191,9 @@ or AI-orchestrator project ahead of these slices.
   [#55](https://github.com/Jellman86/autoFPL/issues/55) and claim extraction,
   corroboration and reliability [#56](https://github.com/Jellman86/autoFPL/issues/56)
   are now an explicit shadow-research workstream. The immutable claim-ledger
-  foundation and bounded AI semantic-review context are implemented; provider
-  review persistence, human-label agreement and outcome scoring remain.
+  foundation, bounded review context, immutable review persistence and optional
+  automated provider generation are implemented; human-label agreement and
+  outcome scoring remain.
   Each source remains a challenger until an out-of-time ablation shows gain.
   The fixed-URL Byparr connector
   [#57](https://github.com/Jellman86/autoFPL/issues/57) is implemented for the

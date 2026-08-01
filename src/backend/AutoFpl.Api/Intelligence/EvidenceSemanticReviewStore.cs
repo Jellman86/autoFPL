@@ -317,6 +317,7 @@ public sealed class EvidenceSemanticReviewStore
             !string.IsNullOrWhiteSpace(document.ProviderModel),
             "identity",
             "providerModel");
+        ValidateProviderReceipt(document);
         Require(
             !string.IsNullOrWhiteSpace(document.PromptVersion)
                 && document.PromptVersion == context.ReviewPolicy.PromptVersion,
@@ -405,6 +406,73 @@ public sealed class EvidenceSemanticReviewStore
                     || document.Results.Any(result => result.IsAbstained),
                 "coverage",
                 "insufficient-evidence-state");
+        }
+    }
+
+    private static void ValidateProviderReceipt(
+        EvidenceSemanticReviewDocument document)
+    {
+        bool hasReceipt = document.ProviderAdapter is not null
+            || document.ProviderRoutingPolicyVersion is not null
+            || document.ProviderOutcome is not null
+            || document.ProviderLatencyMilliseconds is not null
+            || document.ProviderResponseSha256 is not null;
+        if (!hasReceipt)
+        {
+            return;
+        }
+
+        Require(
+            document.ProviderAdapter
+                == OpenAiCompatibleEvidenceSemanticReviewProvider.AdapterName,
+            "provider-receipt",
+            "providerAdapter");
+        Require(
+            !string.IsNullOrWhiteSpace(document.ProviderRoutingPolicyVersion)
+                && document.ProviderRoutingPolicyVersion.Length <= 80,
+            "provider-receipt",
+            "providerRoutingPolicyVersion");
+        Require(
+            !string.IsNullOrWhiteSpace(document.ProviderOutcome)
+                && document.ProviderOutcome.Length <= 80,
+            "provider-receipt",
+            "providerOutcome");
+        Require(
+            document.ProviderLatencyMilliseconds is >= 0 and <= 120_000,
+            "provider-receipt",
+            "providerLatencyMilliseconds");
+        Require(
+            document.ProviderResponseSha256 is null
+                || IsSha256(document.ProviderResponseSha256),
+            "provider-receipt",
+            "providerResponseSha256");
+        if (document.ProviderOutcome is "completed" or "refused")
+        {
+            Require(
+                document.ProviderResponseSha256 is not null,
+                "provider-receipt",
+                "providerResponseSha256");
+        }
+        if (document.Status == StatusRefused)
+        {
+            Require(
+                document.ProviderOutcome == "refused",
+                "provider-receipt",
+                "providerOutcome");
+        }
+        if (document.Status is StatusComplete or StatusInsufficientEvidence)
+        {
+            Require(
+                document.ProviderOutcome == "completed",
+                "provider-receipt",
+                "providerOutcome");
+        }
+        if (document.Status == StatusUnavailable)
+        {
+            Require(
+                document.ProviderOutcome is not ("completed" or "refused"),
+                "provider-receipt",
+                "providerOutcome");
         }
     }
 
