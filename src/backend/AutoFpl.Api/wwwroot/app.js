@@ -795,6 +795,56 @@ function visibleSquadExpectedPoints(players) {
     + (captain?.expectedPoints ?? 0);
 }
 
+function retainedScenarioMean(side, gameweekCount) {
+  const weekly = publicProjectionChallenger?.[side]
+    ?.exactScoreOnRetainedScenarios?.weekly;
+  if (!Array.isArray(weekly) || weekly.length < gameweekCount) return null;
+  return weekly
+    .slice(0, gameweekCount)
+    .reduce((total, gameweek) => total + Number(gameweek.meanPoints), 0);
+}
+
+function formatScorecardPoints(value) {
+  return Number.isFinite(value) ? `${value.toFixed(1)} pts` : "—";
+}
+
+function renderSquadScorecard() {
+  const scorecard = document.querySelector("#squad-scorecard");
+  if (!publicProjectionChallenger) {
+    scorecard.hidden = true;
+    return;
+  }
+
+  const autoGw1 = retainedScenarioMean("incumbent", 1);
+  const solioGw1 = retainedScenarioMean("challenger", 1);
+  const autoSix = retainedScenarioMean("incumbent", 6);
+  const solioSix = retainedScenarioMean("challenger", 6);
+  const values = [autoGw1, solioGw1, autoSix, solioSix];
+  if (values.some((value) => !Number.isFinite(value))) {
+    scorecard.hidden = true;
+    return;
+  }
+
+  document.querySelector("#scorecard-autofpl-gw1").textContent =
+    formatScorecardPoints(autoGw1);
+  document.querySelector("#scorecard-solio-gw1").textContent =
+    formatScorecardPoints(solioGw1);
+  document.querySelector("#scorecard-autofpl-six").textContent =
+    formatScorecardPoints(autoSix);
+  document.querySelector("#scorecard-solio-six").textContent =
+    formatScorecardPoints(solioSix);
+
+  const gw1Delta = solioGw1 - autoGw1;
+  const sixDelta = solioSix - autoSix;
+  const gw1Leader = gw1Delta > 0 ? "Solio-assisted" : "autoFPL";
+  const sixLeader = sixDelta > 0 ? "Solio-assisted" : "autoFPL";
+  document.querySelector("#squad-scorecard-verdict").textContent =
+    `${gw1Leader} leads by ${Math.abs(gw1Delta).toFixed(1)} points in Gameweek 1; `
+    + `${sixLeader} leads by ${Math.abs(sixDelta).toFixed(1)} across the six-Gameweek planning horizon. `
+    + "Real accuracy can only be judged after the Gameweeks are played.";
+  scorecard.hidden = false;
+}
+
 function canCopyVisibleSquad() {
   return Boolean(advice?.forecastArtifactId)
     && new Date(advice.deadlineUtc).getTime() > Date.now()
@@ -869,8 +919,10 @@ function renderSquadChoice(choice) {
       "Solio values alter published Gameweek 1 means only. autoFPL supplies unpublished players, Gameweeks 2–8 and the complete squad rules.";
     document.querySelector("#recommendation-summary").textContent =
       "You are previewing the experimental Solio-assisted challenger. It is not the recommended squad and has not changed your saved draft.";
+    document.querySelector("#team-points-label").textContent = "autoFPL GW1";
     document.querySelector("#team-points").textContent =
-      visibleSquadExpectedPoints(challengerPlayers).toFixed(1);
+      (retainedScenarioMean("challenger", 1)
+        ?? visibleSquadExpectedPoints(challengerPlayers)).toFixed(1);
     state.textContent = "Experimental";
     name.textContent = "Solio-assisted";
     explanation.textContent =
@@ -896,6 +948,7 @@ function renderSquadChoice(choice) {
     agreement.textContent = "No challenger yet";
     coverage.textContent = "Unavailable";
   }
+  renderSquadScorecard();
   syncSquadChoiceControls();
 }
 
@@ -960,6 +1013,7 @@ function renderAdvice(adviceDocument) {
       : "Preview only";
   }
   document.querySelector("#model-label").textContent = adviceDocument.modelLabel;
+  document.querySelector("#team-points-label").textContent = "Model GW1";
   document.querySelector("#team-points").textContent =
     adviceDocument.selection.expectedPoints.toFixed(1);
   document.querySelector("#selection-objective").textContent =
@@ -1018,6 +1072,7 @@ function applySelectedOpeningSquad() {
   document.querySelector("#model-label").textContent = isBestSupported
     ? "Appearance-hurdle v2 · historically retained"
     : "Registered opening policy v1";
+  document.querySelector("#team-points-label").textContent = "autoFPL GW1";
   document.querySelector("#team-points").textContent =
     Number(selectedOpeningSquad.preseasonScenarioScore.weekly[0].meanPoints)
       .toFixed(1);
