@@ -674,6 +674,11 @@ categorical, quarantined start claims rather than invented appearance
 probabilities, so v2 stays unchanged. The production extractor also resolves a
 unique team-scoped first-name or nickname token such as Rodri while continuing
 to reject stale team mismatches such as Tonali-at-Newcastle.
+The exact raw-row reconciliation is now retained too. At capture 41, 49 of 53
+official injury rows resolve; Webster, Krafth, stale-club Tonali and Boly remain
+explicitly unresolved, and Tonali's injury detail is a source placeholder. No
+resolved row touches the selected 15 or five direct alternatives. Preserve
+those source-quality gaps without guessing and leave v2 unchanged.
 The prospective start-source evaluator now collapses repeated source revisions
 to the latest pre-deadline player assertion and reports source × lead-time
 confusion counts, Gameweek support, proper probability scores and
@@ -1146,9 +1151,12 @@ collector requires all 20 club sections and structurally valid player rows,
 retains compact club/player/injury/optional-update-link evidence plus the
 rendered widget hash, and rejects the application shell or partial content. The
 typed extractor now resolves within the official team and creates only
-quarantined `doubtful` claims without inventing probabilities. The next slice
-audits those resolved and unresolved rows against the selected and
-near-boundary opening-squad players before any forecast-effect evaluation.
+quarantined `doubtful` claims without inventing probabilities. The raw-row
+audit now reconciles those resolved and unresolved rows against the selected and
+near-boundary opening-squad players: 49 of 53 rows resolve at capture 41, four
+stale or out-of-population identities remain explicit, and no resolved row
+touches either scope. Continue collection through the deadline; a future
+forecast effect still requires resolved prospective outcomes.
 Do not add another standalone governance, universal contract, infrastructure
 or AI-orchestrator project ahead of these slices.
 

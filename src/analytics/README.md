@@ -1065,6 +1065,29 @@ until an eligible official fold exists.
 See the
 [official underlying feature ablation specification](../../docs/research/official-underlying-feature-ablation-v1.md).
 
+## Current official injury boundary audit v1
+
+The official injury boundary audit reconciles every raw row from the latest
+cutoff-eligible Premier League injury snapshot with the production extractor's
+exact immutable claims:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.current_official_injury_boundary_audit \
+  --database /path/to/autofpl.db \
+  --evidence-cutoff-utc 2026-08-04T10:40:00Z \
+  --output /path/to/current-official-injury-boundary-audit.json
+```
+
+The report binds the selected squad and all direct forecast-boundary
+alternatives to the same official capture. Resolved rows require the exact
+source span, revision and content hash emitted by the production extractor;
+unresolved rows remain explicit and are never fuzzy-matched onto a scoped
+player. A source placeholder is visible, and absence from the list is never
+reported as fitness. The artifact is deterministic, read-only and non-serving.
+See the
+[official injury boundary audit](../../docs/research/current-official-injury-boundary-audit-v1.md).
+
 ## Current external-evidence stress v1
 
 The current stress bridge globally re-solves the best-supported six-Gameweek
