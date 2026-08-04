@@ -67,6 +67,13 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **The frozen Solio opening-squad comparison now has an executable outcome
+  scorer.** A read-only command selects the final eligible source snapshot,
+  verifies its exact stored lineage and incrementally scores the challenger
+  and same-capture autoFPL incumbent over Gameweeks 1–8 with the shared exact
+  captain-fallback and ordered auto-substitution engine. Partial results remain
+  visibly incomplete, and even a favourable complete single-period result can
+  only support review rather than automatically promote the source.
 - **An independent public points model now challenges the validated opening
   squad without silently changing advice.** A cutoff-bound Solio snapshot is
   hash-verified and joined to exact official player identities before its
