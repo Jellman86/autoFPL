@@ -6,9 +6,10 @@ import sqlite3
 import sys
 import tempfile
 import unittest
-from contextlib import redirect_stderr
 from io import StringIO
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src" / "analytics"))
@@ -19,6 +20,7 @@ from autofpl_analytics.temporal_ridge import (  # noqa: E402
     evaluate_temporal_ridge,
     main,
 )
+import autofpl_analytics.temporal_ridge as temporal_ridge_module  # noqa: E402
 from tests.analytics import test_feature_table as feature_test_helpers  # noqa: E402
 
 
@@ -119,7 +121,11 @@ class TemporalRidgeTests(unittest.TestCase):
             )
             written = json.loads(output.read_text(encoding="utf-8"))
             errors = StringIO()
-            with redirect_stderr(errors):
+            with patch.object(
+                temporal_ridge_module,
+                "sys",
+                SimpleNamespace(stderr=errors),
+            ):
                 second_exit = main(
                     [
                         "--database",

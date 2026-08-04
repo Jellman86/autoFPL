@@ -344,7 +344,7 @@ public sealed class PublicProjectionOpeningSquadStore
             "lineage");
     }
 
-    private static async Task ValidateSelectionAsync(
+    internal static async Task ValidateSelectionAsync(
         SqliteConnection connection,
         SqliteTransaction transaction,
         long captureId,
@@ -477,7 +477,7 @@ public sealed class PublicProjectionOpeningSquadStore
         }
     }
 
-    private static void ValidateSelectionChange(JsonElement document)
+    internal static void ValidateSelectionChange(JsonElement document)
     {
         var incumbent = document.GetProperty("incumbent")
             .GetProperty("selection").GetProperty("playerIds")

@@ -66,3 +66,25 @@ The artifact freezes both legal squads, all eight weekly role decisions, exact
 retained-scenario scores, source hashes, solver identity and prospective outcome
 window. It is `prospective-official-baseline-unscored`, `isPromoted: false` and
 `influencesAdvice: false`.
+
+## Immutable product handoff
+
+After the best-supported v2 squad is stored for an exact Gameweek 1 capture,
+the private analytics worker generates
+`official-published-opening-squad-capture-<capture-id>.json`. The API accepts
+the document only while that capture is still current and verifies:
+
+- the official bootstrap, fixture, deadline and availability identities;
+- complete non-unavailable-player `ep_next` coverage;
+- the exact persisted v2 incumbent run identity;
+- both legal 15-player squads and all eight legal frozen role sets; and
+- the registered source, method, solver and outcome-scoring identities.
+
+The application inserts one immutable artifact per official capture. An
+identical retry is idempotent; a different document for the same capture fails
+closed. The current exact artifact is read-only at
+`GET /api/v1/forecasts/official-published-opening-squad-shadow/current`; a
+`404` never substitutes an older capture. Persistence does not promote the
+baseline or make it influence advice. It creates the prospective boundary
+needed for a later outcome scorer to avoid reconstructing the challenger after
+results exist.

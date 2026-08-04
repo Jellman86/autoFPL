@@ -295,6 +295,28 @@ means no eligible source revision has completed the handoff for the latest
 official capture. The route is read-only and the artifact remains unpromoted,
 non-serving and unable to change advice or a user selection.
 
+## Official published opening-squad baseline
+
+After the best-supported v2 opening squad is persisted, the analytics worker
+generates
+`official-published-opening-squad-capture-<official-capture-id>.json`. The
+application verifies exact official source hashes, full eligible-player
+`ep_next` coverage, the persisted v2 incumbent identity, both legal squads,
+eight frozen role sets and zero-gap solver lineage before immutable insertion.
+
+The operator equivalent is:
+
+```text
+dotnet AutoFpl.Api.dll \
+  --import-official-published-opening-squad-shadow <json-file>
+```
+
+The exact latest-capture baseline is available from
+`GET /api/v1/forecasts/official-published-opening-squad-shadow/current`. A
+`404` means the handoff is absent for the latest official capture; an older
+baseline is never substituted. The artifact is read-only, non-serving and
+prospectively unscored.
+
 ## Official FPL capture
 
 Run the bounded fixed-origin import as an operator command:

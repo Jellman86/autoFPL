@@ -361,7 +361,9 @@ The command requires `ep_next` for every eligible candidate in the same
 official capture, overlays only Gameweek 1 on the retained six-week policy and
 scores the resulting legal squad on unchanged autoFPL paths. It remains a
 prospective, non-serving baseline; provider publication is not evidence of
-accuracy. See the
+accuracy. The analytics worker now generates this handoff automatically after
+the best-supported squad exists, and the API persists its exact source hashes,
+incumbent identity, squads and eight frozen role sets before outcomes. See the
 [official published opening-squad specification](../../docs/research/current-official-published-opening-squad-v1.md).
 
 An independent public Gameweek 1 points feed is also captured as a strictly

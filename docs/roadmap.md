@@ -635,6 +635,9 @@ It gains 3.703 points on the published-value six-week surrogate and 1.105 mean
 points on unchanged autoFPL scenarios, but its retained-scenario p10 falls by
 6.4 points. Treat that mixed downside result as a prospective baseline, not a
 recommendation or blend; score it against later outcomes before any promotion.
+The exact document is now persisted immutably before outcomes with its official
+source hashes, v2 incumbent identity and eight frozen role sets, so later
+scoring can consume prospective evidence rather than reconstructing a squad.
 The latest public Solio points endpoint is now admitted as an independent
 prospective challenger rather than an assumed improvement. Its bounded
 collector freezes exact predeadline JSON lineage, and the live identity audit
