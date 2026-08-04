@@ -546,7 +546,8 @@ def main(arguments: Optional[Sequence[str]] = None) -> int:
         report = build_selected_opening_squad_outcome_evaluation(
             options.database
         )
-        output = _write_report(report, options.output)
+        output = report
+        _write_report(output, options.output)
     except TemporalRidgeError as exception:
         status = (
             "waiting-for-official-outcome"

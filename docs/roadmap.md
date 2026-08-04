@@ -628,6 +628,13 @@ exact hurdle distributions as the best current scenario input. Their central
 80% interval still covers 87.67% and the 37/38-row donor support is coarse, so
 describe the ranges as empirical scenarios rather than perfectly calibrated
 confidence intervals.
+Official FPL's published `ep_next` now also has an executable full-pool opening
+baseline. The first exact-capture screen covers all 560 eligible candidates and
+changes Gabriel, Pickford and Richarlison in for Thiago, Van Hecke and Roefs.
+It gains 3.703 points on the published-value six-week surrogate and 1.105 mean
+points on unchanged autoFPL scenarios, but its retained-scenario p10 falls by
+6.4 points. Treat that mixed downside result as a prospective baseline, not a
+recommendation or blend; score it against later outcomes before any promotion.
 The latest public Solio points endpoint is now admitted as an independent
 prospective challenger rather than an assumed improvement. Its bounded
 collector freezes exact predeadline JSON lineage, and the live identity audit

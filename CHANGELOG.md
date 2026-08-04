@@ -65,8 +65,23 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 - **The pre-implementation research-acceptance gate has been removed.** CI no longer needs issue/PR read permissions or GitHub API proof of a second person's acceptance before analytics code can be written.
 - **Development quality gates now prioritise correctness and research validity over ceremony.** `dev` requires comprehensive tests, governance and secret scanning while signatures, stale-base reruns and universal blocking on slower analyses are reserved or relaxed as appropriate; `main` remains the strict signed release boundary, and independent review is risk-based.
 
+### Fixed
+
+- **Successful outcome-evaluation CLIs no longer fail after writing their
+  report.** The initial-squad, selected-opening-squad and Solio outcome
+  commands now summarize the built document rather than dereferencing the
+  report writer's intentionally empty return value; focused tests execute each
+  successful file-output path.
+
 ### Added
 
+- **Official FPL's published next-Gameweek expectation now has a complete
+  opening-squad baseline.** A read-only cutoff-bound command requires `ep_next`
+  for every exact-capture candidate, overlays those values only on Gameweek 1
+  of the unchanged six-week policy and globally solves a legal squad before
+  rescoring it on the retained autoFPL scenarios. The first live 560-player
+  screen changes three squad places and remains a prospective, non-serving
+  baseline until later official outcomes can score it.
 - **The frozen Solio opening-squad comparison now has an executable outcome
   scorer.** A read-only command selects the final eligible source snapshot,
   verifies its exact stored lineage and incrementally scores the challenger
