@@ -347,6 +347,23 @@ all eight role decisions frozen and is the current decision-room prediction.
 It remains explicitly prospectively unscored and unpromoted. See the
 [best-supported v2 specification](../../docs/research/current-best-supported-opening-squad-v2.md).
 
+Official FPL's own published next-Gameweek expectation is screened as a
+complete exact-identity opening-squad baseline:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.current_official_published_opening_squad \
+  --database /path/to/autofpl.db \
+  --output /path/to/current-official-published-opening-squad.json
+```
+
+The command requires `ep_next` for every eligible candidate in the same
+official capture, overlays only Gameweek 1 on the retained six-week policy and
+scores the resulting legal squad on unchanged autoFPL paths. It remains a
+prospective, non-serving baseline; provider publication is not evidence of
+accuracy. See the
+[official published opening-squad specification](../../docs/research/current-official-published-opening-squad-v1.md).
+
 An independent public Gameweek 1 points feed is also captured as a strictly
 prospective, non-serving challenger:
 

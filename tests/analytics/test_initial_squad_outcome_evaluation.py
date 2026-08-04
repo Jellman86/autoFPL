@@ -43,8 +43,24 @@ class InitialSquadOutcomeEvaluationTests(unittest.TestCase):
 
             first = build_initial_squad_outcome_evaluation(database)
             second = build_initial_squad_outcome_evaluation(database)
+            output = Path(directory) / "evaluation.json"
+            self.assertEqual(
+                0,
+                main(
+                    [
+                        "--database",
+                        str(database),
+                        "--output",
+                        str(output),
+                    ]
+                ),
+            )
 
             self.assertEqual(first, second)
+            self.assertEqual(
+                first,
+                json.loads(output.read_text(encoding="utf-8")),
+            )
             self.assertEqual(before, database.read_bytes())
             self.assertEqual(ARTIFACT_TYPE, first["artifactType"])
             self.assertEqual(

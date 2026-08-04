@@ -104,8 +104,22 @@ class SelectedOpeningSquadOutcomeEvaluationTests(unittest.TestCase):
             result = build_selected_opening_squad_outcome_evaluation(
                 database
             )
+            output = Path(temporary) / "evaluation.json"
+            self.assertEqual(
+                0,
+                main(
+                    [
+                        "--database",
+                        str(database),
+                        "--output",
+                        str(output),
+                    ]
+                ),
+            )
+            written = json.loads(output.read_text(encoding="utf-8"))
 
         self.assertEqual("prospective-outcome-complete", result["status"])
+        self.assertEqual(result, written)
         self.assertEqual(
             list(range(1, 9)),
             result["promotionEvidenceGate"][
