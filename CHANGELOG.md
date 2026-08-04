@@ -75,6 +75,14 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **Official injury evidence now has raw-row boundary reconciliation.** A
+  read-only cutoff-bound audit verifies the retained 20-club Playwright payload,
+  binds resolved rows only through the production extractor's exact immutable
+  claims and reports every unresolved row against the selected squad and its
+  globally solved direct alternatives. The first live 53-row audit resolves 49
+  identities, preserves four stale or out-of-population gaps plus four source
+  placeholders, and finds no exact injury listing in either decision scope; it
+  remains non-serving and never treats absence from the list as fitness.
 - **Official FPL's published next-Gameweek expectation now has a complete
   opening-squad baseline.** A read-only cutoff-bound command requires `ep_next`
   for every exact-capture candidate, overlays those values only on Gameweek 1

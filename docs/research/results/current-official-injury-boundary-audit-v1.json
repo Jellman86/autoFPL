@@ -1,0 +1,2178 @@
+{
+  "artifactType": "current-official-injury-boundary-audit",
+  "artifactVersion": "current-official-injury-boundary-audit-v1",
+  "boundaryAlternatives": [
+    {
+      "boundaryForSelectedPlayerIds": [
+        61,
+        112,
+        229,
+        356,
+        533
+      ],
+      "injuryListingStatus": "not-listed-in-source",
+      "playerId": 471,
+      "position": "defender",
+      "sourceRow": null,
+      "teamId": 18,
+      "teamName": "Nott'm Forest",
+      "webName": "Milenkovi\u0107"
+    },
+    {
+      "boundaryForSelectedPlayerIds": [
+        55,
+        106,
+        346
+      ],
+      "injuryListingStatus": "not-listed-in-source",
+      "playerId": 165,
+      "position": "forward",
+      "sourceRow": null,
+      "teamId": 6,
+      "teamName": "Chelsea",
+      "webName": "Jo\u00e3o Pedro"
+    },
+    {
+      "boundaryForSelectedPlayerIds": [
+        529
+      ],
+      "injuryListingStatus": "not-listed-in-source",
+      "playerId": 82,
+      "position": "goalkeeper",
+      "sourceRow": null,
+      "teamId": 4,
+      "teamName": "Brentford",
+      "webName": "Kelleher"
+    },
+    {
+      "boundaryForSelectedPlayerIds": [
+        250
+      ],
+      "injuryListingStatus": "not-listed-in-source",
+      "playerId": 325,
+      "position": "goalkeeper",
+      "sourceRow": null,
+      "teamId": 16,
+      "teamName": "Man Utd",
+      "webName": "Darlow"
+    },
+    {
+      "boundaryForSelectedPlayerIds": [
+        67,
+        155,
+        368,
+        426,
+        542
+      ],
+      "injuryListingStatus": "not-listed-in-source",
+      "playerId": 481,
+      "position": "midfielder",
+      "sourceRow": null,
+      "teamId": 15,
+      "teamName": "Man City",
+      "webName": "Anderson"
+    }
+  ],
+  "coverage": {
+    "boundaryAlternativeListedPlayerCount": 0,
+    "boundaryAlternativePlayerCount": 5,
+    "identityResolutionRate": 0.924528,
+    "resolvedRowCount": 49,
+    "selectedListedPlayerCount": 0,
+    "selectedPlayerCount": 15,
+    "sourceClubCount": 20,
+    "sourcePlaceholderInjuryRowCount": 4,
+    "sourceRowCount": 53,
+    "unresolvedInScopeTeamCount": 1,
+    "unresolvedRowCount": 4
+  },
+  "dataIdentitySha256": "b5594756050f5b13cd1d6a604e268d216db4020b9f31e4a87e0593426dd8938a",
+  "deadlineUtc": "2026-08-21T17:30:00.0000000Z",
+  "decision": "retain-selected-squad-and-review-identity-gaps-without-forecast-mutation",
+  "evidenceDecisionCutoffUtc": "2026-08-04T10:40:00Z",
+  "influencesAdvice": false,
+  "isPromoted": false,
+  "limitations": [
+    "A player absent from the injury list is not proven fit or available; this source contains reported injury rows only.",
+    "An unresolved raw row is never guessed onto a selected or boundary player, even when the source club has scoped players.",
+    "Every resolved listing remains a quarantined doubtful flag without an invented absence probability or return date.",
+    "This identity audit is prospective and non-serving; a future forecast effect still requires cutoff-safe outcome scoring."
+  ],
+  "lineupBoundarySource": {
+    "artifactVersion": "current-lineup-evidence-boundary-audit-v1.1",
+    "dataIdentitySha256": "0a623e6a3eb85ba427f376b2c9c9ae8e07f0ec12af1d4bd88c42bf65a5ed69e3",
+    "runIdentitySha256": "00c6cf7dd33aff859103f410ad2368c18e5224c5b2db47704153538bd9424c4b"
+  },
+  "officialCaptureId": 41,
+  "openingGameweek": 1,
+  "runIdentitySha256": "831fd818a66d61a7cd0ddb7a62327c494723ea04d963750ae92a33292fa5cd49",
+  "schemaVersion": "1.0",
+  "seasonCode": "2026-27",
+  "selectedPlayers": [
+    {
+      "injuryListingStatus": "not-listed-in-source",
+      "playerId": 61,
+      "position": "defender",
+      "sourceRow": null,
+      "teamId": 3,
+      "teamName": "Bournemouth",
+      "webName": "Truffert"
+    },
+    {
+      "injuryListingStatus": "not-listed-in-source",
+      "playerId": 229,
+      "position": "defender",
+      "sourceRow": null,
+      "teamId": 9,
+      "teamName": "Everton",
+      "webName": "Tarkowski"
+    },
+    {
+      "injuryListingStatus": "not-listed-in-source",
+      "playerId": 356,
+      "position": "defender",
+      "sourceRow": null,
+      "teamId": 14,
+      "teamName": "Liverpool",
+      "webName": "Virgil"
+    },
+    {
+      "injuryListingStatus": "not-listed-in-source",
+      "playerId": 112,
+      "position": "defender",
+      "sourceRow": null,
+      "teamId": 19,
+      "teamName": "Spurs",
+      "webName": "Van Hecke"
+    },
+    {
+      "injuryListingStatus": "not-listed-in-source",
+      "playerId": 533,
+      "position": "defender",
+      "sourceRow": null,
+      "teamId": 20,
+      "teamName": "Sunderland",
+      "webName": "Mukiele"
+    },
+    {
+      "injuryListingStatus": "not-listed-in-source",
+      "playerId": 55,
+      "position": "forward",
+      "sourceRow": null,
+      "teamId": 2,
+      "teamName": "Aston Villa",
+      "webName": "Watkins"
+    },
+    {
+      "injuryListingStatus": "not-listed-in-source",
+      "playerId": 106,
+      "position": "forward",
+      "sourceRow": null,
+      "teamId": 4,
+      "teamName": "Brentford",
+      "webName": "Thiago"
+    },
+    {
+      "injuryListingStatus": "not-listed-in-source",
+      "playerId": 346,
+      "position": "forward",
+      "sourceRow": null,
+      "teamId": 13,
+      "teamName": "Leeds",
+      "webName": "Calvert-Lewin"
+    },
+    {
+      "injuryListingStatus": "not-listed-in-source",
+      "playerId": 250,
+      "position": "goalkeeper",
+      "sourceRow": null,
+      "teamId": 10,
+      "teamName": "Fulham",
+      "webName": "Leno"
+    },
+    {
+      "injuryListingStatus": "not-listed-in-source",
+      "playerId": 529,
+      "position": "goalkeeper",
+      "sourceRow": null,
+      "teamId": 20,
+      "teamName": "Sunderland",
+      "webName": "Roefs"
+    },
+    {
+      "injuryListingStatus": "not-listed-in-source",
+      "playerId": 67,
+      "position": "midfielder",
+      "sourceRow": null,
+      "teamId": 3,
+      "teamName": "Bournemouth",
+      "webName": "Rayan"
+    },
+    {
+      "injuryListingStatus": "not-listed-in-source",
+      "playerId": 155,
+      "position": "midfielder",
+      "sourceRow": null,
+      "teamId": 6,
+      "teamName": "Chelsea",
+      "webName": "Enzo"
+    },
+    {
+      "injuryListingStatus": "not-listed-in-source",
+      "playerId": 368,
+      "position": "midfielder",
+      "sourceRow": null,
+      "teamId": 14,
+      "teamName": "Liverpool",
+      "webName": "Szoboszlai"
+    },
+    {
+      "injuryListingStatus": "not-listed-in-source",
+      "playerId": 426,
+      "position": "midfielder",
+      "sourceRow": null,
+      "teamId": 16,
+      "teamName": "Man Utd",
+      "webName": "B.Fernandes"
+    },
+    {
+      "injuryListingStatus": "not-listed-in-source",
+      "playerId": 542,
+      "position": "midfielder",
+      "sourceRow": null,
+      "teamId": 20,
+      "teamName": "Sunderland",
+      "webName": "E.Le F\u00e9e"
+    }
+  ],
+  "source": {
+    "availableAtUtc": "2026-08-04T10:39:10.616064Z",
+    "contentBytes": 14747,
+    "contentSha256": "4fbbb941a359359c47ef9ed535a49e762fdf342edd50930eaf4075abfc1b63f9",
+    "identityCaptureId": 41,
+    "selectionRule": "latest-exact-capture-snapshot-at-or-before-explicit-evidence-cutoff",
+    "snapshotId": 229,
+    "sourceKey": "premier-league-injuries",
+    "sourceRevision": 35,
+    "transportKey": "playwright-mcp",
+    "transportVersion": "playwright-mcp/v0.0.78"
+  },
+  "sourceRows": [
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "fb0e57068b4b0682d4a1d22e9a5f886c31596fdfd242b09f64c7292914e90978",
+        "claimId": 18134,
+        "extractionConfidence": 0.95,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Knee",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 198869,
+        "officialStatus": "a",
+        "playerId": 10,
+        "position": "defender",
+        "teamId": 1,
+        "teamName": "Arsenal",
+        "webName": "White"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [],
+      "sourcePlayerName": "Ben White",
+      "sourceSpan": "Arsenal injury list: Ben White \u2014 Knee",
+      "sourceTeamName": "Arsenal",
+      "sourceTeamOfficialTeamId": 1
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "268b6d9563d41b7caa79198a72548b9753f074194b49002c534667a320f40b47",
+        "claimId": 18135,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Groin",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 445122,
+        "officialStatus": "i",
+        "playerId": 5,
+        "position": "defender",
+        "teamId": 1,
+        "teamName": "Arsenal",
+        "webName": "J.Timber"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [],
+      "sourcePlayerName": "Jurrien Timber",
+      "sourceSpan": "Arsenal injury list: Jurrien Timber \u2014 Groin",
+      "sourceTeamName": "Arsenal",
+      "sourceTeamOfficialTeamId": 1
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "2d753a9b7a54fff104e2fb61bf4a59909ef4d58f203b1360664e9cc648df0c98",
+        "claimId": 18136,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Back",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 462424,
+        "officialStatus": "i",
+        "playerId": 6,
+        "position": "defender",
+        "teamId": 1,
+        "teamName": "Arsenal",
+        "webName": "Saliba"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [],
+      "sourcePlayerName": "William Saliba",
+      "sourceSpan": "Arsenal injury list: William Saliba \u2014 Back",
+      "sourceTeamName": "Arsenal",
+      "sourceTeamOfficialTeamId": 1
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "8df598ac36e1dc7f7bf03977cef492446e5c8348c890c251398baf9ebddd950e",
+        "claimId": 18137,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "-",
+      "injuryDetailStatus": "source-placeholder",
+      "resolvedPlayer": {
+        "code": 653481,
+        "officialStatus": "a",
+        "playerId": 52,
+        "position": "midfielder",
+        "teamId": 2,
+        "teamName": "Aston Villa",
+        "webName": "Alysson"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 55,
+          "position": "forward",
+          "scope": "selected-squad",
+          "teamId": 2,
+          "teamName": "Aston Villa",
+          "webName": "Watkins"
+        }
+      ],
+      "sourcePlayerName": "Alysson",
+      "sourceSpan": "Aston Villa injury list: Alysson \u2014 -",
+      "sourceTeamName": "Aston Villa",
+      "sourceTeamOfficialTeamId": 2
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "9b2b1552cf3bf2c89b7f5650b1bf36faaac11832aadd5227eb3cae106ce8cffd",
+        "claimId": 18138,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Knee",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 226944,
+        "officialStatus": "d",
+        "playerId": 47,
+        "position": "midfielder",
+        "teamId": 2,
+        "teamName": "Aston Villa",
+        "webName": "Kamara"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 55,
+          "position": "forward",
+          "scope": "selected-squad",
+          "teamId": 2,
+          "teamName": "Aston Villa",
+          "webName": "Watkins"
+        }
+      ],
+      "sourcePlayerName": "Boubacar Kamara",
+      "sourceSpan": "Aston Villa injury list: Boubacar Kamara \u2014 Knee",
+      "sourceTeamName": "Aston Villa",
+      "sourceTeamOfficialTeamId": 2
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "8451eeda5c5826c0474df399b52342630a940c78064e43e54d83e70cfc1ac760",
+        "claimId": 18139,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Foot",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 560262,
+        "officialStatus": "i",
+        "playerId": 78,
+        "position": "midfielder",
+        "teamId": 3,
+        "teamName": "Bournemouth",
+        "webName": "Kroupi.Jr"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 61,
+          "position": "defender",
+          "scope": "selected-squad",
+          "teamId": 3,
+          "teamName": "Bournemouth",
+          "webName": "Truffert"
+        },
+        {
+          "playerId": 67,
+          "position": "midfielder",
+          "scope": "selected-squad",
+          "teamId": 3,
+          "teamName": "Bournemouth",
+          "webName": "Rayan"
+        }
+      ],
+      "sourcePlayerName": "Junior Kroupi",
+      "sourceSpan": "Bournemouth injury list: Junior Kroupi \u2014 Foot",
+      "sourceTeamName": "Bournemouth",
+      "sourceTeamOfficialTeamId": 3
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "1609d50b6e2bcfc0212d06fb08ad10887c7d7b132deaf4af3bd2732594a91d23",
+        "claimId": 18140,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Knee",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 543295,
+        "officialStatus": "d",
+        "playerId": 99,
+        "position": "midfielder",
+        "teamId": 4,
+        "teamName": "Brentford",
+        "webName": "Milambo"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 82,
+          "position": "goalkeeper",
+          "scope": "boundary-alternative",
+          "teamId": 4,
+          "teamName": "Brentford",
+          "webName": "Kelleher"
+        },
+        {
+          "playerId": 106,
+          "position": "forward",
+          "scope": "selected-squad",
+          "teamId": 4,
+          "teamName": "Brentford",
+          "webName": "Thiago"
+        }
+      ],
+      "sourcePlayerName": "Antoni Milambo",
+      "sourceSpan": "Brentford injury list: Antoni Milambo \u2014 Knee",
+      "sourceTeamName": "Brentford",
+      "sourceTeamOfficialTeamId": 4
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "194ca229c692363681a5e4778607160fa2c0c24264d8ace1b7bfc7b40ec7d7dc",
+        "claimId": 18141,
+        "extractionConfidence": 0.95,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Knee",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 244858,
+        "officialStatus": "i",
+        "playerId": 100,
+        "position": "midfielder",
+        "teamId": 4,
+        "teamName": "Brentford",
+        "webName": "Carvalho"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 82,
+          "position": "goalkeeper",
+          "scope": "boundary-alternative",
+          "teamId": 4,
+          "teamName": "Brentford",
+          "webName": "Kelleher"
+        },
+        {
+          "playerId": 106,
+          "position": "forward",
+          "scope": "selected-squad",
+          "teamId": 4,
+          "teamName": "Brentford",
+          "webName": "Thiago"
+        }
+      ],
+      "sourcePlayerName": "Fabio Carvalho",
+      "sourceSpan": "Brentford injury list: Fabio Carvalho \u2014 Knee",
+      "sourceTeamName": "Brentford",
+      "sourceTeamOfficialTeamId": 4
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "0ada7af0b5a6171d91efc78c767af2c320775c8aae2141674b891f294667b6fd",
+        "claimId": 18142,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Hamstring",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 194010,
+        "officialStatus": "a",
+        "playerId": 89,
+        "position": "defender",
+        "teamId": 4,
+        "teamName": "Brentford",
+        "webName": "Henry"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 82,
+          "position": "goalkeeper",
+          "scope": "boundary-alternative",
+          "teamId": 4,
+          "teamName": "Brentford",
+          "webName": "Kelleher"
+        },
+        {
+          "playerId": 106,
+          "position": "forward",
+          "scope": "selected-squad",
+          "teamId": 4,
+          "teamName": "Brentford",
+          "webName": "Thiago"
+        }
+      ],
+      "sourcePlayerName": "Rico Henry",
+      "sourceSpan": "Brentford injury list: Rico Henry \u2014 Hamstring",
+      "sourceTeamName": "Brentford",
+      "sourceTeamOfficialTeamId": 4
+    },
+    {
+      "claim": null,
+      "identityStatus": "unresolved",
+      "injury": "Knee",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": null,
+      "scope": "unresolved-outside-scope-or-team",
+      "scopeTeamPlayers": [],
+      "sourcePlayerName": "Adam Webster",
+      "sourceSpan": "Brighton and Hove Albion injury list: Adam Webster \u2014 Knee",
+      "sourceTeamName": "Brighton and Hove Albion",
+      "sourceTeamOfficialTeamId": 5
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "c835731a3fb45bff1fc83a19136105370be7d5a1034e9462f5f99114b78e26a1",
+        "claimId": 18143,
+        "extractionConfidence": 0.95,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Hamstring",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 451340,
+        "officialStatus": "i",
+        "playerId": 121,
+        "position": "midfielder",
+        "teamId": 5,
+        "teamName": "Brighton",
+        "webName": "Mitoma"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [],
+      "sourcePlayerName": "Kaoru Mitoma",
+      "sourceSpan": "Brighton and Hove Albion injury list: Kaoru Mitoma \u2014 Hamstring",
+      "sourceTeamName": "Brighton and Hove Albion",
+      "sourceTeamOfficialTeamId": 5
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "a32e47a260d916c2602ade48408f82d8547ee5f79374e5a221adc5f65e4f79e6",
+        "claimId": 18144,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Knee",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 608181,
+        "officialStatus": "d",
+        "playerId": 137,
+        "position": "forward",
+        "teamId": 5,
+        "teamName": "Brighton",
+        "webName": "Tzimas"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [],
+      "sourcePlayerName": "Stefanos Tzimas",
+      "sourceSpan": "Brighton and Hove Albion injury list: Stefanos Tzimas \u2014 Knee",
+      "sourceTeamName": "Brighton and Hove Albion",
+      "sourceTeamOfficialTeamId": 5
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "d3e6816eb10da87e3b3933adaa696b2b54af7e049971847099be6913578a872f",
+        "claimId": 18145,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Hamstring",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 624773,
+        "officialStatus": "a",
+        "playerId": 157,
+        "position": "midfielder",
+        "teamId": 6,
+        "teamName": "Chelsea",
+        "webName": "Est\u00eav\u00e3o"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 155,
+          "position": "midfielder",
+          "scope": "selected-squad",
+          "teamId": 6,
+          "teamName": "Chelsea",
+          "webName": "Enzo"
+        },
+        {
+          "playerId": 165,
+          "position": "forward",
+          "scope": "boundary-alternative",
+          "teamId": 6,
+          "teamName": "Chelsea",
+          "webName": "Jo\u00e3o Pedro"
+        }
+      ],
+      "sourcePlayerName": "Estevao",
+      "sourceSpan": "Chelsea injury list: Estevao \u2014 Hamstring",
+      "sourceTeamName": "Chelsea",
+      "sourceTeamOfficialTeamId": 6
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "027687a14696128a2995f44e687f66298d34e59f083c9832c2479f1ed00247da",
+        "claimId": 18146,
+        "extractionConfidence": 0.95,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Hamstring",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 463936,
+        "officialStatus": "a",
+        "playerId": 158,
+        "position": "midfielder",
+        "teamId": 6,
+        "teamName": "Chelsea",
+        "webName": "Gittens"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 155,
+          "position": "midfielder",
+          "scope": "selected-squad",
+          "teamId": 6,
+          "teamName": "Chelsea",
+          "webName": "Enzo"
+        },
+        {
+          "playerId": 165,
+          "position": "forward",
+          "scope": "boundary-alternative",
+          "teamId": 6,
+          "teamName": "Chelsea",
+          "webName": "Jo\u00e3o Pedro"
+        }
+      ],
+      "sourcePlayerName": "Jamie Gittens",
+      "sourceSpan": "Chelsea injury list: Jamie Gittens \u2014 Hamstring",
+      "sourceTeamName": "Chelsea",
+      "sourceTeamOfficialTeamId": 6
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "934591b6bd81f0c2f33c62016086448f078df62f080bd4c802126cac02cd6418",
+        "claimId": 18147,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Knock",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 514356,
+        "officialStatus": "a",
+        "playerId": 161,
+        "position": "midfielder",
+        "teamId": 6,
+        "teamName": "Chelsea",
+        "webName": "Lavia"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 155,
+          "position": "midfielder",
+          "scope": "selected-squad",
+          "teamId": 6,
+          "teamName": "Chelsea",
+          "webName": "Enzo"
+        },
+        {
+          "playerId": 165,
+          "position": "forward",
+          "scope": "boundary-alternative",
+          "teamId": 6,
+          "teamName": "Chelsea",
+          "webName": "Jo\u00e3o Pedro"
+        }
+      ],
+      "sourcePlayerName": "Romeo Lavia",
+      "sourceSpan": "Chelsea injury list: Romeo Lavia \u2014 Knock",
+      "sourceTeamName": "Chelsea",
+      "sourceTeamOfficialTeamId": 6
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "1da3889a2103c7fa10bb71e93a83d00be6e205fc6e1bdbe213cd2dece5d63432",
+        "claimId": 18148,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Ankle",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 496221,
+        "officialStatus": "d",
+        "playerId": 210,
+        "position": "midfielder",
+        "teamId": 8,
+        "teamName": "Crystal Palace",
+        "webName": "Wharton"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [],
+      "sourcePlayerName": "Adam Wharton",
+      "sourceSpan": "Crystal Palace injury list: Adam Wharton \u2014 Ankle",
+      "sourceTeamName": "Crystal Palace",
+      "sourceTeamOfficialTeamId": 8
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "e78019f4981af0b80c5916c4724796ce213033e6e7b5d6289b3abb91a9b6d9f6",
+        "claimId": 18149,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Knock",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 218364,
+        "officialStatus": "a",
+        "playerId": 205,
+        "position": "defender",
+        "teamId": 8,
+        "teamName": "Crystal Palace",
+        "webName": "Sosa"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [],
+      "sourcePlayerName": "Borna Sosa",
+      "sourceSpan": "Crystal Palace injury list: Borna Sosa \u2014 Knock",
+      "sourceTeamName": "Crystal Palace",
+      "sourceTeamOfficialTeamId": 8
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "7a5ad6fd84753b049af07dc6446b5bd7dd49caeced1cc26275605c1f45b2e747",
+        "claimId": 18150,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Knee",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 438464,
+        "officialStatus": "a",
+        "playerId": 218,
+        "position": "midfielder",
+        "teamId": 8,
+        "teamName": "Crystal Palace",
+        "webName": "Doucour\u00e9"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [],
+      "sourcePlayerName": "Cheick Doucoure",
+      "sourceSpan": "Crystal Palace injury list: Cheick Doucoure \u2014 Knee",
+      "sourceTeamName": "Crystal Palace",
+      "sourceTeamOfficialTeamId": 8
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "f0932668f66374d16a4613c108bf1181d0e30a9db7f6f116340cedbe1e1c6806",
+        "claimId": 18151,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Hamstring",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 205533,
+        "officialStatus": "a",
+        "playerId": 224,
+        "position": "forward",
+        "teamId": 8,
+        "teamName": "Crystal Palace",
+        "webName": "Nketiah"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [],
+      "sourcePlayerName": "Eddie Nketiah",
+      "sourceSpan": "Crystal Palace injury list: Eddie Nketiah \u2014 Hamstring",
+      "sourceTeamName": "Crystal Palace",
+      "sourceTeamOfficialTeamId": 8
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "9026a595434ee7dfb1450e06b499440683d3ae7baeed9de94adac0fc0b3b0982",
+        "claimId": 18152,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Groin",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 232928,
+        "officialStatus": "i",
+        "playerId": 239,
+        "position": "midfielder",
+        "teamId": 9,
+        "teamName": "Everton",
+        "webName": "Garner"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 229,
+          "position": "defender",
+          "scope": "selected-squad",
+          "teamId": 9,
+          "teamName": "Everton",
+          "webName": "Tarkowski"
+        }
+      ],
+      "sourcePlayerName": "James Garner",
+      "sourceSpan": "Everton injury list: James Garner \u2014 Groin",
+      "sourceTeamName": "Everton",
+      "sourceTeamOfficialTeamId": 9
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "e006f912edd9d6da6d090ac1b14678c675d3d1a9a5c52d0adb31f818865a228a",
+        "claimId": 18153,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Hamstring",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 480455,
+        "officialStatus": "a",
+        "playerId": 230,
+        "position": "defender",
+        "teamId": 9,
+        "teamName": "Everton",
+        "webName": "Branthwaite"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 229,
+          "position": "defender",
+          "scope": "selected-squad",
+          "teamId": 9,
+          "teamName": "Everton",
+          "webName": "Tarkowski"
+        }
+      ],
+      "sourcePlayerName": "Jarrad Branthwaite",
+      "sourceSpan": "Everton injury list: Jarrad Branthwaite \u2014 Hamstring",
+      "sourceTeamName": "Everton",
+      "sourceTeamOfficialTeamId": 9
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "e2591fec09d62b9be51b84e47e66010d9f038da77529afb2a417d4f922a4f2b3",
+        "claimId": 18154,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Knee",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 631786,
+        "officialStatus": "a",
+        "playerId": 272,
+        "position": "forward",
+        "teamId": 10,
+        "teamName": "Fulham",
+        "webName": "Kusi-Asare"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 250,
+          "position": "goalkeeper",
+          "scope": "selected-squad",
+          "teamId": 10,
+          "teamName": "Fulham",
+          "webName": "Leno"
+        }
+      ],
+      "sourcePlayerName": "Jonah Kusi-Asare",
+      "sourceSpan": "Fulham injury list: Jonah Kusi-Asare \u2014 Knee",
+      "sourceTeamName": "Fulham",
+      "sourceTeamOfficialTeamId": 10
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "dbe6458514a2382e046cb683cfeaa864d8492329d6be07edab9498e9a24f9a26",
+        "claimId": 18155,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "-",
+      "injuryDetailStatus": "source-placeholder",
+      "resolvedPlayer": {
+        "code": 466525,
+        "officialStatus": "a",
+        "playerId": 335,
+        "position": "midfielder",
+        "teamId": 13,
+        "teamName": "Leeds",
+        "webName": "Stach"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 346,
+          "position": "forward",
+          "scope": "selected-squad",
+          "teamId": 13,
+          "teamName": "Leeds",
+          "webName": "Calvert-Lewin"
+        }
+      ],
+      "sourcePlayerName": "Anton Stach",
+      "sourceSpan": "Leeds United injury list: Anton Stach \u2014 -",
+      "sourceTeamName": "Leeds United",
+      "sourceTeamOfficialTeamId": 13
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "aa04cd1d208700e598d7c189ca1df2fdc0816f434d7baf6f87def95c40627714",
+        "claimId": 18156,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Knee",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 486520,
+        "officialStatus": "a",
+        "playerId": 344,
+        "position": "midfielder",
+        "teamId": 13,
+        "teamName": "Leeds",
+        "webName": "Gruev"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 346,
+          "position": "forward",
+          "scope": "selected-squad",
+          "teamId": 13,
+          "teamName": "Leeds",
+          "webName": "Calvert-Lewin"
+        }
+      ],
+      "sourcePlayerName": "Ilia Gruev",
+      "sourceSpan": "Leeds United injury list: Ilia Gruev \u2014 Knee",
+      "sourceTeamName": "Leeds United",
+      "sourceTeamOfficialTeamId": 13
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "d95d4a6b630679f94f7e35f1ffbf0277475ce637a5bc7f44e1178a1027b44002",
+        "claimId": 18157,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Hernia",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 180135,
+        "officialStatus": "a",
+        "playerId": 339,
+        "position": "midfielder",
+        "teamId": 13,
+        "teamName": "Leeds",
+        "webName": "Longstaff"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 346,
+          "position": "forward",
+          "scope": "selected-squad",
+          "teamId": 13,
+          "teamName": "Leeds",
+          "webName": "Calvert-Lewin"
+        }
+      ],
+      "sourcePlayerName": "Sean Longstaff",
+      "sourceSpan": "Leeds United injury list: Sean Longstaff \u2014 Hernia",
+      "sourceTeamName": "Leeds United",
+      "sourceTeamOfficialTeamId": 13
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "cff7d37dbe537463e07f00279f1dbb26a35408747bfc67dc0ece0d90e4a035e7",
+        "claimId": 18158,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Knee",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 492777,
+        "officialStatus": "i",
+        "playerId": 360,
+        "position": "defender",
+        "teamId": 14,
+        "teamName": "Liverpool",
+        "webName": "Bradley"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 356,
+          "position": "defender",
+          "scope": "selected-squad",
+          "teamId": 14,
+          "teamName": "Liverpool",
+          "webName": "Virgil"
+        },
+        {
+          "playerId": 368,
+          "position": "midfielder",
+          "scope": "selected-squad",
+          "teamId": 14,
+          "teamName": "Liverpool",
+          "webName": "Szoboszlai"
+        }
+      ],
+      "sourcePlayerName": "Conor Bradley",
+      "sourceSpan": "Liverpool injury list: Conor Bradley \u2014 Knee",
+      "sourceTeamName": "Liverpool",
+      "sourceTeamOfficialTeamId": 14
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "1289710c5f76270e258f2f353d644ed1676b31b29a91d3b29cdfc0960465273e",
+        "claimId": 18159,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Knee",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 647681,
+        "officialStatus": "i",
+        "playerId": 363,
+        "position": "defender",
+        "teamId": 14,
+        "teamName": "Liverpool",
+        "webName": "Leoni"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 356,
+          "position": "defender",
+          "scope": "selected-squad",
+          "teamId": 14,
+          "teamName": "Liverpool",
+          "webName": "Virgil"
+        },
+        {
+          "playerId": 368,
+          "position": "midfielder",
+          "scope": "selected-squad",
+          "teamId": 14,
+          "teamName": "Liverpool",
+          "webName": "Szoboszlai"
+        }
+      ],
+      "sourcePlayerName": "Giovanni Leoni",
+      "sourceSpan": "Liverpool injury list: Giovanni Leoni \u2014 Knee",
+      "sourceTeamName": "Liverpool",
+      "sourceTeamOfficialTeamId": 14
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "25550ea112dd9b0c33f860c61edc7bf6333ce906be858335b6e83fa8f83b8c93",
+        "claimId": 18160,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Achilles",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 510663,
+        "officialStatus": "i",
+        "playerId": 380,
+        "position": "forward",
+        "teamId": 14,
+        "teamName": "Liverpool",
+        "webName": "Ekitik\u00e9"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 356,
+          "position": "defender",
+          "scope": "selected-squad",
+          "teamId": 14,
+          "teamName": "Liverpool",
+          "webName": "Virgil"
+        },
+        {
+          "playerId": 368,
+          "position": "midfielder",
+          "scope": "selected-squad",
+          "teamId": 14,
+          "teamName": "Liverpool",
+          "webName": "Szoboszlai"
+        }
+      ],
+      "sourcePlayerName": "Hugo Ekitike",
+      "sourceSpan": "Liverpool injury list: Hugo Ekitike \u2014 Achilles",
+      "sourceTeamName": "Liverpool",
+      "sourceTeamOfficialTeamId": 14
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "5585fd1b96b0fa8e827b61aee03e51a53e288babf82c07bf0b789eec66b64610",
+        "claimId": 18161,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Hamstring",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 500058,
+        "officialStatus": "i",
+        "playerId": 382,
+        "position": "forward",
+        "teamId": 14,
+        "teamName": "Liverpool",
+        "webName": "Danns"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 356,
+          "position": "defender",
+          "scope": "selected-squad",
+          "teamId": 14,
+          "teamName": "Liverpool",
+          "webName": "Virgil"
+        },
+        {
+          "playerId": 368,
+          "position": "midfielder",
+          "scope": "selected-squad",
+          "teamId": 14,
+          "teamName": "Liverpool",
+          "webName": "Szoboszlai"
+        }
+      ],
+      "sourcePlayerName": "Jayden Danns",
+      "sourceSpan": "Liverpool injury list: Jayden Danns \u2014 Hamstring",
+      "sourceTeamName": "Liverpool",
+      "sourceTeamOfficialTeamId": 14
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "aebfba915a9d5338f9bdfc7bf81c1fab7f25f282341a199718f863f51ad54ad1",
+        "claimId": 18162,
+        "extractionConfidence": 0.95,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Hamstring",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 535928,
+        "officialStatus": "i",
+        "playerId": 376,
+        "position": "midfielder",
+        "teamId": 14,
+        "teamName": "Liverpool",
+        "webName": "Bajcetic"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 356,
+          "position": "defender",
+          "scope": "selected-squad",
+          "teamId": 14,
+          "teamName": "Liverpool",
+          "webName": "Virgil"
+        },
+        {
+          "playerId": 368,
+          "position": "midfielder",
+          "scope": "selected-squad",
+          "teamId": 14,
+          "teamName": "Liverpool",
+          "webName": "Szoboszlai"
+        }
+      ],
+      "sourcePlayerName": "Stefan Bajcetic",
+      "sourceSpan": "Liverpool injury list: Stefan Bajcetic \u2014 Hamstring",
+      "sourceTeamName": "Liverpool",
+      "sourceTeamOfficialTeamId": 14
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "48e53c106dd761367b6c7159b350e6e8f9f73f74df12b4eb05609ec3997e0e96",
+        "claimId": 18163,
+        "extractionConfidence": 0.95,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Foot",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 158983,
+        "officialStatus": "d",
+        "playerId": 374,
+        "position": "midfielder",
+        "teamId": 14,
+        "teamName": "Liverpool",
+        "webName": "Endo"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 356,
+          "position": "defender",
+          "scope": "selected-squad",
+          "teamId": 14,
+          "teamName": "Liverpool",
+          "webName": "Virgil"
+        },
+        {
+          "playerId": 368,
+          "position": "midfielder",
+          "scope": "selected-squad",
+          "teamId": 14,
+          "teamName": "Liverpool",
+          "webName": "Szoboszlai"
+        }
+      ],
+      "sourcePlayerName": "Wataru Endo",
+      "sourceSpan": "Liverpool injury list: Wataru Endo \u2014 Foot",
+      "sourceTeamName": "Liverpool",
+      "sourceTeamOfficialTeamId": 14
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "97299711817c681fd484aae08f60e2d9108983490b04e060ebd7c9d4cbfc8fd5",
+        "claimId": 18164,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Foot",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 114283,
+        "officialStatus": "d",
+        "playerId": 238,
+        "position": "midfielder",
+        "teamId": 15,
+        "teamName": "Man City",
+        "webName": "Grealish"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 481,
+          "position": "midfielder",
+          "scope": "boundary-alternative",
+          "teamId": 15,
+          "teamName": "Man City",
+          "webName": "Anderson"
+        }
+      ],
+      "sourcePlayerName": "Jack Grealish",
+      "sourceSpan": "Manchester City injury list: Jack Grealish \u2014 Foot",
+      "sourceTeamName": "Manchester City",
+      "sourceTeamOfficialTeamId": 15
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "7ece9f0775badff740ca5505ce2aaa4605647d8aaa943515972d72c611686222",
+        "claimId": 18165,
+        "extractionConfidence": 0.95,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Back",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 220566,
+        "officialStatus": "i",
+        "playerId": 402,
+        "position": "midfielder",
+        "teamId": 15,
+        "teamName": "Man City",
+        "webName": "Rodrigo"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 481,
+          "position": "midfielder",
+          "scope": "boundary-alternative",
+          "teamId": 15,
+          "teamName": "Man City",
+          "webName": "Anderson"
+        }
+      ],
+      "sourcePlayerName": "Rodri",
+      "sourceSpan": "Manchester City injury list: Rodri \u2014 Back",
+      "sourceTeamName": "Manchester City",
+      "sourceTeamOfficialTeamId": 15
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "ac75c9d691c32ae7dad64b035fb93723fda9e439f02b83d9723d0379ced93a94",
+        "claimId": 18166,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Shin",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 485711,
+        "officialStatus": "d",
+        "playerId": 439,
+        "position": "forward",
+        "teamId": 16,
+        "teamName": "Man Utd",
+        "webName": "\u0160e\u0161ko"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 325,
+          "position": "goalkeeper",
+          "scope": "boundary-alternative",
+          "teamId": 16,
+          "teamName": "Man Utd",
+          "webName": "Darlow"
+        },
+        {
+          "playerId": 426,
+          "position": "midfielder",
+          "scope": "selected-squad",
+          "teamId": 16,
+          "teamName": "Man Utd",
+          "webName": "B.Fernandes"
+        }
+      ],
+      "sourcePlayerName": "Benjamin Sesko",
+      "sourceSpan": "Manchester United injury list: Benjamin Sesko \u2014 Shin",
+      "sourceTeamName": "Manchester United",
+      "sourceTeamOfficialTeamId": 16
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "21d2989d84e49c3911b2c9ed35e4e2f43a3a512e59541484b01ed48398bcb9a0",
+        "claimId": 18167,
+        "extractionConfidence": 0.95,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Knee",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 232112,
+        "officialStatus": "i",
+        "playerId": 433,
+        "position": "midfielder",
+        "teamId": 16,
+        "teamName": "Man Utd",
+        "webName": "Ugarte"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 325,
+          "position": "goalkeeper",
+          "scope": "boundary-alternative",
+          "teamId": 16,
+          "teamName": "Man Utd",
+          "webName": "Darlow"
+        },
+        {
+          "playerId": 426,
+          "position": "midfielder",
+          "scope": "selected-squad",
+          "teamId": 16,
+          "teamName": "Man Utd",
+          "webName": "B.Fernandes"
+        }
+      ],
+      "sourcePlayerName": "Manuel Ugarte",
+      "sourceSpan": "Manchester United injury list: Manuel Ugarte \u2014 Knee",
+      "sourceTeamName": "Manchester United",
+      "sourceTeamOfficialTeamId": 16
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "cf3ba06e1f437f7e04c8c5f6a9117f4fc1dd69f37dfbdfc87b07e35dec038ada",
+        "claimId": 18168,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Back",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 209365,
+        "officialStatus": "i",
+        "playerId": 416,
+        "position": "defender",
+        "teamId": 16,
+        "teamName": "Man Utd",
+        "webName": "De Ligt"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 325,
+          "position": "goalkeeper",
+          "scope": "boundary-alternative",
+          "teamId": 16,
+          "teamName": "Man Utd",
+          "webName": "Darlow"
+        },
+        {
+          "playerId": 426,
+          "position": "midfielder",
+          "scope": "selected-squad",
+          "teamId": 16,
+          "teamName": "Man Utd",
+          "webName": "B.Fernandes"
+        }
+      ],
+      "sourcePlayerName": "Matthijs de Ligt",
+      "sourceSpan": "Manchester United injury list: Matthijs de Ligt \u2014 Back",
+      "sourceTeamName": "Manchester United",
+      "sourceTeamOfficialTeamId": 16
+    },
+    {
+      "claim": null,
+      "identityStatus": "unresolved",
+      "injury": "Knee",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": null,
+      "scope": "unresolved-outside-scope-or-team",
+      "scopeTeamPlayers": [],
+      "sourcePlayerName": "Emil Krafth",
+      "sourceSpan": "Newcastle United injury list: Emil Krafth \u2014 Knee",
+      "sourceTeamName": "Newcastle United",
+      "sourceTeamOfficialTeamId": 17
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "eb6a975492bc731dc335bfbdd873cface1ff645182ee189d4956fa4c43eeed94",
+        "claimId": 18169,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Ankle",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 119471,
+        "officialStatus": "a",
+        "playerId": 446,
+        "position": "defender",
+        "teamId": 17,
+        "teamName": "Newcastle",
+        "webName": "Sch\u00e4r"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [],
+      "sourcePlayerName": "Fabian Schar",
+      "sourceSpan": "Newcastle United injury list: Fabian Schar \u2014 Ankle",
+      "sourceTeamName": "Newcastle United",
+      "sourceTeamOfficialTeamId": 17
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "cd013c69d8602a9a5d6af7b7d46190032144f14458f1ff6a0ab4560819ffd32f",
+        "claimId": 18170,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "-",
+      "injuryDetailStatus": "source-placeholder",
+      "resolvedPlayer": {
+        "code": 180974,
+        "officialStatus": "d",
+        "playerId": 458,
+        "position": "midfielder",
+        "teamId": 17,
+        "teamName": "Newcastle",
+        "webName": "Joelinton"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [],
+      "sourcePlayerName": "Joelinton",
+      "sourceSpan": "Newcastle United injury list: Joelinton \u2014 -",
+      "sourceTeamName": "Newcastle United",
+      "sourceTeamOfficialTeamId": 17
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "625da1f12c3349af83cad124f45d22c277f673b4b9a46884fe022b433cd75ec2",
+        "claimId": 18171,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Leg",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 547719,
+        "officialStatus": "i",
+        "playerId": 459,
+        "position": "midfielder",
+        "teamId": 17,
+        "teamName": "Newcastle",
+        "webName": "L.Miley"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [],
+      "sourcePlayerName": "Lewis Miley",
+      "sourceSpan": "Newcastle United injury list: Lewis Miley \u2014 Leg",
+      "sourceTeamName": "Newcastle United",
+      "sourceTeamOfficialTeamId": 17
+    },
+    {
+      "claim": null,
+      "identityStatus": "unresolved",
+      "injury": "-",
+      "injuryDetailStatus": "source-placeholder",
+      "resolvedPlayer": null,
+      "scope": "unresolved-outside-scope-or-team",
+      "scopeTeamPlayers": [],
+      "sourcePlayerName": "Sandro Tonali",
+      "sourceSpan": "Newcastle United injury list: Sandro Tonali \u2014 -",
+      "sourceTeamName": "Newcastle United",
+      "sourceTeamOfficialTeamId": 17
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "bfa105c18627d8de42262b85b05ec7de501a92d133724b4b1d467fd44767cfd4",
+        "claimId": 18172,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Thigh",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 441191,
+        "officialStatus": "d",
+        "playerId": 450,
+        "position": "defender",
+        "teamId": 17,
+        "teamName": "Newcastle",
+        "webName": "Livramento"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [],
+      "sourcePlayerName": "Tino Livramento",
+      "sourceSpan": "Newcastle United injury list: Tino Livramento \u2014 Thigh",
+      "sourceTeamName": "Newcastle United",
+      "sourceTeamOfficialTeamId": 17
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "d8003a9bda2e2316738634ab787ddb5b5fdbc032d3e8ad872b8d015fe9c2d0b6",
+        "claimId": 18173,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Thigh",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 209046,
+        "officialStatus": "d",
+        "playerId": 482,
+        "position": "midfielder",
+        "teamId": 18,
+        "teamName": "Nott'm Forest",
+        "webName": "Hudson-Odoi"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 471,
+          "position": "defender",
+          "scope": "boundary-alternative",
+          "teamId": 18,
+          "teamName": "Nott'm Forest",
+          "webName": "Milenkovi\u0107"
+        }
+      ],
+      "sourcePlayerName": "Callum Hudson-Odoi",
+      "sourceSpan": "Nottingham Forest injury list: Callum Hudson-Odoi \u2014 Thigh",
+      "sourceTeamName": "Nottingham Forest",
+      "sourceTeamOfficialTeamId": 18
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "b9360796d463321aedb2ffb2b4f8b8d714c19008f9c25d9c6aa77449b0e21da6",
+        "claimId": 18174,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Muscle",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 575476,
+        "officialStatus": "d",
+        "playerId": 472,
+        "position": "defender",
+        "teamId": 18,
+        "teamName": "Nott'm Forest",
+        "webName": "Murillo"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 471,
+          "position": "defender",
+          "scope": "boundary-alternative",
+          "teamId": 18,
+          "teamName": "Nott'm Forest",
+          "webName": "Milenkovi\u0107"
+        }
+      ],
+      "sourcePlayerName": "Murillo",
+      "sourceSpan": "Nottingham Forest injury list: Murillo \u2014 Muscle",
+      "sourceTeamName": "Nottingham Forest",
+      "sourceTeamOfficialTeamId": 18
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "f918c2febb345a9c8badf11be93f2686ddd10dd04d57dadb72c0d1019bdebbc0",
+        "claimId": 18175,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Knee",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 500151,
+        "officialStatus": "i",
+        "playerId": 475,
+        "position": "defender",
+        "teamId": 18,
+        "teamName": "Nott'm Forest",
+        "webName": "Savona"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 471,
+          "position": "defender",
+          "scope": "boundary-alternative",
+          "teamId": 18,
+          "teamName": "Nott'm Forest",
+          "webName": "Milenkovi\u0107"
+        }
+      ],
+      "sourcePlayerName": "Nicolo Savona",
+      "sourceSpan": "Nottingham Forest injury list: Nicolo Savona \u2014 Knee",
+      "sourceTeamName": "Nottingham Forest",
+      "sourceTeamOfficialTeamId": 18
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "a1127bb522a60b82940e323163887cf825a9cd4a6de7d009d674df25ea049dfb",
+        "claimId": 18176,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Knock",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 159506,
+        "officialStatus": "a",
+        "playerId": 473,
+        "position": "defender",
+        "teamId": 18,
+        "teamName": "Nott'm Forest",
+        "webName": "Aina"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 471,
+          "position": "defender",
+          "scope": "boundary-alternative",
+          "teamId": 18,
+          "teamName": "Nott'm Forest",
+          "webName": "Milenkovi\u0107"
+        }
+      ],
+      "sourcePlayerName": "Ola Aina",
+      "sourceSpan": "Nottingham Forest injury list: Ola Aina \u2014 Knock",
+      "sourceTeamName": "Nottingham Forest",
+      "sourceTeamOfficialTeamId": 18
+    },
+    {
+      "claim": null,
+      "identityStatus": "unresolved",
+      "injury": "Knee",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": null,
+      "scope": "unresolved-in-scope-team",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 471,
+          "position": "defender",
+          "scope": "boundary-alternative",
+          "teamId": 18,
+          "teamName": "Nott'm Forest",
+          "webName": "Milenkovi\u0107"
+        }
+      ],
+      "sourcePlayerName": "Willy Boly",
+      "sourceSpan": "Nottingham Forest injury list: Willy Boly \u2014 Knee",
+      "sourceTeamName": "Nottingham Forest",
+      "sourceTeamOfficialTeamId": 18
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "f26effaffe7fd2e1895579122f9e78cc91ca93833d10b54806509f58c5eb0825",
+        "claimId": 18177,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Knock",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 461199,
+        "officialStatus": "a",
+        "playerId": 547,
+        "position": "midfielder",
+        "teamId": 20,
+        "teamName": "Sunderland",
+        "webName": "Mundle"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 529,
+          "position": "goalkeeper",
+          "scope": "selected-squad",
+          "teamId": 20,
+          "teamName": "Sunderland",
+          "webName": "Roefs"
+        },
+        {
+          "playerId": 533,
+          "position": "defender",
+          "scope": "selected-squad",
+          "teamId": 20,
+          "teamName": "Sunderland",
+          "webName": "Mukiele"
+        },
+        {
+          "playerId": 542,
+          "position": "midfielder",
+          "scope": "selected-squad",
+          "teamId": 20,
+          "teamName": "Sunderland",
+          "webName": "E.Le F\u00e9e"
+        }
+      ],
+      "sourcePlayerName": "Romaine Mundle",
+      "sourceSpan": "Sunderland injury list: Romaine Mundle \u2014 Knock",
+      "sourceTeamName": "Sunderland",
+      "sourceTeamOfficialTeamId": 20
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "35739ad0691cb8da7c8931c8a4122b37d90e7516641ceed10be0f61dbda682e5",
+        "claimId": 18178,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Ankle",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 115556,
+        "officialStatus": "a",
+        "playerId": 508,
+        "position": "defender",
+        "teamId": 19,
+        "teamName": "Spurs",
+        "webName": "Davies"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 112,
+          "position": "defender",
+          "scope": "selected-squad",
+          "teamId": 19,
+          "teamName": "Spurs",
+          "webName": "Van Hecke"
+        }
+      ],
+      "sourcePlayerName": "Ben Davies",
+      "sourceSpan": "Tottenham Hotspur injury list: Ben Davies \u2014 Ankle",
+      "sourceTeamName": "Tottenham Hotspur",
+      "sourceTeamOfficialTeamId": 19
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "e3bbfb42308d631a9b25ef259829a9d8301a1250f543ebc39b982b7c100f9bf2",
+        "claimId": 18179,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Knee",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 445044,
+        "officialStatus": "i",
+        "playerId": 521,
+        "position": "midfielder",
+        "teamId": 19,
+        "teamName": "Spurs",
+        "webName": "Kulusevski"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 112,
+          "position": "defender",
+          "scope": "selected-squad",
+          "teamId": 19,
+          "teamName": "Spurs",
+          "webName": "Van Hecke"
+        }
+      ],
+      "sourcePlayerName": "Dejan Kulusevski",
+      "sourceSpan": "Tottenham Hotspur injury list: Dejan Kulusevski \u2014 Knee",
+      "sourceTeamName": "Tottenham Hotspur",
+      "sourceTeamOfficialTeamId": 19
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "ad56c2a2354bf885bfedec94f9deb436fdbd78947ee276fd02a421d8f6df3153",
+        "claimId": 18180,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Thigh",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 460842,
+        "officialStatus": "d",
+        "playerId": 512,
+        "position": "midfielder",
+        "teamId": 19,
+        "teamName": "Spurs",
+        "webName": "Kudus"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 112,
+          "position": "defender",
+          "scope": "selected-squad",
+          "teamId": 19,
+          "teamName": "Spurs",
+          "webName": "Van Hecke"
+        }
+      ],
+      "sourcePlayerName": "Mohammed Kudus",
+      "sourceSpan": "Tottenham Hotspur injury list: Mohammed Kudus \u2014 Thigh",
+      "sourceTeamName": "Tottenham Hotspur",
+      "sourceTeamOfficialTeamId": 19
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "255d1eb44d099bb489b6b50282f080f0452a31f6bddda96639fe799c926f173a",
+        "claimId": 18181,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "ACL",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 550839,
+        "officialStatus": "i",
+        "playerId": 517,
+        "position": "midfielder",
+        "teamId": 19,
+        "teamName": "Spurs",
+        "webName": "Odobert"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 112,
+          "position": "defender",
+          "scope": "selected-squad",
+          "teamId": 19,
+          "teamName": "Spurs",
+          "webName": "Van Hecke"
+        }
+      ],
+      "sourcePlayerName": "Wilson Odobert",
+      "sourceSpan": "Tottenham Hotspur injury list: Wilson Odobert \u2014 ACL",
+      "sourceTeamName": "Tottenham Hotspur",
+      "sourceTeamOfficialTeamId": 19
+    },
+    {
+      "claim": {
+        "availabilityStatus": "doubtful",
+        "claimContentSha256": "de20961ceb4d3d644e7dbcc4136da748c5531150040477fd62b9312fbe4b0219",
+        "claimId": 18182,
+        "extractionConfidence": 1.0,
+        "status": "quarantined"
+      },
+      "identityStatus": "resolved",
+      "injury": "Knee",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": {
+        "code": 493362,
+        "officialStatus": "i",
+        "playerId": 513,
+        "position": "midfielder",
+        "teamId": 19,
+        "teamName": "Spurs",
+        "webName": "Xavi"
+      },
+      "scope": "outside-decision-boundary",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 112,
+          "position": "defender",
+          "scope": "selected-squad",
+          "teamId": 19,
+          "teamName": "Spurs",
+          "webName": "Van Hecke"
+        }
+      ],
+      "sourcePlayerName": "Xavi Simons",
+      "sourceSpan": "Tottenham Hotspur injury list: Xavi Simons \u2014 Knee",
+      "sourceTeamName": "Tottenham Hotspur",
+      "sourceTeamOfficialTeamId": 19
+    }
+  ],
+  "status": "prospective-source-identity-audit-non-serving",
+  "unresolvedRows": [
+    {
+      "claim": null,
+      "identityStatus": "unresolved",
+      "injury": "Knee",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": null,
+      "scope": "unresolved-outside-scope-or-team",
+      "scopeTeamPlayers": [],
+      "sourcePlayerName": "Adam Webster",
+      "sourceSpan": "Brighton and Hove Albion injury list: Adam Webster \u2014 Knee",
+      "sourceTeamName": "Brighton and Hove Albion",
+      "sourceTeamOfficialTeamId": 5
+    },
+    {
+      "claim": null,
+      "identityStatus": "unresolved",
+      "injury": "Knee",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": null,
+      "scope": "unresolved-outside-scope-or-team",
+      "scopeTeamPlayers": [],
+      "sourcePlayerName": "Emil Krafth",
+      "sourceSpan": "Newcastle United injury list: Emil Krafth \u2014 Knee",
+      "sourceTeamName": "Newcastle United",
+      "sourceTeamOfficialTeamId": 17
+    },
+    {
+      "claim": null,
+      "identityStatus": "unresolved",
+      "injury": "-",
+      "injuryDetailStatus": "source-placeholder",
+      "resolvedPlayer": null,
+      "scope": "unresolved-outside-scope-or-team",
+      "scopeTeamPlayers": [],
+      "sourcePlayerName": "Sandro Tonali",
+      "sourceSpan": "Newcastle United injury list: Sandro Tonali \u2014 -",
+      "sourceTeamName": "Newcastle United",
+      "sourceTeamOfficialTeamId": 17
+    },
+    {
+      "claim": null,
+      "identityStatus": "unresolved",
+      "injury": "Knee",
+      "injuryDetailStatus": "reported",
+      "resolvedPlayer": null,
+      "scope": "unresolved-in-scope-team",
+      "scopeTeamPlayers": [
+        {
+          "playerId": 471,
+          "position": "defender",
+          "scope": "boundary-alternative",
+          "teamId": 18,
+          "teamName": "Nott'm Forest",
+          "webName": "Milenkovi\u0107"
+        }
+      ],
+      "sourcePlayerName": "Willy Boly",
+      "sourceSpan": "Nottingham Forest injury list: Willy Boly \u2014 Knee",
+      "sourceTeamName": "Nottingham Forest",
+      "sourceTeamOfficialTeamId": 18
+    }
+  ]
+}
