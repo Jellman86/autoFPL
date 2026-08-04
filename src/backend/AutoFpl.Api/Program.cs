@@ -587,6 +587,7 @@ builder.Services.AddSingleton(officialFplPollingOptions);
 ResearchSourcePollingOptions researchSourcePollingOptions =
     ResearchSourcePollingOptions.FromConfiguration(builder.Configuration);
 builder.Services.AddSingleton(researchSourcePollingOptions);
+builder.Services.AddSingleton<ResearchSourceRefreshSignal>();
 FbrefMatchLogPollingOptions fbrefMatchLogPollingOptions =
     FbrefMatchLogPollingOptions.FromConfiguration(builder.Configuration);
 builder.Services.AddSingleton(fbrefMatchLogPollingOptions);

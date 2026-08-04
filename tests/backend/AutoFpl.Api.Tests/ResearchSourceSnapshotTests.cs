@@ -1822,6 +1822,17 @@ public sealed class ResearchSourceSnapshotTests
                         playwrightHttpClient))),
             new ResearchSourceClaimExtractor(snapshotStore, claimStore),
             pollingOptions,
+            new ResearchSourceRefreshSignal(
+                OfficialFplPollingOptions.FromConfiguration(
+                    new ConfigurationBuilder()
+                        .AddInMemoryCollection(
+                            new Dictionary<string, string?>
+                            {
+                                ["AutoFpl:Research:OfficialFplPollIntervalMinutes"] =
+                                    "360",
+                            })
+                        .Build()),
+                pollingOptions),
             new FixedTimeProvider(RetrievalTime));
 
         await poller.RefreshOnceAsync(TestContext.Current.CancellationToken);
