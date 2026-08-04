@@ -366,6 +366,21 @@ the best-supported squad exists, and the API persists its exact source hashes,
 incumbent identity, squads and eight frozen role sets before outcomes. See the
 [official published opening-squad specification](../../docs/research/current-official-published-opening-squad-v1.md).
 
+Once official outcomes arrive, that exact persisted `ep_next` squad and its
+same-artifact v2 incumbent can be scored incrementally:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.official_published_opening_squad_outcome_evaluation \
+  --database /path/to/autofpl.db \
+  --output /path/to/official-published-opening-squad-outcome.json
+```
+
+The command writes nothing and exits successfully before Gameweek 1 outcomes
+exist. Gameweeks 1–7 remain partial; a favourable complete Gameweek 1–8 result
+can support review but never automatically promotes the official source. See
+the [official-published prospective outcome specification](../../docs/research/official-published-opening-squad-prospective-outcome-evaluation-v1.md).
+
 An independent public Gameweek 1 points feed is also captured as a strictly
 prospective, non-serving challenger:
 
