@@ -1,5 +1,6 @@
 using AutoFpl.Api.Advice;
 using AutoFpl.Api.Forecasts;
+using AutoFpl.Api.Intelligence;
 using AutoFpl.Contracts.Sources;
 
 namespace AutoFpl.Api.Sources;
@@ -14,6 +15,7 @@ public sealed class OfficialFplPoller : BackgroundService
     private readonly PlayerGameweekForecastArtifactStore _playerForecastStore;
     private readonly OfficialFplOutcomeImporter _outcomeImporter;
     private readonly OfficialFplOutcomeStore _outcomeStore;
+    private readonly ResearchSourceRefreshSignal _researchSourceRefreshSignal;
 
     public const int MaximumOutcomeImportsPerPoll = 3;
 
@@ -25,7 +27,8 @@ public sealed class OfficialFplPoller : BackgroundService
         BaselineForecastArtifactStore forecastStore,
         PlayerGameweekForecastArtifactStore playerForecastStore,
         OfficialFplOutcomeImporter outcomeImporter,
-        OfficialFplOutcomeStore outcomeStore)
+        OfficialFplOutcomeStore outcomeStore,
+        ResearchSourceRefreshSignal researchSourceRefreshSignal)
     {
         _importer = importer ?? throw new ArgumentNullException(nameof(importer));
         _store = store ?? throw new ArgumentNullException(nameof(store));
@@ -40,6 +43,9 @@ public sealed class OfficialFplPoller : BackgroundService
             outcomeImporter ?? throw new ArgumentNullException(nameof(outcomeImporter));
         _outcomeStore =
             outcomeStore ?? throw new ArgumentNullException(nameof(outcomeStore));
+        _researchSourceRefreshSignal =
+            researchSourceRefreshSignal
+            ?? throw new ArgumentNullException(nameof(researchSourceRefreshSignal));
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -66,6 +72,7 @@ public sealed class OfficialFplPoller : BackgroundService
             {
                 OfficialFplCaptureDocument capture =
                     await _importer.ImportLatestAsync(stoppingToken);
+                _researchSourceRefreshSignal.RequestAfterOfficialCapture();
                 await _forecastStore.RefreshLatestAsync(stoppingToken);
                 await _playerForecastStore.RefreshLatestAsync(stoppingToken);
                 await CaptureFinalOutcomesOnceAsync(capture, stoppingToken);

@@ -513,6 +513,15 @@ the bounded interval. FFScout, strAIghtred and Premier League injury captures
 immediately run their existing fail-closed deterministic extractors. A failed
 source does not suppress the other sources in that cycle.
 
+When this interval exactly matches
+`AutoFpl__Research__OfficialFplPollIntervalMinutes`, a successful official
+capture requests one coalesced portfolio refresh within a minute and resets
+the ordinary source timer. This keeps source snapshots on the exact official
+identity needed by downstream challengers without attaching an older capture.
+Different or disabled cadences remain independent; the signal never overrides
+those schedules. A matching-cadence request is one coalesced pending refresh,
+not an additional repeating collection timer.
+
 Each successful capture is tied to the latest official capture available at
 retrieval and that capture's recorded next Gameweek/deadline. Source text is
 compressed in private SQLite storage for later deterministic extraction and

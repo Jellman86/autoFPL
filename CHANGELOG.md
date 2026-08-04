@@ -6,6 +6,12 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Changed
 
+- **Public research sources now realign with a new official capture.** When the
+  official and research-source collectors use the same configured cadence, a
+  successful official import requests one coalesced source refresh within a
+  minute and resets the normal source timer. Exact-capture challengers no
+  longer wait for independently phased pollers, while different cadences keep
+  their existing bounded schedules.
 - **The decision room now leads with a plain-language squad choice.** The
   best-supported autoFPL v2 prediction remains selected by default, while a
   complete cutoff-safe Solio-assisted challenger can be previewed on the same
