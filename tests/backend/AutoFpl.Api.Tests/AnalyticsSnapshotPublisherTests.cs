@@ -248,6 +248,72 @@ public sealed class AnalyticsSnapshotPublisherTests : IDisposable
             new SqliteConnection(databaseOptions.ConnectionString))
         {
             await source.OpenAsync(cancellationToken);
+            await using SqliteCommand official = source.CreateCommand();
+            official.CommandText =
+                """
+                INSERT INTO official_published_opening_squad_artifacts (
+                    schema_version, artifact_type, artifact_version, status,
+                    official_capture_id, source_bootstrap_sha256,
+                    source_fixtures_sha256, incumbent_run_identity_sha256,
+                    producer_data_identity_sha256,
+                    producer_run_identity_sha256, document_json,
+                    content_sha256, created_at_utc
+                )
+                VALUES (
+                    '1.0',
+                    'current-official-published-opening-squad-shadow',
+                    'current-official-published-opening-squad-shadow-v1',
+                    'prospective-official-baseline-unscored', 1,
+                    $bootstrapHash, $fixturesHash, $incumbentIdentity,
+                    $dataIdentity, $runIdentity, '{}', $contentHash,
+                    '2026-07-29T18:01:00Z'
+                );
+                """;
+            official.Parameters.AddWithValue(
+                "$bootstrapHash",
+                new string('a', 64));
+            official.Parameters.AddWithValue(
+                "$fixturesHash",
+                new string('b', 64));
+            official.Parameters.AddWithValue(
+                "$incumbentIdentity",
+                new string('2', 64));
+            official.Parameters.AddWithValue(
+                "$dataIdentity",
+                new string('4', 64));
+            official.Parameters.AddWithValue(
+                "$runIdentity",
+                new string('5', 64));
+            official.Parameters.AddWithValue(
+                "$contentHash",
+                new string('6', 64));
+            await official.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        Assert.Equal(
+            "published",
+            await publisher.PublishOnceAsync(cancellationToken));
+        await using (var officialSnapshot =
+            new SqliteConnection(readOnly.ToString()))
+        {
+            await officialSnapshot.OpenAsync(cancellationToken);
+            await using SqliteCommand count =
+                officialSnapshot.CreateCommand();
+            count.CommandText =
+                "SELECT COUNT(*) "
+                + "FROM official_published_opening_squad_artifacts;";
+            Assert.Equal(
+                1L,
+                await count.ExecuteScalarAsync(cancellationToken));
+        }
+        Assert.Equal(
+            "unchanged",
+            await publisher.PublishOnceAsync(cancellationToken));
+
+        await using (var source =
+            new SqliteConnection(databaseOptions.ConnectionString))
+        {
+            await source.OpenAsync(cancellationToken);
             await using SqliteCommand evidence = source.CreateCommand();
             evidence.CommandText =
                 """

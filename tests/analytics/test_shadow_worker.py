@@ -173,6 +173,9 @@ class ShadowWorkerTests(unittest.TestCase):
                 target["hasExactBestSupportedOpeningSquad"]
             )
             self.assertFalse(
+                target["hasExactOfficialPublishedOpeningSquad"]
+            )
+            self.assertFalse(
                 target["hasExactExternalEvidenceStress"]
             )
             self.assertFalse(target["hasExactSelectionScore"])
@@ -266,6 +269,35 @@ class ShadowWorkerTests(unittest.TestCase):
                         16, '6-expected-points',
                         '1ef395d722844b1833fb059d606606e0bf1f1d42732377474d671f1a3f17b16e'
                     );
+                    """
+                )
+            official_published = {
+                "officialCaptureId": 16,
+                "artifactVersion": (
+                    "current-official-published-opening-squad-shadow-v1"
+                ),
+            }
+            with patch(
+                "autofpl_analytics.shadow_worker."
+                "build_current_official_published_opening_squad",
+                return_value=official_published,
+            ):
+                generated = generate_once(
+                    database,
+                    root / "official-published-inbox",
+                )
+            self.assertEqual("generated", generated.status)
+            self.assertTrue(
+                str(generated.outputFile).startswith(
+                    "official-published-opening-squad-capture-16"
+                )
+            )
+            with sqlite3.connect(database) as connection:
+                connection.executescript(
+                    """
+                    INSERT INTO official_published_opening_squad_artifacts
+                        (official_capture_id)
+                    VALUES (16);
                     INSERT INTO research_source_snapshots
                         (source_key, identity_capture_id, available_at_utc)
                     VALUES (
@@ -486,6 +518,10 @@ class ShadowWorkerTests(unittest.TestCase):
                     artifact_id INTEGER PRIMARY KEY,
                     official_capture_id INTEGER NOT NULL,
                     source_snapshot_id INTEGER NOT NULL
+                );
+                CREATE TABLE official_published_opening_squad_artifacts (
+                    artifact_id INTEGER PRIMARY KEY,
+                    official_capture_id INTEGER NOT NULL
                 );
                 """
             )

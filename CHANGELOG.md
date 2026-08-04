@@ -75,6 +75,13 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **The official expected-points opening baseline is now frozen before
+  outcomes.** The private worker automatically hands off the exact-capture
+  `ep_next` challenger after the v2 incumbent exists. Migration 39 stores one
+  immutable document per capture only after validating official source hashes,
+  full candidate coverage, persisted incumbent lineage, both legal squads and
+  all eight role sets; a read-only endpoint exposes only an exact latest-capture
+  match, and the artifact remains non-serving and unpromoted.
 - **Official injury evidence now has raw-row boundary reconciliation.** A
   read-only cutoff-bound audit verifies the retained 20-club Playwright payload,
   binds resolved rows only through the production extractor's exact immutable

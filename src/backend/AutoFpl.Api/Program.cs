@@ -396,6 +396,22 @@ if (requestedPublicProjectionOpeningSquadImport
         "Usage: --import-public-projection-opening-squad-shadow <json-file>");
     return 2;
 }
+bool requestedOfficialPublishedOpeningSquadImport =
+    args.Length > 0
+    && StringComparer.Ordinal.Equals(
+        args[0],
+        "--import-official-published-opening-squad-shadow");
+bool runOfficialPublishedOpeningSquadImport =
+    requestedOfficialPublishedOpeningSquadImport
+    && args.Length == 2
+    && !string.IsNullOrWhiteSpace(args[1]);
+if (requestedOfficialPublishedOpeningSquadImport
+    && !runOfficialPublishedOpeningSquadImport)
+{
+    await Console.Error.WriteLineAsync(
+        "Usage: --import-official-published-opening-squad-shadow <json-file>");
+    return 2;
+}
 bool requestedSelectionRoleStrategyImport =
     args.Length > 0
     && StringComparer.Ordinal.Equals(
@@ -438,6 +454,7 @@ bool runNonWebCommand =
     || runInitialSquadQualityImport
     || runSelectedOpeningSquadImport
     || runPublicProjectionOpeningSquadImport
+    || runOfficialPublishedOpeningSquadImport
     || runSelectionScenarioScoreImport
     || runSelectionRoleStrategyImport;
 
@@ -533,6 +550,11 @@ builder.Services.AddSingleton(serviceProvider =>
         serviceProvider.GetRequiredService<DatabaseOptions>(),
         serviceProvider.GetRequiredService<TimeProvider>()));
 builder.Services.AddSingleton<PublicProjectionOpeningSquadImporter>();
+builder.Services.AddSingleton(serviceProvider =>
+    new OfficialPublishedOpeningSquadStore(
+        serviceProvider.GetRequiredService<DatabaseOptions>(),
+        serviceProvider.GetRequiredService<TimeProvider>()));
+builder.Services.AddSingleton<OfficialPublishedOpeningSquadImporter>();
 builder.Services.AddSingleton(serviceProvider =>
     new ExternalEvidenceStressStore(
         serviceProvider.GetRequiredService<DatabaseOptions>(),
@@ -771,6 +793,8 @@ if (shadowForecastInboxOptions.Enabled)
     builder.Services.AddHostedService<SelectedOpeningSquadInboxPoller>();
     builder.Services.AddHostedService<
         PublicProjectionOpeningSquadInboxPoller>();
+    builder.Services.AddHostedService<
+        OfficialPublishedOpeningSquadInboxPoller>();
     builder.Services.AddHostedService<ExternalEvidenceStressInboxPoller>();
     builder.Services.AddHostedService<SelectionScenarioScoreInboxPoller>();
     builder.Services.AddHostedService<SelectionRoleStrategyInboxPoller>();
@@ -1083,6 +1107,28 @@ if (runPublicProjectionOpeningSquadImport)
             await app.Services
                 .GetRequiredService<
                     PublicProjectionOpeningSquadImporter>()
+                .ImportFileAsync(args[1]);
+        await Console.Out.WriteLineAsync(candidate.GetRawText());
+        return 0;
+    }
+    catch (Exception exception)
+        when (exception is FileNotFoundException
+            or InvalidDataException
+            or JsonException)
+    {
+        await Console.Error.WriteLineAsync(exception.Message);
+        return 2;
+    }
+}
+
+if (runOfficialPublishedOpeningSquadImport)
+{
+    try
+    {
+        JsonElement candidate =
+            await app.Services
+                .GetRequiredService<
+                    OfficialPublishedOpeningSquadImporter>()
                 .ImportFileAsync(args[1]);
         await Console.Out.WriteLineAsync(candidate.GetRawText());
         return 0;
@@ -1629,6 +1675,29 @@ app.MapGet(
         + "published Gameweek 1 point means on the retained six-Gameweek "
         + "policy. It remains quarantined until prospective outcomes can "
         + "establish whether the external source improves accuracy.")
+    .WithTags("Forecasts")
+    .Produces<JsonElement>()
+    .Produces(StatusCodes.Status404NotFound);
+app.MapGet(
+    "/api/v1/forecasts/official-published-opening-squad-shadow/current",
+    async (
+        OfficialPublishedOpeningSquadStore store,
+        CancellationToken cancellationToken) =>
+    {
+        JsonElement? candidate =
+            await store.GetCurrentAsync(cancellationToken);
+        return candidate is null
+            ? Results.NotFound()
+            : Results.Ok(candidate.Value);
+    })
+    .WithName("GetCurrentOfficialPublishedOpeningSquadShadow")
+    .WithSummary(
+        "Read the frozen official expected-points opening-squad baseline.")
+    .WithDescription(
+        "Returns a cutoff-bound, non-serving baseline that overlays official "
+        + "FPL's published Gameweek 1 expected points on the retained "
+        + "six-Gameweek policy. It remains prospective until exact outcomes "
+        + "can be scored.")
     .WithTags("Forecasts")
     .Produces<JsonElement>()
     .Produces(StatusCodes.Status404NotFound);

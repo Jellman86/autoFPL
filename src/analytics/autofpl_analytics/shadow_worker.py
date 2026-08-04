@@ -28,6 +28,9 @@ from .current_best_supported_opening_squad import (
 from .current_external_evidence_stress import (
     build_current_external_evidence_stress,
 )
+from .current_official_published_opening_squad import (
+    build_current_official_published_opening_squad,
+)
 from .current_public_projection_opening_squad import (
     build_current_public_projection_opening_squad,
 )
@@ -137,6 +140,12 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
                     AND selected.evaluation_data_identity_sha256 =
                         '1ef395d722844b1833fb059d606606e0bf1f1d42732377474d671f1a3f17b16e'
                 ) AS has_exact_best_supported_opening_squad,
+                EXISTS (
+                    SELECT 1
+                    FROM official_published_opening_squad_artifacts AS official
+                    WHERE official.official_capture_id =
+                        official_fpl_captures.capture_id
+                ) AS has_exact_official_published_opening_squad,
                 (
                     SELECT selection_revision_id
                     FROM selection_revisions
@@ -384,6 +393,9 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
                 "hasExactBestSupportedOpeningSquad": bool(
                     row["has_exact_best_supported_opening_squad"]
                 ),
+                "hasExactOfficialPublishedOpeningSquad": bool(
+                    row["has_exact_official_published_opening_squad"]
+                ),
                 "latestEvidenceClaimId": (
                     None if evidence is None else int(evidence["claim_id"])
                 ),
@@ -419,6 +431,7 @@ def inspect_target(database_path: Path) -> Dict[str, Any]:
                 "hasExactInitialSquadQuality": False,
                 "hasExactSelectedOpeningSquad": False,
                 "hasExactBestSupportedOpeningSquad": False,
+                "hasExactOfficialPublishedOpeningSquad": False,
                 "latestEvidenceClaimId": None,
                 "latestEvidenceCutoffUtc": None,
                 "hasExactExternalEvidenceStress": False,
@@ -453,6 +466,7 @@ def generate_once(
         and target["hasExactInitialSquadQuality"]
         and target["hasExactSelectedOpeningSquad"]
         and target["hasExactBestSupportedOpeningSquad"]
+        and target["hasExactOfficialPublishedOpeningSquad"]
         and (
             not target["hasEligiblePublicProjectionSource"]
             or target["hasExactPublicProjectionSquad"]
@@ -503,6 +517,17 @@ def generate_once(
         and target["hasExactInitialSquadQuality"]
         and target["hasExactSelectedOpeningSquad"]
         and target["hasExactBestSupportedOpeningSquad"]
+        and not target["hasExactOfficialPublishedOpeningSquad"]
+    ):
+        stem = f"official-published-opening-squad-capture-{capture_id}"
+        build = build_current_official_published_opening_squad
+    elif (
+        target["hasExactPointShadow"]
+        and target["hasExactScenarioShadow"]
+        and target["hasExactInitialSquadQuality"]
+        and target["hasExactSelectedOpeningSquad"]
+        and target["hasExactBestSupportedOpeningSquad"]
+        and target["hasExactOfficialPublishedOpeningSquad"]
         and target["hasEligiblePublicProjectionSource"]
         and not target["hasExactPublicProjectionSquad"]
     ):

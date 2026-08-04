@@ -4,7 +4,7 @@ internal sealed record DatabaseMigration(int Version, string Name, string Sql);
 
 internal static class DatabaseMigrations
 {
-    public const int CurrentVersion = 38;
+    public const int CurrentVersion = 39;
 
     public static IReadOnlyList<DatabaseMigration> All { get; } =
     [
@@ -3384,6 +3384,75 @@ internal static class DatabaseMigrations
                 SELECT RAISE(
                     ABORT,
                     'public projection squad artifacts cannot be deleted'
+                );
+            END;
+            """),
+        new(
+            39,
+            "official-published-opening-squad-artifact",
+            """
+            CREATE TABLE official_published_opening_squad_artifacts (
+                artifact_id INTEGER PRIMARY KEY,
+                schema_version TEXT NOT NULL CHECK (schema_version = '1.0'),
+                artifact_type TEXT NOT NULL CHECK (
+                    artifact_type =
+                        'current-official-published-opening-squad-shadow'
+                ),
+                artifact_version TEXT NOT NULL CHECK (
+                    artifact_version =
+                        'current-official-published-opening-squad-shadow-v1'
+                ),
+                status TEXT NOT NULL CHECK (
+                    status = 'prospective-official-baseline-unscored'
+                ),
+                official_capture_id INTEGER NOT NULL UNIQUE
+                    REFERENCES official_fpl_captures(capture_id)
+                    ON DELETE RESTRICT,
+                source_bootstrap_sha256 TEXT NOT NULL CHECK (
+                    length(source_bootstrap_sha256) = 64
+                ),
+                source_fixtures_sha256 TEXT NOT NULL CHECK (
+                    length(source_fixtures_sha256) = 64
+                ),
+                incumbent_run_identity_sha256 TEXT NOT NULL CHECK (
+                    length(incumbent_run_identity_sha256) = 64
+                ),
+                producer_data_identity_sha256 TEXT NOT NULL UNIQUE CHECK (
+                    length(producer_data_identity_sha256) = 64
+                ),
+                producer_run_identity_sha256 TEXT NOT NULL CHECK (
+                    length(producer_run_identity_sha256) = 64
+                ),
+                document_json TEXT NOT NULL CHECK (
+                    length(document_json) BETWEEN 2 AND 2097152
+                ),
+                content_sha256 TEXT NOT NULL UNIQUE CHECK (
+                    length(content_sha256) = 64
+                ),
+                created_at_utc TEXT NOT NULL
+            );
+
+            CREATE INDEX official_published_opening_squad_latest_idx
+                ON official_published_opening_squad_artifacts (
+                    official_capture_id DESC,
+                    artifact_id DESC
+                );
+
+            CREATE TRIGGER official_published_opening_squad_immutable
+            BEFORE UPDATE ON official_published_opening_squad_artifacts
+            BEGIN
+                SELECT RAISE(
+                    ABORT,
+                    'official published squad artifacts are immutable'
+                );
+            END;
+
+            CREATE TRIGGER official_published_opening_squad_no_delete
+            BEFORE DELETE ON official_published_opening_squad_artifacts
+            BEGIN
+                SELECT RAISE(
+                    ABORT,
+                    'official published squad artifacts cannot be deleted'
                 );
             END;
             """),
