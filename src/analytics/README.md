@@ -364,6 +364,22 @@ revision for visible comparison, but it cannot influence advice before
 prospective outcome scoring. See the
 [public-projection challenger specification](../../docs/research/current-public-projection-opening-squad-v1.md).
 
+Once official outcomes begin to arrive, the final eligible Solio-assisted
+squad and its same-artifact autoFPL incumbent can be scored incrementally:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.public_projection_opening_squad_outcome_evaluation \
+  --database /path/to/autofpl.db \
+  --output /path/to/public-projection-opening-squad-outcome.json
+```
+
+The command writes nothing and exits successfully while no outcome exists.
+Gameweeks 1–7 are partial. A complete Gameweek 1–8 comparison reports paired
+weekly and cumulative exact-FPL scores, but remains evidence for review rather
+than an automatic source-promotion decision. See the
+[prospective public-projection outcome specification](../../docs/research/public-projection-opening-squad-prospective-outcome-evaluation-v1.md).
+
 The model-level opening-policy screen reconstructs the direct and hurdle
 distributions on identical historical opening targets, globally solves the
 same registered six-Gameweek policy and compares exact eight-Gameweek realised

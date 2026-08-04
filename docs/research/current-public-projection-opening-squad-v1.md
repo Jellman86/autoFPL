@@ -72,6 +72,20 @@ The final predeadline artifact is frozen by source snapshot. Both squads are
 registered as fixed, transfer-free squads with all eight weekly roles frozen
 before outcomes. After official outcomes exist, compare the challenger with
 the same-capture v2 incumbent under the same exact captain-fallback and ordered
-auto-substitution scorer. Until that preregistered prospective comparison
-demonstrates stable added value, the source cannot replace or blend into the
-recommendation.
+auto-substitution scorer:
+
+```bash
+PYTHONPATH=src/analytics python3 \
+  -m autofpl_analytics.public_projection_opening_squad_outcome_evaluation \
+  --database /path/to/autofpl.db \
+  --output /path/to/public-projection-opening-squad-outcome.json
+```
+
+The evaluator reports partial Gameweek 1–7 evidence without making a review
+decision. Once all eight outcomes exist, a positive cumulative delta and at
+least as many weekly wins as losses support a source-promotion review. The
+artifact never promotes the source automatically: one opening period cannot
+precisely estimate value across seasons. Until that prospective comparison is
+complete and reviewed, the source cannot replace or blend into the
+recommendation. See the
+[outcome evaluation specification](public-projection-opening-squad-prospective-outcome-evaluation-v1.md).
