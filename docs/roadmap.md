@@ -638,6 +638,10 @@ recommendation or blend; score it against later outcomes before any promotion.
 The exact document is now persisted immutably before outcomes with its official
 source hashes, v2 incumbent identity and eight frozen role sets, so later
 scoring can consume prospective evidence rather than reconstructing a squad.
+Its read-only outcome evaluator now binds that exact document and incrementally
+scores Gameweeks 1–8 with the shared exact FPL engine. No outcome exists yet;
+partial evidence cannot support review, and a favourable complete result can
+only trigger an explicit source review rather than automatic promotion.
 The latest public Solio points endpoint is now admitted as an independent
 prospective challenger rather than an assumed improvement. Its bounded
 collector freezes exact predeadline JSON lineage, and the live identity audit

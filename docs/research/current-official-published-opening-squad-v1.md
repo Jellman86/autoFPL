@@ -85,6 +85,7 @@ identical retry is idempotent; a different document for the same capture fails
 closed. The current exact artifact is read-only at
 `GET /api/v1/forecasts/official-published-opening-squad-shadow/current`; a
 `404` never substitutes an older capture. Persistence does not promote the
-baseline or make it influence advice. It creates the prospective boundary
-needed for a later outcome scorer to avoid reconstructing the challenger after
-results exist.
+baseline or make it influence advice. The
+[prospective outcome evaluator](official-published-opening-squad-prospective-outcome-evaluation-v1.md)
+now consumes this exact document incrementally, so it never reconstructs the
+challenger after results exist.

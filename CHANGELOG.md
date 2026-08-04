@@ -75,6 +75,13 @@ All notable implemented changes to autoFPL are recorded here. The format follows
 
 ### Added
 
+- **The frozen official expected-points baseline now has a prospective outcome
+  scorer.** A read-only command hash-verifies the immutable `ep_next` artifact,
+  its official capture and v2 incumbent lineage, then incrementally compares
+  both frozen squads over Gameweeks 1–8 using exact captain fallback and
+  ordered auto-substitution. No outcomes exits cleanly without a report;
+  partial evidence cannot support review, and even a favourable complete result
+  never automatically promotes the source.
 - **The official expected-points opening baseline is now frozen before
   outcomes.** The private worker automatically hands off the exact-capture
   `ep_next` challenger after the v2 incumbent exists. Migration 39 stores one
