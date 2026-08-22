@@ -3759,16 +3759,16 @@ footer {
 }
 
 .player-page .decision-step,
-.builder-page-active /* The masthead is sticky at 4.25rem; anchors land clear of it. */
+.builder-page-active .decision-step {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* The masthead is sticky at 4.25rem; anchors land clear of it. */
 .decision-step,
 .decision-step [id],
 .workspace,
 .squad-builder-page {
   scroll-margin-top: 5.5rem;
-}
-
-.decision-step {
-  grid-template-columns: minmax(0, 1fr);
 }
 
 .player-page .decision-step > .decision-step-marker,
