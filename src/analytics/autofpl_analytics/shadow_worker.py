@@ -476,11 +476,15 @@ def generate_once(
         and target["hasExactSelectionStrategies"]
     ):
         return _result("current", capture_id)
-    if (
-        target["seasonCode"] != CURRENT_SEASON
-        or target["gameweek"] != CURRENT_GAMEWEEK
-    ):
+    if target["seasonCode"] != CURRENT_SEASON:
         return _result("waiting", capture_id, error_code="unsupported-target")
+
+    if target["gameweek"] != CURRENT_GAMEWEEK:
+        # The opening-squad programme is pinned to one gameweek. Once the
+        # official capture reports a later one, its shadows are already exact
+        # and there is nothing further to generate for it. That is completion,
+        # not a fault, and must not be reported as an error every poll.
+        return _result("closed", capture_id)
 
     inbox = Path(inbox_path)
     inbox.mkdir(mode=0o700, parents=True, exist_ok=True)
