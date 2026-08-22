@@ -1372,6 +1372,40 @@ public sealed class ResearchSourceSnapshotTests
     }
 
     [Fact]
+    public void Premier_league_injury_parser_accepts_an_undisclosed_injury_type()
+    {
+        // Observed live on 2026-08-20: Newcastle United listed Joelinton, Dan
+        // Burn and Lewis Miley with an empty injury cell. The row bound required
+        // at least one character, so three blank cells rejected the whole
+        // twenty-club payload and the source stopped collecting for two days.
+        IReadOnlyList<ResearchSourceClaimExtractor.PremierLeagueInjuryCandidate>
+            candidates =
+                ResearchSourceClaimExtractor.ExtractPremierLeagueInjuryCandidates(
+                    CreatePremierLeagueInjuryEvidence(
+                        undisclosedInjuryType: true));
+
+        ResearchSourceClaimExtractor.PremierLeagueInjuryCandidate undisclosed =
+            Assert.Single(
+                candidates,
+                candidate => candidate.Injury.Length == 0);
+        Assert.Equal("Club 03", undisclosed.TeamName);
+        Assert.Equal("Player 03-01", undisclosed.PlayerName);
+
+        // The absence is recorded as an absence. No diagnosis is invented and
+        // the span carries no dangling separator.
+        Assert.Equal(
+            "Club 03 injury list: Player 03-01",
+            undisclosed.SourceSpan);
+
+        // Every other row is unaffected.
+        Assert.Equal(40, candidates.Count);
+        Assert.Contains(
+            candidates,
+            candidate => candidate.SourceSpan
+                == "Club 01 injury list: Player 01-01 — Back");
+    }
+
+    [Fact]
     public void Premier_league_injury_parser_rejects_incomplete_club_coverage()
     {
         Assert.Throws<ResearchSourceSnapshotException>(
@@ -2502,7 +2536,8 @@ public sealed class ResearchSourceSnapshotTests
     private static string CreatePremierLeagueInjuryEvidence(
         int clubCount = 20,
         bool emptyFirstClub = false,
-        bool missingUpdateUrl = false) =>
+        bool missingUpdateUrl = false,
+        bool undisclosedInjuryType = false) =>
         JsonSerializer.Serialize(
             new
             {
@@ -2526,7 +2561,11 @@ public sealed class ResearchSourceSnapshotTests
                                         playerName =
                                             $"Player {club:D2}-{player:D2}",
                                         injury =
-                                            player == 1 ? "Back" : "Knee",
+                                            undisclosedInjuryType
+                                                && club == 3
+                                                && player == 1
+                                                ? string.Empty
+                                                : player == 1 ? "Back" : "Knee",
                                         updateUrl =
                                             missingUpdateUrl
                                                 && club == 2

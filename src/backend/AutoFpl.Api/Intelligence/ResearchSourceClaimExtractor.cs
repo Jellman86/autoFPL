@@ -547,10 +547,14 @@ public sealed partial class ResearchSourceClaimExtractor
                             120,
                             out string playerName)
                         || !playerNames.Add(Normalize(playerName))
+                        // A club may list a player without disclosing the injury
+                        // type. The claim is that the player is listed, so the
+                        // absent type is carried through as empty rather than
+                        // dropping the row or inventing a diagnosis.
                         || !TryReadBoundedString(
                             row,
                             "injury",
-                            1,
+                            0,
                             160,
                             out string injury)
                         || !HasOptionalSafeUpdateUri(row))
@@ -559,8 +563,9 @@ public sealed partial class ResearchSourceClaimExtractor
                             "A Premier League injury row had an unsupported shape.");
                     }
 
-                    string sourceSpan =
-                        $"{teamName} injury list: {playerName} — {injury}";
+                    string sourceSpan = injury.Length == 0
+                        ? $"{teamName} injury list: {playerName}"
+                        : $"{teamName} injury list: {playerName} — {injury}";
                     if (sourceSpan.Length > 500)
                     {
                         throw new ResearchSourceSnapshotException(

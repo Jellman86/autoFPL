@@ -280,10 +280,14 @@ public sealed class PremierLeagueInjuryPlaywrightCollector
                         out string? playerName)
                     || StringComparer.Ordinal.Equals(playerName, "-")
                     || !playerNames.Add(playerName)
+                    // Clubs sometimes list a player without disclosing the
+                    // injury type. The claim is that the player is listed, so an
+                    // empty type is preserved as-is rather than rejecting the
+                    // whole payload or inventing a value.
                     || !TryReadBoundedString(
                         row,
                         "injury",
-                        1,
+                        0,
                         160,
                         out _)
                     || !IsOptionalSafeUpdateUri(row))
