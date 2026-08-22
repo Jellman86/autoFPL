@@ -1,5 +1,5 @@
 ARG PYTHON_BUILDER_IMAGE=docker.io/library/python:3.13-slim-trixie@sha256:6771159cd4fa5d9bba1258caf0b82e6b73458c694d178ad97c5e925c2d0e1a91
-ARG PYTHON_RUNTIME_IMAGE=gcr.io/distroless/python3-debian13@sha256:325c8639176419afb9c3b50b420fbbd65d608f85f1e3f38bc4b8ba80aeac2e8d
+ARG PYTHON_RUNTIME_IMAGE=gcr.io/distroless/python3-debian13@sha256:84e04b1c8a7904c81563ea125db995ba321fd330f3731f0a841e2f90757c4667
 
 FROM ${PYTHON_BUILDER_IMAGE} AS build
 WORKDIR /build

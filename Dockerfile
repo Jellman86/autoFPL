@@ -1,5 +1,5 @@
 ARG SDK_IMAGE=mcr.microsoft.com/dotnet/sdk:10.0.302-noble@sha256:ed034a8bf0b24ded0cbbac07e17825d8e9ebfe21e308191d0f7421eaf5ad4664
-ARG RUNTIME_IMAGE=mcr.microsoft.com/dotnet/aspnet:10.0.10-noble-chiseled-extra@sha256:f9bd6be9b5ab75b8196bff0f0972580edaea7fa8ca04e6ef530950e33caee5b0
+ARG RUNTIME_IMAGE=mcr.microsoft.com/dotnet/aspnet:10.0.11-noble-chiseled-extra@sha256:f5b3b2e2e548828d50e349726f51a5de001286f02c4bbde77db0dd34eb9f55ff
 
 FROM ${SDK_IMAGE} AS build
 WORKDIR /src
