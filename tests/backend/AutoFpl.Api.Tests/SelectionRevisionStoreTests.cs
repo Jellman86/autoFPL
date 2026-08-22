@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 using Xunit;
 
@@ -341,6 +342,13 @@ public sealed class SelectionRevisionStoreTests
                         "AutoFpl:DatabasePath",
                         files.DatabasePath);
                     builder.UseSetting("AutoFpl:SeedDemoSnapshot", "false");
+
+                    // The seeded forecast carries a fixed 2026-08-21T17:30Z deadline.
+                    // Without a fixed clock this workflow passes only until that real
+                    // instant, then fails as selection.deadline.passed.
+                    builder.ConfigureServices(services =>
+                        services.AddSingleton<TimeProvider>(
+                            new FixedTimeProvider(BeforeDeadline)));
                 });
         using HttpClient client = factory.CreateClient();
 
