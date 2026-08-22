@@ -2658,7 +2658,6 @@ async function loadAdvice() {
     if (window.location.hash === "#my-squad") {
       showSquadBuilder({ updateHistory: false });
     } else if (window.location.hash === "#strategies") {
-      document.querySelector("#secondary-tools").open = true;
       setActiveNavigation("strategies");
       setBreadcrumb("Strategies");
       document.querySelector("#strategies").scrollIntoView({
@@ -2667,7 +2666,6 @@ async function loadAdvice() {
     } else if (window.location.hash === "#model-squad") {
       showModelSquad({ updateHistory: false });
     } else if (window.location.hash === "#data-sources") {
-      document.querySelector("#advanced-evidence").open = true;
     }
   } catch (error) {
     document.querySelector("#evidence-status").textContent = "Evidence unavailable";
@@ -3099,7 +3097,6 @@ window.addEventListener("popstate", () => {
   } else if (document.body.classList.contains("player-page")) {
     closeDossier({ updateHistory: false, restoreScroll: false });
   } else if (window.location.hash === "#strategies") {
-    document.querySelector("#secondary-tools").open = true;
     document.body.classList.remove("builder-page-active");
     document.querySelector("#squad-builder-page").hidden = true;
     setActiveNavigation("strategies");
@@ -3131,12 +3128,10 @@ document.querySelectorAll("[data-nav-section]").forEach((link) => {
       event.preventDefault();
       showSquadBuilder();
     } else if (section === "data-sources") {
-      document.querySelector("#advanced-evidence").open = true;
       document.body.classList.remove("builder-page-active");
       document.querySelector("#squad-builder-page").hidden = true;
       setBreadcrumb(link.textContent.trim());
     } else if (section === "strategies") {
-      document.querySelector("#secondary-tools").open = true;
       document.body.classList.remove("builder-page-active");
       document.querySelector("#squad-builder-page").hidden = true;
       setBreadcrumb(link.textContent.trim());
