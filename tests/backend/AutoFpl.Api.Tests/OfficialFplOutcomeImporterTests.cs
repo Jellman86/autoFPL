@@ -4,6 +4,8 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 
+using AutoFpl.Api.Advice;
+using AutoFpl.Api.Forecasts;
 using AutoFpl.Api.Intelligence;
 using AutoFpl.Api.Persistence;
 using AutoFpl.Api.Sources;
@@ -14,6 +16,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol;
@@ -501,6 +504,173 @@ public sealed class OfficialFplOutcomeImporterTests
         await AssertInvalidLivePayloadAsync(
             CreateLivePayload(firstExpectedGoals: "NaN"),
             "expected_goals");
+    }
+
+    [Fact]
+    public async Task Poller_captures_nothing_until_a_gameweek_completes()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = await MigrateAsync(files.DatabasePath);
+        var captureStore = new OfficialFplCaptureStore(options);
+        var outcomeStore = new OfficialFplOutcomeStore(options);
+
+        using var unusedClient = new HttpClient(new RejectingHandler());
+        var preDeadlineImporter = new OfficialFplImporter(
+            unusedClient,
+            captureStore,
+            new FixedTimeProvider(PreDeadlineUtc));
+        OfficialFplCaptureDocument preDeadline =
+            await preDeadlineImporter.ImportCapturedPayloadAsync(
+                CreateBootstrap(isFinal: false),
+                CreateFixtures(isFinal: false),
+                PreDeadlineUtc,
+                TestContext.Current.CancellationToken);
+        Assert.Null(preDeadline.LatestCompletedGameweek);
+
+        OfficialFplPoller poller = CreatePoller(
+            options,
+            captureStore,
+            outcomeStore,
+            unusedClient,
+            PreDeadlineUtc);
+
+        IReadOnlyList<OfficialFplOutcomeCaptureDocument> captured =
+            await poller.CaptureFinalOutcomesOnceAsync(
+                preDeadline,
+                TestContext.Current.CancellationToken);
+
+        // Live state while a gameweek is in flight: the reference capture reports
+        // no completed gameweek, so no live endpoint is called and no outcome is
+        // written. RejectingHandler proves the poller made no request.
+        Assert.Empty(captured);
+        await AssertOutcomeRowsAsync(files.DatabasePath, 0, 0);
+    }
+
+    [Fact]
+    public async Task Poller_captures_the_first_completed_gameweek_end_to_end()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = await MigrateAsync(files.DatabasePath);
+        var captureStore = new OfficialFplCaptureStore(options);
+        var outcomeStore = new OfficialFplOutcomeStore(options);
+
+        using var unusedClient = new HttpClient(new RejectingHandler());
+        var preDeadlineImporter = new OfficialFplImporter(
+            unusedClient,
+            captureStore,
+            new FixedTimeProvider(PreDeadlineUtc));
+        OfficialFplCaptureDocument preDeadline =
+            await preDeadlineImporter.ImportCapturedPayloadAsync(
+                CreateBootstrap(isFinal: false),
+                CreateFixtures(isFinal: false),
+                PreDeadlineUtc,
+                TestContext.Current.CancellationToken);
+
+        var handler = new OutcomeHandler(
+            CreateBootstrap(isFinal: true),
+            CreateFixtures(isFinal: true),
+            CreateLivePayload());
+        using var client = new HttpClient(handler);
+        var referenceImporter = new OfficialFplImporter(
+            client,
+            captureStore,
+            new FixedTimeProvider(FinalRetrievalUtc));
+        OfficialFplCaptureDocument reference =
+            await referenceImporter.ImportCapturedPayloadAsync(
+                CreateBootstrap(isFinal: true),
+                CreateFixtures(isFinal: true),
+                FinalRetrievalUtc,
+                TestContext.Current.CancellationToken);
+        Assert.Equal(1, reference.LatestCompletedGameweek);
+
+        OfficialFplPoller poller = CreatePoller(
+            options,
+            captureStore,
+            outcomeStore,
+            client,
+            FinalRetrievalUtc);
+
+        IReadOnlyList<OfficialFplOutcomeCaptureDocument> captured =
+            await poller.CaptureFinalOutcomesOnceAsync(
+                reference,
+                TestContext.Current.CancellationToken);
+
+        OfficialFplOutcomeCaptureDocument outcome = Assert.Single(captured);
+        Assert.Equal("2026-27", outcome.SeasonCode);
+        Assert.Equal(1, outcome.Gameweek);
+        Assert.Equal(reference.CaptureId, outcome.ReferenceCaptureId);
+        Assert.NotEqual(preDeadline.CaptureId, outcome.ReferenceCaptureId);
+        Assert.Equal(4, outcome.PlayerCount);
+        await AssertOutcomeRowsAsync(files.DatabasePath, 1, 4);
+
+        // The replay pair the research programme consumes is now formed against
+        // the pre-deadline capture, not the post-deadline reference.
+        OfficialFplReplayOutcomeDocument? pair =
+            await outcomeStore.GetReplayOutcomeAsync(
+                captureStore,
+                "2026-27",
+                1,
+                TestContext.Current.CancellationToken);
+        Assert.NotNull(pair);
+        Assert.Equal(preDeadline.CaptureId, pair.Replay.SelectedCaptureId);
+        Assert.Equal(outcome, pair.Outcome);
+
+        OfficialFplOutcomeReadinessDocument? readiness =
+            await outcomeStore.GetReadinessAsync(
+                captureStore,
+                TestContext.Current.CancellationToken);
+        Assert.NotNull(readiness);
+        Assert.Equal("ready", readiness.Status);
+        Assert.Equal([1], readiness.CapturedOutcomeGameweeks);
+        Assert.Equal([1], readiness.PairedGameweeks);
+
+        // A second poll over the same reference re-selects the latest completed
+        // gameweek and must not create a duplicate outcome.
+        IReadOnlyList<OfficialFplOutcomeCaptureDocument> repeat =
+            await poller.CaptureFinalOutcomesOnceAsync(
+                reference,
+                TestContext.Current.CancellationToken);
+        Assert.Equal(outcome, Assert.Single(repeat));
+        await AssertOutcomeRowsAsync(files.DatabasePath, 1, 4);
+    }
+
+    private static OfficialFplPoller CreatePoller(
+        DatabaseOptions options,
+        OfficialFplCaptureStore captureStore,
+        OfficialFplOutcomeStore outcomeStore,
+        HttpClient client,
+        DateTimeOffset nowUtc)
+    {
+        var timeProvider = new FixedTimeProvider(nowUtc);
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    ["AutoFpl:Research:OfficialFplPollIntervalMinutes"] = "60",
+                    ["AutoFpl:Research:ResearchSourcePollIntervalMinutes"] = "60",
+                })
+            .Build();
+        OfficialFplPollingOptions pollingOptions =
+            OfficialFplPollingOptions.FromConfiguration(configuration);
+        var previewStore = new OfficialDecisionRoomPreviewStore(options, captureStore);
+        var importer = new OfficialFplImporter(client, captureStore, timeProvider);
+        return new OfficialFplPoller(
+            importer,
+            captureStore,
+            pollingOptions,
+            timeProvider,
+            new BaselineForecastArtifactStore(options, previewStore, timeProvider),
+            new PlayerGameweekForecastArtifactStore(options, previewStore, timeProvider),
+            new OfficialFplOutcomeImporter(
+                client,
+                importer,
+                captureStore,
+                outcomeStore,
+                timeProvider),
+            outcomeStore,
+            new ResearchSourceRefreshSignal(
+                pollingOptions,
+                ResearchSourcePollingOptions.FromConfiguration(configuration)));
     }
 
     private static async Task AssertInvalidLivePayloadAsync(
