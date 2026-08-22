@@ -4705,3 +4705,123 @@ footer {
     padding: 1rem 0.65rem;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Decision spine
+
+   The gameweek decision read as a sequence rather than a stack of panels. The
+   marker tone carries the step's meaning: sage is the model's recommendation,
+   clay is quarantined evidence and the manual-submit reminder, blue is the
+   user's own draft. Sage never appears on evidence and clay never appears on a
+   recommendation, so the thing that can move the forecast and the thing that
+   cannot are never the same colour.
+   --------------------------------------------------------------------------- */
+
+.decision-rail svg {
+  flex: 0 0 auto;
+  color: var(--ink-700);
+}
+
+.decision-rail {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  margin: 0 0 1.35rem;
+  padding: 0.75rem 1.05rem;
+  border-radius: 0.875rem;
+  background: var(--paper-deep);
+  color: var(--ink-800);
+  font-size: 0.86rem;
+}
+
+.decision-spine {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.decision-step {
+  display: grid;
+  grid-template-columns: 1.75rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.decision-step-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: var(--line);
+  color: var(--ink-700);
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+
+.decision-step[data-tone="pitch"] .decision-step-marker {
+  background: var(--pitch);
+  color: var(--white);
+}
+
+.decision-step[data-tone="coral"] .decision-step-marker {
+  background: var(--coral);
+  color: var(--white);
+}
+
+.decision-step[data-tone="blue"] .decision-step-marker {
+  background: var(--blue);
+  color: var(--white);
+}
+
+.decision-step[data-tone="ink"] .decision-step-marker {
+  background: var(--ink-950);
+  color: var(--white);
+}
+
+.decision-step-body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.decision-step-heading {
+  display: flex;
+  gap: 0.7rem;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.decision-step-heading h2 {
+  margin: 0;
+  font-size: 1.22rem;
+}
+
+.decision-step-heading .eyebrow {
+  margin: 0;
+}
+
+/* The steps own the vertical rhythm now, so blocks that used to space
+   themselves as top-level siblings sit flush inside a step. */
+.decision-step-body > * {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+@media (max-width: 46rem) {
+  .decision-step {
+    grid-template-columns: 1.4rem minmax(0, 1fr);
+    gap: 0.7rem;
+  }
+
+  .decision-step-marker {
+    width: 1.4rem;
+    height: 1.4rem;
+    font-size: 0.72rem;
+  }
+}
