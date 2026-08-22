@@ -148,6 +148,19 @@ public sealed class ResearchSourceSnapshotTests
             handler.CollectionCode,
             StringComparison.Ordinal);
 
+        // The rendered-readiness gate must not require a disclosed injury type.
+        // Clubs list players without one, and because the gate runs before any
+        // structural validation a single such row previously timed the render
+        // out and stopped the source collecting entirely.
+        Assert.DoesNotContain(
+            "injury.length > 0",
+            handler.CollectionCode,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "player !== \"-\"",
+            handler.CollectionCode,
+            StringComparison.Ordinal);
+
         var incompleteHandler = new PlaywrightInjuryMcpHandler(
             CreatePremierLeagueInjuryEvidence(clubCount: 19));
         using var incompleteClient = new HttpClient(incompleteHandler)

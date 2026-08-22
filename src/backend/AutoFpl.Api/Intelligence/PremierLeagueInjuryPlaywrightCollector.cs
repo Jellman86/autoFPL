@@ -74,11 +74,13 @@ public sealed class PremierLeagueInjuryPlaywrightCollector
                     && injury === "-"
                     && (cells[2]?.textContent ?? "").trim() === "-"
                     && link === null;
+                  // A club may list a player without disclosing the injury
+                  // type, so the player name distinguishes a real row from the
+                  // placeholder rather than the injury text.
                   const isInjury =
                     cells.length === 3
                     && player.length > 0
                     && player !== "-"
-                    && injury.length > 0
                     && (
                       (
                         link instanceof HTMLAnchorElement
