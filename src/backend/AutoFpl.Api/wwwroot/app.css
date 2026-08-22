@@ -43,12 +43,12 @@
   --ink-500: #8a8092;
 
   /* Paper */
-  --paper: #f6f1ea;
-  --paper-deep: #efe7dc;
-  --white: #fffdfa;
-  --line: #e6ded2;
-  --line-soft: #efe9e0;
-  --sink: #f4efe8;
+  --paper: #faf7f2;
+  --paper-deep: #f2ece3;
+  --white: #ffffff;
+  --line: #e9e2d8;
+  --line-soft: #f2ece4;
+  --sink: #f7f3ed;
 
   /* Text on dark surfaces. These three replace 30-odd hardcoded teal-greys
      that existed because the token set had no on-dark tier. */
@@ -96,11 +96,7 @@ html {
 body {
   min-width: 320px;
   margin: 0;
-  background:
-    linear-gradient(rgba( 60, 52, 74, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba( 60, 52, 74, 0.025) 1px, transparent 1px),
-    var(--paper);
-  background-size: 28px 28px;
+  background: var(--paper);
 }
 
 button,
@@ -165,7 +161,7 @@ h4,
   left: 0.75rem;
   transform: translateY(-160%);
   padding: 0.75rem 1rem;
-  border-radius: 0.55rem;
+  border-radius: 0.75rem;
   color: var(--white);
   background: var(--ink-950);
 }
@@ -208,7 +204,8 @@ footer {
   border-radius: 50%;
   color: var(--ink-950);
   background: var(--lime);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.77rem;
   letter-spacing: -0.08em;
   box-shadow: inset 0 0 0 1px rgba( 44, 37, 54, 0.12);
@@ -219,10 +216,10 @@ footer {
   align-items: center;
   gap: 0.55rem;
   color: var(--ink-700);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.72rem;
   font-weight: 700;
-  text-transform: uppercase;
 }
 
 .header-actions {
@@ -236,13 +233,13 @@ footer {
   padding: 0 0.9rem;
   cursor: pointer;
   border: 1px solid var(--line);
-  border-radius: 0.55rem;
+  border-radius: 0.75rem;
   color: var(--ink-950);
   background: transparent;
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.67rem;
   font-weight: 900;
-  text-transform: uppercase;
 }
 
 .refresh-prediction:hover,
@@ -273,18 +270,18 @@ footer {
 
 .eyebrow {
   margin: 0 0 0.55rem;
-  color: var(--pitch);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
-  font-size: 0.68rem;
-  font-weight: 900;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  color: var(--pitch-dark);
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.045em;
+  text-transform: none;
 }
 
 h1 {
   max-width: 12ch;
   margin-bottom: 1.1rem;
-  font-size: clamp(3.2rem, 6vw, 6.8rem);
+  font-size: clamp(2.50rem, 4.68vw, 5.30rem);
   font-weight: 900;
   line-height: 0.84;
   letter-spacing: -0.075em;
@@ -292,7 +289,7 @@ h1 {
 
 h2 {
   margin-bottom: 0.55rem;
-  font-size: clamp(1.7rem, 2.5vw, 2.7rem);
+  font-size: clamp(1.33rem, 1.95vw, 2.11rem);
   font-weight: 900;
   line-height: 0.95;
   letter-spacing: -0.05em;
@@ -319,7 +316,7 @@ h3 {
   border: 1px solid var(--line);
   border-radius: 0.875rem;
   background: var(--ink-950);
-  box-shadow: 8px 8px 0 var(--paper-deep);
+  box-shadow: var(--shadow-card);
 }
 
 .run-meta div {
@@ -334,11 +331,11 @@ h3 {
 .ai-composer label,
 .ai-composer small {
   color: var(--ink-500);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.65rem;
   font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
 }
 
 .run-meta dd {
@@ -361,7 +358,7 @@ h3 {
   border: 1px solid var(--line);
   border-radius: 0.875rem;
   background: var(--white);
-  box-shadow: 7px 7px 0 var(--paper-deep);
+  box-shadow: var(--shadow-card);
 }
 
 .squad-choice {
@@ -370,7 +367,7 @@ h3 {
   border: 1px solid var(--line);
   border-radius: 0.875rem;
   background: var(--white);
-  box-shadow: 7px 7px 0 var(--paper-deep);
+  box-shadow: var(--shadow-card);
 }
 
 .squad-choice-heading {
@@ -382,7 +379,7 @@ h3 {
 
 .squad-choice-heading h2 {
   margin-bottom: 0.5rem;
-  font-size: clamp(1.55rem, 2.5vw, 2.45rem);
+  font-size: clamp(1.21rem, 1.95vw, 1.91rem);
 }
 
 .squad-choice-heading p:last-child {
@@ -409,7 +406,7 @@ h3 {
   padding: 0.9rem 1rem;
   cursor: pointer;
   border: 1px solid var(--line);
-  border-radius: 0.7rem;
+  border-radius: 0.75rem;
   text-align: left;
   background: var(--paper);
 }
@@ -436,10 +433,11 @@ h3 {
   height: 3.5rem;
   place-items: center;
   border: 1px solid var(--line);
-  border-radius: 0.25rem 0.25rem 0.65rem 0.65rem;
+  border-radius: 0.4rem 0.4rem 0.75rem 0.75rem;
   color: var(--white);
   background: var(--ink-900);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.8rem;
   font-weight: 900;
 }
@@ -457,11 +455,11 @@ h3 {
 .squad-choice-card small,
 .squad-choice-label {
   color: var(--ink-500);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.61rem;
   font-weight: 900;
-  letter-spacing: 0.055em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
 }
 
 .squad-choice-card strong {
@@ -499,7 +497,7 @@ h3 {
   margin-top: 0.8rem;
   padding: 1rem;
   border: 1px solid var(--line);
-  border-radius: 0.625rem;
+  border-radius: 0.75rem;
   background: var(--paper);
 }
 
@@ -547,10 +545,10 @@ h3 {
 
 .squad-scorecard thead th {
   color: var(--ink-500);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.58rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
 }
 
 .squad-scorecard tbody th {
@@ -559,7 +557,8 @@ h3 {
 
 .squad-scorecard td {
   color: var(--ink-950);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.8rem;
   font-weight: 900;
 }
@@ -581,7 +580,7 @@ h3 {
   align-items: center;
   margin-top: 0.8rem;
   padding: 1rem;
-  border-radius: 0.625rem;
+  border-radius: 0.75rem;
   color: var(--white);
   background: var(--ink-900);
 }
@@ -614,9 +613,9 @@ h3 {
 
 .squad-choice-facts dt {
   color: var(--on-dark-muted);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.58rem;
-  text-transform: uppercase;
 }
 
 .squad-choice-facts dd {
@@ -678,14 +677,15 @@ h3 {
   flex: none;
   padding: 0.55rem 0.75rem;
   border: 1px solid var(--line);
-  border-radius: 0.55rem;
+  border-radius: 0.75rem;
   font-size: 0;
   font-weight: 900;
 }
 
 .advanced-evidence-toggle::after {
   content: "Show evidence";
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.64rem;
 }
 
@@ -705,7 +705,7 @@ h3 {
 
 .selection-title-row h2 {
   margin: 0;
-  font-size: clamp(1.35rem, 2vw, 2rem);
+  font-size: clamp(1.05rem, 1.56vw, 1.56rem);
 }
 
 .selection-workflow-copy > p:not(.eyebrow, .selection-feedback) {
@@ -721,11 +721,11 @@ h3 {
   border: 1px solid var(--ink-700);
   border-radius: 999px;
   color: var(--ink-700);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.63rem;
   font-weight: 900;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
 }
 
 .selection-feedback {
@@ -779,7 +779,8 @@ h3 {
   border: 2px solid var(--line);
   border-radius: 50%;
   background: var(--white);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.68rem;
   font-weight: 900;
 }
@@ -820,16 +821,17 @@ h3 {
 
 .selection-revision-meta dt {
   color: var(--ink-500);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.61rem;
   font-weight: 800;
-  text-transform: uppercase;
 }
 
 .selection-revision-meta dd {
   overflow: hidden;
   margin: 0.25rem 0 0;
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.7rem;
   font-weight: 800;
   text-overflow: ellipsis;
@@ -845,13 +847,13 @@ h3 {
 .selection-primary,
 .selection-secondary {
   min-height: 2.75rem;
-  padding: 0.65rem 0.9rem;
+  padding: 0.7rem 1.15rem;
   cursor: pointer;
   border: 1px solid var(--line);
-  border-radius: 0.55rem;
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
-  font-size: 0.67rem;
-  font-weight: 900;
+  border-radius: 999px;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.83rem;
+  font-weight: 650;
 }
 
 .selection-primary {
@@ -866,7 +868,7 @@ h3 {
 
 .selection-primary:hover:not(:disabled),
 .selection-primary:focus-visible:not(:disabled) {
-  background: var(--lime);
+  background: var(--pitch-light);
 }
 
 .selection-secondary:hover:not(:disabled),
@@ -882,7 +884,9 @@ h3 {
 .selection-primary:disabled,
 .selection-secondary:disabled {
   cursor: not-allowed;
-  opacity: 0.45;
+  color: var(--ink-500);
+  border-color: var(--line);
+  background: var(--sink);
 }
 
 .lock-dialog {
@@ -892,7 +896,7 @@ h3 {
   border-radius: 0.875rem;
   color: var(--ink-950);
   background: var(--white);
-  box-shadow: 12px 12px 0 rgba( 44, 37, 54, 0.22);
+  box-shadow: var(--shadow-card);
 }
 
 .lock-dialog::backdrop {
@@ -951,7 +955,7 @@ h3 {
 
 .source-title-row h2 {
   margin: 0;
-  font-size: clamp(1.35rem, 2vw, 2rem);
+  font-size: clamp(1.05rem, 1.56vw, 1.56rem);
 }
 
 .source-copy > p:last-child {
@@ -966,14 +970,14 @@ h3 {
   flex: 0 0 auto;
   padding: 0.32rem 0.5rem;
   border: 1px solid rgba(255, 255, 255, 0.24);
-  border-radius: 99px;
+  border-radius: 999px;
   color: var(--ink-950);
   background: var(--amber);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.61rem;
   font-weight: 900;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
 }
 
 .source-tape[data-state="ready"] .source-state {
@@ -1032,7 +1036,6 @@ h3 {
   margin-bottom: 0.25rem;
   color: var(--on-dark);
   font-size: 0.63rem;
-  text-transform: uppercase;
 }
 
 .provenance-track strong {
@@ -1046,7 +1049,8 @@ h3 {
 .lead-time {
   margin: 0.65rem 0 0;
   color: var(--lime);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.65rem;
   font-weight: 700;
 }
@@ -1068,12 +1072,12 @@ h3 {
 .source-counts dt {
   color: var(--on-dark-muted);
   font-size: 0.58rem;
-  text-transform: uppercase;
 }
 
 .source-counts dd {
   margin: 0.3rem 0 0;
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.82rem;
   font-weight: 800;
 }
@@ -1132,13 +1136,13 @@ h3 {
 .forecast-source-meta dt {
   color: var(--on-dark-faint);
   font-size: 0.58rem;
-  text-transform: uppercase;
 }
 
 .forecast-source-meta dd {
   overflow: hidden;
   margin: 0.3rem 0 0;
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.71rem;
   font-weight: 800;
   text-overflow: ellipsis;
@@ -1285,11 +1289,11 @@ h3 {
 
 .evidence-stress-label {
   color: var(--ink-500);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.62rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
 }
 
 .evidence-stress-player-flow {
@@ -1310,7 +1314,7 @@ h3 {
   padding: 0.7rem 0.8rem;
   border: 1px solid var(--line);
   border-left: 4px solid var(--pitch);
-  border-radius: 0.55rem;
+  border-radius: 0.75rem;
 }
 
 .evidence-stress-player[data-role="out"] {
@@ -1356,7 +1360,6 @@ h3 {
 .evidence-stress-scores dt {
   color: var(--ink-500);
   font-size: 0.62rem;
-  text-transform: uppercase;
 }
 
 .evidence-stress-scores dd {
@@ -1379,7 +1382,8 @@ h3 {
   padding: 0.65rem clamp(1rem, 2.5vw, 2rem);
   color: var(--ink-700);
   flex-wrap: wrap;
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.62rem;
 }
 
@@ -1414,13 +1418,13 @@ h3 {
 .research-coverage-meta dt {
   color: var(--on-dark-muted);
   font-size: 0.58rem;
-  text-transform: uppercase;
 }
 
 .research-coverage-meta dd {
   overflow: hidden;
   margin: 0.3rem 0 0;
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.71rem;
   font-weight: 800;
   text-overflow: ellipsis;
@@ -1440,7 +1444,7 @@ h3 {
   padding: 0.58rem 0.42rem 0.5rem;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 0.25rem;
+  border-radius: 0.4rem;
   background: rgba(255, 255, 255, 0.055);
 }
 
@@ -1489,7 +1493,8 @@ h3 {
 .club-coverage span {
   margin-top: 0.2rem;
   color: var(--on-dark);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.57rem;
 }
 
@@ -1552,10 +1557,10 @@ h3 {
 
 .card-hint {
   color: var(--pitch);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.64rem;
   font-weight: 800;
-  text-transform: uppercase;
 }
 
 .pitch {
@@ -1664,7 +1669,7 @@ h3 {
   overflow: hidden;
   flex-direction: column;
   border: 1px solid rgba( 44, 37, 54, 0.75);
-  border-radius: 0.7rem;
+  border-radius: 0.75rem;
   color: var(--ink-950);
   background: var(--white);
   box-shadow: var(--shadow-card);
@@ -1706,10 +1711,11 @@ h3 {
 
 .portrait-fallback {
   color: rgba(255, 255, 255, 0.75);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 1rem;
   font-weight: 900;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.01em;
 }
 
 .card-portrait.has-photo .portrait-fallback {
@@ -1736,7 +1742,8 @@ h3 {
   border-radius: 50%;
   color: var(--ink-950);
   background: var(--lime);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.65rem;
   font-weight: 900;
   box-shadow: 0 3px 8px rgba( 44, 37, 54, 0.18);
@@ -1763,7 +1770,8 @@ h3 {
   display: block;
   overflow: hidden;
   color: var(--ink-500);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.52rem;
   font-weight: 800;
   text-overflow: ellipsis;
@@ -1804,7 +1812,7 @@ h3 {
   display: block;
   height: 0.18rem;
   overflow: hidden;
-  border-radius: 99px;
+  border-radius: 999px;
   background: var(--paper-deep);
 }
 
@@ -1838,7 +1846,6 @@ h3 {
 .bench-heading h3 {
   margin-bottom: 0.7rem;
   font-size: 0.9rem;
-  text-transform: uppercase;
 }
 
 .bench {
@@ -1933,7 +1940,7 @@ h3 {
 .player-heading h2 {
   margin-bottom: 0.35rem;
   color: var(--white);
-  font-size: clamp(1.7rem, 2.5vw, 2.6rem);
+  font-size: clamp(1.33rem, 1.95vw, 2.03rem);
 }
 
 .player-heading p {
@@ -1946,13 +1953,13 @@ h3 {
 .player-badge {
   flex: 0 0 auto;
   padding: 0.28rem 0.42rem;
-  border-radius: 0.2rem;
+  border-radius: 0.4rem;
   color: var(--ink-950);
   background: var(--lime);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.56rem;
   font-weight: 900;
-  text-transform: uppercase;
 }
 
 .dossier-state {
@@ -1961,7 +1968,8 @@ h3 {
   border-block: 1px solid rgba(255, 255, 255, 0.14);
   color: var(--on-dark);
   background: rgba(255, 255, 255, 0.04);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.6rem;
   line-height: 1.5;
 }
@@ -1996,7 +2004,8 @@ h3 {
 
 .dossier-section-heading > span {
   color: var(--lime);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.55rem;
 }
 
@@ -2005,7 +2014,6 @@ h3 {
   color: var(--white);
   font-size: 0.83rem;
   letter-spacing: 0.01em;
-  text-transform: uppercase;
 }
 
 .dossier-section-heading small {
@@ -2137,7 +2145,8 @@ h3 {
   padding: 0.2rem 0.3rem;
   color: var(--ink-950);
   background: var(--blue);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.52rem;
   font-weight: 900;
 }
@@ -2225,7 +2234,8 @@ h3 {
 
 .fixture-card > span {
   color: var(--lime);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.52rem;
 }
 
@@ -2274,10 +2284,10 @@ h3 {
   padding: 0.22rem 0.35rem;
   color: var(--ink-950);
   background: var(--amber);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.5rem;
   font-weight: 900;
-  text-transform: uppercase;
 }
 
 .research-summary-line strong {
@@ -2361,9 +2371,9 @@ h3 {
 
 .research-source-line > span:not(.dependent-chip) {
   color: var(--on-dark-muted);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.48rem;
-  text-transform: uppercase;
 }
 
 .dependent-chip {
@@ -2384,7 +2394,8 @@ h3 {
 .research-metric {
   margin: 0;
   color: var(--lime);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.52rem;
   font-weight: 700;
 }
@@ -2405,9 +2416,9 @@ h3 {
   align-items: center;
   margin-top: 0.55rem;
   color: var(--on-dark-muted);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.47rem;
-  text-transform: uppercase;
 }
 
 .research-meta a {
@@ -2437,7 +2448,6 @@ h3 {
   margin-bottom: 0.55rem;
   color: var(--white);
   font-size: 0.68rem;
-  text-transform: uppercase;
 }
 
 .evidence-list ul {
@@ -2483,9 +2493,9 @@ h3 {
 
 .synthetic-callout strong {
   color: var(--amber);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.57rem;
-  text-transform: uppercase;
 }
 
 .synthetic-callout[data-real-identities="true"] strong {
@@ -2494,7 +2504,7 @@ h3 {
 
 .strategy-board {
   margin-top: 1rem;
-  scroll-margin-top: 4.5rem;
+  scroll-margin-top: 5.5rem;
   border: 1px solid var(--line);
   border-radius: 0.875rem;
   background: var(--white);
@@ -2518,13 +2528,13 @@ h3 {
   align-items: center;
   padding: 0.35rem 0.55rem;
   border: 1px solid var(--line);
-  border-radius: 99px;
+  border-radius: 999px;
   color: var(--ink-700);
   background: var(--paper);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.61rem;
   font-weight: 900;
-  text-transform: uppercase;
 }
 
 .strategy-board[data-state="ready"] .strategy-state {
@@ -2584,7 +2594,7 @@ h3 {
 .strategy-card[data-previewing="true"] {
   z-index: 1;
   background: var(--sink);
-  box-shadow: inset 0 0 0 3px var(--ink-950);
+  box-shadow: inset 0 0 0 2px var(--pitch);
 }
 
 .strategy-card > header {
@@ -2598,11 +2608,11 @@ h3 {
 .strategy-type,
 .strategy-card-status {
   color: var(--ink-500);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.56rem;
   font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
 }
 
 .strategy-card h3 {
@@ -2614,7 +2624,7 @@ h3 {
 
 .strategy-card-status {
   padding: 0.28rem 0.38rem;
-  border-radius: 0.2rem;
+  border-radius: 0.4rem;
   color: var(--ink-800);
   background: var(--paper-deep);
   letter-spacing: 0;
@@ -2686,7 +2696,8 @@ h3 {
 
 .strategy-score dd {
   margin: 0;
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.68rem;
   font-weight: 900;
 }
@@ -2700,7 +2711,8 @@ h3 {
 
 .strategy-comparison > strong {
   color: var(--pitch-dark);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.66rem;
 }
 
@@ -2708,7 +2720,7 @@ h3 {
   display: flex;
   height: 0.45rem;
   overflow: hidden;
-  border-radius: 99px;
+  border-radius: 999px;
   background: var(--paper-deep);
 }
 
@@ -2726,7 +2738,8 @@ h3 {
 
 .strategy-probability-copy {
   color: var(--ink-500);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.54rem;
   line-height: 1.45;
 }
@@ -2744,8 +2757,9 @@ h3 {
   padding: 0.55rem;
   cursor: pointer;
   border: 1px solid var(--line);
-  border-radius: 0.55rem;
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  border-radius: 0.75rem;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.61rem;
   font-weight: 900;
   transition:
@@ -2856,7 +2870,7 @@ h3 {
   flex: 1;
   border: 1px solid var(--ink-700);
   border-right: 0;
-  border-radius: 0.35rem 0 0 0.35rem;
+  border-radius: 999px 0 0 999px;
   color: var(--white);
   background: rgba(255, 255, 255, 0.06);
 }
@@ -2865,7 +2879,7 @@ h3 {
   min-height: 3.4rem;
   padding: 0 1.3rem;
   border: 0;
-  border-radius: 0 0.35rem 0.35rem 0;
+  border-radius: 0 999px 999px 0;
   color: var(--ink-950);
   background: var(--lime);
   font-size: 0.75rem;
@@ -2890,9 +2904,9 @@ footer {
   align-items: center;
   justify-content: space-between;
   color: var(--ink-500);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.61rem;
-  text-transform: uppercase;
 }
 
 @media (max-width: 1500px) {
@@ -3044,7 +3058,7 @@ footer {
     width: 2.8rem;
     height: 0.25rem;
     transform: translateX(-50%);
-    border-radius: 99px;
+    border-radius: 999px;
     background: rgba(255, 255, 255, 0.45);
   }
 
@@ -3141,7 +3155,7 @@ footer {
   }
 
   h1 {
-    font-size: clamp(3rem, 16vw, 5rem);
+    font-size: clamp(2.34rem, 12.48vw, 3.90rem);
   }
 
   .decision-header {
@@ -3151,7 +3165,7 @@ footer {
 
   .run-meta {
     grid-template-columns: repeat(2, 1fr);
-    box-shadow: 5px 5px 0 var(--paper-deep);
+    box-shadow: var(--shadow-soft);
   }
 
   .run-meta div {
@@ -3343,7 +3357,7 @@ footer {
   .ai-composer input,
   .ai-composer button {
     border: 1px solid var(--ink-700);
-    border-radius: 0.55rem;
+    border-radius: 0.75rem;
   }
 
   footer {
@@ -3531,11 +3545,11 @@ footer {
   margin: 1.25rem 0 0.4rem;
   padding-inline: 0.75rem;
   color: var(--on-dark-muted);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.58rem;
   font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
 }
 
 .sidebar-nav a {
@@ -3545,7 +3559,7 @@ footer {
   padding: 0 0.75rem;
   align-items: center;
   border: 1px solid transparent;
-  border-radius: 0.625rem;
+  border-radius: 0.75rem;
   color: var(--on-dark);
   font-size: 0.78rem;
   font-weight: 650;
@@ -3596,7 +3610,7 @@ footer {
   padding: 0.8rem;
   align-items: center;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.7rem;
+  border-radius: 0.75rem;
   background: rgba(255, 255, 255, 0.035);
 }
 
@@ -3645,7 +3659,7 @@ footer {
   cursor: pointer;
   place-items: center;
   border: 1px solid var(--line);
-  border-radius: 0.625rem;
+  border-radius: 0.75rem;
   color: var(--ink-900);
   background: var(--white);
 }
@@ -3708,7 +3722,7 @@ footer {
 .decision-header h1 {
   max-width: none;
   margin-bottom: 0.75rem;
-  font-size: clamp(2.65rem, 5vw, 5rem);
+  font-size: clamp(2.07rem, 3.90vw, 3.90rem);
   line-height: 0.92;
 }
 
@@ -3717,7 +3731,7 @@ footer {
 #my-squad,
 #official-data,
 #research-coverage {
-  scroll-margin-top: 5.25rem;
+  scroll-margin-top: 5.5rem;
 }
 
 .workspace {
@@ -3728,7 +3742,47 @@ footer {
   display: none;
 }
 
-.player-page #decision-room > :not(.workspace) {
+/* Page modes.
+
+   The builder and the model workspace now live inside steps on the decision
+   spine, so these can no longer key off direct children of #decision-room.
+   They key off what a step HOLDS rather than where it sits, so reordering the
+   spine cannot silently break either mode. */
+.player-page #decision-room > :not(.decision-spine),
+.builder-page-active #decision-room > :not(.decision-spine) {
+  display: none;
+}
+
+.player-page .decision-step:not([data-holds="recommendation"]),
+.builder-page-active .decision-step:not([data-holds="squad"]) {
+  display: none;
+}
+
+.player-page .decision-step,
+.builder-page-active /* The masthead is sticky at 4.25rem; anchors land clear of it. */
+.decision-step,
+.decision-step [id],
+.workspace,
+.squad-builder-page {
+  scroll-margin-top: 5.5rem;
+}
+
+.decision-step {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.player-page .decision-step > .decision-step-marker,
+.player-page .decision-step .decision-step-heading,
+.builder-page-active .decision-step > .decision-step-marker,
+.builder-page-active .decision-step .decision-step-heading {
+  display: none;
+}
+
+.player-page .decision-step-body > :not(.workspace) {
+  display: none;
+}
+
+.builder-page-active .decision-step-body > :not(.squad-builder-page) {
   display: none;
 }
 
@@ -3749,7 +3803,7 @@ footer {
   overflow: visible;
   transform: none;
   border-width: 1px;
-  border-radius: 0.65rem;
+  border-radius: 0.75rem;
   opacity: 1;
 }
 
@@ -3781,7 +3835,7 @@ footer {
 }
 
 .player-page .player-heading h2 {
-  font-size: clamp(2.5rem, 5vw, 5rem);
+  font-size: clamp(1.95rem, 3.90vw, 3.90rem);
 }
 
 .player-page .player-heading p {
@@ -3902,7 +3956,7 @@ footer {
   }
 
   .player-page .player-heading h2 {
-    font-size: clamp(1.8rem, 8vw, 3rem);
+    font-size: clamp(1.40rem, 6.24vw, 2.34rem);
   }
 }
 
@@ -3931,7 +3985,7 @@ footer {
   }
 
   .decision-header h1 {
-    font-size: clamp(2.45rem, 14vw, 4rem);
+    font-size: clamp(1.91rem, 10.92vw, 3.12rem);
   }
 
   .player-page .workspace {
@@ -3945,11 +3999,11 @@ footer {
 }
 
 /* My Squad is a dedicated decision workspace, not an editing dialog. */
-.builder-page-active #decision-room > :not(.squad-builder-page) {
-  display: none;
+.builder-page-active.player-page .decision-step[data-holds="recommendation"] {
+  display: grid;
 }
 
-.builder-page-active.player-page #decision-room > .workspace {
+.builder-page-active.player-page .decision-step-body > .workspace {
   display: block;
 }
 
@@ -3967,7 +4021,7 @@ footer {
   padding: clamp(1.4rem, 3vw, 2.5rem);
   align-items: flex-end;
   justify-content: space-between;
-  border-radius: 0.65rem 0.65rem 0 0;
+  border-radius: 0.75rem 0.75rem 0 0;
   color: var(--white);
   background:
     linear-gradient(110deg, rgba( 168, 189, 151, 0.1), transparent 38%),
@@ -3981,7 +4035,7 @@ footer {
 .builder-header h1 {
   max-width: 16ch;
   margin-bottom: 0.7rem;
-  font-size: clamp(2.5rem, 5.5vw, 5.4rem);
+  font-size: clamp(1.95rem, 4.29vw, 4.21rem);
   line-height: 0.88;
 }
 
@@ -4017,7 +4071,7 @@ footer {
   align-items: center;
   border: 1px solid var(--line);
   border-top: 0;
-  border-radius: 0 0 0.65rem 0.65rem;
+  border-radius: 0 0 0.75rem 0.75rem;
   background: var(--white);
 }
 
@@ -4030,13 +4084,13 @@ footer {
   color: var(--ink-950);
   background: var(--lime);
   font-family: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
-  font-size: clamp(2rem, 5vw, 4rem);
+  font-size: clamp(1.56rem, 3.90vw, 3.12rem);
   font-weight: 900;
 }
 
 .builder-empty h2 {
   margin-bottom: 0.45rem;
-  font-size: clamp(1.7rem, 3vw, 2.8rem);
+  font-size: clamp(1.33rem, 2.34vw, 2.18rem);
 }
 
 .builder-empty p:last-child {
@@ -4082,17 +4136,17 @@ footer {
 }
 
 .builder-scoreboard > div > span {
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
 }
 
 .builder-scoreboard > div > strong {
   display: block;
   margin: 0.3rem 0;
   font-family: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
-  font-size: clamp(1.4rem, 2.7vw, 2.35rem);
+  font-size: clamp(1.09rem, 2.11vw, 1.83rem);
   line-height: 1;
 }
 
@@ -4149,13 +4203,13 @@ footer {
   margin-top: 0.3rem;
   cursor: pointer;
   border: 1px solid var(--line);
-  border-radius: 0.25rem;
+  border-radius: 0.4rem;
   color: var(--ink-950);
   background: var(--white);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.57rem;
   font-weight: 900;
-  text-transform: uppercase;
 }
 
 .builder-player[data-selected="true"] .builder-change-player,
@@ -4192,14 +4246,14 @@ footer {
 
 #builder-validity {
   padding: 0.4rem 0.55rem;
-  border-radius: 99px;
+  border-radius: 999px;
   color: var(--white);
   background: var(--coral);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.58rem;
   font-weight: 900;
   white-space: nowrap;
-  text-transform: uppercase;
 }
 
 #builder-validity[data-valid="true"] {
@@ -4227,14 +4281,14 @@ footer {
 
 .constraint-list li span {
   padding: 0.25rem;
-  border-radius: 0.2rem;
+  border-radius: 0.4rem;
   color: var(--white);
   background: var(--coral);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.54rem;
   font-weight: 900;
   text-align: center;
-  text-transform: uppercase;
 }
 
 .constraint-list li[data-pass="true"] span {
@@ -4272,7 +4326,7 @@ footer {
   margin-top: 0.3rem;
   padding: 0 0.7rem;
   border: 1px solid var(--line);
-  border-radius: 0.3rem;
+  border-radius: 0.4rem;
   color: var(--ink-950);
   background: var(--white);
 }
@@ -4289,7 +4343,7 @@ footer {
   padding: 0.35rem;
   align-items: center;
   border: 1px solid var(--line);
-  border-radius: 0.3rem;
+  border-radius: 0.4rem;
   background: var(--white);
 }
 
@@ -4321,7 +4375,7 @@ footer {
   height: 2.5rem;
   cursor: pointer;
   border: 1px solid var(--line);
-  border-radius: 0.2rem;
+  border-radius: 0.4rem;
   background: var(--white);
 }
 
@@ -4349,7 +4403,7 @@ footer {
 
 .player-market-heading h2 {
   margin-bottom: 0.35rem;
-  font-size: clamp(1.6rem, 3vw, 2.7rem);
+  font-size: clamp(1.25rem, 2.34vw, 2.11rem);
 }
 
 .player-market-heading p:last-child {
@@ -4371,7 +4425,7 @@ footer {
   padding: 0 0.75rem;
   cursor: pointer;
   border: 1px solid var(--line);
-  border-radius: 99px;
+  border-radius: 999px;
   background: var(--white);
   font-size: 0.65rem;
   font-weight: 800;
@@ -4398,7 +4452,7 @@ footer {
   padding: 0.45rem;
   align-items: center;
   border: 1px solid var(--line);
-  border-radius: 0.625rem;
+  border-radius: 0.75rem;
   background: var(--paper);
 }
 
@@ -4408,7 +4462,7 @@ footer {
   height: 3.6rem;
   overflow: hidden;
   place-items: center;
-  border-radius: 0.25rem;
+  border-radius: 0.4rem;
   background: var(--ink-800);
 }
 
@@ -4466,7 +4520,7 @@ footer {
   padding: 0 0.6rem;
   cursor: pointer;
   border: 1px solid var(--line);
-  border-radius: 0.25rem;
+  border-radius: 0.4rem;
   background: var(--white);
   font-size: 0.61rem;
   font-weight: 850;
