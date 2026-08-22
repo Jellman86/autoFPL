@@ -926,7 +926,11 @@ endpoint with typed anonymous `get_player_dossier` and
 `get_current_prediction` tools over the same cutoff-correct read services as
 the decision room. A third typed tool exposes the current balanced, safer and
 higher-ceiling role strategies with paired scenario comparisons while
-preserving their unpromoted shadow status. All three tools are explicitly
+preserving their unpromoted shadow status. A fourth exposes a bounded,
+content-addressed semantic-review context for claims referenced by current
+decision-relevant evidence stresses, including competing assertions, source
+spans, duplicate clusters and an explicit cited-abstention policy. All four
+tools are explicitly
 read-only, non-destructive and closed-world; the prediction and strategy tools
 return only public model artifacts and none exposes owner selection data. A
 validated repo-owned development plugin package now points ChatGPT and Codex
@@ -1054,8 +1058,10 @@ now implemented. The active order is:
    a serving horizon;
 4. admit external forecasts, lineup/news claims and richer features only when
    same-fold ablations improve prediction or decision utility;
-5. resume the owner-configured OpenAI-compatible provider after the prediction
-   and initial-squad path is credible; and
+5. evaluate cited AI semantic review against deterministic extraction and
+   human labels, then enable the owner-configured OpenAI-compatible provider
+   only as a bounded review layer whose numerical influence is learned from
+   cutoff-correct outcomes; and
 6. add owner authentication and sanitized dashboard sharing before exposing
    consequential actions outside the trusted instance.
 
@@ -1164,6 +1170,15 @@ near-boundary opening-squad players: 49 of 53 rows resolve at capture 41, four
 stale or out-of-population identities remain explicit, and no resolved row
 touches either scope. Continue collection through the deadline; a future
 forecast effect still requires resolved prospective outcomes.
+The first focused AI boundary for this work is now implemented without creating
+a general orchestrator project. The API and MCP expose only decision-relevant
+stress claims plus latest competing assertions, exact claim IDs, source spans,
+duplicate clusters, time cutoffs and conditional optimiser effects. The review
+policy requires citations, time-scope analysis, contradiction/dependence
+detection and abstention; it prohibits probabilities, source weights and
+forecast mutation. The next slice persists strict-schema reviews from an
+optional owner-configured provider and scores their semantic labels separately
+from later outcome-based numerical calibration.
 Do not add another standalone governance, universal contract, infrastructure
 or AI-orchestrator project ahead of these slices.
 
@@ -1173,7 +1188,8 @@ or AI-orchestrator project ahead of these slices.
   [#55](https://github.com/Jellman86/autoFPL/issues/55) and claim extraction,
   corroboration and reliability [#56](https://github.com/Jellman86/autoFPL/issues/56)
   are now an explicit shadow-research workstream. The immutable claim-ledger
-  foundation is implemented; source admission, extraction and scoring remain.
+  foundation and bounded AI semantic-review context are implemented; provider
+  review persistence, human-label agreement and outcome scoring remain.
   Each source remains a challenger until an out-of-time ablation shows gain.
   The fixed-URL Byparr connector
   [#57](https://github.com/Jellman86/autoFPL/issues/57) is implemented for the
