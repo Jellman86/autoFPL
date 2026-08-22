@@ -100,3 +100,21 @@ public sealed record ResearchSourceClaimExtractionDocument(
     [property: JsonPropertyName("claimCount")] int ClaimCount,
     [property: JsonPropertyName("unresolvedPlayerCodes")]
         IReadOnlyList<int> UnresolvedPlayerCodes);
+
+public sealed record ResearchSourceRefreshHealthDocument(
+    [property: JsonPropertyName("schemaVersion")] string SchemaVersion,
+    [property: JsonPropertyName("generatedAtUtc")] DateTimeOffset GeneratedAtUtc,
+    [property: JsonPropertyName("expectedIntervalMinutes")]
+        int? ExpectedIntervalMinutes,
+    [property: JsonPropertyName("staleSourceKeys")]
+        IReadOnlyList<string> StaleSourceKeys,
+    [property: JsonPropertyName("sources")]
+        IReadOnlyList<ResearchSourceRefreshStateDocument> Sources);
+
+public sealed record ResearchSourceRefreshStateDocument(
+    [property: JsonPropertyName("sourceKey")] string SourceKey,
+    [property: JsonPropertyName("pollAutomatically")] bool PollAutomatically,
+    [property: JsonPropertyName("lastRetrievedAtUtc")]
+        DateTimeOffset? LastRetrievedAtUtc,
+    [property: JsonPropertyName("ageMinutes")] int? AgeMinutes,
+    [property: JsonPropertyName("status")] string Status);

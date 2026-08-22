@@ -17,6 +17,8 @@ public sealed class ResearchSourceSnapshotStore
     private readonly DatabaseOptions _options;
     private readonly TimeProvider _timeProvider;
 
+    internal const int MissedCyclesBeforeStale = 2;
+
     public ResearchSourceSnapshotStore(
         DatabaseOptions options,
         TimeProvider timeProvider)
@@ -224,6 +226,83 @@ public sealed class ResearchSourceSnapshotStore
         string ContentTrust,
         string TransportKey,
         string TransportVersion);
+
+    /// <summary>
+    /// Reports whether each automatically polled source is still collecting.
+    /// The poller isolates a failing source so it cannot suppress the rest, and
+    /// the logging boundary keeps that failure out of application logs, so a
+    /// source that stops collecting is otherwise only visible by reading
+    /// timestamps and knowing the configured cadence. Staleness is judged
+    /// against that cadence here, where it is known.
+    /// </summary>
+    public async Task<ResearchSourceRefreshHealthDocument> GetRefreshHealthAsync(
+        ResearchSourcePollingOptions pollingOptions,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(pollingOptions);
+        ResearchSourceInventoryDocument inventory =
+            await GetInventoryAsync(cancellationToken);
+        Dictionary<string, DateTimeOffset> latest = inventory.LatestSnapshots
+            .GroupBy(snapshot => snapshot.SourceKey, StringComparer.Ordinal)
+            .ToDictionary(
+                group => group.Key,
+                group => group.Max(snapshot => snapshot.RetrievedAtUtc),
+                StringComparer.Ordinal);
+
+        DateTimeOffset now = _timeProvider.GetUtcNow();
+        TimeSpan? interval = pollingOptions.Interval;
+        var states = new List<ResearchSourceRefreshStateDocument>();
+        var stale = new List<string>();
+        foreach (ResearchSourceDefinition source in ResearchSourceRegistry.All
+                     .OrderBy(definition => definition.SourceKey, StringComparer.Ordinal))
+        {
+            bool hasSnapshot = latest.TryGetValue(
+                source.SourceKey,
+                out DateTimeOffset retrievedAtUtc);
+            int? ageMinutes = hasSnapshot
+                ? (int)Math.Max(0, (now - retrievedAtUtc).TotalMinutes)
+                : null;
+
+            string status;
+            if (!source.PollAutomatically)
+            {
+                status = "not-polled";
+            }
+            else if (!hasSnapshot)
+            {
+                status = "never-collected";
+                stale.Add(source.SourceKey);
+            }
+            else if (interval is TimeSpan configured
+                && ageMinutes is int age
+                && age > configured.TotalMinutes * MissedCyclesBeforeStale)
+            {
+                // One missed cycle is tolerable; a second means the source has
+                // stopped rather than merely arrived late.
+                status = "stale";
+                stale.Add(source.SourceKey);
+            }
+            else
+            {
+                status = "fresh";
+            }
+
+            states.Add(
+                new(
+                    source.SourceKey,
+                    source.PollAutomatically,
+                    hasSnapshot ? retrievedAtUtc : null,
+                    ageMinutes,
+                    status));
+        }
+
+        return new(
+            "1.0",
+            now,
+            interval is TimeSpan value ? (int)value.TotalMinutes : null,
+            stale,
+            states);
+    }
 
     public async Task<ResearchSourceInventoryDocument> GetInventoryAsync(
         CancellationToken cancellationToken = default)
