@@ -982,10 +982,15 @@ function renderSquadPlayers(players, isOwnerSelection = false) {
   }
 }
 
+function sentenceCase(value) {
+  return value.length === 0 ? value : value[0].toUpperCase() + value.slice(1);
+}
+
 function renderAdvice(adviceDocument) {
   advice = adviceDocument;
   displayedPlayers = adviceDocument.selection.players;
-  const evidenceStatus = adviceDocument.evidenceStatus.replaceAll("-", " ");
+  const evidenceStatus = sentenceCase(
+    adviceDocument.evidenceStatus.replaceAll("-", " "));
   document.querySelector("#evidence-status").textContent = evidenceStatus;
   document.querySelector("#sidebar-evidence-status").textContent = evidenceStatus;
   document.querySelector("#gameweek-label").textContent =
