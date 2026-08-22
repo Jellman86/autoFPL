@@ -141,7 +141,43 @@ class ShadowWorkerTests(unittest.TestCase):
                 ),
             )
 
-    def test_exact_shadows_and_unsupported_target_do_not_generate(
+    def test_advanced_gameweek_closes_the_programme_without_an_error(
+        self,
+    ) -> None:
+        """An opening-squad programme that is finished is not a fault.
+
+        The programme is pinned to one gameweek. Once the official capture
+        reports a later one there is nothing left to generate, but the worker
+        polls every 60 seconds, so reporting that as an error produced roughly
+        1,440 spurious error records a day against a completed programme.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            database = root / "autofpl.db"
+            self._create_database(database)
+            self._insert_capture(database, 16, gameweek=2)
+
+            result = generate_once(database, root / "inbox")
+
+            self.assertEqual("closed", result.status)
+            self.assertIsNone(result.errorCode)
+            self.assertIsNone(result.outputFile)
+            self.assertEqual(16, result.officialCaptureId)
+
+    def test_unknown_season_is_still_an_unsupported_target(self) -> None:
+        """A season mismatch stays an error; it means misconfiguration."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            database = root / "autofpl.db"
+            self._create_database(database)
+            self._insert_capture(database, 16, season_code="2099-00")
+
+            result = generate_once(database, root / "inbox")
+
+            self.assertEqual("waiting", result.status)
+            self.assertEqual("unsupported-target", result.errorCode)
+
+    def test_exact_shadows_and_closed_programme_do_not_generate(
         self,
     ) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -436,9 +472,13 @@ class ShadowWorkerTests(unittest.TestCase):
                     DELETE FROM joint_scenario_shadow_artifacts;
                     """
                 )
-            unsupported = generate_once(database, root / "inbox")
-            self.assertEqual("waiting", unsupported.status)
-            self.assertEqual("unsupported-target", unsupported.errorCode)
+            # Advancing the gameweek past the pinned opening-squad target
+            # closes the programme. Nothing is generated, and that completion
+            # is not reported as an error.
+            closed = generate_once(database, root / "inbox")
+            self.assertEqual("closed", closed.status)
+            self.assertIsNone(closed.errorCode)
+            self.assertIsNone(closed.outputFile)
 
     @staticmethod
     def _create_database(path: Path) -> None:
@@ -527,7 +567,12 @@ class ShadowWorkerTests(unittest.TestCase):
             )
 
     @staticmethod
-    def _insert_capture(path: Path, capture_id: int) -> None:
+    def _insert_capture(
+        path: Path,
+        capture_id: int,
+        season_code: str = "2026-27",
+        gameweek: int = 1,
+    ) -> None:
         with sqlite3.connect(path) as connection:
             connection.execute(
                 """
@@ -535,9 +580,9 @@ class ShadowWorkerTests(unittest.TestCase):
                     (capture_id, season_code, next_gameweek_number,
                      next_deadline_utc, available_at_utc)
                 VALUES (
-                    ?, '2026-27', 1, '2026-08-21T17:30:00Z',
+                    ?, ?, ?, '2026-08-21T17:30:00Z',
                     '2026-07-29T04:38:41Z'
                 );
                 """,
-                (capture_id,),
+                (capture_id, season_code, gameweek),
             )
