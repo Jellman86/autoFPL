@@ -1372,6 +1372,125 @@ public sealed class ResearchSourceSnapshotTests
     }
 
     [Fact]
+    public async Task Refresh_health_reports_a_source_that_has_stopped_collecting()
+    {
+        // The failure this exists to surface: on 2026-08-20 the injury source
+        // stopped collecting while the rest of the portfolio carried on. The
+        // poller isolates a failing source and the logging boundary keeps the
+        // failure out of application logs, so nothing signalled it for two days.
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = await CreateDatabaseAsync(files.DatabasePath);
+        ResearchSourcePollingOptions pollingOptions =
+            ResearchSourcePollingOptions.FromConfiguration(
+                new ConfigurationBuilder()
+                    .AddInMemoryCollection(
+                        new Dictionary<string, string?>
+                        {
+                            ["AutoFpl:Research:ResearchSourcePollIntervalMinutes"] =
+                                "360",
+                        })
+                    .Build());
+
+        ResearchSourceDefinition source =
+            ResearchSourceRegistry.Get("premier-league-injuries");
+        await new ResearchSourceSnapshotStore(
+                options,
+                new FixedTimeProvider(RetrievalTime))
+            .PersistAsync(
+                source,
+                new PlaywrightResearchSourceCaptureResult(
+                    source.CanonicalUri,
+                    200,
+                    CreatePremierLeagueInjuryExtractionEvidence(),
+                    "untrusted_remote_content",
+                    PremierLeagueInjuryPlaywrightCollector.TransportVersion),
+                TestContext.Current.CancellationToken);
+
+        // One missed cycle is late, not stopped.
+        ResearchSourceRefreshHealthDocument late =
+            await new ResearchSourceSnapshotStore(
+                    options,
+                    new FixedTimeProvider(RetrievalTime.AddMinutes(500)))
+                .GetRefreshHealthAsync(
+                    pollingOptions,
+                    TestContext.Current.CancellationToken);
+        Assert.Equal(360, late.ExpectedIntervalMinutes);
+        Assert.Equal(
+            "fresh",
+            Assert.Single(
+                late.Sources,
+                state => state.SourceKey == "premier-league-injuries").Status);
+        Assert.DoesNotContain("premier-league-injuries", late.StaleSourceKeys);
+
+        // Past two intervals it has stopped. 2026-08-22 was roughly 52 hours
+        // after the last real capture, well beyond this boundary.
+        ResearchSourceRefreshHealthDocument stopped =
+            await new ResearchSourceSnapshotStore(
+                    options,
+                    new FixedTimeProvider(RetrievalTime.AddMinutes(800)))
+                .GetRefreshHealthAsync(
+                    pollingOptions,
+                    TestContext.Current.CancellationToken);
+        ResearchSourceRefreshStateDocument injuries = Assert.Single(
+            stopped.Sources,
+            state => state.SourceKey == "premier-league-injuries");
+        Assert.Equal("stale", injuries.Status);
+        Assert.Equal(800, injuries.AgeMinutes);
+        Assert.Equal(RetrievalTime, injuries.LastRetrievedAtUtc);
+        Assert.Contains("premier-league-injuries", stopped.StaleSourceKeys);
+    }
+
+    [Fact]
+    public async Task Refresh_health_separates_never_collected_from_not_polled()
+    {
+        using var files = new TemporaryDatabaseFiles();
+        DatabaseOptions options = await CreateDatabaseAsync(files.DatabasePath);
+        ResearchSourcePollingOptions pollingOptions =
+            ResearchSourcePollingOptions.FromConfiguration(
+                new ConfigurationBuilder()
+                    .AddInMemoryCollection(
+                        new Dictionary<string, string?>
+                        {
+                            ["AutoFpl:Research:ResearchSourcePollIntervalMinutes"] =
+                                "360",
+                        })
+                    .Build());
+
+        ResearchSourceRefreshHealthDocument health =
+            await new ResearchSourceSnapshotStore(
+                    options,
+                    new FixedTimeProvider(RetrievalTime))
+                .GetRefreshHealthAsync(
+                    pollingOptions,
+                    TestContext.Current.CancellationToken);
+
+        Assert.Equal("1.0", health.SchemaVersion);
+        Assert.Equal(RetrievalTime, health.GeneratedAtUtc);
+        Assert.Equal(ResearchSourceRegistry.All.Count, health.Sources.Count);
+
+        // Nothing has been captured, so every automatically polled source is
+        // never-collected and every manual source is simply not polled. A
+        // manual source must never be reported as a fault.
+        foreach (ResearchSourceRefreshStateDocument state in health.Sources)
+        {
+            Assert.Null(state.LastRetrievedAtUtc);
+            Assert.Null(state.AgeMinutes);
+            Assert.Equal(
+                state.PollAutomatically ? "never-collected" : "not-polled",
+                state.Status);
+        }
+
+        Assert.All(
+            health.StaleSourceKeys,
+            key => Assert.True(
+                ResearchSourceRegistry.Get(key).PollAutomatically));
+        Assert.Equal(
+            ResearchSourceRegistry.All.Count(
+                definition => definition.PollAutomatically),
+            health.StaleSourceKeys.Count);
+    }
+
+    [Fact]
     public void Premier_league_injury_parser_accepts_an_undisclosed_injury_type()
     {
         // Observed live on 2026-08-20: Newcastle United listed Joelinton, Dan

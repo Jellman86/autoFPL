@@ -2032,6 +2032,27 @@ app.MapGet(
     .WithTags("Research")
     .Produces<ResearchSourceInventoryDocument>();
 app.MapGet(
+    "/api/v1/research/sources/refresh-health",
+    async (
+        ResearchSourceSnapshotStore store,
+        ResearchSourcePollingOptions pollingOptions,
+        CancellationToken cancellationToken) =>
+        Results.Ok(
+            await store.GetRefreshHealthAsync(pollingOptions, cancellationToken)))
+    .WithName("GetResearchSourceRefreshHealth")
+    .WithSummary(
+        "Report whether each automatically polled research source is still collecting.")
+    .WithDescription(
+        "The poller isolates a failing source so it cannot suppress the remaining "
+        + "portfolio, and the request-body logging boundary keeps that failure out of "
+        + "application logs. A source that stops collecting is therefore otherwise only "
+        + "visible by comparing capture timestamps against the configured cadence, which "
+        + "is known here. A source is stale once it has missed more than one poll "
+        + "interval, and never-collected when it has no capture at all. Exposes capture "
+        + "timing only, and no third-party content.")
+    .WithTags("Research")
+    .Produces<ResearchSourceRefreshHealthDocument>();
+app.MapGet(
     "/api/v1/research/snapshots/{snapshotId:long}/fbref-playing-time",
     async (
         long snapshotId,
