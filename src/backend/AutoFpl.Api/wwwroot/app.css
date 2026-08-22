@@ -1338,6 +1338,307 @@ h3 {
   font-size: 0.78rem;
 }
 
+.semantic-review {
+  margin-bottom: 1rem;
+  overflow: hidden;
+  border: 1px solid var(--ink-800);
+  border-radius: 0.55rem;
+  background: var(--white);
+  box-shadow: 0 10px 30px rgba(7, 28, 37, 0.07);
+}
+
+.semantic-review-heading {
+  display: grid;
+  grid-template-columns: minmax(22rem, 1fr) minmax(24rem, 0.72fr);
+  gap: clamp(1rem, 3vw, 3rem);
+  align-items: end;
+  padding: 1rem clamp(1rem, 2.5vw, 2rem);
+  color: var(--white);
+  background:
+    linear-gradient(112deg, rgba(112, 183, 209, 0.18), transparent 46%),
+    var(--ink-950);
+}
+
+.semantic-review-heading .eyebrow {
+  color: var(--blue);
+}
+
+.semantic-review-heading .source-title-row h2 {
+  font-size: clamp(1.15rem, 1.7vw, 1.55rem);
+}
+
+.semantic-review-heading > div > p:last-child {
+  max-width: 72ch;
+  margin: 0.55rem 0 0;
+  color: #b9c8ca;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.semantic-review[data-state="complete"] .source-state {
+  background: var(--lime);
+}
+
+.semantic-review[data-state="partial"] .source-state,
+.semantic-review[data-state="waiting"] .source-state {
+  background: var(--amber);
+}
+
+.semantic-review[data-state="unavailable"] .source-state,
+.semantic-review[data-state="error"] .source-state {
+  color: var(--white);
+  background: var(--coral);
+}
+
+.semantic-review-meta {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr 1fr;
+  gap: 1px;
+  margin: 0;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.semantic-review-meta div {
+  min-width: 0;
+  padding: 0.7rem;
+  background: rgba(7, 28, 37, 0.8);
+}
+
+.semantic-review-meta dt,
+.semantic-review-meta dd {
+  overflow: hidden;
+  margin: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.semantic-review-meta dt {
+  color: #8fa7ac;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.semantic-review-meta dd {
+  margin-top: 0.28rem;
+  color: var(--white);
+  font-size: 0.7rem;
+  font-weight: 750;
+}
+
+.semantic-review-ledger {
+  background:
+    linear-gradient(90deg, transparent 3.45rem, rgba(255, 107, 82, 0.17) 3.45rem, rgba(255, 107, 82, 0.17) 3.52rem, transparent 3.52rem),
+    repeating-linear-gradient(0deg, transparent 0, transparent 2.55rem, rgba(7, 28, 37, 0.055) 2.55rem, rgba(7, 28, 37, 0.055) calc(2.55rem + 1px)),
+    var(--white);
+}
+
+.semantic-review-row {
+  display: grid;
+  grid-template-columns: minmax(10rem, 0.28fr) minmax(0, 1fr);
+  border-bottom: 1px solid var(--line);
+}
+
+.semantic-review-verdict {
+  display: flex;
+  min-height: 12rem;
+  padding: 1.25rem 1.1rem 1.25rem clamp(4.2rem, 5vw, 5rem);
+  flex-direction: column;
+  justify-content: center;
+  border-right: 1px solid var(--line);
+  background: rgba(15, 107, 77, 0.045);
+}
+
+.semantic-review-row[data-verdict="supports-adverse-interpretation"] .semantic-review-verdict {
+  box-shadow: inset 0.3rem 0 var(--coral);
+}
+
+.semantic-review-row[data-verdict="contradicts-adverse-interpretation"] .semantic-review-verdict {
+  box-shadow: inset 0.3rem 0 var(--pitch-light);
+}
+
+.semantic-review-row[data-verdict="mixed-or-time-dependent"] .semantic-review-verdict,
+.semantic-review-row[data-verdict="insufficient-evidence"] .semantic-review-verdict {
+  box-shadow: inset 0.3rem 0 var(--amber);
+}
+
+.semantic-review-verdict span,
+.semantic-review-verdict small {
+  color: var(--ink-500);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.59rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.semantic-review-verdict strong {
+  max-width: 15ch;
+  margin: 0.45rem 0 0.7rem;
+  font-family: "Arial Narrow", "Aptos Display", "Segoe UI", sans-serif;
+  font-size: 1.28rem;
+  line-height: 0.98;
+}
+
+.semantic-review-body {
+  min-width: 0;
+  padding: 1.25rem clamp(1rem, 2.5vw, 2rem);
+}
+
+.semantic-review-player {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.semantic-review-player h3,
+.semantic-review-player p {
+  margin: 0;
+}
+
+.semantic-review-player h3 {
+  font-size: 1.25rem;
+}
+
+.semantic-review-player p {
+  margin-top: 0.22rem;
+  color: var(--ink-500);
+  font-size: 0.68rem;
+}
+
+.semantic-review-quality {
+  padding: 0.32rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink-700);
+  background: var(--paper);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+}
+
+.semantic-review-quality[data-quality="high"] {
+  border-color: #9ebd60;
+  background: #edf6d3;
+}
+
+.semantic-review-quality[data-quality="low"],
+.semantic-review-quality[data-quality="insufficient"] {
+  border-color: #dfb375;
+  background: #fff0d8;
+}
+
+.semantic-review-rationale {
+  max-width: 82ch;
+  margin: 0.9rem 0 1rem;
+  color: var(--ink-800);
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.semantic-review-citations,
+.semantic-review-caveats {
+  display: flex;
+  gap: 0.65rem 1.2rem;
+  flex-wrap: wrap;
+}
+
+.semantic-review-caveats {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--line);
+}
+
+.semantic-review-tag-group > strong {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--ink-500);
+  font-size: 0.58rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.semantic-review-tag-group > div {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.semantic-review-tag {
+  padding: 0.28rem 0.42rem;
+  border: 1px solid var(--line);
+  border-radius: 0.2rem;
+  color: var(--ink-700);
+  background: var(--paper);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.57rem;
+}
+
+.semantic-review-tag[data-kind="support"] {
+  border-color: #aabd8d;
+  background: #eef5df;
+}
+
+.semantic-review-tag[data-kind="contradict"] {
+  border-color: #e1a69b;
+  background: #fff0ed;
+}
+
+.semantic-review-row-footer {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+  color: var(--ink-500);
+  font-size: 0.62rem;
+}
+
+.semantic-review-row-footer button {
+  flex: 0 0 auto;
+  padding: 0.42rem 0.6rem;
+  cursor: pointer;
+  border: 1px solid var(--ink-800);
+  border-radius: 0.25rem;
+  background: transparent;
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+
+.semantic-review-row-footer button:hover,
+.semantic-review-row-footer button:focus-visible {
+  background: var(--lime);
+}
+
+.semantic-review-empty {
+  margin: 0;
+  padding: 1.2rem clamp(4.2rem, 5vw, 5rem);
+  color: var(--ink-700);
+  font-size: 0.78rem;
+}
+
+.semantic-review-receipt,
+.semantic-review-boundary {
+  margin: 0;
+  color: var(--ink-500);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.58rem;
+}
+
+.semantic-review-receipt {
+  padding: 0.65rem clamp(4.2rem, 5vw, 5rem);
+  background: rgba(112, 183, 209, 0.08);
+}
+
+.semantic-review-boundary {
+  padding: 0.72rem clamp(1rem, 2.5vw, 2rem);
+  color: #b9c8ca;
+  background: var(--ink-900);
+  line-height: 1.5;
+}
+
 .research-coverage-meta {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -2921,8 +3222,20 @@ footer {
   }
 
   .evidence-stress-heading,
-  .evidence-stress-result {
+  .evidence-stress-result,
+  .semantic-review-heading {
     grid-template-columns: 1fr;
+  }
+
+  .semantic-review-row {
+    grid-template-columns: 1fr;
+  }
+
+  .semantic-review-verdict {
+    min-height: 0;
+    padding-block: 0.85rem;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
   }
 
   .evidence-stress-scores div:first-child {
@@ -3118,6 +3431,30 @@ footer {
 
   .evidence-stress-heading {
     padding: 1rem;
+  }
+
+  .semantic-review-heading {
+    padding: 1rem;
+  }
+
+  .semantic-review-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .semantic-review-meta dd {
+    overflow: visible;
+    white-space: normal;
+  }
+
+  .semantic-review-player,
+  .semantic-review-row-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .semantic-review-empty,
+  .semantic-review-receipt {
+    padding-inline: 1rem;
   }
 
   .evidence-stress-boundary {

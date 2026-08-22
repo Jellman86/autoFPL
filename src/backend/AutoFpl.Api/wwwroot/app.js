@@ -9,6 +9,7 @@ let playerForecast = null;
 let selectedOpeningSquad = null;
 let externalEvidenceStress = null;
 let publicProjectionChallenger = null;
+let evidenceSemanticReview = null;
 let displayedPlayers = [];
 let selectionEditDraft = null;
 let editingRevisionId = null;
@@ -1487,6 +1488,238 @@ async function copyVisibleSquadToDraft() {
     syncSquadChoiceControls();
   }
 }
+function semanticVerdictLabel(verdict) {
+  return {
+    "supports-adverse-interpretation": "Supports the risk case",
+    "contradicts-adverse-interpretation": "Pushes back on the risk",
+    "mixed-or-time-dependent": "Depends on timing",
+    "insufficient-evidence": "Not enough evidence",
+  }[verdict] ?? verdict.replaceAll("-", " ");
+}
+
+function setSemanticReviewState(state, label, title, summary) {
+  const panel = document.querySelector("#evidence-review");
+  panel.dataset.state = state;
+  document.querySelector("#semantic-review-state").textContent = label;
+  document.querySelector("#semantic-review-title").textContent = title;
+  document.querySelector("#semantic-review-summary").textContent = summary;
+}
+
+function semanticTag(text, kind) {
+  const tag = document.createElement("span");
+  tag.className = "semantic-review-tag";
+  tag.dataset.kind = kind;
+  tag.textContent = text;
+  return tag;
+}
+
+function appendSemanticList(parent, title, values, kind) {
+  if (!values?.length) return;
+  const group = document.createElement("div");
+  group.className = "semantic-review-tag-group";
+  const label = document.createElement("strong");
+  label.textContent = title;
+  const tags = document.createElement("div");
+  values.forEach((value) => tags.append(semanticTag(value, kind)));
+  group.append(label, tags);
+  parent.append(group);
+}
+
+function renderSemanticReviewResult(result) {
+  const article = document.createElement("article");
+  article.className = "semantic-review-row";
+  article.dataset.verdict = result.verdict;
+
+  const verdict = document.createElement("div");
+  verdict.className = "semantic-review-verdict";
+  const status = document.createElement("span");
+  status.textContent = result.isAbstained ? "Abstained" : "Assessment";
+  const verdictLabel = document.createElement("strong");
+  verdictLabel.textContent = semanticVerdictLabel(result.verdict);
+  const horizon = document.createElement("small");
+  horizon.textContent = result.timeHorizon;
+  verdict.append(status, verdictLabel, horizon);
+
+  const body = document.createElement("div");
+  body.className = "semantic-review-body";
+  const heading = document.createElement("div");
+  heading.className = "semantic-review-player";
+  const identity = document.createElement("div");
+  const name = document.createElement("h3");
+  name.textContent = result.player.webName;
+  const team = document.createElement("p");
+  team.textContent = `${result.player.teamName} · ${result.player.position}`;
+  identity.append(name, team);
+  const quality = document.createElement("span");
+  quality.className = "semantic-review-quality";
+  quality.dataset.quality = result.evidenceQuality;
+  quality.textContent = `${result.evidenceQuality} evidence`;
+  heading.append(identity, quality);
+
+  const rationale = document.createElement("p");
+  rationale.className = "semantic-review-rationale";
+  rationale.textContent = result.rationale || "The reviewer abstained without a substantive rationale.";
+
+  const citations = document.createElement("div");
+  citations.className = "semantic-review-citations";
+  appendSemanticList(
+    citations,
+    "Supports",
+    result.supportingClaimIds.map((claimId) => `claim #${claimId}`),
+    "support",
+  );
+  appendSemanticList(
+    citations,
+    "Contradicts",
+    result.contradictingClaimIds.map((claimId) => `claim #${claimId}`),
+    "contradict",
+  );
+  appendSemanticList(
+    citations,
+    "Depends on",
+    result.dependentClaimIds.map((claimId) => `claim #${claimId}`),
+    "dependent",
+  );
+  appendSemanticList(
+    citations,
+    "Sources cited",
+    [...new Set([
+      ...result.corroboratingSourceKeys,
+      ...result.contradictingSourceKeys,
+    ])].map(externalSourceLabel),
+    "source",
+  );
+
+  const caveats = document.createElement("div");
+  caveats.className = "semantic-review-caveats";
+  appendSemanticList(caveats, "Assumptions", result.assumptions, "assumption");
+  appendSemanticList(caveats, "Uncertainties", result.uncertainties, "uncertainty");
+
+  const footer = document.createElement("div");
+  footer.className = "semantic-review-row-footer";
+  const scope = document.createElement("span");
+  scope.textContent = result.scope;
+  footer.append(scope);
+  if (displayedPlayers.some((player) => player.playerId === result.player.playerId)) {
+    const openPlayer = document.createElement("button");
+    openPlayer.type = "button";
+    openPlayer.textContent = "Open player evidence";
+    openPlayer.addEventListener("click", () => {
+      selectPlayer(result.player.playerId, {
+        updateHistory: true,
+        openPage: true,
+        focusDossier: true,
+      });
+    });
+    footer.append(openPlayer);
+  }
+
+  body.append(heading, rationale);
+  if (citations.childElementCount) body.append(citations);
+  if (caveats.childElementCount) body.append(caveats);
+  body.append(footer);
+  article.append(verdict, body);
+  return article;
+}
+
+function renderSemanticReview(review) {
+  evidenceSemanticReview = review;
+  const ledger = document.querySelector("#semantic-review-ledger");
+  ledger.replaceChildren();
+  const resultCount = review.coverage.resultTargetCount;
+  const targetCount = review.coverage.contextTargetCount;
+  document.querySelector("#semantic-review-time").textContent =
+    formatCompactInstant(review.completedAtUtc);
+  document.querySelector("#semantic-review-provider").textContent =
+    `${review.provider} · ${review.providerModel}`;
+  document.querySelector("#semantic-review-coverage").textContent =
+    `${resultCount}/${targetCount} players · ${review.coverage.citedClaimCount} claims`;
+
+  const state = review.status === "complete"
+    ? "complete"
+    : review.status === "insufficient-evidence"
+      ? "partial"
+      : "unavailable";
+  const label = review.status === "complete"
+    ? "Reviewed"
+    : review.status === "insufficient-evidence"
+      ? "Partial"
+      : review.status === "refused"
+        ? "Refused"
+        : "Unavailable";
+  setSemanticReviewState(
+    state,
+    label,
+    review.status === "complete"
+      ? "The evidence has a cited second reading."
+      : review.status === "insufficient-evidence"
+        ? "The review found evidence gaps."
+        : "No semantic assessment is available.",
+    review.status === "complete"
+      ? `${resultCount} decision-relevant ${resultCount === 1 ? "player has" : "players have"} been reviewed against the exact cutoff context.`
+      : review.reason ?? "The model squad remains unchanged.",
+  );
+
+  if (!review.results.length) {
+    const empty = document.createElement("p");
+    empty.className = "semantic-review-empty";
+    empty.textContent = review.reason
+      ? `Review stopped: ${review.reason.replaceAll("-", " ")}. The stress test remains the deterministic boundary.`
+      : "No player assessments were retained for this context.";
+    ledger.append(empty);
+  } else {
+    review.results.forEach((result) => {
+      ledger.append(renderSemanticReviewResult(result));
+    });
+  }
+
+  const receipt = document.createElement("div");
+  receipt.className = "semantic-review-receipt";
+  const identity = review.artifactContentSha256 ?? review.runIdentitySha256;
+  receipt.textContent =
+    `Review #${review.artifactId ?? "pending"} · context ${review.contextIdentitySha256.slice(0, 8)} · receipt ${identity.slice(0, 8)} · never used as a forecast input`;
+  ledger.append(receipt);
+}
+
+async function loadSemanticReview() {
+  evidenceSemanticReview = null;
+  try {
+    const response = await fetch(
+      "/api/v1/evidence/review/current",
+      { headers: { Accept: "application/json" } },
+    );
+    if (response.status === 404) {
+      document.querySelector("#semantic-review-time").textContent = "Not reviewed";
+      document.querySelector("#semantic-review-provider").textContent = "No reviewer";
+      document.querySelector("#semantic-review-coverage").textContent = "Awaiting context";
+      setSemanticReviewState(
+        "waiting",
+        "Not reviewed",
+        "No current evidence review yet.",
+        "The deterministic stress test remains available. A review appears here only after an exact decision-relevant context is retained.",
+      );
+      const ledger = document.querySelector("#semantic-review-ledger");
+      ledger.replaceChildren();
+      const empty = document.createElement("p");
+      empty.className = "semantic-review-empty";
+      empty.textContent = "Nothing is hidden: external evidence has no semantic assessment for the current context.";
+      ledger.append(empty);
+      return;
+    }
+    if (!response.ok) {
+      throw new Error(`Semantic review request failed with ${response.status}`);
+    }
+    renderSemanticReview(await response.json());
+  } catch (error) {
+    setSemanticReviewState(
+      "error",
+      "Unavailable",
+      "The evidence review could not be loaded.",
+      "The prediction and deterministic stress test are unchanged.",
+    );
+    console.error(error);
+  }
+}
 
 function strategyDefinition(strategyId) {
   return {
@@ -2651,6 +2884,7 @@ async function loadAdvice() {
       loadSelectedOpeningSquad(),
       loadExternalEvidenceStress(),
       loadPublicProjectionChallenger(),
+      loadSemanticReview(),
     ]);
     renderSquadChoice(activePredictionChoice);
     await loadSelectionState();

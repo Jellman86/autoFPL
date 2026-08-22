@@ -926,12 +926,24 @@ endpoint with typed anonymous `get_player_dossier` and
 `get_current_prediction` tools over the same cutoff-correct read services as
 the decision room. A third typed tool exposes the current balanced, safer and
 higher-ceiling role strategies with paired scenario comparisons while
-preserving their unpromoted shadow status. All three tools are explicitly
+preserving their unpromoted shadow status. A fourth exposes a bounded,
+content-addressed semantic-review context for claims referenced by current
+decision-relevant evidence stresses, including competing assertions, source
+spans, duplicate clusters and an explicit cited-abstention policy. All four
+tools are explicitly
 read-only, non-destructive and closed-world; the prediction and strategy tools
 return only public model artifacts and none exposes owner selection data. A
 validated repo-owned development plugin package now points ChatGPT and Codex
 at the production MCP endpoint. Public submission materials, OAuth,
-user-specific tools and host prompt tests remain.
+user-specific tools and host prompt tests remain. An owner-configured,
+disabled-by-default OpenAI-compatible adapter can now produce one bounded
+semantic review for an exact current evidence context. Strict application
+validation rejects invented identifiers and stores provider failure, refusal
+and malformed output as explicit non-serving artifacts. The decision room
+presents the current artifact as a cited evidence ledger with verdicts,
+rationale, claim/source references, assumptions, uncertainties and an audit
+receipt; missing and failed states are equally visible. Neither the adapter nor
+the ledger can change a forecast, squad or user selection.
 
 - Expose typed read-only tools for snapshots, player forecasts, candidate
   comparison, evidence and data freshness.
@@ -952,6 +964,27 @@ user-specific tools and host prompt tests remain.
   explanations available without AI.
 - Turn an AI-suggested change into a visible, unapproved draft that is
   independently validated before comparison.
+
+#### Active handoff — 2026-08-01
+
+The semantic-evidence work is deliberately stacked so each trust boundary can
+be reviewed independently:
+
+1. PR #231 establishes the exact, closed-world review context;
+2. PR #232 persists and serves validated immutable review artifacts;
+3. PR #233 adds bounded provider generation and failure receipts; and
+4. PR #234 (`feature/evidence-review-decision-room`) presents the current
+   artifact in the decision room without making it a forecast input.
+
+The next safe slice is owner adjudication of retained review results: store an
+immutable human label against the exact artifact and result identity, expose
+agreement/disagreement and abstention scoring, and keep those labels outside
+forecast features. That work must not create an unauthenticated mutation route;
+until owner identity exists, entry remains an explicit private operator action.
+Only after enough prospectively frozen reviews and labels have accumulated
+should outcome scoring test whether any semantic signal improves calibration or
+decision utility out of time. No AI-derived feature advances into the serving
+model without the same fixed promotion gates as numerical challengers.
 
 **Exit:** ChatGPT, Hermes and the standalone provider path receive equivalent
 evidence; integrations can be configured, tested and revoked without exposing
@@ -1054,8 +1087,10 @@ now implemented. The active order is:
    a serving horizon;
 4. admit external forecasts, lineup/news claims and richer features only when
    same-fold ablations improve prediction or decision utility;
-5. resume the owner-configured OpenAI-compatible provider after the prediction
-   and initial-squad path is credible; and
+5. evaluate cited AI semantic review against deterministic extraction and
+   human labels, then enable the owner-configured OpenAI-compatible provider
+   only as a bounded review layer whose numerical influence is learned from
+   cutoff-correct outcomes; and
 6. add owner authentication and sanitized dashboard sharing before exposing
    consequential actions outside the trusted instance.
 
@@ -1164,6 +1199,18 @@ near-boundary opening-squad players: 49 of 53 rows resolve at capture 41, four
 stale or out-of-population identities remain explicit, and no resolved row
 touches either scope. Continue collection through the deadline; a future
 forecast effect still requires resolved prospective outcomes.
+The focused AI boundary is now complete through automated review generation
+without creating a general orchestrator project. The API and MCP expose only
+decision-relevant stress claims plus latest competing assertions, exact claim
+IDs, source spans, duplicate clusters, time cutoffs and conditional optimiser
+effects. An optional owner-configured OpenAI-compatible adapter now reviews
+each exact changed context once under a strict context-derived schema and
+persists an immutable, non-serving receipt; refusal and failure are explicit.
+The policy requires citations, time-scope analysis, contradiction/dependence
+detection and abstention, and prohibits probabilities, source weights and
+forecast mutation. The next slice presents these reviews in the decision room,
+adds human adjudication labels, then scores semantic agreement and later
+outcome value before any learned numerical influence is considered.
 Do not add another standalone governance, universal contract, infrastructure
 or AI-orchestrator project ahead of these slices.
 
@@ -1173,7 +1220,9 @@ or AI-orchestrator project ahead of these slices.
   [#55](https://github.com/Jellman86/autoFPL/issues/55) and claim extraction,
   corroboration and reliability [#56](https://github.com/Jellman86/autoFPL/issues/56)
   are now an explicit shadow-research workstream. The immutable claim-ledger
-  foundation is implemented; source admission, extraction and scoring remain.
+  foundation, bounded review context, immutable review persistence and optional
+  automated provider generation are implemented; human-label agreement and
+  outcome scoring remain.
   Each source remains a challenger until an out-of-time ablation shows gain.
   The fixed-URL Byparr connector
   [#57](https://github.com/Jellman86/autoFPL/issues/57) is implemented for the

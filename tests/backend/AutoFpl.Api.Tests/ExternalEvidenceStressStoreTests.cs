@@ -104,7 +104,7 @@ public sealed class ExternalEvidenceStressStoreTests
         Assert.Equal("claim-content", exception.Code);
     }
 
-    private static ExternalEvidenceStressDocument CreateRequest()
+    internal static ExternalEvidenceStressDocument CreateRequest()
     {
         object[] players = Enumerable.Range(1, 15)
             .Select(Player)

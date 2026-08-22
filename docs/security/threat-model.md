@@ -1,7 +1,7 @@
 # Threat Model
 
-- **Status:** fixed-origin official FPL ingestion baseline
-- **Reviewed:** 2026-07-25
+- **Status:** fixed-route optional model-provider boundary
+- **Reviewed:** 2026-08-01
 - **Owners:** Jellman86
 - **Method:** assets, trust boundaries, misuse cases and STRIDE-informed analysis
 
@@ -88,6 +88,19 @@ Update this model when a PR materially changes a trust boundary: identity, MCP/e
 ## Residual foundation risks
 
 The private application has unauthenticated decision-state write routes for snapshots and selection draft/edit/lock actions, intended only for its trusted internal network. It must not receive a public route before identity and authorisation are implemented. SQLite state is authoritative and therefore requires a persistent volume, protected file access, consistent backups before destructive migration or rollback, and retention/deletion work before storing real personal history.
+
+The optional evidence-review adapter adds fixed-route outbound model access.
+It is disabled by default, accepts only an owner-allowlisted endpoint host and
+exact `/chat/completions` path, refuses redirects, sends no user squad or
+account state, caps request, response, output tokens and time, and never stores
+or logs its bearer key or raw response. Source spans remain prompt-injection
+material: a system instruction labels them untrusted, a strict context-derived
+schema constrains identifiers, and the independent application importer still
+validates every citation, source, scenario, target, cutoff and coverage value.
+One immutable success, refusal or unavailable receipt suppresses repeated spend
+for the same context. Residual risks are provider retention, semantic bias,
+owner misconfiguration and private-Hermes transport exposure; no review is
+promoted or connected to forecast mutation.
 
 The operator-triggered official FPL importer adds outbound public HTTPS and
 untrusted provider JSON. Its origins are compile-time constants; redirects,

@@ -41,6 +41,8 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
                 cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(
             [
+                "get_current_evidence_review_context",
+                "get_current_evidence_semantic_review",
                 "get_current_prediction",
                 "get_current_strategies",
                 "get_player_dossier",
@@ -85,6 +87,33 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
             StringComparison.OrdinalIgnoreCase);
         Assert.NotNull(strategyTool.ProtocolTool.OutputSchema);
 
+        McpClientTool evidenceReviewTool = Assert.Single(
+            tools,
+            candidate =>
+                candidate.Name == "get_current_evidence_review_context");
+        Assert.Contains(
+            "cite claim IDs",
+            evidenceReviewTool.Description,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(
+            "Do not invent probabilities",
+            evidenceReviewTool.Description,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.NotNull(evidenceReviewTool.ProtocolTool.OutputSchema);
+
+        McpClientTool semanticReviewTool = Assert.Single(
+            tools,
+            candidate => candidate.Name == "get_current_evidence_semantic_review");
+        Assert.Contains(
+            "semantic review",
+            semanticReviewTool.Description,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(
+            "not forecast",
+            semanticReviewTool.Description,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.NotNull(semanticReviewTool.ProtocolTool.OutputSchema);
+
         CallToolResult invalid = await mcpClient.CallToolAsync(
             "get_player_dossier",
             new Dictionary<string, object?>
@@ -118,6 +147,25 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
             "No current autoFPL strategy",
             Assert.Single(
                 missingStrategies.Content.OfType<TextContentBlock>()).Text,
+            StringComparison.Ordinal);
+
+        CallToolResult missingEvidenceReview = await mcpClient.CallToolAsync(
+            "get_current_evidence_review_context",
+            cancellationToken: TestContext.Current.CancellationToken);
+        Assert.True(missingEvidenceReview.IsError);
+        Assert.Contains(
+            "No current external-evidence stress",
+            Assert.Single(
+                missingEvidenceReview.Content.OfType<TextContentBlock>()).Text,
+            StringComparison.Ordinal);
+        CallToolResult missingSemanticReview = await mcpClient.CallToolAsync(
+            "get_current_evidence_semantic_review",
+            cancellationToken: TestContext.Current.CancellationToken);
+        Assert.True(missingSemanticReview.IsError);
+        Assert.Contains(
+            "No current evidence-semantic-review",
+            Assert.Single(
+                missingSemanticReview.Content.OfType<TextContentBlock>()).Text,
             StringComparison.Ordinal);
     }
 
@@ -165,6 +213,18 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
             StringComparison.Ordinal);
         Assert.Contains(
             "A stress is not a probability",
+            body,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "AI evidence desk · advisory only",
+            body,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "id=\"evidence-review\"",
+            body,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "This is a cited reading of public claims, not a forecast input",
             body,
             StringComparison.Ordinal);
         Assert.Contains("Refresh prediction", body, StringComparison.Ordinal);
@@ -248,6 +308,18 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
             StringComparison.Ordinal);
         Assert.Contains(
             "Real accuracy can only be judged after the Gameweeks are played.",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "/api/v1/evidence/review/current",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "Open player evidence",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "never used as a forecast input",
             script,
             StringComparison.Ordinal);
         Assert.Contains(
