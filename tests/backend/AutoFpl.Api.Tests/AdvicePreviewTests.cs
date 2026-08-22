@@ -41,6 +41,8 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
                 cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(
             [
+                "get_current_evidence_review_context",
+                "get_current_evidence_semantic_review",
                 "get_current_prediction",
                 "get_current_strategies",
                 "get_player_dossier",
@@ -85,6 +87,33 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
             StringComparison.OrdinalIgnoreCase);
         Assert.NotNull(strategyTool.ProtocolTool.OutputSchema);
 
+        McpClientTool evidenceReviewTool = Assert.Single(
+            tools,
+            candidate =>
+                candidate.Name == "get_current_evidence_review_context");
+        Assert.Contains(
+            "cite claim IDs",
+            evidenceReviewTool.Description,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(
+            "Do not invent probabilities",
+            evidenceReviewTool.Description,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.NotNull(evidenceReviewTool.ProtocolTool.OutputSchema);
+
+        McpClientTool semanticReviewTool = Assert.Single(
+            tools,
+            candidate => candidate.Name == "get_current_evidence_semantic_review");
+        Assert.Contains(
+            "semantic review",
+            semanticReviewTool.Description,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(
+            "not forecast",
+            semanticReviewTool.Description,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.NotNull(semanticReviewTool.ProtocolTool.OutputSchema);
+
         CallToolResult invalid = await mcpClient.CallToolAsync(
             "get_player_dossier",
             new Dictionary<string, object?>
@@ -118,6 +147,25 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
             "No current autoFPL strategy",
             Assert.Single(
                 missingStrategies.Content.OfType<TextContentBlock>()).Text,
+            StringComparison.Ordinal);
+
+        CallToolResult missingEvidenceReview = await mcpClient.CallToolAsync(
+            "get_current_evidence_review_context",
+            cancellationToken: TestContext.Current.CancellationToken);
+        Assert.True(missingEvidenceReview.IsError);
+        Assert.Contains(
+            "No current external-evidence stress",
+            Assert.Single(
+                missingEvidenceReview.Content.OfType<TextContentBlock>()).Text,
+            StringComparison.Ordinal);
+        CallToolResult missingSemanticReview = await mcpClient.CallToolAsync(
+            "get_current_evidence_semantic_review",
+            cancellationToken: TestContext.Current.CancellationToken);
+        Assert.True(missingSemanticReview.IsError);
+        Assert.Contains(
+            "No current evidence-semantic-review",
+            Assert.Single(
+                missingSemanticReview.Content.OfType<TextContentBlock>()).Text,
             StringComparison.Ordinal);
     }
 

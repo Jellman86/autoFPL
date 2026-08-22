@@ -119,6 +119,23 @@ All notable implemented changes to autoFPL are recorded here. The format follows
   the same eight prospective outcome Gameweeks. The private worker handoff,
   immutable SQLite store, strict API import and decision-room comparison remain
   non-serving until preregistered results demonstrate added accuracy.
+- **Decision-relevant evidence can now receive one bounded semantic review per
+  exact context from an owner-configured model provider.** The disabled-by-
+  default OpenAI-compatible adapter supports fixed OpenAI, OpenRouter or
+  allowlisted private Hermes endpoints, sends a strict context-derived JSON
+  Schema, caps time/request/response/output usage and stores no key or raw
+  response. Application validation still rejects invented players, claims,
+  scenarios and sources; refusal, malformed output and provider failure become
+  explicit non-serving artifacts, and unchanged context is never charged
+  twice. Provider receipts retain adapter, route, timing, outcome and response
+  hash provenance without allowing AI output to alter forecasts or squads.
+- **Evidence semantic reviews now cross a strict immutable application
+  boundary.** Migration 40 persists exact context-bound artifacts, the
+  `--import-evidence-semantic-review` operator flow rejects stale context,
+  incompatible schemas, invented sources and inconsistent coverage, and the
+  current read API plus MCP tool return a review only for the exact active
+  context identity. These artifacts stay unpromoted and cannot influence the
+  forecast.
 - **Clean-sheet probability improves, but its replacement point mean is
   rejected.** A three-target player-level factorization combines the retained
   appearance and 60-minute models with shared team clean-sheet rates. The

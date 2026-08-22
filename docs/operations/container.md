@@ -22,7 +22,9 @@ Routes:
 | `GET` | `/api/v1/data/historical-fpl/{seasonCode}` | Returns provenance and normalized coverage counts for a registered historical archive; raw CSV and player rows remain private |
 | `GET` | `/api/v1/data/historical-fpl/identity-coverage/{fromSeasonCode}/{toSeasonCode}` | Revalidates two pinned archives and audits exact stable-code overlap without a name fallback |
 | `GET` | `/api/v1/evidence/claims/{seasonCode}/{gameweek}?decisionCutoffUtc=...` | Returns immutable quarantined typed claims available by the requested cutoff; claims do not influence forecasts |
-| `POST` | `/mcp` | Stateless Streamable HTTP MCP endpoint; advertises anonymous read-only public prediction, player-dossier and strategy-comparison tools |
+| `GET` | `/api/v1/evidence/review-context/current` | Returns the bounded, content-addressed context for semantic review of claims that can change the current squad under an explicit stress |
+| `GET` | `/api/v1/evidence/semantic-review/current` | Returns the immutable provider or operator review only when it matches the exact current context; reviews never influence forecasts |
+| `POST` | `/mcp` | Stateless Streamable HTTP MCP endpoint; advertises anonymous read-only public prediction, player-dossier, strategy-comparison and evidence-review tools |
 | `GET` | `/openapi/v1.json` | Returns the generated OpenAPI 3.1 HTTP contract |
 | `GET` | `/healthz` | Liveness response: `{"status":"healthy"}` |
 | `GET` | `/readyz` | Returns ready only when the current SQLite migration is present |
@@ -46,7 +48,8 @@ Routes:
 Decision-snapshot metadata request fields are exact and case-sensitive. Missing or `null` required fields, duplicate or undeclared fields, non-string field values and malformed payloads fail with 400. Present string values that are unsupported fail with the stable domain error code and 422. The request body is bounded to 16 KiB by Kestrel.
 
 The public MCP surface deliberately exposes only `get_player_dossier`,
-`get_current_prediction` and `get_current_strategies`. The dossier tool reads
+`get_current_prediction`, `get_current_strategies` and
+`get_current_evidence_review_context`. The dossier tool reads
 the same cutoff-correct service as the dashboard and returns official identity,
 form, fixtures and quarantined public research claims as structured content.
 Its advertised annotations are read-only, non-destructive and closed-world.
@@ -59,6 +62,51 @@ safer and higher-ceiling fixed-squad shadow artifact with paired model
 comparisons. Its status remains unpromoted and its bounded search is not
 described as globally optimal. User-specific MCP tools remain absent until the
 owner identity and OAuth 2.1 resource-server boundary are implemented.
+`get_current_evidence_review_context` returns only the cited claim spans and
+latest competing assertions for players in a decision-relevant stress. It
+explicitly requires semantic comparison and abstention, treats source text as
+untrusted, assigns no probability or source weight and cannot mutate a
+forecast, squad or approval.
+
+## Optional evidence semantic-review provider
+
+Automated semantic review is disabled by default. When enabled, the background
+poller submits each exact current decision-relevant context at most once to one
+fixed OpenAI-compatible Chat Completions endpoint. It requests strict structured
+output and then sends the result through the same application validator as the
+operator import. Reviews remain unpromoted and cannot alter a forecast, squad,
+selection revision or approval.
+
+Configure the owner-controlled runtime secret and route through Dockhand using
+double-underscore environment names. Do not commit the API key or place it in
+SQLite:
+
+```text
+AutoFpl__Ai__EvidenceSemanticReview__Enabled=true
+AutoFpl__Ai__EvidenceSemanticReview__Provider=openrouter
+AutoFpl__Ai__EvidenceSemanticReview__Endpoint=https://openrouter.ai/api/v1/chat/completions
+AutoFpl__Ai__EvidenceSemanticReview__AllowedEndpointHosts=openrouter.ai
+AutoFpl__Ai__EvidenceSemanticReview__Model=<owner-fixed-model>
+AutoFpl__Ai__EvidenceSemanticReview__ApiKey=<runtime-secret>
+AutoFpl__Ai__EvidenceSemanticReview__RoutingPolicyVersion=owner-fixed-route-v1
+AutoFpl__Ai__EvidenceSemanticReview__PollIntervalMinutes=5
+AutoFpl__Ai__EvidenceSemanticReview__TimeoutSeconds=45
+AutoFpl__Ai__EvidenceSemanticReview__MaximumOutputTokens=4096
+AutoFpl__Ai__EvidenceSemanticReview__MaximumRequestBytes=524288
+AutoFpl__Ai__EvidenceSemanticReview__MaximumResponseBytes=524288
+```
+
+Use `Provider=openai` with the exact OpenAI endpoint and allowlisted host, or
+`Provider=hermes` with an explicitly allowlisted private endpoint. OpenAI uses
+`max_completion_tokens`; OpenRouter and Hermes default to `max_tokens`. Override
+`TokenLimitParameter` only when the fixed compatible endpoint requires the
+other supported spelling. OpenAI and OpenRouter require a bearer key; a private
+Hermes route may omit it. Redirects and automatic decompression are disabled,
+canonical public-provider paths and the private-provider path suffix are
+validated at startup, and provider bodies are never logged or persisted. A
+changed context creates a new review; a retained complete,
+insufficient, refused or unavailable artifact suppresses repeat spend for that
+same context.
 
 The repo-owned development plugin package is
 [`plugins/autofpl`](../../plugins/autofpl/README.md). Its manifest connects
@@ -761,7 +809,7 @@ See the [source portfolio](../research/research-source-portfolio-v1.md).
 
 ## SQLite operations
 
-The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies 38 explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
+The application uses one file from `AutoFpl__DatabasePath`. The container default is `/data/autofpl.db`; local execution defaults under the application output directory. Startup applies 40 explicit forward migrations, enables foreign keys and WAL, and uses a five-second busy timeout.
 
 The root filesystem stays read-only. Production must mount a private, UID
 `1654`-writable persistent directory at `/data`; the CI smoke test uses an

@@ -4,7 +4,7 @@ internal sealed record DatabaseMigration(int Version, string Name, string Sql);
 
 internal static class DatabaseMigrations
 {
-    public const int CurrentVersion = 39;
+    public const int CurrentVersion = 40;
 
     public static IReadOnlyList<DatabaseMigration> All { get; } =
     [
@@ -3453,6 +3453,98 @@ internal static class DatabaseMigrations
                 SELECT RAISE(
                     ABORT,
                     'official published squad artifacts cannot be deleted'
+                );
+            END;
+            """),
+        new(
+            40,
+            "evidence-semantic-review-artifact",
+            """
+            CREATE TABLE evidence_semantic_review_artifacts (
+                review_artifact_id INTEGER PRIMARY KEY,
+                schema_version TEXT NOT NULL CHECK (schema_version = '1.0'),
+                artifact_type TEXT NOT NULL
+                    CHECK (
+                        artifact_type = 'current-evidence-semantic-review'
+                    ),
+                artifact_version TEXT NOT NULL
+                    CHECK (
+                        artifact_version =
+                            'current-evidence-semantic-review-v1'
+                    ),
+                status TEXT NOT NULL
+                    CHECK (
+                        status IN (
+                            'complete',
+                            'insufficient-evidence',
+                            'refused',
+                            'unavailable'
+                        )
+                    ),
+                reason TEXT,
+                is_promoted INTEGER NOT NULL CHECK (is_promoted IN (0, 1)),
+                influences_forecast INTEGER NOT NULL
+                    CHECK (influences_forecast IN (0, 1)),
+                season_code TEXT NOT NULL
+                    CHECK (length(season_code) BETWEEN 4 AND 16),
+                opening_gameweek INTEGER NOT NULL CHECK (opening_gameweek BETWEEN 1 AND 38),
+                deadline_utc TEXT NOT NULL,
+                decision_cutoff_utc TEXT NOT NULL,
+                official_capture_id INTEGER NOT NULL
+                    REFERENCES official_fpl_captures(capture_id) ON DELETE RESTRICT,
+                stress_artifact_id INTEGER NOT NULL
+                    REFERENCES external_evidence_stress_artifacts(
+                        stress_artifact_id
+                    )
+                    ON DELETE RESTRICT,
+                stress_artifact_content_sha256 TEXT NOT NULL
+                    CHECK (length(stress_artifact_content_sha256) = 64),
+                context_identity_sha256 TEXT NOT NULL
+                    CHECK (length(context_identity_sha256) = 64),
+                provider TEXT NOT NULL
+                    CHECK (length(provider) BETWEEN 2 AND 100),
+                provider_model TEXT NOT NULL
+                    CHECK (length(provider_model) BETWEEN 1 AND 200),
+                prompt_version TEXT NOT NULL
+                    CHECK (length(prompt_version) BETWEEN 1 AND 100),
+                output_schema_version TEXT NOT NULL
+                    CHECK (length(output_schema_version) BETWEEN 1 AND 100),
+                requested_at_utc TEXT NOT NULL,
+                completed_at_utc TEXT NOT NULL,
+                data_identity_sha256 TEXT NOT NULL
+                    CHECK (length(data_identity_sha256) = 64),
+                run_identity_sha256 TEXT NOT NULL
+                    CHECK (length(run_identity_sha256) = 64),
+                document_json TEXT NOT NULL
+                    CHECK (length(document_json) BETWEEN 2 AND 1048576),
+                content_sha256 TEXT NOT NULL
+                    UNIQUE CHECK (length(content_sha256) = 64),
+                created_at_utc TEXT NOT NULL,
+                UNIQUE (stress_artifact_id, run_identity_sha256)
+            );
+
+            CREATE INDEX evidence_semantic_review_artifacts_stress_idx
+                ON evidence_semantic_review_artifacts (
+                    stress_artifact_id,
+                    context_identity_sha256,
+                    review_artifact_id DESC
+                );
+
+            CREATE TRIGGER evidence_semantic_review_artifacts_immutable
+            BEFORE UPDATE ON evidence_semantic_review_artifacts
+            BEGIN
+                SELECT RAISE(
+                    ABORT,
+                    'evidence semantic review artifacts are immutable'
+                );
+            END;
+
+            CREATE TRIGGER evidence_semantic_review_artifacts_no_delete
+            BEFORE DELETE ON evidence_semantic_review_artifacts
+            BEGIN
+                SELECT RAISE(
+                    ABORT,
+                    'evidence semantic review artifacts cannot be deleted'
                 );
             END;
             """),

@@ -61,6 +61,7 @@ still require owner authentication.
 - [Evidence base](research/evidence-base.md) — durable sources supporting the research approach.
 - [Player and source evidence fusion v1](research/player-source-evidence-fusion-v1.md) — probabilistic player state, typed pundit/news claims, reliability learning, aggregation and multi-Gameweek evaluation plan.
 - [Current external-evidence stress v1](research/current-external-evidence-stress-v1.md) — exact source-adverse Gameweek 1 worlds, globally re-solved conditional squad alternatives and the no-invented-probability boundary.
+- [AI evidence semantic review v1](research/ai-evidence-semantic-review-v1.md) — bounded claim context, cited semantic adjudication, prompt-injection resistance and outcome-learned numerical influence.
 - [Research source portfolio v1](research/research-source-portfolio-v1.md) — deliberately diverse official, specialist, quantitative, market and named-expert shadow candidates plus prior-season and health-state treatment.
 - [Baseline evaluation v4](research/baseline-evaluation-v4.md) — executable point, expected-minutes, availability and empirical distribution baselines with rolling chronology, proper scores and calibration diagnostics.
 - [FPL Form external evaluation v1](research/fpl-form-external-evaluation-v1.md) — cutoff- and identity-gated scoring of published conditional points and the separately named appearance-adjusted challenger.
