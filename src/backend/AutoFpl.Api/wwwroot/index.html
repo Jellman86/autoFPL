@@ -139,23 +139,561 @@
         </div>
       </dl>
     </section>
-    <p class="decision-rail">
-      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor"
-           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <circle cx="12" cy="12" r="9"></circle>
-        <path d="M12 8v5"></path>
-        <path d="M12 16.4v.01"></path>
-      </svg>
-      <span>autoFPL never submits to FPL. Any change is one you make yourself.</span>
-    </p>
-    <ol class="decision-spine">
-      <li class="decision-step" data-step="1" data-tone="pitch">
-        <div class="decision-step-marker" aria-hidden="true">1</div>
-        <div class="decision-step-body">
-          <div class="decision-step-heading">
-            <h2>What the model recommends</h2>
-            <p class="eyebrow">six-Gameweek policy</p>
+
+    <section class="squad-choice" id="squad-choice" aria-labelledby="squad-choice-title">
+      <header class="squad-choice-heading">
+        <div>
+          <p class="eyebrow">Choose the prediction to inspect</p>
+          <h2 id="squad-choice-title">Which squad do you want to see?</h2>
+          <p>
+            autoFPL is the recommendation. The Solio-assisted squad is an
+            experimental comparison and never replaces your choice silently.
+          </p>
+        </div>
+        <span class="selection-state" id="squad-choice-state">Loading</span>
+      </header>
+
+      <div class="squad-choice-options" role="group" aria-label="Squad prediction">
+        <button
+          class="squad-choice-card"
+          id="choose-autofpl-squad"
+          data-squad-choice="autofpl"
+          type="button"
+          aria-pressed="true">
+          <span class="squad-choice-marker" aria-hidden="true">A</span>
+          <span>
+            <small>Recommended</small>
+            <strong>autoFPL v2</strong>
+            <span>Best-supported six-Gameweek opening squad</span>
+          </span>
+          <span class="squad-choice-check" aria-hidden="true">✓</span>
+        </button>
+        <button
+          class="squad-choice-card"
+          id="choose-solio-squad"
+          data-squad-choice="solio"
+          type="button"
+          aria-pressed="false"
+          disabled>
+          <span class="squad-choice-marker" aria-hidden="true">S</span>
+          <span>
+            <small>Experimental</small>
+            <strong>Solio-assisted</strong>
+            <span id="solio-choice-description">Checking for a current challenger</span>
+          </span>
+          <span class="squad-choice-check" aria-hidden="true">✓</span>
+        </button>
+      </div>
+
+      <section
+        class="squad-scorecard"
+        id="squad-scorecard"
+        aria-labelledby="squad-scorecard-title"
+        hidden>
+        <header>
+          <div>
+            <span class="squad-choice-label">Same scoring basis</span>
+            <h3 id="squad-scorecard-title">A fair points comparison</h3>
           </div>
+          <p>
+            Both squads are scored by the same autoFPL scenarios. Compare across
+            each row; these are forecasts, not realised results.
+          </p>
+        </header>
+        <div class="squad-scorecard-table-wrap">
+          <table>
+            <caption class="visually-hidden">
+              autoFPL and Solio-assisted squads scored on the same autoFPL scenarios
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Planning horizon</th>
+                <th scope="col">autoFPL squad</th>
+                <th scope="col">Solio-assisted squad</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Gameweek 1</th>
+                <td id="scorecard-autofpl-gw1">—</td>
+                <td id="scorecard-solio-gw1">—</td>
+              </tr>
+              <tr>
+                <th scope="row">First 6 Gameweeks</th>
+                <td id="scorecard-autofpl-six">—</td>
+                <td id="scorecard-solio-six">—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="squad-scorecard-verdict" id="squad-scorecard-verdict">
+          Waiting for a current challenger.
+        </p>
+      </section>
+
+      <div class="squad-choice-outcome" aria-live="polite">
+        <div>
+          <span class="squad-choice-label">Currently showing</span>
+          <strong id="squad-choice-name">autoFPL v2</strong>
+          <p id="squad-choice-explanation">
+            The recommended squad uses autoFPL across the complete planning horizon.
+          </p>
+        </div>
+        <dl class="squad-choice-facts">
+          <div>
+            <dt>Agreement</dt>
+            <dd id="squad-choice-agreement">Checking</dd>
+          </div>
+          <div>
+            <dt>External coverage</dt>
+            <dd id="squad-choice-coverage">Checking</dd>
+          </div>
+        </dl>
+        <div class="squad-choice-action">
+          <button
+            class="selection-primary"
+            id="copy-visible-squad"
+            type="button"
+            disabled>
+            Use this squad as my draft
+          </button>
+          <small id="copy-visible-squad-note">Nothing is sent to FPL.</small>
+        </div>
+      </div>
+    </section>
+
+    <div id="my-squad" class="section-anchor" aria-hidden="true"></div>
+    <section
+      class="selection-workflow"
+      id="selection-workflow"
+      data-state="loading"
+      aria-labelledby="selection-workflow-title">
+      <div class="selection-workflow-copy">
+        <p class="eyebrow">My squad</p>
+        <div class="selection-title-row">
+          <h2 id="selection-workflow-title">Checking your saved squad.</h2>
+          <span class="selection-state" id="selection-state">Loading</span>
+        </div>
+        <p id="selection-workflow-summary">
+          Looking for a user-owned draft or lock linked to this forecast.
+        </p>
+        <p class="selection-feedback" id="selection-feedback" aria-live="polite"></p>
+      </div>
+
+      <ol class="selection-rail" aria-label="Selection lifecycle">
+        <li data-selection-step="draft">
+          <span>1</span>
+          <strong>Draft</strong>
+          <small>Preserve a choice</small>
+        </li>
+        <li data-selection-step="locked">
+          <span>2</span>
+          <strong>Locked</strong>
+          <small>Your explicit action</small>
+        </li>
+        <li data-selection-step="frozen">
+          <span>3</span>
+          <strong>Frozen</strong>
+          <small>At the deadline</small>
+        </li>
+      </ol>
+
+      <div class="selection-workflow-actions">
+        <dl class="selection-revision-meta">
+          <div>
+            <dt>Revision</dt>
+            <dd id="selection-revision">None</dd>
+          </div>
+          <div>
+            <dt>Forecast</dt>
+            <dd id="selection-forecast">—</dd>
+          </div>
+          <div>
+            <dt>Locked</dt>
+            <dd id="selection-locked-at">Not locked</dd>
+          </div>
+        </dl>
+        <div class="selection-buttons">
+          <button
+            class="selection-secondary"
+            id="edit-selection"
+            type="button"
+            disabled>
+            Open squad builder
+          </button>
+          <button class="selection-secondary" id="create-selection-draft" type="button">
+            Use prediction as draft
+          </button>
+          <button class="selection-primary" id="lock-selection" type="button" disabled>
+            Lock this selection
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section
+      class="squad-builder-page"
+      id="squad-builder-page"
+      aria-labelledby="squad-builder-title"
+      hidden>
+      <header class="builder-header">
+        <div>
+          <p class="eyebrow">My squad · decision workspace</p>
+          <h1 id="squad-builder-title">Build your Gameweek squad</h1>
+          <p id="builder-intro">
+            Start from the model, make your changes, and compare both squads
+            against the same forecast evidence.
+          </p>
+        </div>
+        <div class="builder-header-actions">
+          <span class="selection-state" id="builder-state">Not started</span>
+          <button
+            class="selection-secondary"
+            id="builder-return-model"
+            type="button">
+            View model squad
+          </button>
+        </div>
+      </header>
+
+      <div class="builder-empty" id="builder-empty">
+        <span class="builder-empty-mark" aria-hidden="true">15</span>
+        <div>
+          <p class="eyebrow">A clean starting point</p>
+          <h2>Use the prediction, then make it yours.</h2>
+          <p>
+            The first draft preserves the model’s exact squad, XI, bench and
+            captaincy. Every save after that becomes a new immutable revision.
+          </p>
+        </div>
+        <button class="selection-primary" id="builder-create-draft" type="button">
+          Start from model squad
+        </button>
+      </div>
+
+      <div class="builder-workspace" id="builder-workspace" hidden>
+        <section class="builder-scoreboard" aria-label="Squad comparison">
+          <div>
+            <span>Your projection</span>
+            <strong><span id="builder-user-points">—</span> pts</strong>
+            <small id="builder-comparison-note">Loading same-snapshot comparison</small>
+          </div>
+          <div>
+            <span>Model projection</span>
+            <strong><span id="builder-model-points">—</span> pts</strong>
+            <small id="builder-model-reference">Baseline</small>
+          </div>
+          <div data-delta="neutral" id="builder-delta-card">
+            <span>Difference</span>
+            <strong id="builder-points-delta">—</strong>
+            <small>Point estimate, not certainty</small>
+          </div>
+          <div>
+            <span>Budget</span>
+            <strong id="builder-budget">—</strong>
+            <small id="builder-budget-left">— remaining</small>
+          </div>
+        </section>
+
+        <div class="builder-grid">
+          <section class="builder-pitch-panel" aria-labelledby="builder-pitch-title">
+            <div class="section-heading builder-section-heading">
+              <div>
+                <p class="eyebrow">Revision workspace</p>
+                <h2 id="builder-pitch-title">Starting XI</h2>
+              </div>
+              <p>Select <strong>Change</strong> on a card, then choose a replacement.</p>
+            </div>
+            <div class="pitch builder-pitch" aria-label="Your editable formation">
+              <div class="halfway-line" aria-hidden="true"></div>
+              <div class="centre-circle" aria-hidden="true"></div>
+              <div class="penalty-box top" aria-hidden="true"></div>
+              <div class="penalty-box bottom" aria-hidden="true"></div>
+              <div id="builder-formation" class="formation"></div>
+            </div>
+            <div class="bench-shell builder-bench-shell">
+              <div class="bench-heading">
+                <h3>Bench</h3>
+                <span>Drag-free, explicit priority</span>
+              </div>
+              <div id="builder-bench" class="bench"></div>
+            </div>
+          </section>
+
+          <aside class="builder-control-rail" aria-label="Squad controls">
+            <section class="constraint-card">
+              <div class="constraint-heading">
+                <div>
+                  <p class="eyebrow">FPL rules</p>
+                  <h2>Squad check</h2>
+                </div>
+                <span id="builder-validity" data-valid="false">Checking</span>
+              </div>
+              <ul class="constraint-list" id="builder-constraints"></ul>
+              <p class="builder-feedback" id="builder-feedback" aria-live="polite"></p>
+            </section>
+
+            <section class="builder-controls">
+              <p class="eyebrow">Matchday decisions</p>
+              <h2>Captain &amp; bench</h2>
+              <div class="builder-selects">
+                <label for="builder-captain">
+                  Captain
+                  <select id="builder-captain"></select>
+                </label>
+                <label for="builder-vice-captain">
+                  Vice-captain
+                  <select id="builder-vice-captain"></select>
+                </label>
+              </div>
+              <ol class="builder-bench-order" id="builder-bench-order"></ol>
+            </section>
+          </aside>
+        </div>
+
+        <section class="player-market" aria-labelledby="player-market-title">
+          <div class="player-market-heading">
+            <div>
+              <p class="eyebrow">Exact-snapshot player pool</p>
+              <h2 id="player-market-title">Choose a replacement</h2>
+              <p id="player-market-context">
+                Select Change on one of your player cards to see eligible alternatives.
+              </p>
+            </div>
+            <label class="player-search" for="player-market-search">
+              <span>Search players</span>
+              <input
+                id="player-market-search"
+                type="search"
+                placeholder="Name or club"
+                autocomplete="off">
+            </label>
+          </div>
+          <div class="position-filters" id="player-market-filters" aria-label="Filter player position">
+            <button type="button" data-market-position="all" aria-pressed="true">All</button>
+            <button type="button" data-market-position="goalkeeper" aria-pressed="false">Goalkeepers</button>
+            <button type="button" data-market-position="defender" aria-pressed="false">Defenders</button>
+            <button type="button" data-market-position="midfielder" aria-pressed="false">Midfielders</button>
+            <button type="button" data-market-position="forward" aria-pressed="false">Forwards</button>
+          </div>
+          <div class="player-market-list" id="player-market-list">
+            <p class="empty-state">The player pool is loading.</p>
+          </div>
+        </section>
+
+        <footer class="builder-action-bar">
+          <div>
+            <strong id="builder-revision-label">Draft</strong>
+            <span id="builder-save-state">No unsaved changes</span>
+          </div>
+          <div>
+            <button class="selection-secondary" id="builder-reset" type="button">
+              Reset changes
+            </button>
+            <button class="selection-primary" id="builder-save" type="button">
+              Save new draft
+            </button>
+            <button class="selection-primary builder-lock" id="builder-lock" type="button">
+              Lock selection
+            </button>
+          </div>
+        </footer>
+      </div>
+    </section>
+
+    <details class="advanced-evidence" id="advanced-evidence">
+      <summary>
+        <span>
+          <span class="eyebrow">Optional detail</span>
+          <strong>Why this squad?</strong>
+          <small>Open the data sources, freshness checks and model disagreements.</small>
+        </span>
+        <span class="advanced-evidence-toggle" aria-hidden="true"></span>
+      </summary>
+      <div class="advanced-evidence-content">
+    <div id="data-sources" class="section-anchor" aria-hidden="true"></div>
+    <section
+      class="source-tape"
+      id="official-data"
+      data-state="loading"
+      aria-labelledby="source-title"
+      aria-live="polite">
+      <div class="source-copy">
+        <p class="eyebrow">Official data footing</p>
+        <div class="source-title-row">
+          <h2 id="source-title">Checking the real capture.</h2>
+          <span class="source-state" id="source-state">Loading</span>
+        </div>
+        <p id="source-summary">
+          Looking for an immutable official FPL capture that was available before its Gameweek deadline.
+        </p>
+      </div>
+
+      <div class="provenance">
+        <ol class="provenance-track" aria-label="Capture to deadline provenance">
+          <li>
+            <span>Capture</span>
+            <strong id="capture-time">—</strong>
+          </li>
+          <li>
+            <span>Deadline</span>
+            <strong id="source-deadline">—</strong>
+          </li>
+        </ol>
+        <p class="lead-time" id="capture-lead-time">Waiting for provenance</p>
+      </div>
+
+      <dl class="source-counts">
+        <div>
+          <dt>Players</dt>
+          <dd id="source-player-count">—</dd>
+        </div>
+        <div>
+          <dt>Fixtures</dt>
+          <dd id="source-fixture-count">—</dd>
+        </div>
+        <div>
+          <dt>Capture</dt>
+          <dd id="source-capture-id">—</dd>
+        </div>
+        <div>
+          <dt>Outcome</dt>
+          <dd id="source-outcome-status">Awaiting</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section
+      class="forecast-source"
+      id="forecast-source"
+      data-state="loading"
+      aria-labelledby="forecast-source-title"
+      aria-live="polite">
+      <div>
+        <p class="eyebrow">External forecast challenger</p>
+        <div class="source-title-row">
+          <h2 id="forecast-source-title">Checking FPL Form.</h2>
+          <span class="source-state" id="forecast-source-state">Loading</span>
+        </div>
+        <p id="forecast-source-summary">
+          Looking for a bounded public predicted-points capture.
+        </p>
+      </div>
+      <dl class="forecast-source-meta">
+        <div>
+          <dt>Last checked</dt>
+          <dd id="forecast-source-checked">—</dd>
+        </div>
+        <div>
+          <dt>Forecast</dt>
+          <dd id="forecast-source-capture">—</dd>
+        </div>
+        <div>
+          <dt>Coverage</dt>
+          <dd id="forecast-source-coverage">—</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section
+      class="research-coverage"
+      id="research-coverage"
+      data-state="loading"
+      aria-labelledby="research-coverage-title"
+      aria-live="polite">
+      <div class="research-coverage-heading">
+        <div>
+          <p class="eyebrow">Scout coverage · quarantined</p>
+          <div class="source-title-row">
+            <h2 id="research-coverage-title">Reading the team sheet.</h2>
+            <span class="source-state" id="research-coverage-state">Loading</span>
+          </div>
+          <p id="research-coverage-summary">
+            Checking which clubs have a complete, snapshot-linked FFScout start classification.
+          </p>
+        </div>
+        <dl class="research-coverage-meta">
+          <div>
+            <dt>Players classified</dt>
+            <dd id="research-player-coverage">—</dd>
+          </div>
+          <div>
+            <dt>Clubs complete</dt>
+            <dd id="research-club-coverage">—</dd>
+          </div>
+          <div>
+            <dt>Retained</dt>
+            <dd id="research-captured-at">—</dd>
+          </div>
+        </dl>
+      </div>
+      <div
+        class="club-coverage-board"
+        id="club-coverage-board"
+        role="list"
+        aria-label="FFScout start classification coverage by club">
+        <p class="club-coverage-empty">Loading twenty-club coverage…</p>
+      </div>
+      <p class="research-coverage-boundary">
+        Coverage is evidence plumbing, not confidence. A missing club or player stays unknown and cannot be read as a bench prediction.
+      </p>
+    </section>
+
+    <section
+      class="evidence-stress"
+      id="evidence-stress"
+      data-state="loading"
+      aria-labelledby="evidence-stress-title"
+      aria-live="polite">
+      <header class="evidence-stress-heading">
+        <div>
+          <p class="eyebrow">External evidence · squad stress test</p>
+          <div class="source-title-row">
+            <h2 id="evidence-stress-title">Testing source disagreement.</h2>
+            <span class="source-state" id="evidence-stress-state">Loading</span>
+          </div>
+          <p id="evidence-stress-summary">
+            Re-solving the six-Gameweek squad under explicit source-adverse cases.
+          </p>
+        </div>
+        <p class="evidence-stress-boundary">
+          A stress is not a probability. It shows what changes if the source is
+          right, without quietly letting an uncalibrated claim drive the model.
+        </p>
+      </header>
+      <div class="evidence-stress-result" id="evidence-stress-result">
+        <p class="evidence-stress-empty">Waiting for the exact evidence-linked solve.</p>
+      </div>
+    </section>
+
+    <section
+      class="evidence-stress"
+      id="public-projection-challenger"
+      data-state="loading"
+      aria-labelledby="public-projection-title"
+      aria-live="polite">
+      <header class="evidence-stress-heading">
+        <div>
+          <p class="eyebrow">Public points model · squad challenger</p>
+          <div class="source-title-row">
+            <h2 id="public-projection-title">Checking the market-model view.</h2>
+            <span class="source-state" id="public-projection-state">Loading</span>
+          </div>
+          <p id="public-projection-summary">
+            Matching the latest pre-deadline public projections to the exact official player capture.
+          </p>
+        </div>
+        <p class="evidence-stress-boundary">
+          This is a visible challenger, not a hidden override. The feed has no retained historical fold, so the validated v2 squad remains the recommendation until outcomes establish added accuracy.
+        </p>
+      </header>
+      <div class="evidence-stress-result" id="public-projection-result">
+        <p class="evidence-stress-empty">Waiting for the cutoff-bound public projection solve.</p>
+      </div>
+    </section>
+      </div>
+    </details>
+
     <div class="workspace" id="model-squad">
       <section class="formation-shell" aria-labelledby="formation-title">
         <div class="section-heading">
@@ -353,640 +891,68 @@
         </div>
       </section>
     </div>
-    <section class="squad-choice" id="squad-choice" aria-labelledby="squad-choice-title">
-      <header class="squad-choice-heading">
-        <div>
-          <p class="eyebrow">Choose the prediction to inspect</p>
-          <h2 id="squad-choice-title">Which squad do you want to see?</h2>
-          <p>
-            autoFPL is the recommendation. The Solio-assisted squad is an
-            experimental comparison and never replaces your choice silently.
-          </p>
-        </div>
-        <span class="selection-state" id="squad-choice-state">Loading</span>
-      </header>
 
-      <div class="squad-choice-options" role="group" aria-label="Squad prediction">
-        <button
-          class="squad-choice-card"
-          id="choose-autofpl-squad"
-          data-squad-choice="autofpl"
-          type="button"
-          aria-pressed="true">
-          <span class="squad-choice-marker" aria-hidden="true">A</span>
-          <span>
-            <small>Recommended</small>
-            <strong>autoFPL v2</strong>
-            <span>Best-supported six-Gameweek opening squad</span>
-          </span>
-          <span class="squad-choice-check" aria-hidden="true">✓</span>
-        </button>
-        <button
-          class="squad-choice-card"
-          id="choose-solio-squad"
-          data-squad-choice="solio"
-          type="button"
-          aria-pressed="false"
-          disabled>
-          <span class="squad-choice-marker" aria-hidden="true">S</span>
-          <span>
-            <small>Experimental</small>
-            <strong>Solio-assisted</strong>
-            <span id="solio-choice-description">Checking for a current challenger</span>
-          </span>
-          <span class="squad-choice-check" aria-hidden="true">✓</span>
-        </button>
-      </div>
-
-      <section
-        class="squad-scorecard"
-        id="squad-scorecard"
-        aria-labelledby="squad-scorecard-title"
-        hidden>
-        <header>
-          <div>
-            <span class="squad-choice-label">Same scoring basis</span>
-            <h3 id="squad-scorecard-title">A fair points comparison</h3>
-          </div>
-          <p>
-            Both squads are scored by the same autoFPL scenarios. Compare across
-            each row; these are forecasts, not realised results.
-          </p>
-        </header>
-        <div class="squad-scorecard-table-wrap">
-          <table>
-            <caption class="visually-hidden">
-              autoFPL and Solio-assisted squads scored on the same autoFPL scenarios
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">Planning horizon</th>
-                <th scope="col">autoFPL squad</th>
-                <th scope="col">Solio-assisted squad</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th scope="row">Gameweek 1</th>
-                <td id="scorecard-autofpl-gw1">—</td>
-                <td id="scorecard-solio-gw1">—</td>
-              </tr>
-              <tr>
-                <th scope="row">First 6 Gameweeks</th>
-                <td id="scorecard-autofpl-six">—</td>
-                <td id="scorecard-solio-six">—</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <p class="squad-scorecard-verdict" id="squad-scorecard-verdict">
-          Waiting for a current challenger.
-        </p>
-      </section>
-
-      <div class="squad-choice-outcome" aria-live="polite">
-        <div>
-          <span class="squad-choice-label">Currently showing</span>
-          <strong id="squad-choice-name">autoFPL v2</strong>
-          <p id="squad-choice-explanation">
-            The recommended squad uses autoFPL across the complete planning horizon.
-          </p>
-        </div>
-        <dl class="squad-choice-facts">
-          <div>
-            <dt>Agreement</dt>
-            <dd id="squad-choice-agreement">Checking</dd>
-          </div>
-          <div>
-            <dt>External coverage</dt>
-            <dd id="squad-choice-coverage">Checking</dd>
-          </div>
-        </dl>
-        <div class="squad-choice-action">
-          <button
-            class="selection-primary"
-            id="copy-visible-squad"
-            type="button"
-            disabled>
-            Use this squad as my draft
-          </button>
-          <small id="copy-visible-squad-note">Nothing is sent to FPL.</small>
-        </div>
-      </div>
-    </section>
-        </div>
-      </li>
-      <li class="decision-step" data-step="2" data-tone="coral">
-        <div class="decision-step-marker" aria-hidden="true">2</div>
-        <div class="decision-step-body">
-          <div class="decision-step-heading">
-            <h2>What disagrees with it</h2>
-            <p class="eyebrow">quarantined evidence</p>
-          </div>
-<div class="advanced-evidence-content">
-    <div id="data-sources" class="section-anchor" aria-hidden="true"></div>
+    <details class="advanced-evidence secondary-tools" id="secondary-tools">
+      <summary>
+        <span>
+          <span class="eyebrow">Optional planning</span>
+          <strong>Captain and bench alternatives</strong>
+          <small>Compare roles and deeper scenario views after choosing the squad.</small>
+        </span>
+        <span class="advanced-evidence-toggle" aria-hidden="true"></span>
+      </summary>
+      <div class="advanced-evidence-content">
     <section
-    class="source-tape"
-    id="official-data"
-    data-state="loading"
-    aria-labelledby="source-title"
-    aria-live="polite">
-    <div class="source-copy">
-      <p class="eyebrow">Official data footing</p>
-      <div class="source-title-row">
-        <h2 id="source-title">Checking the real capture.</h2>
-        <span class="source-state" id="source-state">Loading</span>
-      </div>
-      <p id="source-summary">
-        Looking for an immutable official FPL capture that was available before its Gameweek deadline.
-      </p>
-    </div>
-
-    <div class="provenance">
-      <ol class="provenance-track" aria-label="Capture to deadline provenance">
-        <li>
-          <span>Capture</span>
-          <strong id="capture-time">—</strong>
-        </li>
-        <li>
-          <span>Deadline</span>
-          <strong id="source-deadline">—</strong>
-        </li>
-      </ol>
-      <p class="lead-time" id="capture-lead-time">Waiting for provenance</p>
-    </div>
-
-    <dl class="source-counts">
-      <div>
-        <dt>Players</dt>
-        <dd id="source-player-count">—</dd>
-      </div>
-      <div>
-        <dt>Fixtures</dt>
-        <dd id="source-fixture-count">—</dd>
-      </div>
-      <div>
-        <dt>Capture</dt>
-        <dd id="source-capture-id">—</dd>
-      </div>
-      <div>
-        <dt>Outcome</dt>
-        <dd id="source-outcome-status">Awaiting</dd>
-      </div>
-    </dl>
-    </section>
-
-    <section
-    class="forecast-source"
-    id="forecast-source"
-    data-state="loading"
-    aria-labelledby="forecast-source-title"
-    aria-live="polite">
-    <div>
-      <p class="eyebrow">External forecast challenger</p>
-      <div class="source-title-row">
-        <h2 id="forecast-source-title">Checking FPL Form.</h2>
-        <span class="source-state" id="forecast-source-state">Loading</span>
-      </div>
-      <p id="forecast-source-summary">
-        Looking for a bounded public predicted-points capture.
-      </p>
-    </div>
-    <dl class="forecast-source-meta">
-      <div>
-        <dt>Last checked</dt>
-        <dd id="forecast-source-checked">—</dd>
-      </div>
-      <div>
-        <dt>Forecast</dt>
-        <dd id="forecast-source-capture">—</dd>
-      </div>
-      <div>
-        <dt>Coverage</dt>
-        <dd id="forecast-source-coverage">—</dd>
-      </div>
-    </dl>
-    </section>
-
-    <section
-    class="research-coverage"
-    id="research-coverage"
-    data-state="loading"
-    aria-labelledby="research-coverage-title"
-    aria-live="polite">
-    <div class="research-coverage-heading">
-      <div>
-        <p class="eyebrow">Scout coverage · quarantined</p>
-        <div class="source-title-row">
-          <h2 id="research-coverage-title">Reading the team sheet.</h2>
-          <span class="source-state" id="research-coverage-state">Loading</span>
-        </div>
-        <p id="research-coverage-summary">
-          Checking which clubs have a complete, snapshot-linked FFScout start classification.
-        </p>
-      </div>
-      <dl class="research-coverage-meta">
-        <div>
-          <dt>Players classified</dt>
-          <dd id="research-player-coverage">—</dd>
-        </div>
-        <div>
-          <dt>Clubs complete</dt>
-          <dd id="research-club-coverage">—</dd>
-        </div>
-        <div>
-          <dt>Retained</dt>
-          <dd id="research-captured-at">—</dd>
-        </div>
-      </dl>
-    </div>
-    <div
-      class="club-coverage-board"
-      id="club-coverage-board"
-      role="list"
-      aria-label="FFScout start classification coverage by club">
-      <p class="club-coverage-empty">Loading twenty-club coverage…</p>
-    </div>
-    <p class="research-coverage-boundary">
-      Coverage is evidence plumbing, not confidence. A missing club or player stays unknown and cannot be read as a bench prediction.
-    </p>
-    </section>
-
-    <section
-    class="evidence-stress"
-    id="evidence-stress"
-    data-state="loading"
-    aria-labelledby="evidence-stress-title"
-    aria-live="polite">
-    <header class="evidence-stress-heading">
-      <div>
-        <p class="eyebrow">External evidence · squad stress test</p>
-        <div class="source-title-row">
-          <h2 id="evidence-stress-title">Testing source disagreement.</h2>
-          <span class="source-state" id="evidence-stress-state">Loading</span>
-        </div>
-        <p id="evidence-stress-summary">
-          Re-solving the six-Gameweek squad under explicit source-adverse cases.
-        </p>
-      </div>
-      <p class="evidence-stress-boundary">
-        A stress is not a probability. It shows what changes if the source is
-        right, without quietly letting an uncalibrated claim drive the model.
-      </p>
-    </header>
-    <div class="evidence-stress-result" id="evidence-stress-result">
-      <p class="evidence-stress-empty">Waiting for the exact evidence-linked solve.</p>
-    </div>
-    </section>
-
-    <section
-    class="evidence-stress"
-    id="public-projection-challenger"
-    data-state="loading"
-    aria-labelledby="public-projection-title"
-    aria-live="polite">
-    <header class="evidence-stress-heading">
-      <div>
-        <p class="eyebrow">Public points model · squad challenger</p>
-        <div class="source-title-row">
-          <h2 id="public-projection-title">Checking the market-model view.</h2>
-          <span class="source-state" id="public-projection-state">Loading</span>
-        </div>
-        <p id="public-projection-summary">
-          Matching the latest pre-deadline public projections to the exact official player capture.
-        </p>
-      </div>
-      <p class="evidence-stress-boundary">
-        This is a visible challenger, not a hidden override. The feed has no retained historical fold, so the validated v2 squad remains the recommendation until outcomes establish added accuracy.
-      </p>
-    </header>
-    <div class="evidence-stress-result" id="public-projection-result">
-      <p class="evidence-stress-empty">Waiting for the cutoff-bound public projection solve.</p>
-    </div>
-    </section>
-    </div>
-        </div>
-      </li>
-      <li class="decision-step" data-step="3" data-tone="blue">
-        <div class="decision-step-marker" aria-hidden="true">3</div>
-        <div class="decision-step-body">
-          <div class="decision-step-heading">
-            <h2>Your squad</h2>
-            <p class="eyebrow">yours to edit</p>
-          </div>
-    <div id="my-squad" class="section-anchor" aria-hidden="true"></div>
-    <section
-      class="selection-workflow"
-      id="selection-workflow"
+      class="strategy-board"
+      id="strategies"
       data-state="loading"
-      aria-labelledby="selection-workflow-title">
-      <div class="selection-workflow-copy">
-        <p class="eyebrow">My squad</p>
-        <div class="selection-title-row">
-          <h2 id="selection-workflow-title">Checking your saved squad.</h2>
-          <span class="selection-state" id="selection-state">Loading</span>
-        </div>
-        <p id="selection-workflow-summary">
-          Looking for a user-owned draft or lock linked to this forecast.
-        </p>
-        <p class="selection-feedback" id="selection-feedback" aria-live="polite"></p>
-      </div>
-
-      <ol class="selection-rail" aria-label="Selection lifecycle">
-        <li data-selection-step="draft">
-          <span>1</span>
-          <strong>Draft</strong>
-          <small>Preserve a choice</small>
-        </li>
-        <li data-selection-step="locked">
-          <span>2</span>
-          <strong>Locked</strong>
-          <small>Your explicit action</small>
-        </li>
-        <li data-selection-step="frozen">
-          <span>3</span>
-          <strong>Frozen</strong>
-          <small>At the deadline</small>
-        </li>
-      </ol>
-
-      <div class="selection-workflow-actions">
-        <dl class="selection-revision-meta">
-          <div>
-            <dt>Revision</dt>
-            <dd id="selection-revision">None</dd>
-          </div>
-          <div>
-            <dt>Forecast</dt>
-            <dd id="selection-forecast">—</dd>
-          </div>
-          <div>
-            <dt>Locked</dt>
-            <dd id="selection-locked-at">Not locked</dd>
-          </div>
-        </dl>
-        <div class="selection-buttons">
-          <button
-            class="selection-secondary"
-            id="edit-selection"
-            type="button"
-            disabled>
-            Open squad builder
-          </button>
-          <button class="selection-secondary" id="create-selection-draft" type="button">
-            Use prediction as draft
-          </button>
-          <button class="selection-primary" id="lock-selection" type="button" disabled>
-            Lock this selection
-          </button>
-        </div>
-      </div>
-    </section>
-    <section
-      class="squad-builder-page"
-      id="squad-builder-page"
-      aria-labelledby="squad-builder-title"
-      hidden>
-      <header class="builder-header">
+      aria-labelledby="strategies-title">
+      <div class="section-heading strategy-board-heading">
         <div>
-          <p class="eyebrow">My squad · decision workspace</p>
-          <h1 id="squad-builder-title">Build your Gameweek squad</h1>
-          <p id="builder-intro">
-            Start from the model, make your changes, and compare both squads
-            against the same forecast evidence.
+          <p class="eyebrow">Same squad · different matchday roles</p>
+          <h2 id="strategies-title">Compare matchday strategies.</h2>
+          <p id="strategy-summary">
+            Comparing captaincy, starting XI and bench order on the same
+            retained scenario rows.
           </p>
         </div>
-        <div class="builder-header-actions">
-          <span class="selection-state" id="builder-state">Not started</span>
-          <button
-            class="selection-secondary"
-            id="builder-return-model"
-            type="button">
-            View model squad
-          </button>
-        </div>
-      </header>
-
-      <div class="builder-empty" id="builder-empty">
-        <span class="builder-empty-mark" aria-hidden="true">15</span>
-        <div>
-          <p class="eyebrow">A clean starting point</p>
-          <h2>Use the prediction, then make it yours.</h2>
-          <p>
-            The first draft preserves the model’s exact squad, XI, bench and
-            captaincy. Every save after that becomes a new immutable revision.
-          </p>
-        </div>
-        <button class="selection-primary" id="builder-create-draft" type="button">
-          Start from model squad
-        </button>
+        <span class="strategy-state" id="strategy-state">Loading</span>
       </div>
-
-      <div class="builder-workspace" id="builder-workspace" hidden>
-        <section class="builder-scoreboard" aria-label="Squad comparison">
-          <div>
-            <span>Your projection</span>
-            <strong><span id="builder-user-points">—</span> pts</strong>
-            <small id="builder-comparison-note">Loading same-snapshot comparison</small>
-          </div>
-          <div>
-            <span>Model projection</span>
-            <strong><span id="builder-model-points">—</span> pts</strong>
-            <small id="builder-model-reference">Baseline</small>
-          </div>
-          <div data-delta="neutral" id="builder-delta-card">
-            <span>Difference</span>
-            <strong id="builder-points-delta">—</strong>
-            <small>Point estimate, not certainty</small>
-          </div>
-          <div>
-            <span>Budget</span>
-            <strong id="builder-budget">—</strong>
-            <small id="builder-budget-left">— remaining</small>
-          </div>
-        </section>
-
-        <div class="builder-grid">
-          <section class="builder-pitch-panel" aria-labelledby="builder-pitch-title">
-            <div class="section-heading builder-section-heading">
-              <div>
-                <p class="eyebrow">Revision workspace</p>
-                <h2 id="builder-pitch-title">Starting XI</h2>
-              </div>
-              <p>Select <strong>Change</strong> on a card, then choose a replacement.</p>
-            </div>
-            <div class="pitch builder-pitch" aria-label="Your editable formation">
-              <div class="halfway-line" aria-hidden="true"></div>
-              <div class="centre-circle" aria-hidden="true"></div>
-              <div class="penalty-box top" aria-hidden="true"></div>
-              <div class="penalty-box bottom" aria-hidden="true"></div>
-              <div id="builder-formation" class="formation"></div>
-            </div>
-            <div class="bench-shell builder-bench-shell">
-              <div class="bench-heading">
-                <h3>Bench</h3>
-                <span>Drag-free, explicit priority</span>
-              </div>
-              <div id="builder-bench" class="bench"></div>
-            </div>
-          </section>
-
-          <aside class="builder-control-rail" aria-label="Squad controls">
-            <section class="constraint-card">
-              <div class="constraint-heading">
-                <div>
-                  <p class="eyebrow">FPL rules</p>
-                  <h2>Squad check</h2>
-                </div>
-                <span id="builder-validity" data-valid="false">Checking</span>
-              </div>
-              <ul class="constraint-list" id="builder-constraints"></ul>
-              <p class="builder-feedback" id="builder-feedback" aria-live="polite"></p>
-            </section>
-
-            <section class="builder-controls">
-              <p class="eyebrow">Matchday decisions</p>
-              <h2>Captain &amp; bench</h2>
-              <div class="builder-selects">
-                <label for="builder-captain">
-                  Captain
-                  <select id="builder-captain"></select>
-                </label>
-                <label for="builder-vice-captain">
-                  Vice-captain
-                  <select id="builder-vice-captain"></select>
-                </label>
-              </div>
-              <ol class="builder-bench-order" id="builder-bench-order"></ol>
-            </section>
-          </aside>
-        </div>
-
-        <section class="player-market" aria-labelledby="player-market-title">
-          <div class="player-market-heading">
-            <div>
-              <p class="eyebrow">Exact-snapshot player pool</p>
-              <h2 id="player-market-title">Choose a replacement</h2>
-              <p id="player-market-context">
-                Select Change on one of your player cards to see eligible alternatives.
-              </p>
-            </div>
-            <label class="player-search" for="player-market-search">
-              <span>Search players</span>
-              <input
-                id="player-market-search"
-                type="search"
-                placeholder="Name or club"
-                autocomplete="off">
-            </label>
-          </div>
-          <div class="position-filters" id="player-market-filters" aria-label="Filter player position">
-            <button type="button" data-market-position="all" aria-pressed="true">All</button>
-            <button type="button" data-market-position="goalkeeper" aria-pressed="false">Goalkeepers</button>
-            <button type="button" data-market-position="defender" aria-pressed="false">Defenders</button>
-            <button type="button" data-market-position="midfielder" aria-pressed="false">Midfielders</button>
-            <button type="button" data-market-position="forward" aria-pressed="false">Forwards</button>
-          </div>
-          <div class="player-market-list" id="player-market-list">
-            <p class="empty-state">The player pool is loading.</p>
-          </div>
-        </section>
-
-        <footer class="builder-action-bar">
-          <div>
-            <strong id="builder-revision-label">Draft</strong>
-            <span id="builder-save-state">No unsaved changes</span>
-          </div>
-          <div>
-            <button class="selection-secondary" id="builder-reset" type="button">
-              Reset changes
-            </button>
-            <button class="selection-primary" id="builder-save" type="button">
-              Save new draft
-            </button>
-            <button class="selection-primary builder-lock" id="builder-lock" type="button">
-              Lock selection
-            </button>
-          </div>
-        </footer>
+      <div
+        id="strategy-list"
+        class="strategy-list"
+        aria-live="polite"
+        aria-busy="true">
+        <article class="strategy-empty">
+          <strong>Preparing strategy comparison</strong>
+          <p>The model squad remains available while scenario roles load.</p>
+        </article>
       </div>
-    </section>
-        </div>
-      </li>
-      <li class="decision-step" data-step="4" data-tone="ink">
-        <div class="decision-step-marker" aria-hidden="true">4</div>
-        <div class="decision-step-body">
-          <div class="decision-step-heading">
-            <h2>Lock, then change it in FPL</h2>
-            <p class="eyebrow">never submitted for you</p>
-          </div>
-<div class="advanced-evidence-content">
-    <section
-    class="strategy-board"
-    id="strategies"
-    data-state="loading"
-    aria-labelledby="strategies-title">
-    <div class="section-heading strategy-board-heading">
-      <div>
-        <p class="eyebrow">Same squad · different matchday roles</p>
-        <h2 id="strategies-title">Compare matchday strategies.</h2>
-        <p id="strategy-summary">
-          Comparing captaincy, starting XI and bench order on the same
-          retained scenario rows.
-        </p>
-      </div>
-      <span class="strategy-state" id="strategy-state">Loading</span>
-    </div>
-    <div
-      id="strategy-list"
-      class="strategy-list"
-      aria-live="polite"
-      aria-busy="true">
-      <article class="strategy-empty">
-        <strong>Preparing strategy comparison</strong>
-        <p>The model squad remains available while scenario roles load.</p>
-      </article>
-    </div>
-    <p class="strategy-boundary" id="strategy-boundary">
-      These are exploratory shadow results selected on retained scenarios,
-      not a promise of future points. Previewing never changes your draft.
-    </p>
+      <p class="strategy-boundary" id="strategy-boundary">
+        These are exploratory shadow results selected on retained scenarios,
+        not a promise of future points. Previewing never changes your draft.
+      </p>
     </section>
 
     <section class="ai-desk" aria-labelledby="ai-title">
-    <div class="ai-intro">
-      <p class="eyebrow">Grounded conversation</p>
-      <h2 id="ai-title">Ask about this exact selection.</h2>
-      <p id="ai-status">
-        AI access will use the same snapshot and evidence through MCP or a configured server-side provider.
-      </p>
-    </div>
-    <form class="ai-composer" id="ai-form">
-      <label for="ai-question">Question for autoFPL</label>
-      <div>
-        <input id="ai-question" type="text" placeholder="Why is the captain worth the uncertainty?" disabled>
-        <button type="submit" disabled>Ask autoFPL</button>
+      <div class="ai-intro">
+        <p class="eyebrow">Grounded conversation</p>
+        <h2 id="ai-title">Ask about this exact selection.</h2>
+        <p id="ai-status">
+          AI access will use the same snapshot and evidence through MCP or a configured server-side provider.
+        </p>
       </div>
-      <small>Conversation is deliberately unavailable until it can cite real forecast evidence.</small>
-    </form>
-    </section>
-    </div>
+      <form class="ai-composer" id="ai-form">
+        <label for="ai-question">Question for autoFPL</label>
+        <div>
+          <input id="ai-question" type="text" placeholder="Why is the captain worth the uncertainty?" disabled>
+          <button type="submit" disabled>Ask autoFPL</button>
         </div>
-      </li>
-    </ol>
-
-
-
-
-
-
-
-
-
-
-
-
-
+        <small>Conversation is deliberately unavailable until it can cite real forecast evidence.</small>
+      </form>
+    </section>
+      </div>
+    </details>
   </main>
 
       <footer>

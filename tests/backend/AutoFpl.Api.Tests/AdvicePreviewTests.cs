@@ -207,28 +207,9 @@ public sealed class AdvicePreviewTests : IClassFixture<WebApplicationFactory<Pro
             "id=\"copy-visible-squad\"",
             body,
             StringComparison.Ordinal);
-        // The two disclosure accordions are gone. Their contents are now steps on
-        // the decision spine, so the page is pinned by the spine instead.
-        Assert.Contains("class=\"decision-spine\"", body, StringComparison.Ordinal);
+        Assert.Contains("Why this squad?", body, StringComparison.Ordinal);
         Assert.Contains(
-            "What the model recommends",
-            body,
-            StringComparison.Ordinal);
-        Assert.Contains("What disagrees with it", body, StringComparison.Ordinal);
-        Assert.Contains("Lock, then change it in FPL", body, StringComparison.Ordinal);
-        Assert.DoesNotContain("Why this squad?", body, StringComparison.Ordinal);
-        Assert.DoesNotContain(
             "id=\"advanced-evidence\"",
-            body,
-            StringComparison.Ordinal);
-        Assert.DoesNotContain(
-            "id=\"secondary-tools\"",
-            body,
-            StringComparison.Ordinal);
-        // The manual-submit reminder is now a permanent rail, not a footnote.
-        Assert.Contains("class=\"decision-rail\"", body, StringComparison.Ordinal);
-        Assert.Contains(
-            "autoFPL never submits to FPL",
             body,
             StringComparison.Ordinal);
         Assert.Contains("Build your Gameweek squad", body, StringComparison.Ordinal);
